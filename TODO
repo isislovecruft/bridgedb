@@ -1,0 +1,16 @@
+
+For dec:
+- better name
+- https frontend
+- email frontend
+- normalize email correctly
+- figure out which python version I need; document that.
+- break time into periods
+
+Later:
+- better area division logic
+- make all proxies get stuck in their own area.
+- implement hop
+- implement slightly nicer logging
+
+
