@@ -1,12 +1,20 @@
+# BridgeDB by Nick Mathewson.
+# Copyright (c) 2007, The Tor Project, Inc.
+# See LICENSE for licensing informatino
 
 import anydbm
 
-import Bridges
-import Dist
 import os
 import sys
 
-CONFIG = dict(
+import bridgedb.Bridges as Bridges
+import bridgedb.Dist as Dist
+
+class Conf:
+    def __init__(self, **attrs):
+        self.__dict__.update(attrs)
+
+CONFIG = Conf(
     BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
     BRIDGE_PURPOSE = "bridge",
     DB_FILE = [ "./bridgedist" ],
@@ -14,10 +22,13 @@ CONFIG = dict(
     HTTPS_DIST = True,
     EMAIL_DIST = True,
     N_IP_CLUSTERS = 8,
-    MASTER_KEY_FILE = [ "./secret_key" ]
+    MASTER_KEY_FILE = [ "./secret_key" ],
     HTTPS_SHARE=10,
     EMAIL_SHARE=10,
-    RESERVED_SHARE=2
+    EMAIL_DOMAINS = [ "gmail.com", "yahoo.com" ],
+    EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
+                         "googlemail.com" : "gmail.com", },
+    RESERVED_SHARE=2,
   )
 
 def getKey(fname):
@@ -60,9 +71,12 @@ def startup(cfg):
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
 
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
+        for d in cfg.EMAIL_DOMAINS:
+            cfg.EMAIL_DOMAIN_MAP[d] = d
         emailDistributor = Dist.emailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
-            Bridges.PrefixStore(store, "em|"))
+            Bridges.PrefixStore(store, "em|"),
+            cfg.EMAIL_DOMAIN_MAP.copy())
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
 
     if cfg.RESERVED_SHARE:

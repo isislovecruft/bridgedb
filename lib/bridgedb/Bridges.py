@@ -1,9 +1,11 @@
-#!/usr/bin/python
+# BridgeDB by Nick Mathewson.
+# Copyright (c) 2007, The Tor Project, Inc.
+# See LICENSE for licensing informatino
 
 import binascii
 import bisect
-import hashlib
 import hmac
+import sha
 import socket
 import struct
 import time
@@ -11,8 +13,9 @@ import time
 HEX_FP_LEN = 40
 ID_LEN = 20
 
-HEX_DIGEST_LEN = 64
-DIGEST_LEN = 32
+DIGESTMOD = sha
+HEX_DIGEST_LEN = 40
+DIGEST_LEN = 20
 
 def is_valid_ip(ip):
     try:
@@ -36,11 +39,11 @@ toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
 def get_hmac(k,v):
-    h = hmac.new(k, v, hashlib.sha256)
+    h = hmac.new(k, v, digestmod=DIGESTMOD)
     return h.digest()
 
 def get_hmac_fn(k, hex=True):
-    h = hmac.new(k, digestmod=hashlib.sha256)
+    h = hmac.new(k, digestmod=DIGESTMOD)
     def hmac_fn(v):
         h_tmp = h.copy()
         h_tmp.update(v)
@@ -197,7 +200,7 @@ class LogDB:
         return self._db.get(k, v)
     def keys(self):
         return self._db.keys()
-    def rotate
+
 
 class PrefixStore:
     def __init__(self, store, prefix):
@@ -256,7 +259,7 @@ class BridgeTracker:
 
 def BridgeSplitter(BridgeHolder):
     def __init__(self, key, store):
-        self.hmac = hmac.new(key, digestmod=hashlib.sha256)
+        self.hmac = hmac.new(key, digestmod=DIGESTMOD)
         self.store = store
         self.ringsByName = {}
         self.totalP = 0
