@@ -32,11 +32,26 @@ CONFIG = Conf(
   )
 
 def getKey(fname):
+    """Load the key stored in fname, or create a new 32-byte key and store
+       it in fname.
+
+    >>> name = os.tmpnam()
+    >>> os.path.exists(name)
+    False
+    >>> k1 = getKey(name)
+    >>> os.path.exists(name)
+    True
+    >>> open(name).read() == k1
+    True
+    >>> k2 = getKey(name)
+    >>> k1 == k2
+    True
+    """
     try:
         f = open(fname, 'r')
     except IOError:
         k = os.urandom(32)
-        flags = os.O_WRONLY|os.O_TRUNC|getattr(os, "O_BIN", 0)
+        flags = os.O_WRONLY|os.O_TRUNC|os.O_CREAT|getattr(os, "O_BIN", 0)
         fd = os.open(fname, flags, 0400)
         os.write(fd, k)
         os.close(fd)

@@ -8,12 +8,13 @@ import re
 import socket
 
 def uniformMap(ip):
-    "Map an IP to an arbitrary 'area' string"
-    # convert the IP for 4 bytes.
-    s = socket.inet_aton(ip)
-    # return the first 3.
-    return s[:3]
+    """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
+       get the same string.
 
+    >>> uniformMap('1.2.3.4')
+    '1.2.3'
+    """
+    return ".".join( ip.split(".")[:3] )
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     def __init__(self, areaMapper, nClusters, key):

@@ -5,6 +5,7 @@
 import binascii
 import bisect
 import hmac
+import re
 import sha
 import socket
 import struct
@@ -18,9 +19,29 @@ HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 
 def is_valid_ip(ip):
+    """Return True if ip is the string encoding of a valid IPv4 address,
+       and False otherwise.
+
+    >>> is_valid_ip('1.2.3.4')
+    True
+    >>> is_valid_ip('1.2.3.255')
+    True
+    >>> is_valid_ip('1.2.3.256')
+    False
+    >>> is_valid_ip('1')
+    False
+    >>> is_valid_ip('1.2.3')
+    False
+    >>> is_valid_ip('xyzzy')
+    False
+    """
+
+    if not re.match(r'(\d+)\.(\d+)\.(\d+)\.(\d+)', ip):
+        # inet_aton likes "1.2" as a synonym for "0.0.1.2".  We don't.
+        return False
     try:
         socket.inet_aton(ip)
-    except socekt.error:
+    except socket.error:
         return False
     else:
         return True

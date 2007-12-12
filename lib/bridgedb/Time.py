@@ -41,6 +41,13 @@ class IntervalSchedule:
             assert False
 
     def getInterval(self, when):
+        """
+
+        >>> t = calendar.timegm((2007, 12, 12, 0, 0, 0))
+        >>> I = IntervalSchedule('month', 1)
+        >>> I.getInterval(t)
+        '2007-12'
+        """
         if self.itype == 'month':
             tm = time.gmtime(when)
             n = tm.tm_year * 12 + tm.tm_mon - 1
