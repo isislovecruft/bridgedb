@@ -19,15 +19,25 @@ CONFIG = Conf(
     BRIDGE_PURPOSE = "bridge",
     DB_FILE = [ "./bridgedist" ],
     DB_LOG_FILE = [ "./bridgedist.log" ],
-    HTTPS_DIST = True,
-    EMAIL_DIST = True,
+
     N_IP_CLUSTERS = 8,
     MASTER_KEY_FILE = [ "./secret_key" ],
+
+    HTTPS_DIST = True,
     HTTPS_SHARE=10,
+    HTTPS_PORT=6789,
+    HTTPS_CERT_FILE="cert",
+    HTTPS_KEY_FILE="key",
+    HTTP_UNENCRYPTED_PORT=6788,
+    HTTPS_N_BRIDGES_PER_ANSWER=2,
+
+    EMAIL_DIST = True,
     EMAIL_SHARE=10,
     EMAIL_DOMAINS = [ "gmail.com", "yahoo.com" ],
     EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
                          "googlemail.com" : "gmail.com", },
+    EMAIL_PORT=6725,
+
     RESERVED_SHARE=2,
   )
 
