@@ -21,6 +21,7 @@ class Conf:
 CONFIG = Conf(
     RUN_IN_DIR = ".",
 
+    PIDFILE = "bridgedb.pid",
     BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
     BRIDGE_PURPOSE = "bridge",
     DB_FILE = "./bridgedist.db",
@@ -96,13 +97,18 @@ def _handleSIGHUP(*args):
 def startup(cfg):
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE"):
+                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE"):
         v = getattr(cfg, key)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
 
     if cfg.RUN_IN_DIR:
         os.chdir(cfg.RUN_IN_DIR)
+
+    if cfg.PIDFILE:
+        f = open(cfg.PIDFILE, 'w')
+        f.write("%s\n"%os.getpid())
+        f.close()
 
     key = getKey(cfg.MASTER_KEY_FILE)
     dblogfile = None
@@ -172,6 +178,8 @@ def startup(cfg):
         baseStore.close()
         if dblogfile is not None:
             dblogfile.close()
+        if cfg.PIDFILE:
+            os.unlink(cfg.PIDFILE)
 
 def run():
     if len(sys.argv) != 2:
