@@ -190,8 +190,10 @@ def run():
     else:
         configuration = {}
         execfile(sys.argv[1], configuration)
+        C = Conf(**configuration)
+        configuration = C
 
-    startup(CONFIG)
+    startup(configuration)
 
 if __name__ == '__main__':
     run()
