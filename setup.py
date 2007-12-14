@@ -40,6 +40,7 @@ setup(name='BridgeDB',
       url='https://www.torproject.org',
       package_dir= {'' : 'lib'},
       packages=['bridgedb'],
+      py_modules=['TorBridgeDB'],
       cmdclass={'test' : runTests}
       )
 

@@ -20,3 +20,5 @@ Later:
 - decent template for mail interface
 - implement 'help' command
 - Reload configuration on sighup; not just bridges.
+- Reply with locale support.
+- Check host option in http

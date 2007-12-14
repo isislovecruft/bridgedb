@@ -173,7 +173,7 @@ def startup(cfg):
         if dblogfile is not None:
             dblogfile.close()
 
-if __name__ == '__main__':
+def run():
     if len(sys.argv) != 2:
         print "Syntax: %s [config file]" % sys.argv[0]
         sys.exit(1)
@@ -184,3 +184,6 @@ if __name__ == '__main__':
         execfile(sys.argv[1], configuration)
 
     startup(CONFIG)
+
+if __name__ == '__main__':
+    run()
