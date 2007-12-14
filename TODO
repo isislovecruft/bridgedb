@@ -2,6 +2,10 @@
 For dec:
 - reload bridges on sighup
 - write a README
+- make the configuration logic a little more sensible.
+- proper logging
+- check that incoming IP of email is sane.
+- check more email headers for sanity
 
 Later:
 - document stuff better
@@ -13,4 +17,3 @@ Later:
 - decent template for web interface
 - decent template for mail interface
 - implement 'help' command
- 

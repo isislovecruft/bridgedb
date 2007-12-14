@@ -29,10 +29,10 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.splitter = bridgedb.Bridges.FixedBridgeSplitter(key2, self.rings)
 
         key3 = bridgedb.Bridges.get_hmac(key, "Order-Areas-In-Rings")
-        self.areaOrderHmac = bridgedb.Bridges.get_hmac_fn(key3, hex=True)
+        self.areaOrderHmac = bridgedb.Bridges.get_hmac_fn(key3, hex=False)
 
         key4 = bridgedb.Bridges.get_hmac(key, "Assign-Areas-To-Rings")
-        self.areaClusterHmac = bridgedb.Bridges.get_hmac_fun(key4, hex=True)
+        self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
 
     def insert(self, bridge):
         self.splitter.insert(bridge)
@@ -125,10 +125,10 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
     def __init__(self, key, store, domainmap):
 
         key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
-        self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=1)
+        self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
-        self.ring = bridgedb.Bridges.BrigeRing(key2)
+        self.ring = bridgedb.Bridges.BridgeRing(key2)
         self.store = store
         self.domainmap = domainmap
 
@@ -136,12 +136,12 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.ring.insert(bridge)
 
     def getBridgesForEmail(self, emailaddress, epoch, N=1):
-        emailaddress = normalizeEmail(emailaddress)
-        if emailAddress is None:
+        emailaddress = normalizeEmail(emailaddress, self.domainmap)
+        if emailaddress is None:
             return [] #XXXX raise an exception.
-        if store.has_key(emailaddress):
+        if self.store.has_key(emailaddress):
             result = []
-            ids = store[emailaddress]
+            ids = self.store[emailaddress]
             for id in bridgedb.Bridges.chopString(ids, bridgedb.Bridges.ID_LEN):
                 b = self.ring.getBridgeByID(id)
                 if b != None:
@@ -149,7 +149,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return result
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-        result = ring.getBridges(pos, N)
+        result = self.ring.getBridges(pos, N)
         memo = "".join(b.getID() for b in result)
         self.store[emailaddress] = memo
         return result

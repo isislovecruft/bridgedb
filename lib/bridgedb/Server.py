@@ -15,6 +15,8 @@ import twisted.web.resource
 import twisted.web.server
 import twisted.mail.smtp
 
+import bridgedb.Dist
+
 class WebResource(twisted.web.resource.Resource):
     isLeaf = True
 
@@ -36,7 +38,7 @@ class WebResource(twisted.web.resource.Resource):
         return "<html><body><pre>%s</pre></body></html>" % answer
 
 def addWebServer(cfg, dist, sched):
-    from twised.web.server import Site
+    from twisted.web.server import Site
     resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER)
     site = Site(resource)
     if cfg.HTTP_UNENCRYPTED_PORT:
@@ -53,6 +55,7 @@ def addWebServer(cfg, dist, sched):
 
 class MailFile:
     def __init__(self, lines):
+        self.lines = lines
         self.idx = 0
     def readline(self):
         try :
@@ -64,59 +67,64 @@ class MailFile:
 
 def getMailResponse(lines, ctx):
     # Extract data from the headers.
-    msg = rfc822(MailFile(lines))
+    msg = rfc822.Message(MailFile(lines))
     subject = msg.getheader("Subject", None)
     if not subject: subject = "[no subject]"
     clientFromAddr = msg.getaddr("From")
     clientSenderAddr = msg.getaddr("Sender")
     msgID = msg.getheader("Message-ID")
-    if clientSenderAddr:
+    if clientSenderAddr and clientSenderAddr[1]:
         clientAddr = clientSenderAddr[1]
-    elif clientFromAddr:
+    elif clientFromAddr and clientFromAddr[1]:
         clientAddr = clientFromAddr[1]
     else:
-        return None
+        print "No from header. WTF."
+        return None,None
     for ln in lines:
         if ln.strip() in ("get bridges", "Subject: get bridges"):
             break
     else:
-        return None
+        print "No request for bridges."
+        return None,None
 
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
                                                      interval, ctx.N)
-    except bridgedb.Dist.BadEmail:
-        return None
+    except bridgedb.Dist.BadEmail, e:
+        print "Bad email addr in request: %s"%e
+        return None, None
     if not bridges:
-        return None
+        print "No bridges available."
+        return None, None
 
     # Generate the message.
     f = StringIO()
     w = MimeWriter.MimeWriter(f)
-    w.addHeader("From", ctx.fromAddr)
-    w.addHeader("To", clientAddr)
-    w.addHeader("Message-ID", twisted.mail.smtp.messageid())
+    w.addheader("From", ctx.fromAddr)
+    w.addheader("To", clientAddr)
+    w.addheader("Message-ID", twisted.mail.smtp.messageid())
     if not subject.startswith("Re:"): subject = "Re: %s"%subject
-    w.addHeader("Subject", subject)
-    w.addHeader("In-Reply-To", msgID)
-    w.addHeader("Date", twisted.mail.smtp.rfc822date())
+    w.addheader("Subject", subject)
+    w.addheader("In-Reply-To", msgID)
+    w.addheader("Date", twisted.mail.smtp.rfc822date())
     body = w.startbody("text/plain")
     for b in bridges:
         body.write("%s\n" % b.getConfigLine())
 
     f.seek(0)
-    return f
+    return clientAddr, f
 
 def replyToMail(lines, ctx):
-    sendToUser, response = getMailResponse(lines)
+    sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
         return
+    response.seek(0)
     d = Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(
         ctx.fromAddr,
         sendToUser,
-        StringIO(response),
+        response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
     return d
@@ -143,7 +151,7 @@ class MailMessage:
 
     def lineReceived(self, line):
         self.nBytes += len(line)
-        if self.nBytes > ctx.maximumSize:
+        if self.nBytes > self.ctx.maximumSize:
             self.ignoring = True
         else:
             self.lines.append(line)
@@ -151,7 +159,7 @@ class MailMessage:
     def eomReceived(self):
         if not self.ignoring:
             replyToMail(self.lines, self.ctx)
-        return defer.succeed(None)
+        return twisted.internet.defer.succeed(None)
 
     def connectionLost(self):
         pass
@@ -169,7 +177,7 @@ class MailDelivery:
         if user.dest.local != self.ctx.username:
             raise twisted.mail.smtp.SMTPBadRcpt(user)
         return lambda: MailMessage(self.ctx)
-
+    
 class MailFactory(twisted.mail.smtp.SMTPFactory):
     def __init__(self, *a, **kw):
         twisted.mail.smtp.SMTPFactory.__init__(self, *a, **kw)
@@ -185,7 +193,7 @@ class MailFactory(twisted.mail.smtp.SMTPFactory):
         return p
 
 def addSMTPServer(cfg, dist, sched):
-    ctx = MailContext(cfg)
+    ctx = MailContext(cfg, dist, sched)
     factory = MailFactory()
     factory.setBridgeDBContext(ctx)
     ip = cfg.EMAIL_BIND_IP or ""

@@ -50,7 +50,7 @@ def is_valid_fingerprint(fp):
     if len(fp) != HEX_FP_LEN:
         return False
     try:
-        toHex(fp)
+        fromHex(fp)
     except TypeError:
         return False
     else:
@@ -89,8 +89,9 @@ class Bridge:
                 raise TypeError("Bridge with invalid ID")
             self.fingerprint = toHex(id_digest)
         elif fingerprint is not None:
-            if not is_valid_fingerprint(fromHex(fingerprint)):
-                raise TypeError("Bridge with invalid fingerprint")
+            if not is_valid_fingerprint(fingerprint):
+                raise TypeError("Bridge with invalid fingerprint (%r)"%
+                                fingerprint)
             self.fingerprint = fingerprint.lower()
         else:
             raise TypeError("Bridge with no ID")
@@ -152,6 +153,9 @@ class BridgeRing(BridgeHolder):
         self.hmac = get_hmac_fn(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
+
+    def __len__(self):
+        return len(self.bridgesByID)
 
     def insert(self, bridge):
         id = bridge.getID()
@@ -243,9 +247,9 @@ class PrefixStore:
         n = len(self._p)
         return [ k[n:] for k in self._d.keys() if k.startswith(self._p) ]
 
-def FixedBridgeSplitter(BridgeHolder):
+class FixedBridgeSplitter(BridgeHolder):
     def __init__(self, key, rings):
-        self.hmac = get_mac_fn(key, hex=True)
+        self.hmac = get_hmac_fn(key, hex=True)
         self.rings = rings[:]
         for r in self.rings:
             assert(isinstance(r, BridgeHolder))
@@ -255,7 +259,14 @@ def FixedBridgeSplitter(BridgeHolder):
         digest = self.hmac(bridge.getID())
         pos = long( digest[:8], 16 )
         which = pos % len(self.rings)
-        self.ring[which].insert(bridge)
+        self.rings[which].insert(bridge)
+
+    def __len__(self):
+        n = 0
+        for r in self.rings:
+            n += len(r)
+        return n
+
 
 class UnallocatedHolder(BridgeHolder):
     def insert(self, bridge):
@@ -278,15 +289,21 @@ class BridgeTracker:
         # The first-seen time only gets updated if it wasn't already set.
         self.firstSeenStore.setdefault(bridgeID, now)
 
-def BridgeSplitter(BridgeHolder):
+class BridgeSplitter(BridgeHolder):
     def __init__(self, key, store):
-        self.hmac = hmac.new(key, digestmod=DIGESTMOD)
+        self.hmac = get_hmac_fn(key, hex=True)
         self.store = store
         self.ringsByName = {}
         self.totalP = 0
         self.pValues = []
         self.rings = []
         self.statsHolders = []
+
+    def __len__(self):
+        n = 0
+        for r in self.rings:
+            n += len(r)
+        return n
 
     def addRing(self, ring, ringname, p=1):
         assert isinstance(ring, BridgeHolder)
@@ -310,7 +327,7 @@ def BridgeSplitter(BridgeHolder):
         else:
             pos = self.hmac(bridgeID)
             n = int(pos[:8], 16) % self.totalP
-            pos = bisect.bisect_right(self.pValues, p) - 1
+            pos = bisect.bisect_right(self.pValues, n) - 1
             assert 0 <= pos < len(self.rings)
             ringname = self.rings[pos]
             ring = self.ringsByName.get(ringname)
