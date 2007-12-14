@@ -5,6 +5,10 @@ To set up:
  - python setup.py install --prefix=$HOME
  - Edit bridgedb.conf; put it somewhere good.
  - Make sure that the input files referred to in bridgedb.conf exist.
+   - Yes, this includes all of them.
+     - Yes, even the cert file.
+       - You can make a self-signed certificate with
+         openssl req -x509 -new -nodes > ! cert
  - Set up PYTHONPATH to include "~/lib/python2.4/site-packages/".
 
 To run:
