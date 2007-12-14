@@ -1,7 +1,5 @@
 
 For dec:
-- make mail get configured right.
-- actually invoke server stuff.
 - reload bridges on sighup
 - write a README
 
@@ -15,3 +13,4 @@ Later:
 - decent template for web interface
 - decent template for mail interface
 - implement 'help' command
+ 

@@ -9,6 +9,8 @@ import sys
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
+import bridgedb.Time as Time
+import bridgedb.Server as Server
 
 class Conf:
     def __init__(self, **attrs):
@@ -25,9 +27,11 @@ CONFIG = Conf(
 
     HTTPS_DIST = True,
     HTTPS_SHARE=10,
+    HTTPS_BIND_IP=None,
     HTTPS_PORT=6789,
     HTTPS_CERT_FILE="cert",
     HTTPS_KEY_FILE="key",
+    HTTP_UNENCRYPTED_BIND_IP=None,
     HTTP_UNENCRYPTED_PORT=6788,
     HTTPS_N_BRIDGES_PER_ANSWER=2,
 
@@ -36,7 +40,9 @@ CONFIG = Conf(
     EMAIL_DOMAINS = [ "gmail.com", "yahoo.com" ],
     EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
                          "googlemail.com" : "gmail.com", },
+    EMAIL_BIND_IP=None,
     EMAIL_PORT=6725,
+    EMAIL_N_BRIDGES_PER_ANSWER=2,
 
     RESERVED_SHARE=2,
   )
@@ -80,8 +86,9 @@ def load(cfg, splitter):
 
 def startup(cfg):
     key = getKey(MASTER_KEY_FILE)
+    dblogfile = None
 
-    store = anydbm.open(cfg.DB_FILE, "c", 0600)
+    baseStore = store = anydbm.open(cfg.DB_FILE, "c", 0600)
     if DB_LOG_FILE:
         dblogfile = open(cfg.DB_LOG_FILE, "a+", 0)
         store = LogDB("db", store, dblogfile)
@@ -94,6 +101,7 @@ def startup(cfg):
                                  Dist.N_IP_CLUSTERS,
                                  Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"))
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+        webSchedule = Time.IntervalSchedule("day", 2)
 
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         for d in cfg.EMAIL_DOMAINS:
@@ -103,6 +111,7 @@ def startup(cfg):
             Bridges.PrefixStore(store, "em|"),
             cfg.EMAIL_DOMAIN_MAP.copy())
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+        emailSchedule = Time.IntervalSchedule("day", 1)
 
     if cfg.RESERVED_SHARE:
         splitter.addRing(Bridges.UnallocatedHolder(),
@@ -115,5 +124,16 @@ def startup(cfg):
 
     load(cfg, splitter)
 
-    # XXXX create twisted listeners.
+    if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
+        Server.addWebServer(cfg, ipDistributor, webSchedule)
+
+    if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
+        Server.addSMTPServer(cfg, emailDistributor, emailSchedule)
+
+    try:
+        Server.run()
+    finally:
+        baseStore.close()
+        if dblogfile is not None:
+            dblogfile.close()
 

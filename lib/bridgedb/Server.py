@@ -40,13 +40,15 @@ def addWebServer(cfg, dist, sched):
     resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER)
     site = Site(resource)
     if cfg.HTTP_UNENCRYPTED_PORT:
-        reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site)
+        ip = cfg.HTTPS_BIND_IP or ""
+        reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
         from OpenSSL.SSL import SSLv3_METHOD
+        ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
-        reactor.listenSSL(cfg.HTTPS_PORT, site, factory)
+        reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
 
 class MailFile:
@@ -120,19 +122,20 @@ def replyToMail(lines, ctx):
     return d
 
 class MailContext:
-    def __init__(self, cfg):
+    def __init__(self, cfg, dist, sched):
         self.username = "bridges"
         self.maximumSize = 32*1024
-        self.smtpServer
-        self.smtpPort
-        self.fromAddr
-        self.distributor
-        self.schedule
+        self.smtpServer = "127.0.0.1"
+        self.smtpPort = 25
+        self.fromAddr = "bridges@bridges.torproject.org"
+        self.distributor = dist
+        self.schedule = sched
+        self.N = cfg.EMAIL_N_BRIDGES_PER_ANSWER
 
 class MailMessage:
     implements(twisted.mail.smtp.IMessage)
 
-    def __init__(self, ctx)
+    def __init__(self, ctx):
         self.ctx = ctx
         self.lines = []
         self.nBytes = 0
@@ -182,8 +185,12 @@ class MailFactory(twisted.mail.smtp.SMTPFactory):
         return p
 
 def addSMTPServer(cfg, dist, sched):
-    ctx = MailContext() #XXXX
+    ctx = MailContext(cfg)
     factory = MailFactory()
     factory.setBridgeDBContext(ctx)
-    reactor.listenTCP(cfg.EMAIL_PORT, factory)
+    ip = cfg.EMAIL_BIND_IP or ""
+    reactor.listenTCP(cfg.EMAIL_PORT, factory, interface=ip)
     return factory
+
+def runServers():
+    reactor.run()
