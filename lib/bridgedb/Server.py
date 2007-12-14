@@ -177,7 +177,7 @@ class MailDelivery:
         if user.dest.local != self.ctx.username:
             raise twisted.mail.smtp.SMTPBadRcpt(user)
         return lambda: MailMessage(self.ctx)
-    
+
 class MailFactory(twisted.mail.smtp.SMTPFactory):
     def __init__(self, *a, **kw):
         twisted.mail.smtp.SMTPFactory.__init__(self, *a, **kw)

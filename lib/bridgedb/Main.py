@@ -3,9 +3,11 @@
 # See LICENSE for licensing informatino
 
 import anydbm
-
 import os
+import signal
 import sys
+
+from twisted.internet import reactor
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
@@ -87,6 +89,10 @@ def load(cfg, splitter):
             splitter.insert(bridge)
         f.close()
 
+_reloadFn = None
+def _handleSIGHUP(*args):
+    reactor.callLater(0, _reloadFn)
+
 def startup(cfg):
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
@@ -151,6 +157,13 @@ def startup(cfg):
 
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         Server.addSMTPServer(cfg, emailDistributor, emailSchedule)
+
+    def reload():
+        load(cfg, splitter)
+
+    global _reloadFn
+    _reloadFn = reload
+    signal.signal(signal.SIGHUP, _handleSIGHUP)
 
     try:
         print "Starting reactors."
