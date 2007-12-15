@@ -116,6 +116,7 @@ def getMailResponse(lines, ctx):
     return clientAddr, f
 
 def replyToMail(lines, ctx):
+    print "Got complete email; attempting to reply."
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
         return
@@ -127,6 +128,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
+    print "Sending reply."
     return d
 
 class MailContext:
