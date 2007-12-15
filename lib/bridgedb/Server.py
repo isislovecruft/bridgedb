@@ -137,7 +137,7 @@ class MailContext:
         self.maximumSize = 32*1024
         self.smtpServer = "127.0.0.1"
         self.smtpPort = 25
-        self.fromAddr = "bridges@bridges.torproject.org"
+        self.fromAddr = "bridges@torproject.org"
         self.distributor = dist
         self.schedule = sched
         self.N = cfg.EMAIL_N_BRIDGES_PER_ANSWER
