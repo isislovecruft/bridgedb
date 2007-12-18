@@ -6,7 +6,6 @@ import bridgedb.Bridges
 
 import logging
 import re
-import socket
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -153,8 +152,8 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             ids = bridgedb.Bridges.chopString(ids_str, bridgedb.Bridges.ID_LEN)
             logging.info("We've seen %r before. Sending the same %d bridges"
                          " as last time", emailaddress, len(ids))
-            for id in ids:
-                b = self.ring.getBridgeByID(id)
+            for ident in ids:
+                b = self.ring.getBridgeByID(ident)
                 if b != None:
                     result.append(b)
             return result

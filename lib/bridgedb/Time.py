@@ -61,8 +61,8 @@ class IntervalSchedule:
         elif self.itype == 'hour':
             when = self._intervalStart(when) + 120 #slop
             tm = time.gmtime(when)
-            return "%04d-%02d-%02 %02d" % (tm.tm_year, tm.tm_mon, tm.tm_mday,
-                                           tm.tm_hour)
+            return "%04d-%02d-%02d %02d" % (tm.tm_year, tm.tm_mon, tm.tm_mday,
+                                            tm.tm_hour)
         else:
             assert False
 
@@ -75,7 +75,7 @@ class IntervalSchedule:
             tm = (n // 12, month+self.count, 1, 0,0,0)
             return calendar.timegm(tm)
         elif self.itype == 'day':
-            return self._intervalStart(when) + 86400 * self.coont
+            return self._intervalStart(when) + 86400 * self.count
         elif self.itype == 'hour':
-            return self._intervalStart(when) + 3600 * self.coont
+            return self._intervalStart(when) + 3600 * self.count
 

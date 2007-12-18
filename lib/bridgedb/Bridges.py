@@ -9,7 +9,6 @@ import logging
 import re
 import sha
 import socket
-import struct
 import time
 
 HEX_FP_LEN = 40
@@ -142,7 +141,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
 
 class BridgeHolder:
     def insert(self, bridge):
-        raise NotImplemented
+        raise NotImplemented()
 
     def assignmentsArePersistent(self):
         return True
@@ -157,11 +156,11 @@ class BridgeRing(BridgeHolder):
         self.name = "Ring"
 
     def __len__(self):
-        return len(self.bridgesByID)
+        return len(self.bridges)
 
     def insert(self, bridge):
-        id = bridge.getID()
-        pos = self.hmac(id)
+        ident = bridge.getID()
+        pos = self.hmac(ident)
         if not self.bridges.has_key(pos):
             self.sortedKeys.append(pos)
             self.isSorted = False
@@ -195,9 +194,6 @@ class BridgeRing(BridgeHolder):
 
     def getBridgeByID(self, fp):
         return self.bridgesByID.get(fp)
-
-    def __len__(self):
-        return len(self.bridges)
 
 
 class LogDB:

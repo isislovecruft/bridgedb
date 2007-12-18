@@ -69,6 +69,7 @@ class WebResource(twisted.web.resource.Resource):
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1):
+        twisted.web.resource.Resource.__init__(self)
         self.distributor = distributor
         self.schedule = schedule
         self.nBridgesToGive = N
@@ -87,7 +88,7 @@ class WebResource(twisted.web.resource.Resource):
         return HTML_MESSAGE_TEMPLATE % answer
 
 def addWebServer(cfg, dist, sched):
-    from twisted.web.server import Site
+    Site = twisted.web.server.Site
     resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER)
     site = Site(resource)
     if cfg.HTTP_UNENCRYPTED_PORT:
@@ -95,7 +96,7 @@ def addWebServer(cfg, dist, sched):
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
-        from OpenSSL.SSL import SSLv3_METHOD
+        #from OpenSSL.SSL import SSLv3_METHOD
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
