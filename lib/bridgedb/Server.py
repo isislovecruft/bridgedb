@@ -84,7 +84,7 @@ class WebResource(twisted.web.resource.Resource):
             answer = "No bridges available."
 
         logging.info("Replying to web request from %s", ip)
-        return HTML_MESSAGE_TEMPLAY % answer
+        return HTML_MESSAGE_TEMPLATE % answer
 
 def addWebServer(cfg, dist, sched):
     from twisted.web.server import Site
