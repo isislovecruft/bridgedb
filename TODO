@@ -1,7 +1,7 @@
 
 For dec:
 o write a README
-- proper logging
+o proper logging
 - check that incoming IP of email is sane.
 - check more email headers for sanity
 o Send back useful messages in response to requests.

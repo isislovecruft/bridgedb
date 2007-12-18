@@ -6,6 +6,7 @@ from cStringIO import StringIO
 import MimeWriter
 import rfc822
 import time
+import logging
 
 from zope.interface import implements
 
