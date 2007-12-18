@@ -1,6 +1,11 @@
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007, The Tor Project, Inc.
-# See LICENSE for licensing informatino
+# See LICENSE for licensing information
+
+"""
+This module has low-level functionality for parsing bridges and arranging
+them in rings.
+"""
 
 import binascii
 import bisect
@@ -47,6 +52,9 @@ def is_valid_ip(ip):
         return True
 
 def is_valid_fingerprint(fp):
+    """Return true iff fp in the right format to be a hex fingerprint
+       of a Tor server.
+    """
     if len(fp) != HEX_FP_LEN:
         return False
     try:
@@ -60,10 +68,13 @@ toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
 def get_hmac(k,v):
+    """Return the hmac of v using the key k."""
     h = hmac.new(k, v, digestmod=DIGESTMOD)
     return h.digest()
 
 def get_hmac_fn(k, hex=True):
+    """Return a function that computes the hmac of its input using the key k.
+       If 'hex' is true, the output of the function will be hex-encoded."""
     h = hmac.new(k, digestmod=DIGESTMOD)
     def hmac_fn(v):
         h_tmp = h.copy()
@@ -75,11 +86,23 @@ def get_hmac_fn(k, hex=True):
     return hmac_fn
 
 def chopString(s, size):
+    """Generator. Given a string and a length, divide the string into pieces
+       of no more than that length.
+    """
     for pos in xrange(0, len(s), size):
         yield s[pos:pos+size]
 
 class Bridge:
+    """Holds information for a single bridge"""
+    ## Fields:
+    ##   nickname -- The bridge's nickname.  Not currently used.
+    ##   ip -- The bridge's IP address, as a dotted quad.
+    ##   orport -- The bridge's OR port.
+    ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
+    ##       no spaces.
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None):
+        """Create a new Bridge.  One of fingerprint and id_digest must be
+           set."""
         self.nickname = nickname
         self.ip = ip
         self.orport = orport
@@ -97,13 +120,16 @@ class Bridge:
             raise TypeError("Bridge with no ID")
 
     def getID(self):
+        """Return the bridge's identity digest."""
         return fromHex(self.fingerprint)
 
     def __repr__(self):
+        """Return a piece of python that evaluates to this bridge."""
         return "Bridge(%r,%r,%d,%r)"%(
             self.nickname, self.ip, self.orport, self.fingerprint)
 
     def getConfigLine(self):
+        """Return a line describing this bridge for inclusion in a torrc."""
         return "bridge %s:%d %s" % (self.ip, self.orport, self.fingerprint)
 
     def assertOK(self):
@@ -112,6 +138,9 @@ class Bridge:
         assert 1 <= self.orport <= 65535
 
 def parseDescFile(f, bridge_purpose='bridge'):
+    """Generator. Parses a cached-descriptors file 'f', and yields a Bridge
+       object for every entry whose purpose matches bridge_purpose.
+    """
     nickname = ip = orport = fingerprint = purpose = None
 
     for line in f:
@@ -140,6 +169,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
             nickname = ip = orport = fingerprint = purpose = None
 
 class BridgeHolder:
+    """Abstract base class for all classes that hold bridges."""
     def insert(self, bridge):
         raise NotImplemented()
 
@@ -147,7 +177,15 @@ class BridgeHolder:
         return True
 
 class BridgeRing(BridgeHolder):
+    """Arranges bridges in a ring based on an hmac function."""
+    ## Fields:
+    ##   bridges: a map from hmac value to Bridge.
+    ##   bridgesByID: a map from bridge ID Digest to Bridge.
+    ##   isSorted: true iff sortedKeys is currently sorted.
+    ##   sortedKeys: a list of all the hmacs, in order.
+    ##   name: a string to represent this ring in the logs.
     def __init__(self, key):
+        """Create a new BridgeRing, using key as its hmac key."""
         self.bridges = {}
         self.bridgesByID = {}
         self.hmac = get_hmac_fn(key, hex=False)
@@ -159,6 +197,8 @@ class BridgeRing(BridgeHolder):
         return len(self.bridges)
 
     def insert(self, bridge):
+        """Add a bridge to the ring.  If the bridge is already there,
+           replace the old one."""
         ident = bridge.getID()
         pos = self.hmac(ident)
         if not self.bridges.has_key(pos):
@@ -168,17 +208,20 @@ class BridgeRing(BridgeHolder):
         self.bridgesByID[id] = bridge
         logging.debug("Adding %s to %s", bridge.getConfigLine(), self.name)
 
-    def sort(self):
+    def _sort(self):
+        """Helper: put the keys in sorted order."""
         if not self.isSorted:
             self.sortedKeys.sort()
             self.isSorted = True
 
     def _getBridgeKeysAt(self, pos, N=1):
+        """Helper: return the N keys appearing in the ring after position
+           pos"""
         assert len(pos) == DIGEST_LEN
         if N >= len(self.sortedKeys):
             return self.sortedKeys
         if not self.isSorted:
-            self.sort()
+            self._sort()
         idx = bisect.bisect_left(self.sortedKeys, pos)
         r = self.sortedKeys[idx:idx+N]
         if len(r) < N:
@@ -188,17 +231,25 @@ class BridgeRing(BridgeHolder):
         return r
 
     def getBridges(self, pos, N=1):
+        """Return the N bridges appearing in the ring after position pos"""
         keys = self._getBridgeKeysAt(pos, N)
         keys.sort()
         return [ self.bridges[k] for k in keys ]
 
     def getBridgeByID(self, fp):
+        """Return the bridge whose identity digest is fp, or None if no such
+           bridge exists."""
         return self.bridgesByID.get(fp)
 
 
 class LogDB:
+    """Wraps a database object and records all modifications to a
+       human-readable logfile."""
     def __init__(self, kwd, db, logfile):
-        self._kwd = kwd
+        if kwd:
+            self._kwd = "%s: "%kwd
+        else:
+            self._kwd = ""
         self._db = db
         self._logfile = logfile
     def __delitem__(self, k):
@@ -211,7 +262,7 @@ class LogDB:
         try:
             return self._db[k]
         except KeyError:
-            self._logfile.write("%s: [%r] = [%r]\n"%(self._kwd, k, v))
+            self._logfile.write("%s[%r] = [%r]\n"%(self._kwd, k, v))
             self._db[k] = v
             return v
     def __len__(self):
@@ -227,6 +278,9 @@ class LogDB:
 
 
 class PrefixStore:
+    """Wraps a database object and prefixes the keys in all requests with
+       'prefix'.  This is used to multiplex several key->value mappings
+       onto a single database."""
     def __init__(self, store, prefix):
         self._d = store
         self._p = prefix
@@ -247,6 +301,9 @@ class PrefixStore:
         return [ k[n:] for k in self._d.keys() if k.startswith(self._p) ]
 
 class FixedBridgeSplitter(BridgeHolder):
+    """A bridgeholder that splits bridges up based on an hmac and assigns
+       them to several sub-bridgeholders with equal probability.
+    """
     def __init__(self, key, rings):
         self.hmac = get_hmac_fn(key, hex=True)
         self.rings = rings[:]
@@ -268,6 +325,9 @@ class FixedBridgeSplitter(BridgeHolder):
 
 
 class UnallocatedHolder(BridgeHolder):
+    """A pseudo-bridgeholder that ignores its bridges and leaves them
+       unassigned.
+    """
     def insert(self, bridge):
         logging.debug("Leaving %s unallocated", bridge.getConfigLine())
 
@@ -275,6 +335,9 @@ class UnallocatedHolder(BridgeHolder):
         return False
 
 class BridgeTracker:
+    """A stats tracker that records when we first saw and most recently
+       saw each bridge.
+    """
     def __init__(self, firstSeenStore, lastSeenStore):
         self.firstSeenStore = firstSeenStore
         self.lastSeenStore = lastSeenStore
@@ -289,6 +352,10 @@ class BridgeTracker:
         self.firstSeenStore.setdefault(bridgeID, now)
 
 class BridgeSplitter(BridgeHolder):
+    """A BridgeHolder that splits incoming bridges up based on an hmac,
+       and assigns them to sub-bridgeholders with different probabilities.
+       Bridge-to-bridgeholder associations are recorded in a store.
+    """
     def __init__(self, key, store):
         self.hmac = get_hmac_fn(key, hex=True)
         self.store = store
@@ -305,6 +372,13 @@ class BridgeSplitter(BridgeHolder):
         return n
 
     def addRing(self, ring, ringname, p=1):
+        """Add a new bridgeholder.
+           ring -- the bridgeholder to add.
+           ringname -- a string representing the bridgeholder.  This is used
+               to record which bridges have been assigned where in the store.
+           p -- the relative proportion of bridges to assign to this
+               bridgeholder.
+        """
         assert isinstance(ring, BridgeHolder)
         self.ringsByName[ringname] = ring
         self.pValues.append(self.totalP)
@@ -312,6 +386,8 @@ class BridgeSplitter(BridgeHolder):
         self.totalP += p
 
     def addTracker(self, t):
+        """Adds a statistics tracker that gets told about every bridge we see.
+        """
         self.statsHolders.append(t)
 
     def insert(self, bridge):
@@ -333,12 +409,4 @@ class BridgeSplitter(BridgeHolder):
             if ring.assignmentsArePersistent():
                 self.store[bridgeID] = ringname
             ring.insert(bridge)
-
-if __name__ == '__main__':
-    import sys
-    br = BridgeRing("hello")
-    for fname in sys.argv[1:]:
-        f = open(fname)
-        for bridge in parseDescFile(f):
-            br.insert(bridge)
 

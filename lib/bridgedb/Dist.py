@@ -1,6 +1,10 @@
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007, The Tor Project, Inc.
-# See LICENSE for licensing informatino
+# See LICENSE for licensing information
+
+"""
+This module has functions to decide which bridges to hand out to whom.
+"""
 
 import bridgedb.Bridges
 
@@ -17,6 +21,18 @@ def uniformMap(ip):
     return ".".join( ip.split(".")[:3] )
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
+    """Object that hands out bridges based on the IP address of an incoming
+       request and the current time period.
+    """
+    ## Fields:
+    ##    areaMapper -- a function that maps an IP address to a string such
+    ##        that addresses mapping to the same string are in the same "area".
+    ##    rings -- a list of BridgeRing objects.  Every bridge goes into one
+    ##        of these rings, and every area is associated with one.
+    ##    splitter -- a FixedBridgeSplitter to assign bridges into the
+    ##        rings of this distributor.
+    ##    areaOrderHmac -- an hmac function used to order areas within rings.
+    ##    areaClusterHmac -- an hmac function used to assign areas to rings.
     def __init__(self, areaMapper, nClusters, key):
         self.areaMapper = areaMapper
 
@@ -36,9 +52,16 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
 
     def insert(self, bridge):
+        """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
     def getBridgesForIP(self, ip, epoch, N=1):
+        """Return a list of bridges to give to a user.
+           ip -- the user's IP address, as a dotted quad.
+           epoch -- the time period when we got this request.  This can
+               be any string, so long as it changes with every period.
+           N -- the number of bridges to try to give back.
+        """
         if not len(self.splitter):
             return []
 
@@ -61,9 +84,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
 # These characters are the ones that RFC2822 allows.
 #ASPECIAL = '!#$%&*+-/=?^_`{|}~'
 #ASPECIAL += "\\\'"
-
 # These are the ones we're pretty sure we can handle right.
 ASPECIAL = '-_+/=_~'
+
 ACHAR = r'[\w%s]' % "".join("\\%s"%c for c in ASPECIAL)
 DOTATOM = r'%s+(?:\.%s+)*'%(ACHAR,ACHAR)
 DOMAIN = r'\w+(?:\.\w+)*'
@@ -73,14 +96,21 @@ SPACE_PAT = re.compile(r'\s+')
 ADDRSPEC_PAT = re.compile(ADDRSPEC)
 
 class BadEmail(Exception):
+    """Exception raised when we get a bad email address."""
     def __init__(self, msg, email):
         Exception.__init__(self, msg)
         self.email = email
 
 class UnsupportedDomain(BadEmail):
+    """Exception raised when we get an email address from a domain we
+       don't know."""
     pass
 
 def extractAddrSpec(addr):
+    """Given an email From line, try to extract and parse the addrspec
+       portion.  Returns localpart,domain on success; raises BadEmail
+       on failure.
+    """
     orig_addr = addr
     addr = SPACE_PAT.sub(' ', addr)
     addr = addr.strip()
@@ -116,6 +146,10 @@ def extractAddrSpec(addr):
     return localpart, domain
 
 def normalizeEmail(addr, domainmap):
+    """Given the contents of a from line, and a map of supported email
+       domains (in lowercase), raise BadEmail or return a normalized
+       email address.
+    """
     addr = addr.lower()
     localpart, domain = extractAddrSpec(addr)
     if domainmap is not None:
@@ -128,21 +162,38 @@ def normalizeEmail(addr, domainmap):
     return "%s@%s"%(localpart, domain)
 
 class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
+    """Object that hands out bridges based on the email address of an incoming
+       request and the current time period.
+    """
+    ## Fields:
+    ##   emailHmac -- an hmac function used to order email addresses within
+    ##       a ring.
+    ##   ring -- a BridgeRing object to hold all the bridges we hand out.
+    ##   store -- a database object to remember what we've given to whom.
+    ##   domainmap -- a map from lowercase domains that we support mail from
+    ##       to their canonical forms.
     def __init__(self, key, store, domainmap):
-
         key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
         self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
         self.ring = bridgedb.Bridges.BridgeRing(key2)
         self.ring.name = "email ring"
+        # XXXX clear the store when the period rolls over!
         self.store = store
         self.domainmap = domainmap
 
     def insert(self, bridge):
+        """Assign a bridge to this distributor."""
         self.ring.insert(bridge)
 
     def getBridgesForEmail(self, emailaddress, epoch, N=1):
+        """Return a list of bridges to give to a user.
+           emailaddress -- the user's email address, as given in a from line.
+           epoch -- the time period when we got this request.  This can
+               be any string, so long as it changes with every period.
+           N -- the number of bridges to try to give back.
+        """
         emailaddress = normalizeEmail(emailaddress, self.domainmap)
         if emailaddress is None:
             return [] #XXXX raise an exception.
@@ -163,15 +214,3 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         memo = "".join(b.getID() for b in result)
         self.store[emailaddress] = memo
         return result
-
-if __name__ == '__main__':
-    import sys
-    for line in sys.stdin:
-        line = line.strip()
-        if line.startswith("From: "):
-            line = line[6:]
-        try:
-            normal = normalizeEmail(line, None)
-            print normal
-        except BadEmail, e:
-            print line, e

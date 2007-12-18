@@ -1,6 +1,10 @@
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007, The Tor Project, Inc.
-# See LICENSE for licensing informatino
+# See LICENSE for licensing information
+
+"""
+This module implements the web and email interfaces to the bridge database.
+"""
 
 from cStringIO import StringIO
 import MimeWriter
@@ -68,9 +72,16 @@ bridge addresses.
 """
 
 class WebResource(twisted.web.resource.Resource):
+    """This resource is used by Twisted Web to give a web page with some
+       bridges in response to a request."""
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1):
+        """Create a new WebResource.
+             distributor -- an IPBasedDistributor object
+             schedule -- an IntervalSchedule object
+             N -- the number of bridges to hand out per query.
+        """
         twisted.web.resource.Resource.__init__(self)
         self.distributor = distributor
         self.schedule = schedule
@@ -90,22 +101,34 @@ class WebResource(twisted.web.resource.Resource):
         return HTML_MESSAGE_TEMPLATE % answer
 
 def addWebServer(cfg, dist, sched):
+    """Set up a web server.
+         cfg -- a configuration object from Main.  We use these options:
+                HTTPS_N_BRIDGES_PER_ANSWER
+                HTTP_UNENCRYPTED_PORT
+                HTTP_UNENCRYPTED_BIND_IP
+                HTTPS_PORT
+                HTTPS_BIND_IP
+         dist -- an IPBasedDistributor object.
+         sched -- an IntervalSchedule object.
+    """
     Site = twisted.web.server.Site
     resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER)
     site = Site(resource)
     if cfg.HTTP_UNENCRYPTED_PORT:
-        ip = cfg.HTTPS_BIND_IP or ""
+        ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
         #from OpenSSL.SSL import SSLv3_METHOD
-        ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
+        ip = cfg.HTTPS_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
 
 class MailFile:
+    """A file-like object used to hand rfc822.Message a list of lines
+       as though it were reading them from a file."""
     def __init__(self, lines):
         self.lines = lines
         self.idx = 0
@@ -113,11 +136,17 @@ class MailFile:
         try :
             line = self.lines[self.idx]
             self.idx += 1
-            return line #Append a \n? XXXX
+            return line
         except IndexError:
             return ""
 
 def getMailResponse(lines, ctx):
+    """Given a list of lines from an incoming email message, and a
+       MailContext object, parse the email and decide what to do in response.
+       If we want to answer, return a 2-tuple containing the address that
+       will receive the response, and a readable filelike object containing
+       the response.  Return None,None if we shouldn't answer.
+    """
     # Extract data from the headers.
     msg = rfc822.Message(MailFile(lines))
     subject = msg.getheader("Subject", None)
@@ -132,6 +161,8 @@ def getMailResponse(lines, ctx):
     else:
         logging.info("No From or Sender header on incoming mail.")
         return None,None
+
+    # Was the magic string included?
     for ln in lines:
         if ln.strip().lower() in ("get bridges", "subject: get bridges"):
             break
@@ -140,6 +171,7 @@ def getMailResponse(lines, ctx):
                      clientAddr)
         return None,None
 
+    # Figure out which bridges to send
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
@@ -160,7 +192,8 @@ def getMailResponse(lines, ctx):
     w.addheader("Message-ID", twisted.mail.smtp.messageid())
     if not subject.startswith("Re:"): subject = "Re: %s"%subject
     w.addheader("Subject", subject)
-    w.addheader("In-Reply-To", msgID)
+    if msgID:
+        w.addheader("In-Reply-To", msgID)
     w.addheader("Date", twisted.mail.smtp.rfc822date())
     body = w.startbody("text/plain")
 
@@ -171,6 +204,9 @@ def getMailResponse(lines, ctx):
     return clientAddr, f
 
 def replyToMail(lines, ctx):
+    """Given a list of lines from an incoming email message, and a
+       MailContext object, possibly send a reply.
+    """
     logging.info("Got a completed email; attempting to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
@@ -187,26 +223,38 @@ def replyToMail(lines, ctx):
     return d
 
 class MailContext:
+    """Helper object that holds information used by email subsystem."""
     def __init__(self, cfg, dist, sched):
+        # Reject any RCPT TO lines that aren't to this user.
         self.username = "bridges"
+        # Reject any mail longer than this.
         self.maximumSize = 32*1024
+        # Use this server for outgoing mail.
         self.smtpServer = "127.0.0.1"
         self.smtpPort = 25
+        # Use this address as the from line for outgoing mail.
         self.fromAddr = "bridges@torproject.org"
+        # An EmailBasedDistributor object
         self.distributor = dist
+        # An IntervalSchedule object
         self.schedule = sched
+        # The number of bridges to send for each email.
         self.N = cfg.EMAIL_N_BRIDGES_PER_ANSWER
 
 class MailMessage:
+    """Plugs into the Twisted Mail and receives an incoming message.
+       Once the message is in, we reply or we don't. """
     implements(twisted.mail.smtp.IMessage)
 
     def __init__(self, ctx):
+        """Create a new MailMessage from a MailContext."""
         self.ctx = ctx
         self.lines = []
         self.nBytes = 0
         self.ignoring = False
 
     def lineReceived(self, line):
+        """Called when we get another line of an incoming message."""
         self.nBytes += len(line)
         if self.nBytes > self.ctx.maximumSize:
             self.ignoring = True
@@ -214,14 +262,17 @@ class MailMessage:
             self.lines.append(line)
 
     def eomReceived(self):
+        """Called when we receive the end of a message."""
         if not self.ignoring:
             replyToMail(self.lines, self.ctx)
         return twisted.internet.defer.succeed(None)
 
     def connectionLost(self):
+        """Called if we die partway through reading a message."""
         pass
 
 class MailDelivery:
+    """Plugs into Twisted Mail and handles SMTP commands."""
     implements(twisted.mail.smtp.IMessageDelivery)
     def setBridgeDBContext(self, ctx):
         self.ctx = ctx
@@ -236,6 +287,8 @@ class MailDelivery:
         return lambda: MailMessage(self.ctx)
 
 class MailFactory(twisted.mail.smtp.SMTPFactory):
+    """Plugs into Twisted Mail; creates a new MailDelivery whenever we get
+       a connection on the SMTP port."""
     def __init__(self, *a, **kw):
         twisted.mail.smtp.SMTPFactory.__init__(self, *a, **kw)
         self.delivery = MailDelivery()
@@ -250,6 +303,14 @@ class MailFactory(twisted.mail.smtp.SMTPFactory):
         return p
 
 def addSMTPServer(cfg, dist, sched):
+    """Set up a smtp server.
+         cfg -- a configuration object from Main.  We use these options:
+                EMAIL_BIND_IP
+                EMAIL_PORT
+                EMAIL_N_BRIDGES_PER_ANSWER
+         dist -- an EmailBasedDistributor object.
+         sched -- an IntervalSchedule object.
+    """
     ctx = MailContext(cfg, dist, sched)
     factory = MailFactory()
     factory.setBridgeDBContext(ctx)
@@ -258,4 +319,5 @@ def addSMTPServer(cfg, dist, sched):
     return factory
 
 def runServers():
+    """Start all the servers that we've configured. Exits when they do."""
     reactor.run()

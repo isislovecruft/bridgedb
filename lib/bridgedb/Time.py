@@ -1,17 +1,29 @@
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007, The Tor Project, Inc.
-# See LICENSE for licensing informatino
+# See LICENSE for licensing information
+
+"""
+This module implements functions for dividing time into chunks.
+"""
 
 import calendar
 import time
 
 KNOWN_INTERVALS = [ "hour", "day", "week", "month" ]
-N_ELEMENTS = { 'month' : 2,
-               'day' : 3,
-               'hour' : 4 }
 
 class IntervalSchedule:
+    """An IntervalSchedule splits time into somewhat natural periods,
+       based on hours, days, weeks, or months.
+    """
+    ## Fields:
+    ##  itype -- one of "month", "day", "hour".
+    ##  count -- how many of the units in itype belong to each period.
     def __init__(self, intervaltype, count):
+        """Create a new IntervalSchedule.
+            intervaltype -- one of month, week, day, hour.
+            count -- how many of the units in intervaltype belong to each
+                     period.
+        """
         it = intervaltype.lower()
         if it.endswith("s"): it = it[:-1]
         if it not in KNOWN_INTERVALS:
@@ -22,26 +34,31 @@ class IntervalSchedule:
             count *= 7
         self.itype = it
         self.count = count
-        self.n_elements = N_ELEMENTS[it]
 
     def _intervalStart(self, when):
+        """Return the time (as an int) of the start of the interval containing
+           'when'."""
         if self.itype == 'month':
+            # For months, we always start at the beginning of the month.
             tm = time.gmtime(when)
             n = tm.tm_year * 12 + tm.tm_mon - 1
             n -= (n % self.count)
             month = n%12 + 1
             return calendar.timegm((n//12, month, 1, 0, 0, 0))
         elif self.itype == 'day':
+            # For days, we start at the beginning of a day.
             when -= when % (86400 * self.count)
             return when
         elif self.itype == 'hour':
+            # For hours, we start at the beginning of an hour.
             when -= when % (3600 * self.count)
             return when
         else:
             assert False
 
     def getInterval(self, when):
-        """
+        """Return a string representing the interval that contains
+           the time 'when'.
 
         >>> t = calendar.timegm((2007, 12, 12, 0, 0, 0))
         >>> I = IntervalSchedule('month', 1)
@@ -67,6 +84,7 @@ class IntervalSchedule:
             assert False
 
     def nextIntervalStarts(self, when):
+        """Return the start time of the interval starting _after_ when."""
         if self.itype == 'month':
             tm = time.gmtime(when)
             n = tm.tm_year * 12 + tm.tm_mon - 1

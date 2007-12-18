@@ -1,6 +1,10 @@
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007, The Tor Project, Inc.
-# See LICENSE for licensing informatino
+# See LICENSE for licensing information
+
+"""
+This module sets up a bridgedb and starts the servers running.
+"""
 
 import anydbm
 import os
@@ -16,9 +20,13 @@ import bridgedb.Time as Time
 import bridgedb.Server as Server
 
 class Conf:
+    """A configuration object.  Holds unvalidated attributes.
+    """
     def __init__(self, **attrs):
         self.__dict__.update(attrs)
 
+# An example configuration.  Used for testing.  See sample
+# bridgedb.conf for documentation.
 CONFIG = Conf(
     RUN_IN_DIR = ".",
 
@@ -58,6 +66,8 @@ CONFIG = Conf(
   )
 
 def configureLogging(cfg):
+    """Set up Python's logging subsystem based on the configuratino.
+    """
     level = getattr(cfg, 'LOGLEVEL', 'WARNING')
     level = getattr(logging, level)
     extra = {}
@@ -100,17 +110,24 @@ def getKey(fname):
     return k
 
 def load(cfg, splitter):
+    """Read all the bridge files from cfg, and pass them into a splitter
+       object.
+    """
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             splitter.insert(bridge)
         f.close()
 
-_reloadFn = None
+_reloadFn = lambda: True
 def _handleSIGHUP(*args):
+    """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callLater(0, _reloadFn)
 
 def startup(cfg):
+    """Parse bridges, 
+    """
+    # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
                 "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE"):
@@ -118,28 +135,36 @@ def startup(cfg):
         if v:
             setattr(cfg, key, os.path.expanduser(v))
 
+    # Change to the directory where we're supposed to run.
     if cfg.RUN_IN_DIR:
         os.chdir(cfg.RUN_IN_DIR)
 
+    # Write the pidfile.
     if cfg.PIDFILE:
         f = open(cfg.PIDFILE, 'w')
         f.write("%s\n"%os.getpid())
         f.close()
 
+    # Set up logging.
     configureLogging(cfg)
 
+    # Load the master key, or create a new one.
     key = getKey(cfg.MASTER_KEY_FILE)
-    dblogfile = None
-    emailDistributor = ipDistributor = None
 
+    # Initialize our DB file.
+    dblogfile = None
     baseStore = store = anydbm.open(cfg.DB_FILE, "c", 0600)
     if cfg.DB_LOG_FILE:
         dblogfile = open(cfg.DB_LOG_FILE, "a+", 0)
-        store = Bridges.LogDB("db", store, dblogfile)
+        store = Bridges.LogDB(None, store, dblogfile)
 
+    # Create a BridgeSplitter to assign the bridges to the different
+    # distributors.
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"),
                                       Bridges.PrefixStore(store, "sp|"))
 
+    emailDistributor = ipDistributor = None
+    # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
@@ -148,6 +173,7 @@ def startup(cfg):
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
         webSchedule = Time.IntervalSchedule("day", 2)
 
+    # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         for d in cfg.EMAIL_DOMAINS:
             cfg.EMAIL_DOMAIN_MAP[d] = d
@@ -158,15 +184,18 @@ def startup(cfg):
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         emailSchedule = Time.IntervalSchedule("day", 1)
 
+    # As appropriate, tell the splitter to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
         splitter.addRing(Bridges.UnallocatedHolder(),
                          "unallocated",
                          cfg.RESERVED_SHARE)
 
+    # Add a tracker to tell us how often we've seen various bridges.
     stats = Bridges.BridgeTracker(Bridges.PrefixStore(store, "fs|"),
                                   Bridges.PrefixStore(store, "ls|"))
     splitter.addTracker(stats)
 
+    # Parse the bridges and log how many we put where.
     logging.info("Loading bridges")
     load(cfg, splitter)
     logging.info("%d bridges loaded", len(splitter))
@@ -177,19 +206,22 @@ def startup(cfg):
         logging.info("  by location set: %s",
                      " ".join(str(len(r)) for r in ipDistributor.rings))
 
+    # Configure HTTP and/or HTTPS servers.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         Server.addWebServer(cfg, ipDistributor, webSchedule)
 
+    # Configure Email servers.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         Server.addSMTPServer(cfg, emailDistributor, emailSchedule)
 
+    # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
         load(cfg, splitter)
-
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
 
+    # Actually run the servers.
     try:
         logging.info("Starting reactors.")
         Server.runServers()
@@ -201,6 +233,9 @@ def startup(cfg):
             os.unlink(cfg.PIDFILE)
 
 def run():
+    """Parse the command line to determine where the configuration is.
+       Parse the configuration, and start the servers.
+    """
     if len(sys.argv) != 2:
         print "Syntax: %s [config file]" % sys.argv[0]
         sys.exit(1)
