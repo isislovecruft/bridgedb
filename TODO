@@ -1,10 +1,10 @@
 
 For dec:
-- write a README
+o write a README
 - proper logging
 - check that incoming IP of email is sane.
 - check more email headers for sanity
-- Send back useful messages in response to requests.
+o Send back useful messages in response to requests.
 - Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
 - make all the rest of the email options configurable.

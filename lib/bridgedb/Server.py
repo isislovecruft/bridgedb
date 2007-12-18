@@ -17,6 +17,53 @@ import twisted.mail.smtp
 
 import bridgedb.Dist
 
+HTML_MESSAGE_TEMPLATE = """
+<html><body>
+<p>Here are your bridge relays:
+<pre>%s</pre>
+</p>
+<p>Bridge relays (or "bridges" for short) are Tor relays that aren't listed
+in the main directory. Since there is no complete public list of them,
+even if your ISP is filtering connections to all the known Tor relays,
+they probably won't be able to block all the bridges.</p>
+<p>To use the above lines, go to Vidalia's Network settings page, and click
+"My ISP blocks connections to the Tor network". Then add each bridge
+address one at a time.</p>
+<p>Configuring more than one bridge address will make your Tor connection
+more stable, in case some of the bridges become unreachable.</p>
+<p>Another way to find public bridge addresses is to send mail to
+bridges@torproject.org with the line "get bridges" by itself in the body
+of the mail. However, so we can make it harder for an attacker to learn
+lots of bridge addresses, you must send this request from a gmail or
+yahoo account.</p>
+</body></html>
+""".strip()
+
+EMAIL_MESSAGE_TEMPLATE = """\
+[This is an automated message; please do not reply.]
+
+Here are your bridge relays:
+
+%s
+
+Bridge relays (or "bridges" for short) are Tor relays that aren't listed
+in the main directory. Since there is no complete public list of them,
+even if your ISP is filtering connections to all the known Tor relays,
+they probably won't be able to block all the bridges.
+
+To use the above lines, go to Vidalia's Network settings page, and click
+"My ISP blocks connections to the Tor network". Then add each bridge
+address one at a time.
+
+Configuring more than one bridge address will make your Tor connection
+more stable, in case some of the bridges become unreachable.
+
+Another way to find public bridge addresses is to visit
+https://bridges.torproject.org/. The answers you get from that page
+will change every few days, so check back periodically if you need more
+bridge addresses.
+"""
+
 class WebResource(twisted.web.resource.Resource):
     isLeaf = True
 
@@ -35,7 +82,7 @@ class WebResource(twisted.web.resource.Resource):
         else:
             answer = "No bridges available."
 
-        return "<html><body><pre>%s</pre></body></html>" % answer
+        return HTML_MESSAGE_TEMPLAY % answer
 
 def addWebServer(cfg, dist, sched):
     from twisted.web.server import Site
@@ -81,7 +128,7 @@ def getMailResponse(lines, ctx):
         print "No from header. WTF."
         return None,None
     for ln in lines:
-        if ln.strip() in ("get bridges", "Subject: get bridges"):
+        if ln.strip().lower() in ("get bridges", "subject: get bridges"):
             break
     else:
         print "No request for bridges."
@@ -109,8 +156,9 @@ def getMailResponse(lines, ctx):
     w.addheader("In-Reply-To", msgID)
     w.addheader("Date", twisted.mail.smtp.rfc822date())
     body = w.startbody("text/plain")
-    for b in bridges:
-        body.write("%s\n" % b.getConfigLine())
+
+    answer = "".join("%s\n" % b.getConfigLine() for b in bridges)
+    body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
     f.seek(0)
     return clientAddr, f
