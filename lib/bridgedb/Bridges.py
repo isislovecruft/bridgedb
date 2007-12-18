@@ -5,6 +5,7 @@
 import binascii
 import bisect
 import hmac
+import logging
 import re
 import sha
 import socket
@@ -153,6 +154,7 @@ class BridgeRing(BridgeHolder):
         self.hmac = get_hmac_fn(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
+        self.name = "Ring"
 
     def __len__(self):
         return len(self.bridgesByID)
@@ -165,6 +167,7 @@ class BridgeRing(BridgeHolder):
             self.isSorted = False
         self.bridges[pos] = bridge
         self.bridgesByID[id] = bridge
+        logging.debug("Adding %s to %s", bridge.getConfigLine(), self.name)
 
     def sort(self):
         if not self.isSorted:
@@ -270,7 +273,7 @@ class FixedBridgeSplitter(BridgeHolder):
 
 class UnallocatedHolder(BridgeHolder):
     def insert(self, bridge):
-        pass
+        logging.debug("Leaving %s unallocated", bridge.getConfigLine())
 
     def assignmentsArePersistent(self):
         return False

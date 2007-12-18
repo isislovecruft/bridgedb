@@ -6,6 +6,7 @@ import anydbm
 import os
 import signal
 import sys
+import logging
 
 from twisted.internet import reactor
 
@@ -22,6 +23,9 @@ CONFIG = Conf(
     RUN_IN_DIR = ".",
 
     PIDFILE = "bridgedb.pid",
+    LOGFILE = None,
+    LOGLEVEL = "DEBUG",
+
     BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
     BRIDGE_PURPOSE = "bridge",
     DB_FILE = "./bridgedist.db",
@@ -52,6 +56,18 @@ CONFIG = Conf(
 
     RESERVED_SHARE=2,
   )
+
+def configureLogging(cfg):
+    level = getattr(cfg, 'LOGLEVEL', 'WARNING')
+    level = getattr(logging, level)
+    extra = {}
+    if getattr(cfg, "LOGFILE"):
+        extra['filename'] = cfg.LOGFILE
+
+    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s',
+                        datefmt="%b %d %H:%M:%S",
+                        level=level,
+                        **extra)
 
 def getKey(fname):
     """Load the key stored in fname, or create a new 32-byte key and store
@@ -97,7 +113,7 @@ def _handleSIGHUP(*args):
 def startup(cfg):
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE"):
+                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE"):
         v = getattr(cfg, key)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
@@ -109,6 +125,8 @@ def startup(cfg):
         f = open(cfg.PIDFILE, 'w')
         f.write("%s\n"%os.getpid())
         f.close()
+
+    configureLogging(cfg)
 
     key = getKey(cfg.MASTER_KEY_FILE)
     dblogfile = None
@@ -149,14 +167,15 @@ def startup(cfg):
                                   Bridges.PrefixStore(store, "ls|"))
     splitter.addTracker(stats)
 
-    print "Loading bridges"
+    logging.info("Loading bridges")
     load(cfg, splitter)
-    print "%d bridges loaded" % len(splitter)
+    logging.info("%d bridges loaded", len(splitter))
     if emailDistributor:
-        print "%d for email" % len(emailDistributor.ring)
+        logging.info("%d for email", len(emailDistributor.ring))
     if ipDistributor:
-        print "%d for web:" % len(ipDistributor.splitter)
-        print "  by location set:", " ".join(str(len(r)) for r in ipDistributor.rings)
+        logging.info("%d for web:", len(ipDistributor.splitter))
+        logging.info("  by location set: %s",
+                     " ".join(str(len(r)) for r in ipDistributor.rings))
 
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         Server.addWebServer(cfg, ipDistributor, webSchedule)
@@ -172,7 +191,7 @@ def startup(cfg):
     signal.signal(signal.SIGHUP, _handleSIGHUP)
 
     try:
-        print "Starting reactors."
+        logging.info("Starting reactors.")
         Server.runServers()
     finally:
         baseStore.close()

@@ -82,6 +82,7 @@ class WebResource(twisted.web.resource.Resource):
         else:
             answer = "No bridges available."
 
+        logging.info("Replying to web request from %s", ip)
         return HTML_MESSAGE_TEMPLAY % answer
 
 def addWebServer(cfg, dist, sched):
@@ -125,13 +126,14 @@ def getMailResponse(lines, ctx):
     elif clientFromAddr and clientFromAddr[1]:
         clientAddr = clientFromAddr[1]
     else:
-        print "No from header. WTF."
+        logging.info("No From or Sender header on incoming mail.")
         return None,None
     for ln in lines:
         if ln.strip().lower() in ("get bridges", "subject: get bridges"):
             break
     else:
-        print "No request for bridges."
+        logging.info("Got a mail from %r with no bridge request; dropping",
+                     clientAddr)
         return None,None
 
     try:
@@ -139,10 +141,11 @@ def getMailResponse(lines, ctx):
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
                                                      interval, ctx.N)
     except bridgedb.Dist.BadEmail, e:
-        print "Bad email addr in request: %s"%e
+        logging.info("Got a mail from a bad email address %r: %s.",
+                     clientAddr, e)
         return None, None
     if not bridges:
-        print "No bridges available."
+        logging.warning("No bridges available to send to %r", clientAddr)
         return None, None
 
     # Generate the message.
@@ -164,7 +167,7 @@ def getMailResponse(lines, ctx):
     return clientAddr, f
 
 def replyToMail(lines, ctx):
-    print "Got complete email; attempting to reply."
+    logging.info("Got a completed email; attempting to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
         return
@@ -176,7 +179,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-    print "Sending reply."
+    logging.info("Sending reply to %r", sendToUser)
     return d
 
 class MailContext:

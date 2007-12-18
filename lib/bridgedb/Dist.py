@@ -4,6 +4,7 @@
 
 import bridgedb.Bridges
 
+import logging
 import re
 import socket
 
@@ -24,6 +25,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         for n in xrange(nClusters):
             key1 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring-%d"%n)
             self.rings.append( bridgedb.Bridges.BridgeRing(key1) )
+            self.rings[-1].name = "IP ring %s"%len(self.rings)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Assign-Bridges-To-Rings")
         self.splitter = bridgedb.Bridges.FixedBridgeSplitter(key2, self.rings)
@@ -38,18 +40,23 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.splitter.insert(bridge)
 
     def getBridgesForIP(self, ip, epoch, N=1):
+        if not len(self.splitter):
+            return []
+
         area = self.areaMapper(ip)
 
         # Which bridge cluster should we look at?
-        h = int( self.areaClusterHmac(area)[:8], 16 )
+        h = int( self.areaClusterHmac(area)[:8], 16)
         clusterNum = h % len(self.rings)
         ring = self.rings[clusterNum]
+        # If a ring is empty, consider the next.
+        while not len(ring):
+            clusterNum = (clusterNum + 1) % len(self.rings)
+            ring = self.rings[clusterNum]
 
         # Now get the bridge.
         pos = self.areaOrderHmac("<%s>%s" % (epoch, area))
         return ring.getBridges(pos, N)
-
-
 
 
 # These characters are the ones that RFC2822 allows.
@@ -129,6 +136,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
         self.ring = bridgedb.Bridges.BridgeRing(key2)
+        self.ring.name = "email ring"
         self.store = store
         self.domainmap = domainmap
 
@@ -141,8 +149,11 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return [] #XXXX raise an exception.
         if self.store.has_key(emailaddress):
             result = []
-            ids = self.store[emailaddress]
-            for id in bridgedb.Bridges.chopString(ids, bridgedb.Bridges.ID_LEN):
+            ids_str = self.store[emailaddress]
+            ids = bridgedb.Bridges.chopString(ids_str, bridgedb.Bridges.ID_LEN)
+            logging.info("We've seen %r before. Sending the same %d bridges"
+                         " as last time", emailaddress, len(ids))
+            for id in ids:
                 b = self.ring.getBridgeByID(id)
                 if b != None:
                     result.append(b)
@@ -165,4 +176,3 @@ if __name__ == '__main__':
             print normal
         except BadEmail, e:
             print line, e
-        
