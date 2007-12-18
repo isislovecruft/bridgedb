@@ -21,7 +21,9 @@ import bridgedb.Dist
 HTML_MESSAGE_TEMPLATE = """
 <html><body>
 <p>Here are your bridge relays:
-<pre>%s</pre>
+<pre id="bridges">
+%s
+</pre>
 </p>
 <p>Bridge relays (or "bridges" for short) are Tor relays that aren't listed
 in the main directory. Since there is no complete public list of them,
@@ -162,7 +164,7 @@ def getMailResponse(lines, ctx):
     w.addheader("Date", twisted.mail.smtp.rfc822date())
     body = w.startbody("text/plain")
 
-    answer = "".join("%s\n" % b.getConfigLine() for b in bridges)
+    answer = "".join("  %s\n" % b.getConfigLine() for b in bridges)
     body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
     f.seek(0)
