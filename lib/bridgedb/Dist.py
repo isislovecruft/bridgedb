@@ -200,10 +200,10 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         if self.store.has_key(emailaddress):
             result = []
             ids_str = self.store[emailaddress]
-            ids = bridgedb.Bridges.chopString(ids_str, bridgedb.Bridges.ID_LEN)
-            logging.info("We've seen %r before. Sending the same %d bridges"
-                         " as last time", emailaddress, len(ids))
-            for ident in ids:
+            logging.info("We've seen %r before. Sending the same bridges"
+                         " as last time", emailaddress)
+            for ident in bridgedb.Bridges.chopString(ids_str,
+                                                     bridgedb.Bridges.ID_LEN):
                 b = self.ring.getBridgeByID(ident)
                 if b != None:
                     result.append(b)
