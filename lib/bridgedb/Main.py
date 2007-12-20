@@ -35,6 +35,7 @@ CONFIG = Conf(
     LOGLEVEL = "DEBUG",
 
     BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
+    STATUS_FILE = "networkstatus-bridges",
     BRIDGE_PURPOSE = "bridge",
     DB_FILE = "./bridgedist.db",
     DB_LOG_FILE = "./bridgedist.log",
@@ -113,9 +114,17 @@ def load(cfg, splitter):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
     """
+    status = {}
+    if cfg.STATUS_FILE:
+        f = open(cfg.STATUS_FILE, 'r')
+        for ID, running in Bridges.parseStatusFile(f):
+            status[ID] = running
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
+            running = status.get(bridge.getID())
+            if running is not None:
+                bridge.setStatus(running=running)
             splitter.insert(bridge)
         f.close()
 

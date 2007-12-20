@@ -106,6 +106,7 @@ class Bridge:
         self.nickname = nickname
         self.ip = ip
         self.orport = orport
+        self.running = None
         if id_digest is not None:
             assert fingerprint is None
             if len(id_digest) != DIGEST_LEN:
@@ -137,6 +138,11 @@ class Bridge:
         assert is_valid_fingerprint(self.fingerprint)
         assert 1 <= self.orport <= 65535
 
+    def setStatus(self, running=None):
+        if running is not None:
+            self.running = running
+
+
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f', and yields a Bridge
        object for every entry whose purpose matches bridge_purpose.
@@ -167,6 +173,28 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 b.assertOK()
                 yield b
             nickname = ip = orport = fingerprint = purpose = None
+
+def parseStatusFile(f):
+    """DOCDOC"""
+    result = None
+    ID = None
+    for line in f:
+        line = line.strip()
+        if line.startswith("opt "):
+            line = line[4:]
+
+        if line.startswith("r "):
+            try:
+                ID = binascii.a2b_base64(line.split()[2]+"=")
+            except binascii.Error:
+                logging.warn("Unparseable base64 ID %r", line.split()[2])
+        elif ID and line.startswith("s "):
+            flags = line.split()
+            if "Running" in flags:
+                yield ID, True
+            else:
+                yield ID, False
+            ID = None
 
 class BridgeHolder:
     """Abstract base class for all classes that hold bridges."""
@@ -394,6 +422,10 @@ class BridgeSplitter(BridgeHolder):
         assert self.rings
         for s in self.statsHolders:
             s.insert(bridge)
+        if bridge.running == False:
+            #XXXX Turn this to False or None.
+            return
+
         bridgeID = bridge.getID()
         ringname = self.store.get(bridgeID, "")
         ring = self.ringsByName.get(ringname)
