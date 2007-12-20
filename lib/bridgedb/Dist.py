@@ -156,9 +156,16 @@ def normalizeEmail(addr, domainmap):
         domain = domainmap.get(domain, None)
         if domain is None:
             raise UnsupportedDomain("Domain not supported", addr)
+
+    #XXXX Do these rules also hold for Yahoo?
+
+    # addr+foo@ is an alias for addr@
     idx = localpart.find('+')
     if idx >= 0:
         localpart = localpart[:idx]
+    # j.doe@ is the same as jdoe@.
+    localpart = localpart.replace(".")
+    
     return "%s@%s"%(localpart, domain)
 
 class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
