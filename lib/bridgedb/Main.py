@@ -114,6 +114,7 @@ def load(cfg, splitter):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
     """
+    logging.info("Loading bridges")
     status = {}
     if cfg.STATUS_FILE:
         f = open(cfg.STATUS_FILE, 'r')
@@ -204,16 +205,23 @@ def startup(cfg):
                                   Bridges.PrefixStore(store, "ls|"))
     splitter.addTracker(stats)
 
-    # Parse the bridges and log how many we put where.
-    logging.info("Loading bridges")
-    load(cfg, splitter)
-    logging.info("%d bridges loaded", len(splitter))
-    if emailDistributor:
-        logging.info("%d for email", len(emailDistributor.ring))
-    if ipDistributor:
-        logging.info("%d for web:", len(ipDistributor.splitter))
-        logging.info("  by location set: %s",
-                     " ".join(str(len(r)) for r in ipDistributor.rings))
+    # Make the parse-bridges function get re-called on SIGHUP.
+    def reload():
+        logging.info("Caught SIGHUP")
+        load(cfg, splitter)
+        logging.info("%d bridges loaded", len(splitter))
+        if emailDistributor:
+            logging.info("%d for email", len(emailDistributor.ring))
+        if ipDistributor:
+            logging.info("%d for web:", len(ipDistributor.splitter))
+            logging.info("  by location set: %s",
+                         " ".join(str(len(r)) for r in ipDistributor.rings))
+    global _reloadFn
+    _reloadFn = reload
+    signal.signal(signal.SIGHUP, _handleSIGHUP)
+
+    # And actually load it to start.
+    reload()
 
     # Configure HTTP and/or HTTPS servers.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
@@ -222,14 +230,6 @@ def startup(cfg):
     # Configure Email servers.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         Server.addSMTPServer(cfg, emailDistributor, emailSchedule)
-
-    # Make the parse-bridges function get re-called on SIGHUP.
-    def reload():
-        logging.info("Caught SIGHUP")
-        load(cfg, splitter)
-    global _reloadFn
-    _reloadFn = reload
-    signal.signal(signal.SIGHUP, _handleSIGHUP)
 
     # Actually run the servers.
     try:
