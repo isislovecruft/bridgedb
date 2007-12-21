@@ -116,7 +116,7 @@ def load(cfg, splitter):
     """
     logging.info("Loading bridges")
     status = {}
-    if cfg.STATUS_FILE:
+    if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
         for ID, running in Bridges.parseStatusFile(f):
             status[ID] = running
@@ -140,7 +140,8 @@ def startup(cfg):
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE"):
+                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE",
+                "STATUS_FILE"):
         v = getattr(cfg, key)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
