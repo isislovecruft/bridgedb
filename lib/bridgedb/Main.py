@@ -225,6 +225,7 @@ def startup(cfg):
 
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
+        logging.info("Caught SIGHUP")
         load(cfg, splitter)
     global _reloadFn
     _reloadFn = reload
