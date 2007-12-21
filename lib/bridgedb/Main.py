@@ -142,7 +142,7 @@ def startup(cfg):
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
                 "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE",
                 "STATUS_FILE"):
-        v = getattr(cfg, key)
+        v = getattr(cfg, key, None)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
 
