@@ -164,7 +164,7 @@ def normalizeEmail(addr, domainmap):
     if idx >= 0:
         localpart = localpart[:idx]
     # j.doe@ is the same as jdoe@.
-    localpart = localpart.replace(".")
+    localpart = localpart.replace(".", "")
     
     return "%s@%s"%(localpart, domain)
 
