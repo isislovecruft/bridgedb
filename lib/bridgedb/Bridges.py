@@ -422,7 +422,7 @@ class BridgeSplitter(BridgeHolder):
         assert self.rings
         for s in self.statsHolders:
             s.insert(bridge)
-        if bridge.running == False or None:
+        if bridge.running == False or bridge.running == None:
             return
 
         bridgeID = bridge.getID()
