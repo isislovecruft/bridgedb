@@ -362,6 +362,9 @@ class UnallocatedHolder(BridgeHolder):
     def assignmentsArePersistent(self):
         return False
 
+    def __len__(self):
+        return 0
+
 class BridgeTracker:
     """A stats tracker that records when we first saw and most recently
        saw each bridge.
@@ -395,7 +398,7 @@ class BridgeSplitter(BridgeHolder):
 
     def __len__(self):
         n = 0
-        for r in self.rings:
+        for r in self.ringsByName.values():
             n += len(r)
         return n
 

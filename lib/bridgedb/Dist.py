@@ -80,6 +80,8 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         pos = self.areaOrderHmac("<%s>%s" % (epoch, area))
         return ring.getBridges(pos, N)
 
+    def __len__(self):
+        return sum(len(r) for r in self.rings)
 
 # These characters are the ones that RFC2822 allows.
 #ASPECIAL = '!#$%&*+-/=?^_`{|}~'
@@ -165,7 +167,7 @@ def normalizeEmail(addr, domainmap):
         localpart = localpart[:idx]
     # j.doe@ is the same as jdoe@.
     localpart = localpart.replace(".", "")
-    
+
     return "%s@%s"%(localpart, domain)
 
 class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
@@ -221,3 +223,6 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         memo = "".join(b.getID() for b in result)
         self.store[emailaddress] = memo
         return result
+
+    def __len__(self):
+        return len(self.ring)
