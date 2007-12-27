@@ -58,6 +58,8 @@ CONFIG = Conf(
     EMAIL_DOMAINS = [ "gmail.com", "yahoo.com", "catbus.wangafu.net" ],
     EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
                          "googlemail.com" : "gmail.com", },
+    EMAIL_DOMAIN_RULES = { 'gmail.com' : ["ignore_dots"],
+                           'yahoo.com' : [] },
     EMAIL_RESTRICT_IPS=[],
     EMAIL_BIND_IP=None,
     EMAIL_PORT=6725,
@@ -191,7 +193,8 @@ def startup(cfg):
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
             Bridges.PrefixStore(store, "em|"),
-            cfg.EMAIL_DOMAIN_MAP.copy())
+            cfg.EMAIL_DOMAIN_MAP.copy(),
+            cfg.EMAIL_DOMAIN_RULES.copy())
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         emailSchedule = Time.IntervalSchedule("day", 1)
 

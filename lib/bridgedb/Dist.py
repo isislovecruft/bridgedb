@@ -147,7 +147,7 @@ def extractAddrSpec(addr):
     localpart, domain = m.groups()
     return localpart, domain
 
-def normalizeEmail(addr, domainmap):
+def normalizeEmail(addr, domainmap, domainrules):
     """Given the contents of a from line, and a map of supported email
        domains (in lowercase), raise BadEmail or return a normalized
        email address.
@@ -165,8 +165,10 @@ def normalizeEmail(addr, domainmap):
     idx = localpart.find('+')
     if idx >= 0:
         localpart = localpart[:idx]
-    # j.doe@ is the same as jdoe@.
-    localpart = localpart.replace(".", "")
+    rules = domainrules.get(domain, [])
+    if 'ignore_dots' in rules:
+        # j.doe@ is the same as jdoe@.
+        localpart = localpart.replace(".", "")
 
     return "%s@%s"%(localpart, domain)
 
@@ -181,7 +183,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
     ##   store -- a database object to remember what we've given to whom.
     ##   domainmap -- a map from lowercase domains that we support mail from
     ##       to their canonical forms.
-    def __init__(self, key, store, domainmap):
+    def __init__(self, key, store, domainmap, domainrules):
         key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
         self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
 
@@ -191,6 +193,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         # XXXX clear the store when the period rolls over!
         self.store = store
         self.domainmap = domainmap
+        self.domainrules = domainrules
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
@@ -203,7 +206,8 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
-        emailaddress = normalizeEmail(emailaddress, self.domainmap)
+        emailaddress = normalizeEmail(emailaddress, self.domainmap,
+                                      self.domainrules)
         if emailaddress is None:
             return [] #XXXX raise an exception.
         if self.store.has_key(emailaddress):
