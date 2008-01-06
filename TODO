@@ -10,6 +10,8 @@ o Send back useful messages in response to requests.
 - make all the rest of the email options configurable.
 
 Later:
+- bug: the email handler gets really upset when the email doesn't have
+  a message-id header in it.
 - document stuff better
 - better area division logic
 - make all proxies get stuck in their own area.
