@@ -1,12 +1,18 @@
 
 Soon:
 o Send back an email even if there are no bridges
-- Check dkim headers for sanity.
+o Check dkim headers for sanity.
 - Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
 - make all the rest of the email options configurable.
 - bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
+- When we hit the end of a period, forget email address history.
+- When sending bridges to an email address in the history, check for
+  liveness.
+. Make bounces go to the right address.
+  o Make address sent in "mail from" command configurable.
+  - Actually configure it.
 
 Not now:
 - check that incoming IP of email is sane.

@@ -231,7 +231,7 @@ def replyToMail(lines, ctx):
     response.seek(0)
     d = Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(
-        ctx.fromAddr,
+        ctx.smtpFromAddr,
         sendToUser,
         response,
         d)
@@ -249,8 +249,12 @@ class MailContext:
         # Use this server for outgoing mail.
         self.smtpServer = "127.0.0.1"
         self.smtpPort = 25
-        # Use this address as the from line for outgoing mail.
-        self.fromAddr = "bridges@torproject.org"
+        # Use this address in the MAIL FROM line for outgoing mail.
+        self.smtpFromAddr = (cfg.EMAIL_SMTP_FROM_ADDR or
+                             "bridges@torproject.org")
+        # Use this address in the "From:" header for outgoing mail.
+        self.fromAddr = (cfg.EMAIL_FROM_ADDR or
+                         "bridges@torproject.org")
         # An EmailBasedDistributor object
         self.distributor = dist
         # An IntervalSchedule object
