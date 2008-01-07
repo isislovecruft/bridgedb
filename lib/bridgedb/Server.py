@@ -162,7 +162,24 @@ def getMailResponse(lines, ctx):
         logging.info("No From or Sender header on incoming mail.")
         return None,None
 
-    # Was the magic string included?
+    _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
+    if not addrdomain:
+        logging.info("Couldn't parse domain from %r", clientAddr)
+    if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
+        addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
+    rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
+    if 'dkim' in rules:
+        # getheader() returns the last of a given kind of header; we want
+        # to get the first, so we use getheaders() instead.
+        dkimHeaders = msg.getheaders("X-DKIM-Authentication-Result")
+        dkimHeader = "<no header>"
+        if dkimHeaders: dkimHeader = dkimHeaders[0]
+        if not dkimHeader.startswith("pass"):
+            logging.info("Got a bad dkim header (%r) on an incoming mail; "
+                         "rejecting it.", dkimHeader)
+            return None, None
+
+    # Was the magic string included
     for ln in lines:
         if ln.strip().lower() in ("get bridges", "subject: get bridges"):
             break
@@ -308,6 +325,7 @@ def addSMTPServer(cfg, dist, sched):
                 EMAIL_BIND_IP
                 EMAIL_PORT
                 EMAIL_N_BRIDGES_PER_ANSWER
+                EMAIL_DOMAIN_RULES
          dist -- an EmailBasedDistributor object.
          sched -- an IntervalSchedule object.
     """

@@ -1,25 +1,25 @@
 
-For dec:
-o write a README
-o proper logging
-- check that incoming IP of email is sane.
-- check more email headers for sanity
-o Send back useful messages in response to requests.
+Soon:
+o Send back an email even if there are no bridges
+- Check dkim headers for sanity.
 - Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
 - make all the rest of the email options configurable.
-
-Later:
 - bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
+
+Not now:
+- check that incoming IP of email is sane.
+- check more email headers for sanity
+
+Later:
 - document stuff better
 - better area division logic
 - make all proxies get stuck in their own area.
-- implement hop
-- implement slightly nicer logging
+o implement slightly nicer logging
 - add captchas
-- decent template for web interface
-- decent template for mail interface
+o decent template for web interface
+o decent template for mail interface
 - implement 'help' command
 - Reload configuration on sighup; not just bridges.
 - Reply with locale support.
