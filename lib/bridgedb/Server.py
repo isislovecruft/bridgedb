@@ -180,9 +180,6 @@ def getMailResponse(lines, ctx):
         logging.info("Got a mail from a bad email address %r: %s.",
                      clientAddr, e)
         return None, None
-    if not bridges:
-        logging.warning("No bridges available to send to %r", clientAddr)
-        return None, None
 
     # Generate the message.
     f = StringIO()
@@ -197,7 +194,10 @@ def getMailResponse(lines, ctx):
     w.addheader("Date", twisted.mail.smtp.rfc822date())
     body = w.startbody("text/plain")
 
-    answer = "".join("  %s\n" % b.getConfigLine() for b in bridges)
+    if bridges:
+        answer = "".join("  %s\n" % b.getConfigLine() for b in bridges)
+    else:
+        answer = "(no bridges currently available)"
     body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
     f.seek(0)
