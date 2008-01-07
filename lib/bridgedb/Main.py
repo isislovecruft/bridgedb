@@ -61,7 +61,7 @@ CONFIG = Conf(
     EMAIL_DOMAIN_RULES = { 'gmail.com' : ["ignore_dots"],
                            'yahoo.com' : [] },
     EMAIL_RESTRICT_IPS=[],
-    EMAIL_BIND_IP=127.0.0.1,
+    EMAIL_BIND_IP="127.0.0.1",
     EMAIL_PORT=6725,
     EMAIL_N_BRIDGES_PER_ANSWER=2,
 
