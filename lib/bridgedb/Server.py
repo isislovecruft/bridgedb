@@ -262,6 +262,8 @@ class MailContext:
         # The number of bridges to send for each email.
         self.N = cfg.EMAIL_N_BRIDGES_PER_ANSWER
 
+        self.cfg = cfg
+
 class MailMessage:
     """Plugs into the Twisted Mail and receives an incoming message.
        Once the message is in, we reply or we don't. """
