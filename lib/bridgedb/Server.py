@@ -171,7 +171,7 @@ def getMailResponse(lines, ctx):
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
         # to get the first, so we use getheaders() instead.
-        dkimHeaders = msg.getheaders("X-DKIM-Authentication-Result")
+        dkimHeaders = msg.getheaders("X-DKIM-Authentication-Results")
         dkimHeader = "<no header>"
         if dkimHeaders: dkimHeader = dkimHeaders[0]
         if not dkimHeader.startswith("pass"):
