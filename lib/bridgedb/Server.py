@@ -243,7 +243,8 @@ class MailContext:
     """Helper object that holds information used by email subsystem."""
     def __init__(self, cfg, dist, sched):
         # Reject any RCPT TO lines that aren't to this user.
-        self.username = "bridges"
+        self.username = (cfg.EMAIL_USERNAME or
+                         "bridges")
         # Reject any mail longer than this.
         self.maximumSize = 32*1024
         # Use this server for outgoing mail.

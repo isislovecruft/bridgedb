@@ -57,6 +57,7 @@ CONFIG = Conf(
     EMAIL_SHARE=10,
     EMAIL_FROM_ADDR = "bridges@torproject.org",
     EMAIL_SMTP_FROM_ADDR = "bridges@torproject.org",
+    EMAIL_USERNAME = "bridges",
     EMAIL_DOMAINS = [ "gmail.com", "yahoo.com", "catbus.wangafu.net" ],
     EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
                          "googlemail.com" : "gmail.com", },
