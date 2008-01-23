@@ -280,6 +280,7 @@ class MailMessage:
     def lineReceived(self, line):
         """Called when we get another line of an incoming message."""
         self.nBytes += len(line)
+        logging.debug("> %s", line.rstrip("\r\n"))
         if self.nBytes > self.ctx.maximumSize:
             self.ignoring = True
         else:
