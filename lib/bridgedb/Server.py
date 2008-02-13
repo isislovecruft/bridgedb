@@ -76,7 +76,7 @@ class WebResource(twisted.web.resource.Resource):
        bridges in response to a request."""
     isLeaf = True
 
-    def __init__(self, distributor, schedule, N=1):
+    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False):
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -86,12 +86,25 @@ class WebResource(twisted.web.resource.Resource):
         self.distributor = distributor
         self.schedule = schedule
         self.nBridgesToGive = N
+        self.useForwardedHeader = useForwardedHeader
 
     def render_GET(self, request):
         interval = self.schedule.getInterval(time.time())
-        ip = request.getClientIP()
-        bridges = self.distributor.getBridgesForIP(ip, interval,
-                                                   self.nBridgesToGive)
+        bridges = ( )
+        ip = None
+        if self.useForwardedHeader:
+            h = request.getHeader("X-Forwarded-For")
+            if h:
+                ip = h.split(",")[-1].strip()
+                if not bridgedb.Bridges.is_valid_ip(ip):
+                    logging.warn("Got weird forwarded-for value %r",h)
+                    ip = None
+        else:
+            ip = request.getClientIP()
+
+        if ip:
+            bridges = self.distributor.getBridgesForIP(ip, interval,
+                                                       self.nBridgesToGive)
         if bridges:
             answer = "".join("%s\n" % b.getConfigLine() for b in bridges)
         else:
@@ -106,16 +119,20 @@ def addWebServer(cfg, dist, sched):
                 HTTPS_N_BRIDGES_PER_ANSWER
                 HTTP_UNENCRYPTED_PORT
                 HTTP_UNENCRYPTED_BIND_IP
+                HTTP_USE_IP_FROM_FORWARDED_HEADER
                 HTTPS_PORT
                 HTTPS_BIND_IP
+                HTTPS_USE_IP_FROM_FORWARDED_HEADER
          dist -- an IPBasedDistributor object.
          sched -- an IntervalSchedule object.
     """
     Site = twisted.web.server.Site
-    resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER)
-    site = Site(resource)
+    site = None
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
+        resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
+                               cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER)
+        site = Site(resource)
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
@@ -123,6 +140,9 @@ def addWebServer(cfg, dist, sched):
         ip = cfg.HTTPS_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
+        resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
+                               cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER)
+        site = Site(resource)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
 
