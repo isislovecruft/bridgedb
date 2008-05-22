@@ -206,8 +206,11 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
-        emailaddress = normalizeEmail(emailaddress, self.domainmap,
+        try: 
+          emailaddress = normalizeEmail(emailaddress, self.domainmap,
                                       self.domainrules)
+        except BadEmail:
+          return [] #XXXX log the exception
         if emailaddress is None:
             return [] #XXXX raise an exception.
         if self.store.has_key(emailaddress):

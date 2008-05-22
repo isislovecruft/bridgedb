@@ -182,7 +182,11 @@ def getMailResponse(lines, ctx):
         logging.info("No From or Sender header on incoming mail.")
         return None,None
 
-    _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
+    try:
+        _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
+    except bridgedb.Dist.BadEmail:
+	logging.info("Ignoring bad address on incoming email.")
+        return None,None
     if not addrdomain:
         logging.info("Couldn't parse domain from %r", clientAddr)
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
