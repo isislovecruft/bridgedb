@@ -219,7 +219,7 @@ class BridgeRingParameters:
                 raise TypeError("Count %s out of range."%count)
 
         self.needPorts = needPorts[:]
-        self.needFlags = needFlags[:]
+        self.needFlags = [(flag.lower(),count) for flag, count in needFlags[:] ]
 
 class BridgeRing(BridgeHolder):
     """Arranges bridges in a ring based on an hmac function."""
