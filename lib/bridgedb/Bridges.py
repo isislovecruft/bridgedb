@@ -313,8 +313,8 @@ class BridgeRing(BridgeHolder):
                 count = len.subring
             forced.extend(subring._getBridgeKeysAt(pos, count))
 
-        keys = forced[:]
-        for k in self._getBridgeKeysAt(pos, N):
+        keys = [ ]
+        for k in forced + self._getBridgeKeysAt(pos, N):
             if k not in keys:
                 keys.append(k)
         keys = keys[:N]
