@@ -69,13 +69,17 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(443))
         for _ in range(256):
             d.insert(fakeBridge())
-        for _ in xrange(16):
+        for _ in xrange(32):
             i = randomIP()
-            n = d.getBridgesForIP(i, "x", 2)
+            n = d.getBridgesForIP(i, "x", 5)
             count = 0
+            fps = {}
             for b in n:
+                fps[b.getID()] = 1
                 if b.orport == 443:
                     count += 1
+            self.assertEquals(len(fps), len(n))
+            self.assertEquals(len(fps), 5)
             self.assertTrue(count >= 1)
 
 def testSuite():

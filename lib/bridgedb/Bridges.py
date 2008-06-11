@@ -315,7 +315,7 @@ class BridgeRing(BridgeHolder):
 
         keys = forced[:]
         for k in self._getBridgeKeysAt(pos, N):
-            if k not in forced:
+            if k not in keys:
                 keys.append(k)
         keys = keys[:N]
         keys.sort()
