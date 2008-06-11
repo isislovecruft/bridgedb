@@ -43,7 +43,9 @@ CONFIG = Conf(
     N_IP_CLUSTERS = 4,
     MASTER_KEY_FILE = "./secret_key",
 
-    REQUIRE_ORPORTS = [(443, 1)],
+    FORCE_PORTS = [(443, 1)],
+    FORCE_FLAGS = [("Stable", 1)],
+    PROXY_LIST_FILES = [ ],
 
     HTTPS_DIST = True,
     HTTPS_SHARE=10,
@@ -127,24 +129,47 @@ def load(cfg, splitter):
     status = {}
     if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
-        for ID, running in Bridges.parseStatusFile(f):
-            status[ID] = running
+        for ID, running, stable in Bridges.parseStatusFile(f):
+            status[ID] = running, stable
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
-            running = status.get(bridge.getID())
-            if running is not None:
-                bridge.setStatus(running=running)
+            s = status.get(bridge.getID())
+            if s is not None:
+                running, stable = s
+                bridge.setStatus(running=running, stable=stable)
             splitter.insert(bridge)
         f.close()
+
+def loadProxyList(cfg):
+    ipset = {}
+    for fname in cfg.PROXY_LIST_FILES:
+        f = open(fname, 'r')
+        for line in f:
+            line = line.strip()
+            if Bridges.is_valid_ip(line):
+                ipset[line] = True
+            elif line:
+                logging.info("Skipping line %r in %s: not an IP.",
+                             line, fname)
+        f.close()
+    return ipset
 
 _reloadFn = lambda: True
 def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callLater(0, _reloadFn)
 
+class ProxyCategory:
+    def __init__(self):
+        self.ipset = {}
+    def contains(self, ip):
+        return self.ipset.has_key(ip)
+    def replaceProxyList(self, ipset):
+        self.ipset = ipset
+
 def startup(cfg):
-    """Parse bridges, 
+    """Parse bridges,
     """
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
@@ -154,6 +179,11 @@ def startup(cfg):
         v = getattr(cfg, key, None)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
+    if hasattr(cfg, "PROXY_LIST_FILES"):
+        cfg.PROXY_LIST_FILES = [
+            os.path.expanduser(v) for v in cfg.PROXY_LIST_FILES ]
+    else:
+        cfg.PROXY_LIST_FILES = [ ]
 
     # Change to the directory where we're supposed to run.
     if cfg.RUN_IN_DIR:
@@ -178,6 +208,10 @@ def startup(cfg):
         dblogfile = open(cfg.DB_LOG_FILE, "a+", 0)
         store = Bridges.LogDB(None, store, dblogfile)
 
+    # Get a proxy list.
+    proxyList = ProxyCategory()
+    proxyList.replaceProxyList(loadProxyList(cfg))
+
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"),
@@ -185,15 +219,23 @@ def startup(cfg):
 
     # Create ring parameters.
     forcePorts = getattr(cfg, "FORCE_PORTS")
-    ringParams=Bridges.BridgeRingParameters(forcePorts=forcePorts)
+    forceFlags = getattr(cfg, "FORCE_FLAGS")
+    if not forcePorts: forcePorts = []
+    if not forceFlags: forceFlags = []
+    ringParams=Bridges.BridgeRingParameters(needPorts=forcePorts,
+                                            needFlags=forceFlags)
 
     emailDistributor = ipDistributor = None
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
+        categories = []
+        if proxyList.ipset:
+            categories.append(proxyList)
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
             cfg.N_IP_CLUSTERS,
             Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
+            categories,
             answerParameters=ringParams)
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
         webSchedule = Time.IntervalSchedule("day", 2)
@@ -226,6 +268,7 @@ def startup(cfg):
     def reload():
         logging.info("Caught SIGHUP")
         load(cfg, splitter)
+        proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
             logging.info("%d for email", len(emailDistributor.ring))
@@ -233,6 +276,7 @@ def startup(cfg):
             logging.info("%d for web:", len(ipDistributor.splitter))
             logging.info("  by location set: %s",
                          " ".join(str(len(r)) for r in ipDistributor.rings))
+
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)

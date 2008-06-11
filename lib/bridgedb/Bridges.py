@@ -106,7 +106,7 @@ class Bridge:
         self.nickname = nickname
         self.ip = ip
         self.orport = orport
-        self.running = None
+        self.running = self.stable = None
         if id_digest is not None:
             assert fingerprint is None
             if len(id_digest) != DIGEST_LEN:
@@ -138,9 +138,11 @@ class Bridge:
         assert is_valid_fingerprint(self.fingerprint)
         assert 1 <= self.orport <= 65535
 
-    def setStatus(self, running=None):
+    def setStatus(self, running=None, stable=None):
         if running is not None:
             self.running = running
+        if stable is not None:
+            self.stable = stable
 
 
 def parseDescFile(f, bridge_purpose='bridge'):
@@ -190,11 +192,7 @@ def parseStatusFile(f):
                 logging.warn("Unparseable base64 ID %r", line.split()[2])
         elif ID and line.startswith("s "):
             flags = line.split()
-            if "Running" in flags:
-                yield ID, True
-            else:
-                yield ID, False
-            ID = None
+            yield ID, ("Running" in flags), ("Stable" in flags)
 
 class BridgeHolder:
     """Abstract base class for all classes that hold bridges."""
@@ -206,15 +204,22 @@ class BridgeHolder:
 
 class BridgeRingParameters:
     """DOCDOC"""
-    def __init__(self, needPorts=()):
+    def __init__(self, needPorts=(), needFlags=()):
         """DOCDOC takes list of port, count"""
         for port,count in needPorts:
             if not (1 <= port <= 65535):
                 raise TypeError("Port %s out of range."%port)
             if count <= 0:
                 raise TypeError("Count %s out of range."%count)
+        for flag, count in needFlags:
+            flag = flag.lower()
+            if flag not in [ "stable" ]:
+                raise TypeError("Unsupported flag %s"%flag)
+            if count <= 0:
+                raise TypeError("Count %s out of range."%count)
 
         self.needPorts = needPorts[:]
+        self.needFlags = needFlags[:]
 
 class BridgeRing(BridgeHolder):
     """Arranges bridges in a ring based on an hmac function."""
@@ -235,19 +240,24 @@ class BridgeRing(BridgeHolder):
             answerParameters = BridgeRingParameters()
         self.answerParameters = answerParameters
 
-        self.portSubrings = [] #DOCDOC
+        self.subrings = [] #DOCDOC
         for port,count in self.answerParameters.needPorts:
             #note that we really need to use the same key here, so that
             # the mapping is in the same order for all subrings.
-            self.portSubrings.append( (port,count,BridgeRing(key,None)) )
+            self.subrings.append( ('port',port,count,BridgeRing(key,None)) )
+        for flag,count in self.answerParameters.needFlags:
+            self.subrings.append( ('flag',flag,count,BridgeRing(key,None)) )
 
         self.setName("Ring")
 
     def setName(self, name):
         """DOCDOC"""
         self.name = name
-        for port,_,subring in self.portSubrings:
-            subring.setName("%s (port-%s subring)"%(name, port))
+        for tp,val,_,subring in self.subrings:
+            if tp == 'port':
+                subring.setName("%s (port-%s subring)"%(name, val))
+            else:
+                subring.setname("%s (%s subring)"%(name, val))
 
     def __len__(self):
         return len(self.bridges)
@@ -255,9 +265,14 @@ class BridgeRing(BridgeHolder):
     def insert(self, bridge):
         """Add a bridge to the ring.  If the bridge is already there,
            replace the old one."""
-        for port,_,subring in self.portSubrings:
-            if port == bridge.orport:
-                subring.insert(bridge)
+        for tp,val,_,subring in self.subrings:
+            if tp == 'port':
+                if val == bridge.orport:
+                    subring.insert(bridge)
+            else:
+                assert tp == 'flag' and val == 'stable'
+                if val == 'stable' and bridge.stable:
+                    subring.insert(bridge)
 
         ident = bridge.getID()
         pos = self.hmac(ident)
@@ -293,7 +308,7 @@ class BridgeRing(BridgeHolder):
     def getBridges(self, pos, N=1):
         """Return the N bridges appearing in the ring after position pos"""
         forced = []
-        for _,count,subring in self.portSubrings:
+        for _,_,count,subring in self.subrings:
             if len(subring) < count:
                 count = len.subring
             forced.extend(subring._getBridgeKeysAt(pos, count))
@@ -309,7 +324,7 @@ class BridgeRing(BridgeHolder):
     def getBridgeByID(self, fp):
         """Return the bridge whose identity digest is fp, or None if no such
            bridge exists."""
-        for _,_,subring in self.portSubrings:
+        for _,_,_,subring in self.subrings:
             b = subring.getBridgeByID(fp)
             if b is not None:
                 return b
