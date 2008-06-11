@@ -257,7 +257,7 @@ class BridgeRing(BridgeHolder):
             if tp == 'port':
                 subring.setName("%s (port-%s subring)"%(name, val))
             else:
-                subring.setname("%s (%s subring)"%(name, val))
+                subring.setName("%s (%s subring)"%(name, val))
 
     def __len__(self):
         return len(self.bridges)
