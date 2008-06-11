@@ -147,7 +147,9 @@ def loadProxyList(cfg):
         f = open(fname, 'r')
         for line in f:
             line = line.strip()
-            if Bridges.is_valid_ip(line):
+            if line.startswith("#"):
+                continue
+            elif Bridges.is_valid_ip(line):
                 ipset[line] = True
             elif line:
                 logging.info("Skipping line %r in %s: not an IP.",
