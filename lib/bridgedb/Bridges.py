@@ -204,6 +204,18 @@ class BridgeHolder:
     def assignmentsArePersistent(self):
         return True
 
+class BridgeRingParameters:
+    """DOCDOC"""
+    def __init__(self, needPorts=()):
+        """DOCDOC takes list of port, count"""
+        for port,count in needPorts:
+            if not (1 <= port <= 65535):
+                raise TypeError("Port %s out of range."%port)
+            if count <= 0:
+                raise TypeError("Count %s out of range."%count)
+
+        self.needPorts = needPorts[:]
+
 class BridgeRing(BridgeHolder):
     """Arranges bridges in a ring based on an hmac function."""
     ## Fields:
@@ -212,14 +224,30 @@ class BridgeRing(BridgeHolder):
     ##   isSorted: true iff sortedKeys is currently sorted.
     ##   sortedKeys: a list of all the hmacs, in order.
     ##   name: a string to represent this ring in the logs.
-    def __init__(self, key):
+    def __init__(self, key, answerParameters=None):
         """Create a new BridgeRing, using key as its hmac key."""
         self.bridges = {}
         self.bridgesByID = {}
         self.hmac = get_hmac_fn(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
-        self.name = "Ring"
+        if answerParameters is None:
+            answerParameters = BridgeRingParameters()
+        self.answerParameters = answerParameters
+
+        self.portSubrings = [] #DOCDOC
+        for port,count in self.answerParameters.needPorts:
+            #note that we really need to use the same key here, so that
+            # the mapping is in the same order for all subrings.
+            self.portSubrings.append( (port,count,BridgeRing(key,None)) )
+
+        self.setName("Ring")
+
+    def setName(self, name):
+        """DOCDOC"""
+        self.name = name
+        for port,_,subring in self.portSubrings:
+            subring.setName("%s (port-%s subring)"%(name, port))
 
     def __len__(self):
         return len(self.bridges)
@@ -227,13 +255,17 @@ class BridgeRing(BridgeHolder):
     def insert(self, bridge):
         """Add a bridge to the ring.  If the bridge is already there,
            replace the old one."""
+        for port,_,subring in self.portSubrings:
+            if port == bridge.orport:
+                subring.insert(bridge)
+
         ident = bridge.getID()
         pos = self.hmac(ident)
         if not self.bridges.has_key(pos):
             self.sortedKeys.append(pos)
             self.isSorted = False
         self.bridges[pos] = bridge
-        self.bridgesByID[id] = bridge
+        self.bridgesByID[ident] = bridge
         logging.debug("Adding %s to %s", bridge.getConfigLine(), self.name)
 
     def _sort(self):
@@ -260,15 +292,29 @@ class BridgeRing(BridgeHolder):
 
     def getBridges(self, pos, N=1):
         """Return the N bridges appearing in the ring after position pos"""
-        keys = self._getBridgeKeysAt(pos, N)
+        forced = []
+        for _,count,subring in self.portSubrings:
+            if len(subring) < count:
+                count = len.subring
+            forced.extend(subring._getBridgeKeysAt(pos, count))
+
+        keys = forced[:]
+        for k in self._getBridgeKeysAt(pos, N):
+            if k not in forced:
+                keys.append(k)
+        keys = keys[:N]
         keys.sort()
         return [ self.bridges[k] for k in keys ]
 
     def getBridgeByID(self, fp):
         """Return the bridge whose identity digest is fp, or None if no such
            bridge exists."""
-        return self.bridgesByID.get(fp)
+        for _,_,subring in self.portSubrings:
+            b = subring.getBridgeByID(fp)
+            if b is not None:
+                return b
 
+        return self.bridgesByID.get(fp)
 
 class LogDB:
     """Wraps a database object and records all modifications to a

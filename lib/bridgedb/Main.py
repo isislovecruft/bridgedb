@@ -43,6 +43,8 @@ CONFIG = Conf(
     N_IP_CLUSTERS = 4,
     MASTER_KEY_FILE = "./secret_key",
 
+    REQUIRE_ORPORTS = [(443, 1)],
+
     HTTPS_DIST = True,
     HTTPS_SHARE=10,
     HTTPS_BIND_IP=None,
@@ -181,13 +183,18 @@ def startup(cfg):
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"),
                                       Bridges.PrefixStore(store, "sp|"))
 
+    # Create ring parameters.
+    forcePorts = getattr(cfg, "FORCE_PORTS")
+    ringParams=Bridges.BridgeRingParameters(forcePorts=forcePorts)
+
     emailDistributor = ipDistributor = None
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
             cfg.N_IP_CLUSTERS,
-            Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"))
+            Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
+            answerParameters=ringParams)
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
         webSchedule = Time.IntervalSchedule("day", 2)
 
@@ -199,7 +206,8 @@ def startup(cfg):
             Bridges.get_hmac(key, "Email-Dist-Key"),
             Bridges.PrefixStore(store, "em|"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
-            cfg.EMAIL_DOMAIN_RULES.copy())
+            cfg.EMAIL_DOMAIN_RULES.copy(),
+            answerParameters=ringParams)
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         emailSchedule = Time.IntervalSchedule("day", 1)
 

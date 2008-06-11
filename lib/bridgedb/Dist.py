@@ -33,17 +33,31 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     ##        rings of this distributor.
     ##    areaOrderHmac -- an hmac function used to order areas within rings.
     ##    areaClusterHmac -- an hmac function used to assign areas to rings.
-    def __init__(self, areaMapper, nClusters, key):
+    def __init__(self, areaMapper, nClusters, key, ipCategories=(),
+                 answerParameters=None):
         self.areaMapper = areaMapper
 
         self.rings = []
+        self.categoryRings = [] #DOCDDOC
+        self.categories = [] #DOCDOC
         for n in xrange(nClusters):
             key1 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring-%d"%n)
-            self.rings.append( bridgedb.Bridges.BridgeRing(key1) )
-            self.rings[-1].name = "IP ring %s"%len(self.rings)
+            self.rings.append( bridgedb.Bridges.BridgeRing(key1,
+                                                           answerParameters) )
+            self.rings[-1].setName("IP ring %s"%len(self.rings))
+        n = nClusters
+        for c in ipCategories:
+            key1 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring-%d"%n)
+            ring = bridgedb.Bridges.BridgeRing(key1, answerParameters)
+            self.categoryRings.append( ring )
+            self.categoryRings[-1].setName(
+                "IP category ring %s"%len(self.categoryRings))
+            self.categories.append( (c, ring) )
+            n += 1
 
         key2 = bridgedb.Bridges.get_hmac(key, "Assign-Bridges-To-Rings")
-        self.splitter = bridgedb.Bridges.FixedBridgeSplitter(key2, self.rings)
+        self.splitter = bridgedb.Bridges.FixedBridgeSplitter(key2,
+                                       self.rings+self.categoryRings)
 
         key3 = bridgedb.Bridges.get_hmac(key, "Order-Areas-In-Rings")
         self.areaOrderHmac = bridgedb.Bridges.get_hmac_fn(key3, hex=False)
@@ -66,6 +80,11 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return []
 
         area = self.areaMapper(ip)
+
+        for category, ring in self.categories:
+            if category.contains(ip):
+                pos = self.areaOrderHmac("category<%s>%s"%(epoch,area))
+                return ring.getBridges(pos, N)
 
         # Which bridge cluster should we look at?
         h = int( self.areaClusterHmac(area)[:8], 16)
@@ -183,12 +202,13 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
     ##   store -- a database object to remember what we've given to whom.
     ##   domainmap -- a map from lowercase domains that we support mail from
     ##       to their canonical forms.
-    def __init__(self, key, store, domainmap, domainrules):
+    def __init__(self, key, store, domainmap, domainrules,
+                 answerParameters=None):
         key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
         self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
-        self.ring = bridgedb.Bridges.BridgeRing(key2)
+        self.ring = bridgedb.Bridges.BridgeRing(key2, answerParameters)
         self.ring.name = "email ring"
         # XXXX clear the store when the period rolls over!
         self.store = store
@@ -199,7 +219,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         """Assign a bridge to this distributor."""
         self.ring.insert(bridge)
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1):
+    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None):
         """Return a list of bridges to give to a user.
            emailaddress -- the user's email address, as given in a from line.
            epoch -- the time period when we got this request.  This can
@@ -226,7 +246,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return result
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-        result = self.ring.getBridges(pos, N)
+        result = self.ring.getBridges(pos, N, parameters)
         memo = "".join(b.getID() for b in result)
         self.store[emailaddress] = memo
         return result
