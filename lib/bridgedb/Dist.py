@@ -246,7 +246,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return result
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-        result = self.ring.getBridges(pos, N, parameters)
+        result = self.ring.getBridges(pos, N)
         memo = "".join(b.getID() for b in result)
         self.store[emailaddress] = memo
         return result
