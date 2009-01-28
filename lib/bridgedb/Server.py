@@ -191,6 +191,9 @@ def getMailResponse(lines, ctx):
         logging.info("Couldn't parse domain from %r", clientAddr)
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
+    if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
+        logging.info("Unrecognized email domain %r", addrdomain)
+        return None,None
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
