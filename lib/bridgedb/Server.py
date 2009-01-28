@@ -245,15 +245,17 @@ def getMailResponse(lines, ctx):
     body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
     f.seek(0)
+    logging.info("Email looks good; we should send an answer.")
     return clientAddr, f
 
 def replyToMail(lines, ctx):
     """Given a list of lines from an incoming email message, and a
        MailContext object, possibly send a reply.
     """
-    logging.info("Got a completed email; attempting to reply.")
+    logging.info("Got a completed email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
+        logging.debug("getMailResponse said not to reply, so I won't.")
         return
     response.seek(0)
     d = Deferred()
