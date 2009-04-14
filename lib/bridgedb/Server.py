@@ -112,7 +112,8 @@ class WebResource(twisted.web.resource.Resource):
         else:
             answer = "No bridges available."
 
-        logging.info("Replying to web request from %s", ip)
+        logging.info("Replying to web request from %s.  Parameters were %r", ip,
+                     request.args)
         if format == 'plain':
             request.setHeader("Content-Type: text/plain")
             return answer
