@@ -46,6 +46,16 @@ yahoo account.</p>
 </body></html>
 """.strip()
 
+PLAIN_HTML_MESSAGE_TEMPLATE = """
+<html><body>
+<p>Here are your bridge relays:
+<pre id="bridges">
+%s
+</pre>
+</p>
+</body></html>
+"""
+
 EMAIL_MESSAGE_TEMPLATE = """\
 [This is an automated message; please do not reply.]
 
@@ -102,6 +112,8 @@ class WebResource(twisted.web.resource.Resource):
         else:
             ip = request.getClientIP()
 
+        format = request.args.get("format", None)
+
         if ip:
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive)
@@ -111,7 +123,10 @@ class WebResource(twisted.web.resource.Resource):
             answer = "No bridges available."
 
         logging.info("Replying to web request from %s", ip)
-        return HTML_MESSAGE_TEMPLATE % answer
+        if format == 'plain':
+            return PLAIN_HTML_MESSAGE_TEMPLATE % answer
+        else:
+            return HTML_MESSAGE_TEMPLATE % answer
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
