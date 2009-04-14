@@ -103,6 +103,7 @@ class WebResource(twisted.web.resource.Resource):
             ip = request.getClientIP()
 
         format = request.args.get("format", None)
+        if format and len(format): format = format[0] # choose the first arg
 
         if ip:
             bridges = self.distributor.getBridgesForIP(ip, interval,
@@ -115,7 +116,7 @@ class WebResource(twisted.web.resource.Resource):
         logging.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
         if format == 'plain':
-            request.setHeader("Content-Type: text/plain")
+            request.setHeader("Content-Type", "text/plain")
             return answer
         else:
             return HTML_MESSAGE_TEMPLATE % answer
