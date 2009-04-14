@@ -46,16 +46,6 @@ yahoo account.</p>
 </body></html>
 """.strip()
 
-PLAIN_HTML_MESSAGE_TEMPLATE = """
-<html><body>
-<p>Here are your bridge relays:
-<pre id="bridges">
-%s
-</pre>
-</p>
-</body></html>
-"""
-
 EMAIL_MESSAGE_TEMPLATE = """\
 [This is an automated message; please do not reply.]
 
@@ -124,7 +114,8 @@ class WebResource(twisted.web.resource.Resource):
 
         logging.info("Replying to web request from %s", ip)
         if format == 'plain':
-            return PLAIN_HTML_MESSAGE_TEMPLATE % answer
+            request.setHeader("Content-Type: text/plain")
+            return answer
         else:
             return HTML_MESSAGE_TEMPLATE % answer
 
