@@ -269,7 +269,11 @@ class BridgeRing(BridgeHolder):
     def clear(self):
         self.bridges = {}
         self.bridgesByID = {}
+        self.isSorted = False
         self.sortedKeys = []
+
+        for tp, val, count, subring in self.subrings:
+            subring.clear()
 
     def insert(self, bridge):
         """Add a bridge to the ring.  If the bridge is already there,
