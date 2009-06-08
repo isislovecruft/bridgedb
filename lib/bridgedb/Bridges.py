@@ -496,7 +496,7 @@ class BridgeSplitter(BridgeHolder):
         self.statsHolders.append(t)
 
     def clear(self):
-        for r in self.rings:
+        for r in self.ringsByName.values():
             r.clear()
 
     def insert(self, bridge):
