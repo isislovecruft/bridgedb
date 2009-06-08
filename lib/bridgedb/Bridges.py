@@ -100,6 +100,7 @@ class Bridge:
     ##   orport -- The bridge's OR port.
     ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
     ##       no spaces.
+    ##   running,stable -- DOCDOC
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
            set."""
@@ -199,6 +200,9 @@ class BridgeHolder:
     def insert(self, bridge):
         raise NotImplemented()
 
+    def clear(self):
+        pass
+
     def assignmentsArePersistent(self):
         return True
 
@@ -261,6 +265,11 @@ class BridgeRing(BridgeHolder):
 
     def __len__(self):
         return len(self.bridges)
+
+    def clear(self):
+        self.bridges = {}
+        self.bridgesByID = {}
+        self.sortedKeys = []
 
     def insert(self, bridge):
         """Add a bridge to the ring.  If the bridge is already there,
@@ -406,6 +415,10 @@ class FixedBridgeSplitter(BridgeHolder):
         which = pos % len(self.rings)
         self.rings[which].insert(bridge)
 
+    def clear(self):
+        for r in self.rings:
+            r.clear()
+
     def __len__(self):
         n = 0
         for r in self.rings:
@@ -481,6 +494,10 @@ class BridgeSplitter(BridgeHolder):
         """Adds a statistics tracker that gets told about every bridge we see.
         """
         self.statsHolders.append(t)
+
+    def clear(self):
+        for r in self.rings:
+            r.clear()
 
     def insert(self, bridge):
         assert self.rings

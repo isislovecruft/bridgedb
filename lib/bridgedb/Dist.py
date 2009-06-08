@@ -65,6 +65,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         key4 = bridgedb.Bridges.get_hmac(key, "Assign-Areas-To-Rings")
         self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
 
+    def clear(self):
+        self.splitter.clear()
+
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
@@ -214,6 +217,9 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.store = store
         self.domainmap = domainmap
         self.domainrules = domainrules
+
+    def clear(self):
+        self.ring.clear()
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""

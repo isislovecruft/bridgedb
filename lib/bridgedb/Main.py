@@ -121,10 +121,13 @@ def getKey(fname):
 
     return k
 
-def load(cfg, splitter):
+def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
     """
+    if clear:
+        logging.info("Clearing old bridges")
+        splitter.clear()
     logging.info("Loading bridges")
     status = {}
     if hasattr(cfg, "STATUS_FILE"):
@@ -269,7 +272,7 @@ def startup(cfg):
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
         logging.info("Caught SIGHUP")
-        load(cfg, splitter)
+        load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
