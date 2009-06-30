@@ -4,6 +4,7 @@ o Send back an email even if there are no bridges
 o Check dkim headers for sanity.
 - Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
+  - for bonus points, make it base64-tolerant
 - make all the rest of the email options configurable.
 - bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
@@ -13,6 +14,10 @@ o Check dkim headers for sanity.
 . Make bounces go to the right address.
   o Make address sent in "mail from" command configurable.
   - Actually configure it.
+- make the bridge list you get back include at least one *non*443
+  bridge. turns out sometimes 443 isn't all it's cracked up to be.
+- write the ip addresses of the unallocated bridges to a local file,
+  so we can give them out manually as needed
 
 Not now:
 - check that incoming IP of email is sane.
