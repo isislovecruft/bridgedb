@@ -323,7 +323,7 @@ class BridgeRing(BridgeHolder):
         forced = []
         for _,_,count,subring in self.subrings:
             if len(subring) < count:
-                count = len.subring
+                count = len(subring)
             forced.extend(subring._getBridgeKeysAt(pos, count))
 
         keys = [ ]
