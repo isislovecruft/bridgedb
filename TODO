@@ -1,5 +1,9 @@
 
 Soon:
+* It keeps corrupting its database, causing Roger to delete the old
+  database and undermine this whole give-the-same-answer-each-time
+  design:
+  https://bugs.torproject.org/flyspray/index.php?do=details&id=1098
 o Send back an email even if there are no bridges
 o Check dkim headers for sanity.
 - Make the 'magic word' for the email configurable, case-tolerant,
