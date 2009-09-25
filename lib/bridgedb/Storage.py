@@ -90,3 +90,28 @@ class SqliteDict:
 #     ls|<HEXID> -- given to bridgetracker, maps to time when a router was
 #            last seen (YYYY-MM-DD HH:MM)
 #
+# So we probably want something like:
+#
+#  CREATE TABLE Bridges (
+#      id PRIMARY KEY,
+#      hex_key, -- index this.
+#      ip,
+#      port
+#  );
+#
+#  CREATE TABLE BridgeRing (
+#      id PRIMARY KEY,
+#      ring
+#  );
+#
+#  CREATE TABLE BridgeLog (
+#      id PRIMARY KEY,
+#      first_seen,
+#      last_seen
+#  );
+#
+#  CREATE TABLE EmailedBridges (
+#      email PRIMARY KEY,
+#      when_mailed,
+#      id
+#  );
