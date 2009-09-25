@@ -1,5 +1,5 @@
 # BridgeDB by Nick Mathewson.
-# Copyright (c) 2007, The Tor Project, Inc.
+# Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
 import doctest
