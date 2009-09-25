@@ -1,0 +1,13 @@
+# Editor stuff
+\#*
+.\#*
+*~
+
+# Python stuff
+*.pyc
+*.pyo
+
+# /
+/build
+/dist
+/MANIFEST
