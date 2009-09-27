@@ -76,7 +76,8 @@ class WebResource(twisted.web.resource.Resource):
        bridges in response to a request."""
     isLeaf = True
 
-    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False):
+    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
+                 includeFingerprints=True):
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -87,6 +88,7 @@ class WebResource(twisted.web.resource.Resource):
         self.schedule = schedule
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
+        self.includeFingerprints = includeFingerprints
 
     def render_GET(self, request):
         interval = self.schedule.getInterval(time.time())
@@ -109,7 +111,8 @@ class WebResource(twisted.web.resource.Resource):
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive)
         if bridges:
-            answer = "".join("%s\n" % b.getConfigLine() for b in bridges)
+            answer = "".join("%s\n" % b.getConfigLine(self.includeFingerprints)
+                             for b in bridges)
         else:
             answer = "No bridges available."
 
@@ -139,7 +142,8 @@ def addWebServer(cfg, dist, sched):
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-                               cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER)
+                       cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
         site = Site(resource)
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:
@@ -149,7 +153,8 @@ def addWebServer(cfg, dist, sched):
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-                               cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER)
+                       cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER,
+                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
         site = Site(resource)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
@@ -247,7 +252,8 @@ def getMailResponse(lines, ctx):
     body = w.startbody("text/plain")
 
     if bridges:
-        answer = "".join("  %s\n" % b.getConfigLine() for b in bridges)
+        with_fp = ctx.cfg.EMAIL_INCLUDE_FINGEPRINTS
+        answer = "".join("  %s\n" % b.getConfigLine(with_fp) for b in bridges)
     else:
         answer = "(no bridges currently available)"
     body.write(EMAIL_MESSAGE_TEMPLATE % answer)

@@ -24,6 +24,17 @@ class Conf:
     """
     def __init__(self, **attrs):
         self.__dict__.update(attrs)
+        self.setMissing()
+
+    def setMissing(self):
+        for k,v in CONFIG_DEFAULTS.items():
+            if not hasattr(self, k):
+                setattr(self,k,v)
+
+CONFIG_DEFAULTS = {
+    'HTTPS_INCLUDE_FINGERPRINTS' : False,
+    'EMAIL_INCLUDE_FINGERPRINTS' : False,
+}
 
 # An example configuration.  Used for testing.  See sample
 # bridgedb.conf for documentation.
@@ -58,6 +69,7 @@ CONFIG = Conf(
     HTTP_UNENCRYPTED_PORT=6788,
     HTTP_USE_IP_FROM_FORWARDED_HEADER=1,
     HTTPS_N_BRIDGES_PER_ANSWER=2,
+    HTTPS_INCLUDE_FINGERPRINTS = False,
 
     EMAIL_DIST = True,
     EMAIL_SHARE=10,
@@ -73,6 +85,7 @@ CONFIG = Conf(
     EMAIL_BIND_IP="127.0.0.1",
     EMAIL_PORT=6725,
     EMAIL_N_BRIDGES_PER_ANSWER=2,
+    EMAIL_INCLUDE_FINGERPRINTS = False,
 
     RESERVED_SHARE=2,
   )

@@ -130,9 +130,12 @@ class Bridge:
         return "Bridge(%r,%r,%d,%r)"%(
             self.nickname, self.ip, self.orport, self.fingerprint)
 
-    def getConfigLine(self):
+    def getConfigLine(self,includeFingerprint=False):
         """Return a line describing this bridge for inclusion in a torrc."""
-        return "bridge %s:%d %s" % (self.ip, self.orport, self.fingerprint)
+        if includeFingerprint:
+            return "bridge %s:%d %s" % (self.ip, self.orport, self.fingerprint)
+        else:
+            return "bridge %s:%d" % (self.ip, self.orport)
 
     def assertOK(self):
         assert is_valid_ip(self.ip)
@@ -294,7 +297,7 @@ class BridgeRing(BridgeHolder):
             self.isSorted = False
         self.bridges[pos] = bridge
         self.bridgesByID[ident] = bridge
-        logging.debug("Adding %s to %s", bridge.getConfigLine(), self.name)
+        logging.debug("Adding %s to %s", bridge.getConfigLine(True), self.name)
 
     def _sort(self):
         """Helper: put the keys in sorted order."""
@@ -435,7 +438,7 @@ class UnallocatedHolder(BridgeHolder):
        unassigned.
     """
     def insert(self, bridge):
-        logging.debug("Leaving %s unallocated", bridge.getConfigLine())
+        logging.debug("Leaving %s unallocated", bridge.getConfigLine(True))
 
     def assignmentsArePersistent(self):
         return False
