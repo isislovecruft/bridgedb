@@ -2,6 +2,14 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
+import os
+import logging
+import bridgedb.Bridges
+import binascii
+
+toHex = binascii.b2a_hex
+fromHex = binascii.a2b_hex
+
 def _escapeValue(v):
     return "'%s'" % v.replace("'", "''")
 
@@ -78,40 +86,100 @@ class SqliteDict:
     def rollback(self):
         self._conn.rollback()
 
-#
 #  The old DB system was just a key->value mapping DB, with special key
 #  prefixes to indicate which database they fell into.
 #
-#     sp|<HEXID> -- given to bridgesplitter; maps bridgeID to ring name.
+#     sp|<ID> -- given to bridgesplitter; maps bridgeID to ring name.
 #     em|<emailaddr> -- given to emailbaseddistributor; maps email address
-#            to concatenated hexID.
-#     fs|<HEXID> -- Given to BridgeTracker, maps to time when a router was
+#            to concatenated ID.
+#     fs|<ID> -- Given to BridgeTracker, maps to time when a router was
 #            first seen (YYYY-MM-DD HH:MM)
-#     ls|<HEXID> -- given to bridgetracker, maps to time when a router was
+#     ls|<ID> -- given to bridgetracker, maps to time when a router was
 #            last seen (YYYY-MM-DD HH:MM)
 #
 # So we probably want something like:
-#
-#  CREATE TABLE Bridges (
-#      id PRIMARY KEY,
-#      hex_key, -- index this.
-#      ip,
-#      port
-#  );
-#
-#  CREATE TABLE BridgeRing (
-#      id PRIMARY KEY,
-#      ring
-#  );
-#
-#  CREATE TABLE BridgeLog (
-#      id PRIMARY KEY,
-#      first_seen,
-#      last_seen
-#  );
-#
-#  CREATE TABLE EmailedBridges (
-#      email PRIMARY KEY,
-#      when_mailed,
-#      id
-#  );
+
+SCHEMA1_SCRIPT = """
+ CREATE TABLE Config (
+     key PRIMARY KEY NOT NULL,
+     value
+ );
+ INSERT INTO Config VALUES ( 'schema-version', 1 );
+
+ CREATE TABLE Bridges (
+     id INTEGER PRIMARY KEY NOT NULL,
+     hex_key, -- index this.
+     address,
+     distributor,
+     first_seen,
+     last_seen
+ );
+
+ CREATE UNIQUE INDEX BridgesKeyIndex ON Bridges ( hex_key );
+
+ CREATE TABLE EmailedBridges (
+     email NOT NULL,
+     when_mailed,
+     id INTEGER REFERENCES Bridges(id)
+ );
+
+ CREATE INDEX EmailedBridgesEmailIndex ON EmailedBridges ( email );
+"""
+
+def openDatabase(sqlite_file, db_file):
+    """Open a sqlite database, converting it from a db file if needed."""
+    if os.path.exists(sqlite_file):
+        conn = sqlite3.Connection(sqlite_file)
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
+        val, = cur.fetchone()
+        if val != 1:
+            logging.warn("Unknown schema version %s in database.", val)
+        cur.close()
+        return conn
+
+    conn = sqlite3.Connection(sqlite_file)
+    cur = conn.cursor()
+    cur.executescript(SCHEMA1_SCRIPT)
+    conn.commit()
+
+    try:
+        db = anydbm.open(db_file, 'r')
+    except anydbm.error:
+        return conn
+
+    try:
+        for k in db.keys():
+            v = db[k]
+            if k.startswith("sp|"):
+                assert len(k) == 23
+                cur.execute("INSERT INTO Bridges ( hex_key, distributor ) "
+                            "VALUES (%s %s)", (toHex(k[3:]),v))
+        for k in db.keys():
+            v = db[k]
+            if k.startswith("fs|"):
+                assert len(k) == 23
+                cur.execute("UPDATE Bridges SET first_seen = %s "
+                            "WHERE hex_key = %s", (v, k[3:]))
+            elif k.startswith("ls|"):
+                assert len(k) == 23
+                cur.execute("UPDATE Bridges SET last_seen = %s "
+                            "WHERE hex_key = %s", (v, toHex(k[3:])))
+            elif k.startswith("em|"):
+                keys = list(toHex(i) for i in
+                    bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
+                cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
+                                "SELECT %s, id FROM Bridges WHERE hex_key = %s",
+                                [(k[3:],i) for i in keys])
+            elif k.startswith("sp|"):
+                pass
+            else:
+                logging.warn("Unrecognized key %r", k)
+    except:
+        conn.rollback()
+        os.unlink(sqlite_file)
+        raise
+
+    conn.commit()
+    return conn
+
