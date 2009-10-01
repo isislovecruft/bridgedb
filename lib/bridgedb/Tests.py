@@ -9,6 +9,7 @@ import sqlite3
 import tempfile
 import unittest
 import warnings
+import time
 
 import bridgedb.Bridges
 import bridgedb.Main
@@ -82,7 +83,7 @@ class IPBridgeDistTests(unittest.TestCase):
             self.assertEquals(len(fps), 5)
             self.assertTrue(count >= 1)
 
-class StorageTests(unittest.TestCase):
+class DictStorageTests(unittest.TestCase):
     def setUp(self):
         self.fd, self.fname = tempfile.mkstemp()
         self.conn = sqlite3.Connection(self.fname)
@@ -128,11 +129,77 @@ class StorageTests(unittest.TestCase):
         self.assertEquals(d.setdefault("yo","bye"), "bye")
         self.assertEquals(d['yo'], "bye")
 
+class SQLStorageTests(unittest.TestCase):
+    def setUp(self):
+        self.fd, self.fname = tempfile.mkstemp()
+        self.db = bridgedb.Storage.Database(self.fname)
+        self.cur = self.db._conn.cursor()
+
+    def tearDown(self):
+        self.db.close()
+        os.close(self.fd)
+        os.unlink(self.fname)
+
+    def testBridgeStorage(self):
+        db = self.db
+        B = bridgedb.Bridges.Bridge
+        t = time.time()
+        cur = self.cur
+
+        k1 = "aaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbb"
+        k2 = "abababababababababababababababababababab"
+        k3 = "cccccccccccccccccccccccccccccccccccccccc"
+        b1 = B("serv1", "1.2.3.4", 999, fingerprint=k1)
+        b1_v2 = B("serv1", "1.2.3.5", 9099, fingerprint=k1)
+        b2 = B("serv2", "2.3.4.5", 9990, fingerprint=k2)
+        b3 = B("serv3", "2.3.4.6", 9008, fingerprint=k3)
+
+        r = db.insertBridgeAndGetRing(b1, "ring1", t)
+        self.assertEquals(r, "ring1")
+        r = db.insertBridgeAndGetRing(b1, "ring10", t+500)
+        self.assertEquals(r, "ring1")
+
+        cur.execute("SELECT distributor, address, or_port, first_seen, "
+                    "last_seen FROM Bridges WHERE hex_key = ?", (k1,))
+        v = cur.fetchone()
+        self.assertEquals(v,
+                          ("ring1", "1.2.3.4", 999,
+                           bridgedb.Storage.timeToStr(t),
+                           bridgedb.Storage.timeToStr(t+500)))
+
+        r = db.insertBridgeAndGetRing(b1_v2, "ring99", t+800)
+        self.assertEquals(r, "ring1")
+        cur.execute("SELECT distributor, address, or_port, first_seen, "
+                    "last_seen FROM Bridges WHERE hex_key = ?", (k1,))
+        v = cur.fetchone()
+        self.assertEquals(v,
+                          ("ring1", "1.2.3.5", 9099,
+                           bridgedb.Storage.timeToStr(t),
+                           bridgedb.Storage.timeToStr(t+800)))
+
+        db.insertBridgeAndGetRing(b2, "ring2", t)
+        db.insertBridgeAndGetRing(b3, "ring3", t)
+
+        cur.execute("SELECT COUNT(distributor) FROM Bridges")
+        v = cur.fetchone()
+        self.assertEquals(v, (3,))
+
+        r = db.getEmailedBridges("abc@example.com")
+        self.assertEquals(r, [])
+        db.addEmailedBridges("abc@example.com", t, [k1,k2])
+        db.addEmailedBridges("def@example.com", t+1000, [k2,k3])
+        r = db.getEmailedBridges("abc@example.com")
+        self.assertEquals(sorted(r), sorted([k1,k2]))
+        r = db.getEmailedBridges("def@example.com")
+        self.assertEquals(sorted(r), sorted([k2,k3]))
+        r = db.getEmailedBridges("ghi@example.com")
+        self.assertEquals(r, [])
+
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
 
-    for klass in [ IPBridgeDistTests, StorageTests ]:
+    for klass in [ IPBridgeDistTests, DictStorageTests, SQLStorageTests ]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
 
     for module in [ bridgedb.Bridges,

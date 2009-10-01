@@ -6,7 +6,6 @@
 This module sets up a bridgedb and starts the servers running.
 """
 
-import anydbm
 import os
 import signal
 import sys
@@ -18,6 +17,7 @@ import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Server as Server
+import bridgedb.Storage
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -220,11 +220,9 @@ def startup(cfg):
     key = getKey(cfg.MASTER_KEY_FILE)
 
     # Initialize our DB file.
-    dblogfile = None
-    baseStore = store = anydbm.open(cfg.DB_FILE, "c", 0600)
-    if cfg.DB_LOG_FILE:
-        dblogfile = open(cfg.DB_LOG_FILE, "a+", 0)
-        store = Bridges.LogDB(None, store, dblogfile)
+    db = bridgedb.Storage.Database(cfg.DB_FILE+".sqlite",
+                                   cfg.DB_FILE)
+    bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
     proxyList = ProxyCategory()
@@ -232,8 +230,7 @@ def startup(cfg):
 
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
-    splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"),
-                                      Bridges.PrefixStore(store, "sp|"))
+    splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
 
     # Create ring parameters.
     forcePorts = getattr(cfg, "FORCE_PORTS")
@@ -264,7 +261,6 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_MAP[d] = d
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
-            Bridges.PrefixStore(store, "em|"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
@@ -276,11 +272,6 @@ def startup(cfg):
         splitter.addRing(Bridges.UnallocatedHolder(),
                          "unallocated",
                          cfg.RESERVED_SHARE)
-
-    # Add a tracker to tell us how often we've seen various bridges.
-    stats = Bridges.BridgeTracker(Bridges.PrefixStore(store, "fs|"),
-                                  Bridges.PrefixStore(store, "ls|"))
-    splitter.addTracker(stats)
 
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
@@ -315,9 +306,7 @@ def startup(cfg):
         logging.info("Starting reactors.")
         Server.runServers()
     finally:
-        baseStore.close()
-        if dblogfile is not None:
-            dblogfile.close()
+        db.close()
         if cfg.PIDFILE:
             os.unlink(cfg.PIDFILE)
 

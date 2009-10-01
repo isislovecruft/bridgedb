@@ -16,6 +16,8 @@ import sha
 import socket
 import time
 
+import bridgedb.Storage
+
 HEX_FP_LEN = 40
 ID_LEN = 20
 
@@ -182,7 +184,6 @@ def parseDescFile(f, bridge_purpose='bridge'):
 
 def parseStatusFile(f):
     """DOCDOC"""
-    result = None
     ID = None
     for line in f:
         line = line.strip()
@@ -347,64 +348,6 @@ class BridgeRing(BridgeHolder):
 
         return self.bridgesByID.get(fp)
 
-class LogDB:
-    """Wraps a database object and records all modifications to a
-       human-readable logfile."""
-    def __init__(self, kwd, db, logfile):
-        if kwd:
-            self._kwd = "%s: "%kwd
-        else:
-            self._kwd = ""
-        self._db = db
-        self._logfile = logfile
-    def __delitem__(self, k):
-        self._logfile.write("%s: del[%r]\n"%(self._kwd, k))
-        del self._db[k]
-    def __setitem__(self, k, v):
-        self._logfile.write("%s: [%r] = [%r]\n"%(self._kwd, k, v))
-        self._db[k] = v
-    def setdefault(self, k, v):
-        try:
-            return self._db[k]
-        except KeyError:
-            self._logfile.write("%s[%r] = [%r]\n"%(self._kwd, k, v))
-            self._db[k] = v
-            return v
-    def __len__(self):
-        return len(self._db)
-    def __getitem__(self, k):
-        return self._db[k]
-    def has_key(self, k):
-        return self._db.has_key(k)
-    def get(self, k, v=None):
-        return self._db.get(k, v)
-    def keys(self):
-        return self._db.keys()
-
-
-class PrefixStore:
-    """Wraps a database object and prefixes the keys in all requests with
-       'prefix'.  This is used to multiplex several key->value mappings
-       onto a single database."""
-    def __init__(self, store, prefix):
-        self._d = store
-        self._p = prefix
-    def __setitem__(self, k, v):
-        self._d[self._p+k] = v
-    def __delitem__(self, k):
-        del self._d[self._p+k]
-    def __getitem__(self, k):
-        return self._d[self._p+k]
-    def has_key(self, k):
-        return self._d.has_key(self._p+k)
-    def get(self, k, v=None):
-        return self._d.get(self._p+k, v)
-    def setdefault(self, k, v):
-        return self._d.setdefault(self._p+k, v)
-    def keys(self):
-        n = len(self._p)
-        return [ k[n:] for k in self._d.keys() if k.startswith(self._p) ]
-
 class FixedBridgeSplitter(BridgeHolder):
     """A bridgeholder that splits bridges up based on an hmac and assigns
        them to several sub-bridgeholders with equal probability.
@@ -446,31 +389,13 @@ class UnallocatedHolder(BridgeHolder):
     def __len__(self):
         return 0
 
-class BridgeTracker:
-    """A stats tracker that records when we first saw and most recently
-       saw each bridge.
-    """
-    def __init__(self, firstSeenStore, lastSeenStore):
-        self.firstSeenStore = firstSeenStore
-        self.lastSeenStore = lastSeenStore
-
-    def insert(self, bridge):
-        #XXXX is this really sane?  Should we track minutes? hours?
-        now = time.strftime("%Y-%m-%d %H:%M", time.gmtime())
-        bridgeID = bridge.getID()
-        # The last-seen time always gets updated
-        self.lastSeenStore[bridgeID] = now
-        # The first-seen time only gets updated if it wasn't already set.
-        self.firstSeenStore.setdefault(bridgeID, now)
-
 class BridgeSplitter(BridgeHolder):
     """A BridgeHolder that splits incoming bridges up based on an hmac,
        and assigns them to sub-bridgeholders with different probabilities.
        Bridge-to-bridgeholder associations are recorded in a store.
     """
-    def __init__(self, key, store):
+    def __init__(self, key):
         self.hmac = get_hmac_fn(key, hex=True)
-        self.store = store
         self.ringsByName = {}
         self.totalP = 0
         self.pValues = []
@@ -508,24 +433,26 @@ class BridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         assert self.rings
+        db = bridgedb.Storage.getDB()
+
         for s in self.statsHolders:
             s.insert(bridge)
         if bridge.running == False or bridge.running == None:
             return
 
         bridgeID = bridge.getID()
-        ringname = self.store.get(bridgeID, "")
+
+        # Determine which ring to put this bridge in if we haven't seen it
+        # before.
+        pos = self.hmac(bridgeID)
+        n = int(pos[:8], 16) % self.totalP
+        pos = bisect.bisect_right(self.pValues, n) - 1
+        assert 0 <= pos < len(self.rings)
+        ringname = self.rings[pos]
+
+        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time())
+        db.commit()
+
         ring = self.ringsByName.get(ringname)
-        if ring is not None:
-            ring.insert(bridge)
-        else:
-            pos = self.hmac(bridgeID)
-            n = int(pos[:8], 16) % self.totalP
-            pos = bisect.bisect_right(self.pValues, n) - 1
-            assert 0 <= pos < len(self.rings)
-            ringname = self.rings[pos]
-            ring = self.ringsByName.get(ringname)
-            if ring.assignmentsArePersistent():
-                self.store[bridgeID] = ringname
-            ring.insert(bridge)
+        ring.insert(bridge)
 

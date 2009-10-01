@@ -7,9 +7,11 @@ This module has functions to decide which bridges to hand out to whom.
 """
 
 import bridgedb.Bridges
+import bridgedb.Storage
 
 import logging
 import re
+import time
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -205,7 +207,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
     ##   store -- a database object to remember what we've given to whom.
     ##   domainmap -- a map from lowercase domains that we support mail from
     ##       to their canonical forms.
-    def __init__(self, key, store, domainmap, domainrules,
+    def __init__(self, key, domainmap, domainrules,
                  answerParameters=None):
         key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
         self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
@@ -214,7 +216,6 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.ring = bridgedb.Bridges.BridgeRing(key2, answerParameters)
         self.ring.name = "email ring"
         # XXXX clear the store when the period rolls over!
-        self.store = store
         self.domainmap = domainmap
         self.domainrules = domainrules
 
@@ -232,29 +233,34 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
-        try: 
+        try:
           emailaddress = normalizeEmail(emailaddress, self.domainmap,
                                       self.domainrules)
         except BadEmail:
           return [] #XXXX log the exception
         if emailaddress is None:
             return [] #XXXX raise an exception.
-        if self.store.has_key(emailaddress):
-            result = []
-            ids_str = self.store[emailaddress]
+
+        db = bridgedb.Storage.getDB()
+
+        ids = db.getEmailedBridges(emailaddress)
+
+        if ids:
             logging.info("We've seen %r before. Sending the same bridges"
                          " as last time", emailaddress)
-            for ident in bridgedb.Bridges.chopString(ids_str,
-                                                     bridgedb.Bridges.ID_LEN):
-                b = self.ring.getBridgeByID(ident)
+            result = []
+            for fp in ids:
+                b = self.ring.getBridgeByID(bridgedb.Bridges.fromHex(fp))
                 if b != None:
                     result.append(b)
             return result
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
         result = self.ring.getBridges(pos, N)
-        memo = "".join(b.getID() for b in result)
-        self.store[emailaddress] = memo
+
+        db.addEmailedBridges(emailaddress, time.time(),
+                             [b.fingerprint for b in result])
+        db.commit()
         return result
 
     def __len__(self):

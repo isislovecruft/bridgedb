@@ -35,7 +35,7 @@ class IntervalSchedule:
         self.itype = it
         self.count = count
 
-    def _intervalStart(self, when):
+    def intervalStart(self, when):
         """Return the time (as an int) of the start of the interval containing
            'when'."""
         if self.itype == 'month':
@@ -72,11 +72,11 @@ class IntervalSchedule:
             month = n%12 + 1
             return "%04d-%02d" % (n // 12, month)
         elif self.itype == 'day':
-            when = self._intervalStart(when) + 7200 #slop
+            when = self.intervalStart(when) + 7200 #slop
             tm = time.gmtime(when)
             return "%04d-%02d-%02d" % (tm.tm_year, tm.tm_mon, tm.tm_mday)
         elif self.itype == 'hour':
-            when = self._intervalStart(when) + 120 #slop
+            when = self.intervalStart(when) + 120 #slop
             tm = time.gmtime(when)
             return "%04d-%02d-%02d %02d" % (tm.tm_year, tm.tm_mon, tm.tm_mday,
                                             tm.tm_hour)
@@ -93,7 +93,7 @@ class IntervalSchedule:
             tm = (n // 12, month+self.count, 1, 0,0,0)
             return calendar.timegm(tm)
         elif self.itype == 'day':
-            return self._intervalStart(when) + 86400 * self.count
+            return self.intervalStart(when) + 86400 * self.count
         elif self.itype == 'hour':
-            return self._intervalStart(when) + 3600 * self.count
+            return self.intervalStart(when) + 3600 * self.count
 

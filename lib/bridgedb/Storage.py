@@ -6,12 +6,18 @@ import os
 import logging
 import bridgedb.Bridges
 import binascii
+import sqlite3
+import time
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
+HEX_ID_LEN = 40
 
 def _escapeValue(v):
     return "'%s'" % v.replace("'", "''")
+
+def timeToStr(t):
+    return time.strftime("%Y-%m-%d %H:%M", time.gmtime(t))
 
 class SqliteDict:
     """
@@ -61,7 +67,7 @@ class SqliteDict:
             raise KeyError(k)
         else:
             return val[0]
-    def has_key(self):
+    def has_key(self, k):
         self._cursor.execute(self._getStmt, (k,))
         return self._cursor.rowcount != 0
     def get(self, k, v=None):
@@ -86,6 +92,7 @@ class SqliteDict:
     def rollback(self):
         self._conn.rollback()
 
+
 #  The old DB system was just a key->value mapping DB, with special key
 #  prefixes to indicate which database they fell into.
 #
@@ -108,8 +115,9 @@ SCHEMA1_SCRIPT = """
 
  CREATE TABLE Bridges (
      id INTEGER PRIMARY KEY NOT NULL,
-     hex_key, -- index this.
+     hex_key,
      address,
+     or_port,
      distributor,
      first_seen,
      last_seen
@@ -126,22 +134,100 @@ SCHEMA1_SCRIPT = """
  CREATE INDEX EmailedBridgesEmailIndex ON EmailedBridges ( email );
 """
 
-def openDatabase(sqlite_file, db_file):
+
+class Database:
+    def __init__(self, sqlite_fname, db_fname=None):
+        if db_fname is None:
+            self._conn = openDatabase(sqlite_fname)
+        else:
+            self._conn = openOrConvertDatabase(sqlite_fname, db_fname)
+        self._cur = self._conn.cursor()
+
+    def commit(self):
+        self._conn.commit()
+
+    def close(self):
+        self._cur.close()
+        self._conn.close()
+
+    def insertBridgeAndGetRing(self, bridge, setRing, seenAt):
+        '''updates info about bridge, setting ring to setRing if none was set.
+           Returns the bridge's ring.
+        '''
+        cur = self._cur
+
+        t = timeToStr(seenAt)
+        h = bridge.fingerprint
+        assert len(h) == HEX_ID_LEN
+
+        cur.execute("SELECT id, distributor "
+                    "FROM Bridges WHERE hex_key = ?", (h,))
+        v = cur.fetchone()
+        if v is not None:
+            idx, ring = v
+            # Update last_seen and address.
+            cur.execute("UPDATE Bridges SET address = ?, or_port = ?, "
+                        "last_seen = ? WHERE id = ?",
+                        (bridge.ip, bridge.orport, timeToStr(seenAt), idx))
+            return ring
+        else:
+            # Insert it.
+            cur.execute("INSERT INTO Bridges (hex_key, address, or_port, "
+                        "distributor, first_seen, last_seen) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (h, bridge.ip, bridge.orport, setRing, t, t))
+            return setRing
+
+    def cleanEmailedBridges(self, expireBefore):
+        cur = self._cur
+        t = timeToStr(expireBefore)
+
+        cur.execute("DELETE FROM Bridges WHERE when_mailed < ?", t);
+
+    def getEmailedBridges(self, addr):
+        cur = self._cur
+        cur.execute("SELECT hex_key FROM EmailedBridges, Bridges WHERE "
+                    "email = ? AND Bridges.id = EmailedBridges.id", (addr,))
+        return [ hk for hk, in cur.fetchall() ]
+
+    def addEmailedBridges(self, addr, whenMailed, bridgeKeys):
+        cur = self._cur
+        t = timeToStr(whenMailed)
+        for k in bridgeKeys:
+            assert(len(k))==HEX_ID_LEN
+        cur.executemany("INSERT INTO EmailedBridges (email,when_mailed,id) "
+                        "SELECT ?,?,id FROM Bridges WHERE hex_key = ?",
+                        [(addr,t,k) for k in bridgeKeys])
+
+def openDatabase(sqlite_file):
+    conn = sqlite3.Connection(sqlite_file)
+    cur = conn.cursor()
+    try:
+        try:
+            cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
+            val, = cur.fetchone()
+            if val != 1:
+                logging.warn("Unknown schema version %s in database.", val)
+        except sqlite3.OperationalError:
+            logging.warn("No Config table found in DB; creating tables")
+            cur.executescript(SCHEMA1_SCRIPT)
+            conn.commit()
+    finally:
+        cur.close()
+    return conn
+
+
+def openOrConvertDatabase(sqlite_file, db_file):
     """Open a sqlite database, converting it from a db file if needed."""
     if os.path.exists(sqlite_file):
-        conn = sqlite3.Connection(sqlite_file)
-        cur = conn.cursor()
-        cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
-        val, = cur.fetchone()
-        if val != 1:
-            logging.warn("Unknown schema version %s in database.", val)
-        cur.close()
-        return conn
+        return openDatabase(sqlite_file)
 
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
     cur.executescript(SCHEMA1_SCRIPT)
     conn.commit()
+
+    import anydbm
 
     try:
         db = anydbm.open(db_file, 'r')
@@ -154,22 +240,22 @@ def openDatabase(sqlite_file, db_file):
             if k.startswith("sp|"):
                 assert len(k) == 23
                 cur.execute("INSERT INTO Bridges ( hex_key, distributor ) "
-                            "VALUES (%s %s)", (toHex(k[3:]),v))
+                            "VALUES (?, ?)", (toHex(k[3:]),v))
         for k in db.keys():
             v = db[k]
             if k.startswith("fs|"):
                 assert len(k) == 23
-                cur.execute("UPDATE Bridges SET first_seen = %s "
-                            "WHERE hex_key = %s", (v, k[3:]))
+                cur.execute("UPDATE Bridges SET first_seen = ? "
+                            "WHERE hex_key = ?", (v, toHex(k[3:])))
             elif k.startswith("ls|"):
                 assert len(k) == 23
-                cur.execute("UPDATE Bridges SET last_seen = %s "
-                            "WHERE hex_key = %s", (v, toHex(k[3:])))
+                cur.execute("UPDATE Bridges SET last_seen = ? "
+                            "WHERE hex_key = ?", (v, toHex(k[3:])))
             elif k.startswith("em|"):
                 keys = list(toHex(i) for i in
                     bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
                 cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
-                                "SELECT %s, id FROM Bridges WHERE hex_key = %s",
+                                "SELECT ?, id FROM Bridges WHERE hex_key = ?",
                                 [(k[3:],i) for i in keys])
             elif k.startswith("sp|"):
                 pass
@@ -182,4 +268,13 @@ def openDatabase(sqlite_file, db_file):
 
     conn.commit()
     return conn
+
+_THE_DB = None
+
+def setGlobalDB(db):
+    global _THE_DB
+    _THE_DB = db
+
+def getDB(db):
+    return _THE_DB
 
