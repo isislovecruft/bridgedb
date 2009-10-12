@@ -1,9 +1,9 @@
 
 RSN:
-. Switch backend to sqlite
+o Switch backend to sqlite
 X Drop email->bridge mappings after N days
 o Bump up epoch length a lot.
-. Test DB migration code.
+o Test DB migration code.
 o Drop email persistence.
 o Rate-limit email replies.
 o Stop looking for "get bridges" in emails.
@@ -12,10 +12,11 @@ o Clean email backend periodically
 
 
 Soon:
-. It keeps corrupting its database, causing Roger to delete the old
+o It keeps corrupting its database, causing Roger to delete the old
   database and undermine this whole give-the-same-answer-each-time
   design:
   https://bugs.torproject.org/flyspray/index.php?do=details&id=1098
+  [SOLUTION: Switch to sqlite.]
 - Keep strings in gettext file, internationalize properly with gettext
 o Send back an email even if there are no bridges
 o Check dkim headers for sanity.
@@ -33,8 +34,10 @@ X When sending bridges to an email address in the history, check for
   - Actually configure it.
 - make the bridge list you get back include at least one *non*443
   bridge. turns out sometimes 443 isn't all it's cracked up to be.
-- write the ip addresses of the unallocated bridges to a local file,
+X write the ip addresses of the unallocated bridges to a local file,
   so we can give them out manually as needed
+  [Instead, we keep them in a sqlite database.  That should be good
+  enough to query manually.]
 
 Not now:
 - check that incoming IP of email is sane.
@@ -43,7 +46,7 @@ Not now:
 Later:
 - document stuff better
 - better area division logic
-- make all proxies get stuck in their own area.
+. make all proxies get stuck in their own area.
 o implement slightly nicer logging
 - add captchas
 o decent template for web interface
