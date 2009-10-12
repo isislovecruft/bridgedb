@@ -253,7 +253,7 @@ def getMailResponse(lines, ctx):
     body = w.startbody("text/plain")
 
     if bridges:
-        with_fp = ctx.cfg.EMAIL_INCLUDE_FINGEPRINTS
+        with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
         answer = "".join("  %s\n" % b.getConfigLine(with_fp) for b in bridges)
     else:
         answer = "(no bridges currently available)"
