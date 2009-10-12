@@ -251,7 +251,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         db = bridgedb.Storage.getDB()
 
         lastSaw = db.getEmailTime(emailaddress)
-        if lastSaw + MAX_EMAIL_RATE >= now:
+        if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
             logging.warn("Got a request for bridges from %r; we already "
                          "answered one within the last %d seconds. Ignoring.",
                          emailaddress, MAX_EMAIL_RATE)
