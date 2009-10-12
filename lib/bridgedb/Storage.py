@@ -107,14 +107,16 @@ class SqliteDict:
 #     ls|<ID> -- given to bridgetracker, maps to time when a router was
 #            last seen (YYYY-MM-DD HH:MM)
 #
-# So we probably want something like:
+# We no longer want to use em| at all, since we're not doing that kind
+# of persistence any more.
+
+# Here is the SQL schema.
 
 SCHEMA1_SCRIPT = """
  CREATE TABLE Config (
      key PRIMARY KEY NOT NULL,
      value
  );
- INSERT INTO Config VALUES ( 'schema-version', 1 );
 
  CREATE TABLE Bridges (
      id INTEGER PRIMARY KEY NOT NULL,
@@ -134,6 +136,8 @@ SCHEMA1_SCRIPT = """
  );
 
  CREATE INDEX EmailedBridgesWhenMailed on EmailedBridges ( email );
+
+ INSERT INTO Config VALUES ( 'schema-version', 1 );
 """
 
 
@@ -237,12 +241,15 @@ def openOrConvertDatabase(sqlite_file, db_file):
         return conn
 
     try:
+        # We handle all the sp| keys first, since other tables have
+        # dependencies on Bridges.
         for k in db.keys():
             v = db[k]
             if k.startswith("sp|"):
                 assert len(k) == 23
                 cur.execute("INSERT INTO Bridges ( hex_key, distributor ) "
                             "VALUES (?, ?)", (toHex(k[3:]),v))
+        # Now we handle the other key types.
         for k in db.keys():
             v = db[k]
             if k.startswith("fs|"):
@@ -253,18 +260,19 @@ def openOrConvertDatabase(sqlite_file, db_file):
                 assert len(k) == 23
                 cur.execute("UPDATE Bridges SET last_seen = ? "
                             "WHERE hex_key = ?", (v, toHex(k[3:])))
-            elif k.startswith("em|"):
-                keys = list(toHex(i) for i in
-                    bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
-                cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
-                                "SELECT ?, id FROM Bridges WHERE hex_key = ?",
-                                [(k[3:],i) for i in keys])
-            elif k.startswith("sp|"):
+            #elif k.startswith("em|"):
+            #    keys = list(toHex(i) for i in
+            #        bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
+            #    cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
+            #                    "SELECT ?, id FROM Bridges WHERE hex_key = ?",
+            #                    [(k[3:],i) for i in keys])
+            elif k.startswith("sp|") or k.startswith("em|"):
                 pass
             else:
                 logging.warn("Unrecognized key %r", k)
     except:
         conn.rollback()
+        conn.close()
         os.unlink(sqlite_file)
         raise
 
