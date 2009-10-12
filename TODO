@@ -23,7 +23,7 @@ X Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
   X for bonus points, make it base64-tolerant
 - make all the rest of the email options configurable.
-- bug: the email handler gets really upset when the email doesn't have
+o bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
 o When we hit the end of a period, forget email address history.
 X When sending bridges to an email address in the history, check for

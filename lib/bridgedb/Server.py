@@ -187,7 +187,7 @@ def getMailResponse(lines, ctx):
     if not subject: subject = "[no subject]"
     clientFromAddr = msg.getaddr("From")
     clientSenderAddr = msg.getaddr("Sender")
-    msgID = msg.getheader("Message-ID")
+    msgID = msg.getheader("Message-ID", None)
     if clientSenderAddr and clientSenderAddr[1]:
         clientAddr = clientSenderAddr[1]
     elif clientFromAddr and clientFromAddr[1]:
