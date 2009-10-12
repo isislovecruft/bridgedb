@@ -437,7 +437,7 @@ class BridgeSplitter(BridgeHolder):
 
         for s in self.statsHolders:
             s.insert(bridge)
-        if bridge.running == False or bridge.running == None:
+        if not bridge.running:
             return
 
         bridgeID = bridge.getID()

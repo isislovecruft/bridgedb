@@ -5,7 +5,6 @@
 import calendar
 import os
 import logging
-import bridgedb.Bridges
 import binascii
 import sqlite3
 import time

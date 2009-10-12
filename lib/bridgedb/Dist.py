@@ -250,11 +250,11 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         db = bridgedb.Storage.getDB()
 
-        lastSaw = db.getEmailTime(emailadress)
+        lastSaw = db.getEmailTime(emailaddress)
         if lastSaw + MAX_EMAIL_RATE >= now:
-            log.warning("Got a request for bridges from %r; we already "
-                        "answered one within the last %d seconds. Ignoring.",
-                        emailaddress, MAX_EMAIL_RATE)
+            logging.warn("Got a request for bridges from %r; we already "
+                         "answered one within the last %d seconds. Ignoring.",
+                         emailaddress, MAX_EMAIL_RATE)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
