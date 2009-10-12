@@ -1,14 +1,26 @@
 
+RSN:
+. Switch backend to sqlite
+X Drop email->bridge mappings after N days
+- Bump up epoch length a lot.
+. Test DB migration code.
+- Write a spec.
+- Drop email persistence
+- Rate-limit email replies.
+- Stop looking for "get bridges" in emails.
+
+
 Soon:
-* It keeps corrupting its database, causing Roger to delete the old
+. It keeps corrupting its database, causing Roger to delete the old
   database and undermine this whole give-the-same-answer-each-time
   design:
   https://bugs.torproject.org/flyspray/index.php?do=details&id=1098
+- Keep strings in gettext file, internationalize properly with gettext
 o Send back an email even if there are no bridges
 o Check dkim headers for sanity.
-- Make the 'magic word' for the email configurable, case-tolerant,
+X Make the 'magic word' for the email configurable, case-tolerant,
   html-tolerant, and punctuation-tolerant
-  - for bonus points, make it base64-tolerant
+  X for bonus points, make it base64-tolerant
 - make all the rest of the email options configurable.
 - bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
