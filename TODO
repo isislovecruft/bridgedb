@@ -7,11 +7,12 @@ o Test DB migration code.
 o Drop email persistence.
 o Rate-limit email replies.
 o Stop looking for "get bridges" in emails.
-o Clean email backend periodically 
+o Clean email backend periodically
 - Write a spec.
 
 
 Soon:
+- List only one bridge per /16 per reply.
 o It keeps corrupting its database, causing Roger to delete the old
   database and undermine this whole give-the-same-answer-each-time
   design:
