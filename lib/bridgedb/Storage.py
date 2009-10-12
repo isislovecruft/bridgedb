@@ -285,6 +285,6 @@ def setGlobalDB(db):
     global _THE_DB
     _THE_DB = db
 
-def getDB(db):
+def getDB():
     return _THE_DB
 
