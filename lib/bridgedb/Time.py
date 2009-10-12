@@ -11,7 +11,15 @@ import time
 
 KNOWN_INTERVALS = [ "hour", "day", "week", "month" ]
 
-class IntervalSchedule:
+class Schedule:
+    def intervalStart(self, when):
+        raise NotImplemented()
+    def getInterval(self, when):
+        raise NotImplemented()
+    def nextIntervalStarts(self, when):
+        raise NotImplemented()
+
+class IntervalSchedule(Schedule):
     """An IntervalSchedule splits time into somewhat natural periods,
        based on hours, days, weeks, or months.
     """
@@ -96,4 +104,16 @@ class IntervalSchedule:
             return self.intervalStart(when) + 86400 * self.count
         elif self.itype == 'hour':
             return self.intervalStart(when) + 3600 * self.count
+
+class NoSchedule(Schedule):
+    """A stub-implementation of Schedule that has only one period for
+       all time."""
+    def __init__(self):
+        pass
+    def intervalStart(self, when):
+        return 0
+    def getInterval(self, when):
+        return "1970"
+    def nextIntervalStarts(self, when):
+        return 2147483647L # INT32_MAX
 

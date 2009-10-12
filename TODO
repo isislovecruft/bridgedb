@@ -2,12 +2,12 @@
 RSN:
 . Switch backend to sqlite
 X Drop email->bridge mappings after N days
-- Bump up epoch length a lot.
+o Bump up epoch length a lot.
 . Test DB migration code.
-- Write a spec.
 - Drop email persistence
 - Rate-limit email replies.
 - Stop looking for "get bridges" in emails.
+- Write a spec.
 
 
 Soon:

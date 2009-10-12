@@ -253,7 +253,8 @@ def startup(cfg):
             categories,
             answerParameters=ringParams)
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
-        webSchedule = Time.IntervalSchedule("day", 2)
+        #webSchedule = Time.IntervalSchedule("day", 2)
+        webSchedule = Time.NoSchedule()
 
     # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
@@ -265,7 +266,8 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
-        emailSchedule = Time.IntervalSchedule("day", 1)
+        #emailSchedule = Time.IntervalSchedule("day", 1)
+        emailSchedule = Time.NoSchedule()
 
     # As appropriate, tell the splitter to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
