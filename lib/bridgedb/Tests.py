@@ -140,6 +140,9 @@ class SQLStorageTests(unittest.TestCase):
         os.close(self.fd)
         os.unlink(self.fname)
 
+    def assertCloseTo(self, a, b, delta=60):
+        self.assertTrue(abs(a-b) <= delta)
+
     def testBridgeStorage(self):
         db = self.db
         B = bridgedb.Bridges.Bridge
@@ -184,16 +187,25 @@ class SQLStorageTests(unittest.TestCase):
         v = cur.fetchone()
         self.assertEquals(v, (3,))
 
-        r = db.getEmailedBridges("abc@example.com")
-        self.assertEquals(r, [])
-        db.addEmailedBridges("abc@example.com", t, [k1,k2])
-        db.addEmailedBridges("def@example.com", t+1000, [k2,k3])
-        r = db.getEmailedBridges("abc@example.com")
-        self.assertEquals(sorted(r), sorted([k1,k2]))
-        r = db.getEmailedBridges("def@example.com")
-        self.assertEquals(sorted(r), sorted([k2,k3]))
-        r = db.getEmailedBridges("ghi@example.com")
-        self.assertEquals(r, [])
+        r = db.getEmailTime("abc@example.com")
+        self.assertEquals(r, None)
+        db.setEmailTime("abc@example.com", t)
+        db.setEmailTime("def@example.com", t+1000)
+        r = db.getEmailTime("abc@example.com")
+        self.assertCloseTo(r, t)
+        r = db.getEmailTime("def@example.com")
+        self.assertCloseTo(r, t+1000)
+        r = db.getEmailTime("ghi@example.com")
+        self.assertEquals(r, None)
+
+        db.cleanEmailedBridges(t+200)
+        db.setEmailTime("def@example.com", t+5000)
+        r = db.getEmailTime("abc@example.com")
+        self.assertEquals(r, None)
+        r = db.getEmailTime("def@example.com")
+        self.assertCloseTo(r, t+5000)
+        cur.execute("SELECT * FROM EmailedBridges")
+        self.assertEquals(len(cur.fetchall()), 1)
 
 def testSuite():
     suite = unittest.TestSuite()
@@ -214,6 +226,4 @@ def main():
     suppressWarnings()
 
     unittest.TextTestRunner(verbosity=1).run(testSuite())
-
-
 

@@ -16,6 +16,7 @@ from zope.interface import implements
 
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
+from twisted.internet.task import LoopingCall
 import twisted.web.resource
 import twisted.web.server
 import twisted.mail.smtp
@@ -220,13 +221,13 @@ def getMailResponse(lines, ctx):
             return None, None
 
     # Was the magic string included
-    for ln in lines:
-        if ln.strip().lower() in ("get bridges", "subject: get bridges"):
-            break
-    else:
-        logging.info("Got a mail from %r with no bridge request; dropping",
-                     clientAddr)
-        return None,None
+    #for ln in lines:
+    #    if ln.strip().lower() in ("get bridges", "subject: get bridges"):
+    #        break
+    #else:
+    #    logging.info("Got a mail from %r with no bridge request; dropping",
+    #                 clientAddr)
+    #    return None,None
 
     # Figure out which bridges to send
     try:
@@ -385,8 +386,12 @@ def addSMTPServer(cfg, dist, sched):
     factory.setBridgeDBContext(ctx)
     ip = cfg.EMAIL_BIND_IP or ""
     reactor.listenTCP(cfg.EMAIL_PORT, factory, interface=ip)
+    # Set up a LoopingCall to run every 30 minutes and forget old email times.
+    lc = LoopingCall(dist.cleanDatabase)
+    lc.start(1800, now=False)
     return factory
 
 def runServers():
     """Start all the servers that we've configured. Exits when they do."""
     reactor.run()
+

@@ -121,6 +121,8 @@ ADDRSPEC = r'(%s)\@(%s)'%(DOTATOM, DOMAIN)
 SPACE_PAT = re.compile(r'\s+')
 ADDRSPEC_PAT = re.compile(ADDRSPEC)
 
+MAX_EMAIL_RATE = 3*3600
+
 class BadEmail(Exception):
     """Exception raised when we get a bad email address."""
     def __init__(self, msg, email):
@@ -130,6 +132,10 @@ class BadEmail(Exception):
 class UnsupportedDomain(BadEmail):
     """Exception raised when we get an email address from a domain we
        don't know."""
+    pass
+
+class TooSoonEmail(BadEmail):
+    """Raised when we got a request from this address too recently."""
     pass
 
 def extractAddrSpec(addr):
@@ -233,6 +239,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
+        now = time.time()
         try:
           emailaddress = normalizeEmail(emailaddress, self.domainmap,
                                       self.domainrules)
@@ -243,25 +250,29 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         db = bridgedb.Storage.getDB()
 
-        ids = db.getEmailedBridges(emailaddress)
-
-        if ids:
-            logging.info("We've seen %r before. Sending the same bridges"
-                         " as last time", emailaddress)
-            result = []
-            for fp in ids:
-                b = self.ring.getBridgeByID(bridgedb.Bridges.fromHex(fp))
-                if b != None:
-                    result.append(b)
-            return result
+        lastSaw = db.getEmailTime(emailadress)
+        if lastSaw + MAX_EMAIL_RATE >= now:
+            log.warning("Got a request for bridges from %r; we already "
+                        "answered one within the last %d seconds. Ignoring.",
+                        emailaddress, MAX_EMAIL_RATE)
+            raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
         result = self.ring.getBridges(pos, N)
 
-        db.addEmailedBridges(emailaddress, time.time(),
-                             [b.fingerprint for b in result])
+        db.setEmailTime(emailaddress, now)
         db.commit()
         return result
 
     def __len__(self):
         return len(self.ring)
+
+    def cleanDatabase(self):
+        db = bridgedb.Storage.getDB()
+        try:
+            db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
+        except:
+            db.rollback()
+            raise
+        else:
+            db.commit()

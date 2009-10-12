@@ -4,9 +4,10 @@ RSN:
 X Drop email->bridge mappings after N days
 o Bump up epoch length a lot.
 . Test DB migration code.
-- Drop email persistence
-- Rate-limit email replies.
-- Stop looking for "get bridges" in emails.
+o Drop email persistence.
+o Rate-limit email replies.
+o Stop looking for "get bridges" in emails.
+o Clean email backend periodically 
 - Write a spec.
 
 
@@ -24,8 +25,8 @@ X Make the 'magic word' for the email configurable, case-tolerant,
 - make all the rest of the email options configurable.
 - bug: the email handler gets really upset when the email doesn't have
   a message-id header in it.
-- When we hit the end of a period, forget email address history.
-- When sending bridges to an email address in the history, check for
+o When we hit the end of a period, forget email address history.
+X When sending bridges to an email address in the history, check for
   liveness.
 . Make bounces go to the right address.
   o Make address sent in "mail from" command configurable.

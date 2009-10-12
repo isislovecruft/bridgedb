@@ -2,6 +2,7 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
+import calendar
 import os
 import logging
 import bridgedb.Bridges
@@ -18,6 +19,8 @@ def _escapeValue(v):
 
 def timeToStr(t):
     return time.strftime("%Y-%m-%d %H:%M", time.gmtime(t))
+def strToTime(t):
+    return calendar.timegm(time.strptime(t, "%Y-%m-%d %H:%M"))
 
 class SqliteDict:
     """
@@ -126,12 +129,11 @@ SCHEMA1_SCRIPT = """
  CREATE UNIQUE INDEX BridgesKeyIndex ON Bridges ( hex_key );
 
  CREATE TABLE EmailedBridges (
-     email NOT NULL,
-     when_mailed,
-     id INTEGER REFERENCES Bridges(id)
+     email PRIMARY KEY NOT NULL,
+     when_mailed
  );
 
- CREATE INDEX EmailedBridgesEmailIndex ON EmailedBridges ( email );
+ CREATE INDEX EmailedBridgesWhenMailed on EmailedBridges ( email );
 """
 
 
@@ -182,22 +184,22 @@ class Database:
         cur = self._cur
         t = timeToStr(expireBefore)
 
-        cur.execute("DELETE FROM Bridges WHERE when_mailed < ?", t);
+        cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,));
 
-    def getEmailedBridges(self, addr):
+    def getEmailTime(self, addr):
         cur = self._cur
-        cur.execute("SELECT hex_key FROM EmailedBridges, Bridges WHERE "
-                    "email = ? AND Bridges.id = EmailedBridges.id", (addr,))
-        return [ hk for hk, in cur.fetchall() ]
+        cur.execute("SELECT when_mailed FROM EmailedBridges WHERE "
+                    "email = ?", (addr,))
+        v = cur.fetchone()
+        if v is None:
+            return None
+        return strToTime(v[0])
 
-    def addEmailedBridges(self, addr, whenMailed, bridgeKeys):
+    def setEmailTime(self, addr, whenMailed):
         cur = self._cur
         t = timeToStr(whenMailed)
-        for k in bridgeKeys:
-            assert(len(k))==HEX_ID_LEN
-        cur.executemany("INSERT INTO EmailedBridges (email,when_mailed,id) "
-                        "SELECT ?,?,id FROM Bridges WHERE hex_key = ?",
-                        [(addr,t,k) for k in bridgeKeys])
+        cur.execute("INSERT OR REPLACE INTO EmailedBridges "
+                    "(email,when_mailed) VALUES (?,?)", (addr, t))
 
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
