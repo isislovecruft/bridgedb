@@ -204,6 +204,22 @@ class Database:
         cur.execute("INSERT OR REPLACE INTO EmailedBridges "
                     "(email,when_mailed) VALUES (?,?)", (addr, t))
 
+    def getAllBridges(self):
+        cur = self._cur
+        cur.execute("SELECT * FROM Bridges")
+        return cur.fetchall()
+
+    def getBridgesForDistributor(self, distributor):
+        cur = self._cur
+        cur.execute("SELECT * FROM Bridges WHERE "
+                    "distributor = ?", (distributor, ))
+        return cur.fetchall()
+
+    def updateDistributorForId(self, distributor, id):
+        cur = self._cur
+        cur.execute("UPDATE Bridges SET distributor = ? WHERE id = ?",
+                    (distributor, id))
+
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()

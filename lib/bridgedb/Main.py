@@ -18,6 +18,7 @@ import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Server as Server
 import bridgedb.Storage
+import bridgedb.Opt as Opt
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -88,6 +89,8 @@ CONFIG = Conf(
     EMAIL_INCLUDE_FINGERPRINTS = False,
 
     RESERVED_SHARE=2,
+
+    FILE_DISTRIBUTORS = {}
   )
 
 def configureLogging(cfg):
@@ -287,6 +290,12 @@ def startup(cfg):
             logging.info("%d for web:", len(ipDistributor.splitter))
             logging.info("  by location set: %s",
                          " ".join(str(len(r)) for r in ipDistributor.rings))
+            logging.info("  by category set: %s",
+                         " ".join(str(len(r)) for r in ipDistributor.categoryRings))
+            logging.info("Here are all known bridges in the category section:")
+            for r in ipDistributor.categoryRings:
+                for name, b in r.bridges.items():
+                    logging.info("%s" % b.getConfigLine(True))
 
     global _reloadFn
     _reloadFn = reload
@@ -316,18 +325,26 @@ def run():
     """Parse the command line to determine where the configuration is.
        Parse the configuration, and start the servers.
     """
-    if len(sys.argv) != 2:
+    options, arguments = Opt.parseOpts()
+
+    configuration = {}
+    if options.testing:
+        configuration = CONFIG
+    elif not options.configfile:
         print "Syntax: %s [config file]" % sys.argv[0]
         sys.exit(1)
-    if sys.argv[1] == "TESTING":
-        configuration = CONFIG
     else:
-        configuration = {}
-        execfile(sys.argv[1], configuration)
+        configFile = options.configfile
+        execfile(configFile, configuration)
         C = Conf(**configuration)
         configuration = C
 
-    startup(configuration)
+    if options.dumpbridges:
+        fileDistributor = Dist.FileDistributor(configuration)
+        fileDistributor.assignBridgesToDistributors()
+        fileDistributor.dumpBridges()
+    else:
+        startup(configuration)
 
 if __name__ == '__main__':
     run()
