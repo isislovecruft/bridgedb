@@ -19,6 +19,7 @@ import bridgedb.Time as Time
 import bridgedb.Server as Server
 import bridgedb.Storage
 import bridgedb.Opt as Opt
+import bridgedb.Bucket as Bucket
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -90,7 +91,7 @@ CONFIG = Conf(
 
     RESERVED_SHARE=2,
 
-    FILE_DISTRIBUTORS = {}
+    FILE_BUCKETS = {}
   )
 
 def configureLogging(cfg):
@@ -326,8 +327,8 @@ def run():
        Parse the configuration, and start the servers.
     """
     options, arguments = Opt.parseOpts()
-
     configuration = {}
+
     if options.testing:
         configuration = CONFIG
     elif not options.configfile:
@@ -340,9 +341,9 @@ def run():
         configuration = C
 
     if options.dumpbridges:
-        fileDistributor = Dist.FileDistributor(configuration)
-        fileDistributor.assignBridgesToDistributors()
-        fileDistributor.dumpBridges()
+        bucketManager = Bucket.BucketManager(configuration)
+        bucketManager.assignBridgesToBuckets()
+        bucketManager.dumpBridges()
     else:
         startup(configuration)
 

@@ -139,6 +139,24 @@ SCHEMA1_SCRIPT = """
  INSERT INTO Config VALUES ( 'schema-version', 1 );
 """
 
+class BridgeData:
+    """Value class carrying bridge information:
+       hex_key      - The unique hex key of the given bridge
+       address      - Bridge IP address
+       or_port      - Bridge TCP port
+       distributor  - The distributor (or pseudo-distributor) through which 
+                      this bridge is being announced
+       first_seen   - When did we first see this bridge online?
+       last_seen    - When was the last time we saw this bridge online?
+    """
+    def __init__(self, hex_key, address, or_port, distributor="unallocated", 
+                 first_seen="", last_seen=""):
+        self.hex_key = hex_key
+        self.address = address
+        self.or_port = or_port
+        self.distributor = distributor
+        self.first_seen = first_seen
+        self.last_seen = last_seen
 
 class Database:
     def __init__(self, sqlite_fname, db_fname=None):
@@ -150,6 +168,9 @@ class Database:
 
     def commit(self):
         self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
 
     def close(self):
         self._cur.close()
@@ -205,20 +226,38 @@ class Database:
                     "(email,when_mailed) VALUES (?,?)", (addr, t))
 
     def getAllBridges(self):
+        """Return a list of BridgeData value classes of all bridges in the
+           database
+        """
+        retBridges = []
         cur = self._cur
-        cur.execute("SELECT * FROM Bridges")
-        return cur.fetchall()
+        cur.execute("SELECT hex_key, address, or_port, distributor, "
+                    "first_seen, last_seen  FROM Bridges")
+        for b in cur.fetchall():
+            bridge = BridgeData(b[0], b[1], b[2], b[3], b[4], b[5])
+            retBridges.append(bridge)
+
+        return retBridges
 
     def getBridgesForDistributor(self, distributor):
+        """Return a list of BridgeData value classes of all bridges in the
+           database that are allocated to distributor 'distributor'
+        """
+        retBridges = []
         cur = self._cur
-        cur.execute("SELECT * FROM Bridges WHERE "
+        cur.execute("SELECT hex_key, address, or_port, distributor, "
+                    "first_seen, last_seen FROM Bridges WHERE "
                     "distributor = ?", (distributor, ))
-        return cur.fetchall()
+        for b in cur.fetchall():
+            bridge = BridgeData(b[0], b[1], b[2], b[3], b[4], b[5])
+            retBridges.append(bridge)
 
-    def updateDistributorForId(self, distributor, id):
+        return retBridges
+
+    def updateDistributorForHexKey(self, distributor, hex_key):
         cur = self._cur
-        cur.execute("UPDATE Bridges SET distributor = ? WHERE id = ?",
-                    (distributor, id))
+        cur.execute("UPDATE Bridges SET distributor = ? WHERE hex_key = ?",
+                    (distributor, hex_key))
 
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
