@@ -11,6 +11,7 @@ import MimeWriter
 import rfc822
 import time
 import logging
+import gettext
 
 from zope.interface import implements
 
@@ -22,55 +23,7 @@ import twisted.web.server
 import twisted.mail.smtp
 
 import bridgedb.Dist
-
-HTML_MESSAGE_TEMPLATE = """
-<html><body>
-<p>Here are your bridge relays:
-<pre id="bridges">
-%s
-</pre>
-</p>
-<p>Bridge relays (or "bridges" for short) are Tor relays that aren't listed
-in the main directory. Since there is no complete public list of them,
-even if your ISP is filtering connections to all the known Tor relays,
-they probably won't be able to block all the bridges.</p>
-<p>To use the above lines, go to Vidalia's Network settings page, and click
-"My ISP blocks connections to the Tor network". Then add each bridge
-address one at a time.</p>
-<p>Configuring more than one bridge address will make your Tor connection
-more stable, in case some of the bridges become unreachable.</p>
-<p>Another way to find public bridge addresses is to send mail to
-bridges@torproject.org with the line "get bridges" by itself in the body
-of the mail. However, so we can make it harder for an attacker to learn
-lots of bridge addresses, you must send this request from a gmail or
-yahoo account.</p>
-</body></html>
-""".strip()
-
-EMAIL_MESSAGE_TEMPLATE = """\
-[This is an automated message; please do not reply.]
-
-Here are your bridge relays:
-
-%s
-
-Bridge relays (or "bridges" for short) are Tor relays that aren't listed
-in the main directory. Since there is no complete public list of them,
-even if your ISP is filtering connections to all the known Tor relays,
-they probably won't be able to block all the bridges.
-
-To use the above lines, go to Vidalia's Network settings page, and click
-"My ISP blocks connections to the Tor network". Then add each bridge
-address one at a time.
-
-Configuring more than one bridge address will make your Tor connection
-more stable, in case some of the bridges become unreachable.
-
-Another way to find public bridge addresses is to visit
-https://bridges.torproject.org/. The answers you get from that page
-will change every few days, so check back periodically if you need more
-bridge addresses.
-"""
+import bridgedb.I18n as I18n
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
@@ -84,6 +37,7 @@ class WebResource(twisted.web.resource.Resource):
              schedule -- an IntervalSchedule object
              N -- the number of bridges to hand out per query.
         """
+        gettext.install("bridgedb", unicode=True)
         twisted.web.resource.Resource.__init__(self)
         self.distributor = distributor
         self.schedule = schedule
@@ -105,6 +59,12 @@ class WebResource(twisted.web.resource.Resource):
         else:
             ip = request.getClientIP()
 
+        # See if we did get a request for a certain locale, otherwise fall back
+        # to 'en'
+        lang = request.args.get("lang", ['en'])
+        lang = lang[0]
+        I18n.languages[lang].install()
+
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
 
@@ -115,7 +75,7 @@ class WebResource(twisted.web.resource.Resource):
             answer = "".join("%s\n" % b.getConfigLine(self.includeFingerprints)
                              for b in bridges)
         else:
-            answer = "No bridges available."
+            answer = _(I18n.NO_BRIDGES)
 
         logging.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
@@ -123,7 +83,24 @@ class WebResource(twisted.web.resource.Resource):
             request.setHeader("Content-Type", "text/plain")
             return answer
         else:
+            HTML_MESSAGE_TEMPLATE = self.buildHTMLMessageTemplate()
             return HTML_MESSAGE_TEMPLATE % answer
+
+    def buildHTMLMessageTemplate(self):
+        """DOCDOC"""
+        template_string = "<html><body>" \
+                             + "<p>" + _(I18n.HTML_1) \
+                             + "<pre id=\"bridges\">" \
+                             + "%s" \
+                             + "</pre></p>" \
+                             + "<p>" + _(I18n.HTML_2) + "</p>" \
+                             + "<p>" + _(I18n.HTML_3) + "</p>" \
+                             + "<p>" + _(I18n.HTML_4) + "</p>" \
+                             + "<p>" + _(I18n.HTML_5) + "</p>" \
+                             + "</body></html>"
+
+        return template_string
+
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -187,6 +164,7 @@ def getMailResponse(lines, ctx):
     if not subject: subject = "[no subject]"
     clientFromAddr = msg.getaddr("From")
     clientSenderAddr = msg.getaddr("Sender")
+    clientToaddr = msg.getaddr("To")
     msgID = msg.getheader("Message-ID", None)
     if clientSenderAddr and clientSenderAddr[1]:
         clientAddr = clientSenderAddr[1]
@@ -195,6 +173,11 @@ def getMailResponse(lines, ctx):
     else:
         logging.info("No From or Sender header on incoming mail.")
         return None,None
+
+    # Look up the locale part in the 'To:' address, if there is one and install
+    # it
+    lang = getLocaleFromPlusAddr(clientToaddr)
+    I18n.languages[lang].install()
 
     try:
         _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
@@ -257,7 +240,15 @@ def getMailResponse(lines, ctx):
         answer = "".join("  %s\n" % b.getConfigLine(with_fp) for b in bridges)
     else:
         answer = "(no bridges currently available)"
-    body.write(EMAIL_MESSAGE_TEMPLATE % answer)
+
+    EMAIL_MESSAGE_TEMPLATE =   _(EMAIL_1) \
+                             + _(EMAIL_2) \
+                             + "%s" \
+                             + _(EMAIL_3) \
+                             + _(EMAIL_4) \
+                             + _(EMAIL_5) \
+                             + _(EMAIL_6)
+    body.write(_(EMAIL_MESSAGE_TEMPLATE) % answer)
 
     f.seek(0)
     logging.info("Email looks good; we should send an answer.")
@@ -282,6 +273,19 @@ def replyToMail(lines, ctx):
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
     logging.info("Sending reply to %r", sendToUser)
     return d
+
+def getLocaleFromPlusAddr(self, address):
+    """See whether the user sent his email to a 'plus' address, for 
+       instance to bridgedb+fa@tpo. Plus addresses are the current 
+       mechanism to set the reply language
+    """
+    replyLocale = "en"
+    r = '.*(<)?(\w+\+(\w+)@\w+(?:\.\w+)+)(?(1)>)'
+    match = re.match(r, address)
+    if match:
+        replyLocale = match.group(3)
+
+    return replyLocale
 
 class MailContext:
     """Helper object that holds information used by email subsystem."""
