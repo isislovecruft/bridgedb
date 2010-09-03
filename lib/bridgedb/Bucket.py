@@ -102,8 +102,9 @@ class BucketManager:
         self.unallocatedList.append(hex_key)
         self.unallocated_available = True
 
-    def isBucketIdentKnown(self, bucketIdent):
-        """Do we know this bucket identifier?
+    def getBucketIdent(self, bucketIdent):
+        """Do we know this bucket identifier? If yes, return the corresponding
+           BucketData object.
         """
         for d in self.bucketList:
             if d.name == bucketIdent:
@@ -143,8 +144,8 @@ class BucketManager:
                 self.addToUnallocatedList(bridge.hex_key)
                 continue
 
-            # Check if we know this distributor
-            d = self.isBucketIdentKnown(bridge.distributor)
+            # Return the buckt identifier in case we know it already
+            d = self.getBucketIdent(bridge.distributor)
             if d is not None:
                 # Does this distributor need another one?
                 # We assume that d.allocated is 0 in the beginning
@@ -193,4 +194,4 @@ class BucketManager:
             for bridge in bForBucket:
                 line = "%s:%s" % (bridge.address, bridge.or_port)
                 f.write(line + '\n')
-            f.close
+            f.close()
