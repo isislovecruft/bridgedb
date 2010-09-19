@@ -22,7 +22,6 @@ instead of 'unallocated'. This is why they are called pseudo-distributors.
 """
 
 import time
-
 import bridgedb.Storage
 
 class BucketData:
@@ -76,6 +75,19 @@ class BucketManager:
 
        When all bridges are assigned in this way, they can then be dumped into
        files by calling the dumpBridges() routine.
+
+       cfg                      - The central configuration instance
+       bucketList               - A list of BucketData instances, holding all 
+                                  configured (and thus requested) buckets with
+                                  their respective numbers
+        unallocatedList         - Holding all bridges from the 'unallocated' 
+                                  pool
+        unallocated_available   - Is at least one unallocated bridge 
+                                  available?
+        distributor_prefix      - The 'distributor' field in the database will
+                                  hold the name of our pseudo-distributor, 
+                                  prefixed by this 
+        db                      - The bridge database access instance
     """
 
     def __init__(self, cfg):
@@ -83,6 +95,7 @@ class BucketManager:
         self.bucketList = []
         self.unallocatedList = []
         self.unallocated_available = False
+        self.distributor_prefix = "pseudo_"
         self.db = bridgedb.Storage.Database(self.cfg.DB_FILE+".sqlite",
                                             self.cfg.DB_FILE)
 
@@ -102,7 +115,7 @@ class BucketManager:
         self.unallocatedList.append(hex_key)
         self.unallocated_available = True
 
-    def getBucketIdent(self, bucketIdent):
+    def getBucketByIdent(self, bucketIdent):
         """Do we know this bucket identifier? If yes, return the corresponding
            BucketData object.
         """
@@ -114,16 +127,22 @@ class BucketManager:
     def assignUnallocatedBridge(self, bucket):
         """Assign an unallocated bridge to a certain bucket
         """
-        bucket.allocated += 1
         hex_key = self.unallocatedList.pop()
-        #print "KEY: %d NAME: %s" % (hex_key, bucket.name)
+        # Mark pseudo-allocators in the database as such
+        allocator_name = self.distributor_prefix + bucket.name
+        #print "KEY: %d NAME: %s" % (hex_key, allocator_name)
         try:
-            self.db.updateDistributorForHexKey(bucket.name, hex_key)
+            self.db.updateDistributorForHexKey(allocator_name, hex_key)
         except:
             self.db.rollback()
+            # Ok, this seems useless, but for consistancy's sake, we'll 
+            # re-assign the bridge from this missed db update attempt to the
+            # unallocated list. Remember? We pop()'d it before.
+            self.addToUnallocatedList(hex_key)
             raise
         else:
             self.db.commit()
+        bucket.allocated += 1
         if len(self.unallocatedList) < 1:
             self.unallocated_available = False
         return True
@@ -137,28 +156,29 @@ class BucketManager:
             d = BucketData(k, v)
             self.bucketList.append(d)
 
-        # Loop through all bridges and sort out our distributors
+        # Loop through all bridges and sort out distributors
         allBridges = self.db.getAllBridges()
         for bridge in allBridges:
             if bridge.distributor == "unallocated":
                 self.addToUnallocatedList(bridge.hex_key)
                 continue
 
-            # Return the buckt identifier in case we know it already
-            d = self.getBucketIdent(bridge.distributor)
+            # Return the bucket in case we know it already
+            d = self.getBucketByIdent(bridge.distributor)
             if d is not None:
-                # Does this distributor need another one?
-                # We assume that d.allocated is 0 in the beginning
+                # Does this distributor need another bridge? If not, re-inject
+                # it into the 'unallocated' pool for for later assignment
                 if d.allocated < d.needed:
                     d.allocated += 1
                 else:
                     self.addToUnallocatedList(bridge.hex_key)
             # We don't know it. Maybe an old entry. Free it.
             else:
-                # DON'T free https or email allocations!
-                if bridge.distributor != "https" and \
-                   bridge.distributor != "email":
+                # DON'T free anything important!
+                if bridge.distributor.startswith(self.distributor_prefix):
                     self.addToUnallocatedList(bridge.hex_key)
+                # else 
+                #   SCREAM_LOUDLY? 
 
         # Loop though bucketList while we have and need unallocated 
         # bridges, assign one bridge at a time
@@ -171,27 +191,30 @@ class BucketManager:
                     # When we have enough bridges, remove bucket identifier 
                     # from list
                     self.bucketList.remove(d)
-         
 
+    def dumpBridgeToFile(self, bridge, filename):
+        """Dump a given bridge into a given file
+        """
+        try:
+            f = open(filename, 'a')
+            line = "%s:%s" % (bridge.address, bridge.or_port)
+            f.write(line + '\n')
+            f.close()
+        except IOError:
+            print "I/O error: %s" % filename
+         
     def dumpBridges(self):
         """Dump all known file distributors to files
         """
-        buckets = self.cfg.FILE_BUCKETS
-        # Dump https, email and unreserved, too
-        buckets["https"] = 0
-        buckets["email"] = 0
-        buckets["unallocated"] = 0
-        # Loop through all bucket identifiers and dump their bridges to files
-        for bucketId, _ in buckets.items():
-            fileName = bucketId + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
-            f = open(fileName, 'w')
-            #f.write("Here are your bridges, %s:\n" % bucketId)
-            bForBucket = self.db.getBridgesForDistributor(bucketId) 
-            # Skip empty (pseudo-)distributors
-            if len(bForBucket) < 1:
+        allBridges = self.db.getAllBridges()
+        for bridge in allBridges:
+            if bridge.distributor is "":
                 continue
-            print "Dumping %d bridges for %s to %s" % (len(bForBucket), bucketId, fileName)
-            for bridge in bForBucket:
-                line = "%s:%s" % (bridge.address, bridge.or_port)
-                f.write(line + '\n')
-            f.close()
+            distributor = bridge.distributor
+            if (distributor.startswith(self.distributor_prefix)):
+                # Subtract the pseudo distributor prefix
+                distributor = distributor.replace(self.distributor_prefix, "")
+            # Be safe. Replace all '/' in distributor names
+            distributor = distributor.replace("/", "_")
+            fileName = distributor + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
+            self.dumpBridgeToFile(bridge, fileName)
