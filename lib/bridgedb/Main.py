@@ -332,7 +332,7 @@ def run():
     if options.testing:
         configuration = CONFIG
     elif not options.configfile:
-        print "Syntax: %s [config file]" % sys.argv[0]
+        print "Syntax: %s -c CONFIGFILE" % sys.argv[0]
         sys.exit(1)
     else:
         configFile = options.configfile
