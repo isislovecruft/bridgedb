@@ -75,7 +75,7 @@ class WebResource(twisted.web.resource.Resource):
             answer = "".join("%s\n" % b.getConfigLine(self.includeFingerprints)
                              for b in bridges)
         else:
-            answer = _(I18n.NO_BRIDGES)
+            answer = _(I18n.BRIDGEDB_TEXT[-1])
 
         logging.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
@@ -88,18 +88,17 @@ class WebResource(twisted.web.resource.Resource):
 
     def buildHTMLMessageTemplate(self):
         """DOCDOC"""
-        template_string = "<html><body>" \
-                             + "<p>" + _(I18n.HTML_1) \
-                             + "<pre id=\"bridges\">" \
-                             + "%s" \
-                             + "</pre></p>" \
-                             + "<p>" + _(I18n.HTML_2) + "</p>" \
-                             + "<p>" + _(I18n.HTML_3) + "</p>" \
-                             + "<p>" + _(I18n.HTML_4) + "</p>" \
-                             + "<p>" + _(I18n.HTML_5) + "</p>" \
-                             + "</body></html>"
+        html_msg = "<html><body>" \
+                   + "<p>" + _(I18n.BRIDGEDB_TEXT[1]) \
+                   + "<pre id=\"bridges\">" \
+                   + "%s" \
+                   + "</pre></p>" \
+                   + "<p>" + _(I18n.BRIDGEDB_TEXT[2]) + "</p>" \
+                   + "<p>" + _(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
+                   + "<p>" + _(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
+                   + "</body></html>"
 
-        return template_string
+        return html_msg
 
 
 def addWebServer(cfg, dist, sched):
@@ -241,14 +240,10 @@ def getMailResponse(lines, ctx):
     else:
         answer = "(no bridges currently available)"
 
-    EMAIL_MESSAGE_TEMPLATE =   _(EMAIL_1) \
-                             + _(EMAIL_2) \
+    EMAIL_MESSAGE_TEMPLATE = "".join("%s\n" % _(I18n.BRIDGEDB_TEXT[5:2])) \
                              + "%s" \
-                             + _(EMAIL_3) \
-                             + _(EMAIL_4) \
-                             + _(EMAIL_5) \
-                             + _(EMAIL_6)
-    body.write(_(EMAIL_MESSAGE_TEMPLATE) % answer)
+                             + "".join("%s\n" % _(I18n.BRIDGEDB_TEXT[7:4]))
+    body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
     f.seek(0)
     logging.info("Email looks good; we should send an answer.")
