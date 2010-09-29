@@ -19,7 +19,6 @@ import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Server as Server
 import bridgedb.Storage
-import bridgedb.I18n as I18n
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -90,8 +89,6 @@ CONFIG = Conf(
     EMAIL_INCLUDE_FINGERPRINTS = False,
 
     RESERVED_SHARE=2,
-
-    CONFIGURED_LOCALES = [ "en", "de" ]
   )
 
 def configureLogging(cfg):
@@ -227,9 +224,6 @@ def startup(cfg):
     db = bridgedb.Storage.Database(cfg.DB_FILE+".sqlite",
                                    cfg.DB_FILE)
     bridgedb.Storage.setGlobalDB(db)
-
-    # Setup languages
-    I18n.setupLanguages(cfg)
 
     # Get a proxy list.
     proxyList = ProxyCategory()
