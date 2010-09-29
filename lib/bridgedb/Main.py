@@ -10,6 +10,7 @@ import os
 import signal
 import sys
 import logging
+import gettext
 
 from twisted.internet import reactor
 

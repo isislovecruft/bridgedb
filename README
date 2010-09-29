@@ -4,11 +4,17 @@ To set up:
  - Install Twisted-Web, Twisted-Mail, PyOpenSSL, and all their dependencies.
  - To run unit tests, "python setup.py test"
  - python setup.py install --prefix=$HOME
+ - To generate translation files, run "python setup.py trans" and then run
+   "python setup.py install_data" to install them
  - Edit bridgedb.conf; put it somewhere good.
  - Make sure that the input files referred to in bridgedb.conf exist.
    - You can make a self-signed certificate with
      openssl req -x509 -new -nodes > cert
  - Set up PYTHONPATH to include "~/lib/python2.4/site-packages/".
+
+To re-generate the i18n template (in case translation strings have changed 
+in BridgeDB):
+ - Run "xgettext lib/bridgedb/I18n.py -dbridgedb -oi18n/templates/bridgedb.pot"
 
 To run:
  - Run "python -m TorBridgeDB bridgedb.conf"
