@@ -32,7 +32,7 @@ class WebResource(twisted.web.resource.Resource):
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
-                 includeFingerprints=True):
+                 includeFingerprints=True, domains=[]):
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -45,6 +45,7 @@ class WebResource(twisted.web.resource.Resource):
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
         self.includeFingerprints = includeFingerprints
+        self.domains = domains
 
     def render_GET(self, request):
         interval = self.schedule.getInterval(time.time())
@@ -103,6 +104,8 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
+                   + "<ul>" \
+                   + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"\
                    + "</body></html>"
 
         return html_msg
@@ -127,7 +130,8 @@ def addWebServer(cfg, dist, sched):
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                        cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
+                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
+                       domains=cfg.EMAIL_DOMAINS)
         site = Site(resource)
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
     if cfg.HTTPS_PORT:

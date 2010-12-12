@@ -35,8 +35,8 @@ more stable, in case some of the bridges become unreachable."""),
  _("""Another way to find public bridge addresses is to send mail to
 bridges@torproject.org with the line "get bridges" by itself in the body
 of the mail. However, so we can make it harder for an attacker to learn
-lots of bridge addresses, you must send this request from a gmail or
-yahoo account."""),
+lots of bridge addresses, you must send this request from an email address at
+one of the following domains:"""),
  # BRIDGEDB_TEXT[5]
  _("""[This is an automated message; please do not reply.]"""),
  # BRIDGEDB_TEXT[6]
