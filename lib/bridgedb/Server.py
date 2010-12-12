@@ -99,7 +99,7 @@ class WebResource(twisted.web.resource.Resource):
             email_domain_list = "<ul>" \
                 + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"
         else:
-            email_domain_list = "<p>E-mail requests not supported!</p>"
+            email_domain_list = "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[8]) + "</p>"
         html_msg = "<html><body>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[0]) \
                    + "<pre id=\"bridges\">" \
