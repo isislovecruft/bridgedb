@@ -95,6 +95,11 @@ class WebResource(twisted.web.resource.Resource):
 
     def buildHTMLMessageTemplate(self, t):
         """DOCDOC"""
+        if self.domains:
+            email_domain_list = "<ul>" \
+                + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"
+        else:
+            email_domain_list = "<p>E-mail requests not supported!</p>"
         html_msg = "<html><body>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[0]) \
                    + "<pre id=\"bridges\">" \
@@ -104,8 +109,7 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
-                   + "<ul>" \
-                   + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"\
+                   + email_domain_list \
                    + "</body></html>"
 
         return html_msg
