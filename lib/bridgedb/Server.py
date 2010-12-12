@@ -82,7 +82,7 @@ class WebResource(twisted.web.resource.Resource):
             answer = "".join("%s\n" % b.getConfigLine(self.includeFingerprints)
                              for b in bridges)
         else:
-            answer = t.gettext(I18n.BRIDGEDB_TEXT[-1])
+            answer = t.gettext(I18n.BRIDGEDB_TEXT[7])
 
         logging.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
