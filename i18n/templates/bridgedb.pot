@@ -8,10 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-29 14:25+0200\n"
+"POT-Creation-Date: 2011-01-01 07:48-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -46,8 +47,9 @@ msgid ""
 "Another way to find public bridge addresses is to send mail to\n"
 "bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
 "of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from a gmail or\n"
-"yahoo account."
+"lots of bridge addresses, you must send this request from an email address "
+"at\n"
+"one of the following domains:"
 msgstr ""
 
 #: lib/bridgedb/I18n.py:41
@@ -64,4 +66,8 @@ msgstr ""
 
 #: lib/bridgedb/I18n.py:48
 msgid "(no bridges currently available)"
+msgstr ""
+
+#: lib/bridgedb/I18n.py:50
+msgid "(e-mail requests not currently supported)"
 msgstr ""

@@ -12,9 +12,12 @@ To set up:
      openssl req -x509 -new -nodes > cert
  - Set up PYTHONPATH to include "~/lib/python2.4/site-packages/".
 
-To re-generate the i18n template (in case translation strings have changed 
-in BridgeDB):
- - Run "xgettext lib/bridgedb/I18n.py -dbridgedb -oi18n/templates/bridgedb.pot"
+To re-generate and update the i18n files (in case translated strings
+have changed in BridgeDB):
+ - Run:
+     xgettext lib/bridgedb/I18n.py -dbridgedb -oi18n/templates/bridgedb.pot
+     msgen -o i18n/en/bridgedb.po --lang=en i18n/templates/bridgedb.pot
+     msgmerge -U i18n/de/bridgedb.po i18n/templates/bridgedb.pot
 
 To run:
  - Run "python -m TorBridgeDB bridgedb.conf"
@@ -46,4 +49,3 @@ To use with email:
 
 Support
  - Send your questions to nickm.
-
