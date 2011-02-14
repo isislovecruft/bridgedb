@@ -1,5 +1,8 @@
 
-                       BridgeDB specification
+                          BridgeDB specification
+
+                             Karsten Loesing
+                              Nick Mathewson
 
 0. Preliminaries
 
@@ -8,12 +11,21 @@
    to distributors, and decides which bridges to give out upon user
    requests.
 
+   Some of the decisions here may be suboptimal: this document is meant to
+   specify current behavior as of Feb 2011, not to specify ideal behavior.
+
 1. Importing bridge network statuses and bridge descriptors
 
    BridgeDB learns about bridges from parsing bridge network statuses and
    bridge descriptors as specified in Tor's directory protocol.
    BridgeDB SHOULD parse one bridge network status file first and at least
    one bridge descriptor file afterwards.
+
+   BridgeDB scans its files on sighup.
+
+   BridgeDB does not validate signatures on descriptors or networkstatus
+   files: the operator needs to make sure that these documents have come
+   from a Tor instance that did the validation for us.
 
 1.1. Parsing bridge network statuses
 
@@ -30,6 +42,12 @@
    BridgeDB parses the identity from the "r" line and the assigned flags
    from the "s" line.
    BridgeDB MUST discard all bridges that do not have the Running flag.
+# I don't think that "discard" is the right word here: we don't actually
+# seem to "Forget they exist".  Instead, we remember that they are not
+# running.  (See how parseStatusFile yields a flag that says if the bridges
+# are running, and how Main.load sets the bridge's status to running or
+# non-running appropriately before passing it to splitter.  At no point here
+# does a non-running bridge get "discarded", sfaict). -NM
    BridgeDB memorizes all remaining bridges as the set of running bridges
    that can be given out to bridge users.
    BridgeDB SHOULD memorize assigned flags if it wants to ensure that sets
@@ -53,8 +71,15 @@
    BridgeDB MUST discard bridge descriptors if the fingerprint is not
    contained in the bridge network status parsed before or if the bridge
    does not have the Running flag.
+# See comment above -NM
    BridgeDB MAY discard bridge descriptors which have a different purpose
    than "bridge".
+# "MAY" isn't good enough; we need to know whether it's safe to give
+# bridgedb a list of non-bridge-purpose descriptors or not.  If it
+# discards them, then you shouldn't give bridgedb non-bridge descriptors
+# if you _do_ want them handed out.  If it doesn't discard them, then you
+# shouldn't give bridgedb non-bridge descriptors _unless_ you want them
+# handed out.
    BridgeDB memorizes the IP addresses and OR ports of the remaining
    bridges.
    If there is more than one bridge descriptor with the same fingerprint,
@@ -73,17 +98,29 @@
 # that?  We could also look at the bridge descriptor that is referenced
 # from the bridge network status by its descriptor identifier, even though
 # that would require us to calculate the descriptor hash.  -KL
+# We should just look at the 'published' dates in the bridges. Call this a bug,
+# I'd say. -NM
    If BridgeDB does not find a bridge descriptor for a bridge contained in
    the bridge network status parsed before, it MUST discard that bridge.
 # I confirmed that BridgeDB discards (or at least doesn't use) bridges for
 # which it doesn't have a bridge descriptor.  What's the reason for
 # parsing bridge descriptors anyway?  Can't we learn a bridge's IP address
 # and OR port from the "r" line, too?  -KL
+# I forget. -NM
 
 2. Assigning bridges to distributors
 
+   A "distributor" is a mechanism by which bridges are given (or not
+   given) to clients.  The current distributors are "email", "https",
+   and "unallocated".
+
    BridgeDB assigns bridges to distributors on a probabilistic basis and
    makes these assignments persistent.
+# Not exactly probabilistic: it's based on an HMAC hash of the bridge's ID
+# and a secret. -NM
+   Persistence is achieved by using a database to map node ID to distributor.
+   Each bridge is assigned to exactly one distributor (including
+   the "unallocated" distributor).
    BridgeDB MAY be configured to support only a non-empty subset of the
    distributors specified in this document.
    BridgeDB MAY define different probabilities for assigning new bridges
@@ -91,11 +128,13 @@
    BridgeDB MUST NOT change existing assignments of bridges to
    distributors, even if probabilities for assigning bridges to
    distributors change or distributors are disabled entirely.
+# Why "MUST NOT" here?  This seems like a potentially desirable feature.
+# "Does not" would be more accurate. -MN
 
 3. Giving out bridges upon requests
 
-   BridgeDB gives out a subset of the bridges from a given distributor
-   upon request.
+   Upon receiving a client request, a BridgeDB distributor provides a
+   subset of the bridges assigned to it.
    BridgeDB MUST only give out bridges that are contained in the most
    recently parsed bridge network status and that have the Running flag
    set.
@@ -107,8 +146,9 @@
 
 4. Selecting bridges to be given out based on IP addresses
 
-   BridgeDB MAY support one or more distributors that are giving out
-   bridges based on the requestor's IP address.
+   BridgeDB MAY support one or more distributors that gives out
+   bridges based on the requestor's IP address.  Currently, this is
+   how the HTTPS distributor works.
    BridgeDB MUST fix the set of bridges to be returned for a defined time
    period.
    BridgeDB SHOULD consider two IP addresses coming from the same /24 as
@@ -131,29 +171,86 @@
    BridgeDB MAY include bridge fingerprints in replies along with bridge
    IP addresses and OR ports.
 
+   The current algorithm is as follows.  An IP-based distributor splits
+   the bridges uniformly into a set of "rings" based on an HMAC of their
+   ID.  Some of these rings are "area" rings for parts of IP space; some
+   are "category" rings for categories of IPs (like proxies).  When a
+   client makes a request from an IP, the distributor first sees whether
+   the IP is in one of the categories it knows.  If so, the distributor
+   returns an IP from the category rings.  If not, the distributor
+   maps the IP into an "area" (that is, a /24), and then uses an HMAC to
+   map the area to one of the area rings.
+
+   Once the IP-based distributor knows what ring it is handing out bridges
+   from, it maps the current "epoch" (N-hour period) and the IP's area
+   (/24) to a point in the ring based on HMAC, and hands out bridges at
+   that point.
+
+   "Mapping X to Y based on an HMAC" above means one of the following:
+      - We keep all of the elements of Y in some order, with a mapping
+        from all 160-bit strings to positions in Y.
+      - We take an HMAC of X using some fixed string as a key to get a
+        160-bit value.  We then map that value to the next position of Y.
+
+   When giving out bridges based on a position in a ring, BridgeDB first
+   looks at flag requirements and port requirements.  For example,
+   BridgeDB may be configured to "Give out at least L bridges with port
+   443, and at least M bridges with Stable, and at least N bridges
+   total."  To do this, BridgeDB adds to the results:
+      - The first L bridges in the ring after the position that have the
+        port 443, and
+      - The first M bridges in the ring after the position that have the
+        flag stable, and
+      - The first N-L-M bridges in the ring after the position that it
+        has not already decided to give out.
+
 5. Selecting bridges to be given out based on email addresses
 
    BridgeDB MAY support one or more distributors that are giving out
-   bridges based on the requestor's email address.
+   bridges based on the requestor's email address.  Currently, this is how
+   the email distributor works.
    BridgeDB SHOULD reject email addresses containing other characters than
    the ones that RFC2822 allows.
    BridgeDB MAY reject email addresses containing other characters it
    might not process correctly.
    BridgeDB MUST reject email addresses coming from other domains than a
    configured set of permitted domains.
-   BridgeDB MAY normalize email addresses by removing "." characters and
+   BridgeDB SHOULD normalize email addresses by removing "." characters and
    by removing parts after the first "+" character.
    BridgeDB MAY discard requests that do not have the value "pass" in
    their X-DKIM-Authentication-Result header or does not have this header.
+# This means in practice that the incoming mail stack needs to check DKIM
+# authentication and set X-DKIM-Authentication-Result.
    BridgeDB SHOULD NOT return a new set of bridges to the same email
    address until a given time period (typically a few hours) has passed.
 # Why don't we fix the bridges we give out for a global 3-hour time period
 # like we do for IP addresses?  This way we could avoid storing email
 # addresses.  -KL
+# The 3-hour value is probably much too short anyway.  If we take longer
+# time values, then people get new bridges when bridges show up, as
+# opposed to then we decide to reset the bridges we give them.  (Yes, this
+# problem exists for the IP distributor). -NM
    BridgeDB MAY include bridge fingerprints in replies along with bridge
    IP addresses and OR ports.
+   BridgeDB SHOULD periodically discard old email-address-to-bridge
+   mappings.
+   BridgeDB SHOULD reject too many email requires too frequently from the
+   same normalized address.
+
+   To map previously unseen email addresses to a set of bridges, BridgeDB
+   proceeds as follows:
+     - It normalizes the email address as above, by stripping out dots,
+       removing all of the localpart after the +, and putting it all
+       in lowercase.  (Example: "John.Doe+bridges@example.COM" becomes
+       "johndoe@example.com".)
+     - It maps an HMAC of the normalized address to a position on its ring
+       of bridges.
+     - It hands out bridges starting at that position, based on the
+       port/flag requirements, as specified at the end of section 4.
 
 6. Selecting unallocated bridges to be stored in file buckets
+
+# Kaner should have a look at this section. -NM
 
    BridgeDB MAY reserve a subset of bridges and not give them out via one
    of the distributors.
