@@ -5,102 +5,199 @@
 
    This document specifies how BridgeDB processes bridge descriptor files
    to learn about new bridges, maintains persistent assignments of bridges
-   to distributors, and decides which descriptors to give out upon user
+   to distributors, and decides which bridges to give out upon user
    requests.
 
 1. Importing bridge network statuses and bridge descriptors
 
    BridgeDB learns about bridges from parsing bridge network statuses and
-   bridge descriptors as specified in Tor's directory protocol.  BridgeDB
-   SHOULD parse one bridge network status file and at least one bridge
-   descriptor file.
+   bridge descriptors as specified in Tor's directory protocol.
+   BridgeDB SHOULD parse one bridge network status file first and at least
+   one bridge descriptor file afterwards.
 
 1.1. Parsing bridge network statuses
 
    Bridge network status documents contain the information which bridges
-   are known to the bridge authority at a certain time.  We expect bridge
-   network statuses to contain at least the following two lines for every
-   bridge in the given order:
+   are known to the bridge authority and which flags the bridge authority
+   assigns to them.
+   We expect bridge network statuses to contain at least the following two
+   lines for every bridge in the given order:
 
-   "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort SP
-       DirPort NL
-   "s" SP Flags NL
+      "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
+          SP DirPort NL
+      "s" SP Flags NL
 
-   BridgeDB parses the identity from the "r" line and scans the "s" line
-   for flags Stable and Running.  BridgeDB MUST discard all bridges that
-   do not have the Running flag.  BridgeDB MAY only consider bridges as
-   running that have the Running flag in the most recently parsed bridge
-   network status.  BridgeDB MUST also discard all bridges for which it
-   does not find a bridge descriptor.  BridgeDB memorizes all remaining
-   bridges as the set of running bridges that can be given out to bridge
-   users.
-# I'm not 100% sure if BridgeDB discards (or rather doesn't use) bridges
-# for which it doesn't have a bridge descriptor.  But as far as I can see,
-# it wouldn't learn the bridge's IP and OR port in that case, so we
-# shouldn't use it.  Is this a bug?  -KL
-# What's the reason for parsing bridge descriptors anyway?  Can't we learn
-# a bridge's IP address and OR port from the "r" line, too?  -KL
+   BridgeDB parses the identity from the "r" line and the assigned flags
+   from the "s" line.
+   BridgeDB MUST discard all bridges that do not have the Running flag.
+   BridgeDB memorizes all remaining bridges as the set of running bridges
+   that can be given out to bridge users.
+   BridgeDB SHOULD memorize assigned flags if it wants to ensure that sets
+   of bridges given out SHOULD contain at least a given number of bridges
+   with these flags.
 
 1.2. Parsing bridge descriptors
 
    BridgeDB learns about a bridge's most recent IP address and OR port
-   from parsing bridge descriptors.  Bridge descriptor files MAY contain
-   one or more bridge descriptors.  We expect bridge descriptor to contain
-   at least the following lines in the stated order:
+   from parsing bridge descriptors.
+   Bridge descriptor files MAY contain one or more bridge descriptors.
+   We expect bridge descriptor to contain at least the following lines in
+   the stated order:
 
-   "@purpose" SP purpose NL
-   "router" SP nickname SP IP SP ORPort SP SOCKSPort SP DirPort NL
-   ["opt "] "fingerprint" SP fingerprint NL
+      "@purpose" SP purpose NL
+      "router" SP nickname SP IP SP ORPort SP SOCKSPort SP DirPort NL
+      ["opt" SP] "fingerprint" SP fingerprint NL
 
-   BridgeDB parses the purpose, IP, ORPort, and fingerprint.  BridgeDB
-   MUST discard bridge descriptors if the fingerprint is not contained in
-   the bridge network status(es) parsed in the same execution or if the
-   bridge does not have the Running flag.  BridgeDB MAY discard bridge
-   descriptors which have a different purpose than "bridge".  BridgeDB
-   memorizes the IP addresses and OR ports of the remaining bridges.  If
-   there is more than one bridge descriptor with the same fingerprint,
+   BridgeDB parses the purpose, IP, ORPort, and fingerprint from these
+   lines.
+   BridgeDB MUST discard bridge descriptors if the fingerprint is not
+   contained in the bridge network status parsed before or if the bridge
+   does not have the Running flag.
+   BridgeDB MAY discard bridge descriptors which have a different purpose
+   than "bridge".
+   BridgeDB memorizes the IP addresses and OR ports of the remaining
+   bridges.
+   If there is more than one bridge descriptor with the same fingerprint,
    BridgeDB memorizes the IP address and OR port of the most recently
    parsed bridge descriptor.
-# I think that BridgeDB simply assumes that descriptors in the bridge
-# descriptor files are in chronological order.  If not, it would overwrite
-# a bridge's IP address and OR port with an older descriptor, which would
-# be bad.  The current cached-descriptors* files should write descriptors
-# in chronological order.  But we might change that, e.g., when trying to
-# limit the number of descriptors in Tor.  Should we make the assumption
-# that descriptors are ordered chronologically, or should we specify that
-# we have to check that explicitly?  -KL
+# I confirmed that BridgeDB simply assumes that descriptors in the bridge
+# descriptor files are in chronological order and that descriptors in
+# cached-descriptors.new are newer than those in cached-descriptors.  If
+# this is not the case, BridgeDB overwrites a bridge's IP address and OR
+# port with those from an older descriptor!  I think that the current
+# cached-descriptors* files that Tor produces always have descriptors in
+# chronological order.  But what if we change that, e.g., when trying to
+# limit the number of descriptors that Tor memorizes.  Should we make the
+# assumption that descriptors are ordered chronologically, or should we
+# specify that we have to check that explicitly and fix BridgeDB to do
+# that?  We could also look at the bridge descriptor that is referenced
+# from the bridge network status by its descriptor identifier, even though
+# that would require us to calculate the descriptor hash.  -KL
+   If BridgeDB does not find a bridge descriptor for a bridge contained in
+   the bridge network status parsed before, it MUST discard that bridge.
+# I confirmed that BridgeDB discards (or at least doesn't use) bridges for
+# which it doesn't have a bridge descriptor.  What's the reason for
+# parsing bridge descriptors anyway?  Can't we learn a bridge's IP address
+# and OR port from the "r" line, too?  -KL
 
 2. Assigning bridges to distributors
 
-# In this section I'm planning to write how BridgeDB should decide to
-# which distributor (https, email, unallocated/file bucket) it assigns a
-# new bridge.  I should also write down whether BridgeDB changes
-# assignments of already known bridges (I think it doesn't).  The latter
-# includes cases when we increase/reduce the probability of bridges being
-# assigned to a distributor or even turn off a distributor completely.
-# -KL
+   BridgeDB assigns bridges to distributors on a probabilistic basis and
+   makes these assignments persistent.
+   BridgeDB MAY be configured to support only a non-empty subset of the
+   distributors specified in this document.
+   BridgeDB MAY define different probabilities for assigning new bridges
+   to distributors.
+   BridgeDB MUST NOT change existing assignments of bridges to
+   distributors, even if probabilities for assigning bridges to
+   distributors change or distributors are disabled entirely.
 
-3. Selecting bridges to be given out via https
+3. Giving out bridges upon requests
 
-# This section is about the specifics of the https distributor, like which
-# IP addresses get bridges from the same ring, how often the results
-# change, etc.  -KL
+   BridgeDB gives out a subset of the bridges from a given distributor
+   upon request.
+   BridgeDB MUST only give out bridges that are contained in the most
+   recently parsed bridge network status and that have the Running flag
+   set.
+   BridgeDB MAY define a different number of bridges (typically 3) to be
+   given out depending on the distributor.
+   BridgeDB MAY define an arbitrary number of rules saying that a certain
+   number of bridges SHOULD have a given OR port or a given bridge relay
+   flag.
 
-4. Selecting bridges to be given out via email
+4. Selecting bridges to be given out based on IP addresses
 
-# This section is about the specifics of the email distributor, like which
-# characters do we recognize in email addresses, how long we don't give
-# out new bridges to the same email address, etc.  -KL
+   BridgeDB MAY support one or more distributors that are giving out
+   bridges based on the requestor's IP address.
+   BridgeDB MUST fix the set of bridges to be returned for a defined time
+   period.
+   BridgeDB SHOULD consider two IP addresses coming from the same /24 as
+   the same IP address and return the same set of bridges.
+   BridgeDB SHOULD divide the IP address space equally into a small number
+   of areas (typically 4) and return different results to requests coming
+   from these areas.
+# I found that BridgeDB is not strict in returning only bridges for a
+# given area.  If a ring is empty, it considers the next one.  Therefore,
+# it's SHOULD in the sentence above and not MUST.  Is this expected
+# behavior?  -KL
+# I also found that BridgeDB does not make the assignment to areas
+# persistent in the database.  So, if we change the number of rings, it
+# will assign bridges to other rings.  I assume this is okay?  -KL
+   BridgeDB SHOULD be able to respect a list of proxy IP addresses and
+   return the same set of bridges to requests coming from these IP
+   addresses.
+   The bridges returned to proxy IP addresses SHOULD NOT come from the
+   same set as those for the general IP address space.
+   BridgeDB MAY include bridge fingerprints in replies along with bridge
+   IP addresses and OR ports.
 
-5. Selecting unallocated bridges to be stored in file buckets
+5. Selecting bridges to be given out based on email addresses
 
-# This section is about kaner's bucket mechanism.  I want to cover how
-# BridgeDB decides which of the unallocated bridges to add to a file
-# bucket.  -KL
+   BridgeDB MAY support one or more distributors that are giving out
+   bridges based on the requestor's email address.
+   BridgeDB SHOULD reject email addresses containing other characters than
+   the ones that RFC2822 allows.
+   BridgeDB MAY reject email addresses containing other characters it
+   might not process correctly.
+   BridgeDB MUST reject email addresses coming from other domains than a
+   configured set of permitted domains.
+   BridgeDB MAY normalize email addresses by removing "." characters and
+   by removing parts after the first "+" character.
+   BridgeDB MAY discard requests that do not have the value "pass" in
+   their X-DKIM-Authentication-Result header or does not have this header.
+   BridgeDB SHOULD NOT return a new set of bridges to the same email
+   address until a given time period (typically a few hours) has passed.
+# Why don't we fix the bridges we give out for a global 3-hour time period
+# like we do for IP addresses?  This way we could avoid storing email
+# addresses.  -KL
+   BridgeDB MAY include bridge fingerprints in replies along with bridge
+   IP addresses and OR ports.
+
+6. Selecting unallocated bridges to be stored in file buckets
+
+   BridgeDB MAY reserve a subset of bridges and not give them out via one
+   of the distributors.
+   BridgeDB MAY assign reserved bridges to one or more file buckets of
+   fixed sizes and write these file buckets to disk for manual
+   distribution.
+   BridgeDB SHOULD ensure that a file bucket always contains the requested
+   number of running bridges.
+   If the requested number of bridges in a file bucket is reduced or the
+   file bucket is not required anymore, the unassigned bridges are
+   returned to the reserved set of bridges.
+   If a bridge stops running, BridgeDB SHOULD replace it with another
+   bridge from the reserved set of bridges.
 # I'm not sure if there's a design bug in file buckets.  What happens if
 # we add a bridge X to file bucket A, and X goes offline?  We would add
 # another bridge Y to file bucket A.  OK, but what if A comes back?  We
 # cannot put it back in file bucket A, because it's full.  Are we going to
 # add it to a different file bucket?  Doesn't that mean that most bridges
 # will be contained in most file buckets over time?  -KL
+
+7. Writing bridge assignments for statistics
+
+   BridgeDB MAY write bridge assignments to disk for statistical analysis.
+   The start of a bridge assignment is marked by the following line:
+
+      "bridge-pool-assignment" SP YYYY-MM-DD HH:MM:SS NL
+
+   YYYY-MM-DD HH:MM:SS is the time, in UTC, when BridgeDB has completed
+   loading new bridges and assigning them to distributors.
+
+   For every running bridge there is a line with the following format:
+
+      fingerprint SP distributor (SP key "=" value)* NL
+
+   The distributor is one out of "email", "https", or "unallocated".
+
+   Both "email" and "https" distributors support adding keys for "port"
+   and "flag" and the port number and flag name as values to indicate that
+   a bridge matches certain port or flag criteria of requests.
+
+   The "https" distributor also allows the key "ring" with a number as
+   value to indicate to which IP address areas the bridge is returned.
+
+   The "unallocated" distributor allows the key "bucket" with the file
+   bucket name as value to indicate which file bucket a bridge is assigned
+   to.
 
