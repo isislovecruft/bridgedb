@@ -47,7 +47,7 @@ https://bridges.torproject.org/. The answers you get from that page
 will change every few days, so check back periodically if you need more
 bridge addresses."""),
  # BRIDGEDB_TEXT[7]
- _("""(no bridges currently available)""")
+ _("""(no bridges currently available)"""),
  # BRIDGEDB_TEXT[8]
  _("""(e-mail requests not currently supported)""")
 ]
