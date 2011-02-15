@@ -146,7 +146,8 @@ def addWebServer(cfg, dist, sched):
                                                cfg.HTTPS_CERT_FILE)
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                        cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER,
-                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
+                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
+                       domains=cfg.EMAIL_DOMAINS)
         site = Site(resource)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
