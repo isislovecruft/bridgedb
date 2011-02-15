@@ -1,12 +1,14 @@
 # BridgeDB i18n strings & helper routines. The string should go into pootle
 
+import os
 import gettext
 
-def getLang(lang):
+def getLang(lang, localedir=os.path.expanduser("~") + "/share/locale"):
     """Return the Translation instance for a given language. If no Translation
        instance is found, return the one for 'en'
     """
-    return gettext.translation("bridgedb", languages=[lang], fallback="en")
+    return gettext.translation("bridgedb", localedir=localedir, 
+                               languages=[lang], fallback="en")
 
 def _(text):
     """This is necessary because strings are translated when they're imported.

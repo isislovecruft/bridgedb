@@ -3,9 +3,9 @@ To set up:
  - Install Python 2.4 or later.
  - Install Twisted-Web, Twisted-Mail, PyOpenSSL, and all their dependencies.
  - To run unit tests, "python setup.py test"
- - python setup.py install --prefix=$HOME
- - To generate translation files, run "python setup.py trans" and then run
-   "python setup.py install_data" to install them
+ - python setup.py install
+ - To generate translation files, run "python setup.py trans" 
+ - Run "python setup.py install_data" to install them
  - Edit bridgedb.conf; put it somewhere good.
  - Make sure that the input files referred to in bridgedb.conf exist.
    - You can make a self-signed certificate with

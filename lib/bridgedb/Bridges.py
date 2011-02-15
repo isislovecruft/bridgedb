@@ -17,6 +17,7 @@ import socket
 import time
 
 import bridgedb.Storage
+import bridgedb.Bucket
 
 HEX_FP_LEN = 40
 ID_LEN = 20
@@ -452,6 +453,9 @@ class BridgeSplitter(BridgeHolder):
 
         ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time())
         db.commit()
+
+        # Resolve pseudo distributor ring names
+        ringname = bridgedb.Bucket.getRealDistributorName(ringname)
 
         ring = self.ringsByName.get(ringname)
         ring.insert(bridge)
