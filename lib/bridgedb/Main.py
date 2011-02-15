@@ -208,10 +208,6 @@ def startup(cfg):
     else:
         cfg.PROXY_LIST_FILES = [ ]
 
-    # Change to the directory where we're supposed to run.
-    if cfg.RUN_IN_DIR:
-        os.chdir(cfg.RUN_IN_DIR)
-
     # Write the pidfile.
     if cfg.PIDFILE:
         f = open(cfg.PIDFILE, 'w')
@@ -340,6 +336,10 @@ def run():
         execfile(configFile, configuration)
         C = Conf(**configuration)
         configuration = C
+
+    # Change to the directory where we're supposed to run.
+    if configuration.RUN_IN_DIR:
+        os.chdir(os.path.expanduser(configuration.RUN_IN_DIR))
 
     if options.dumpbridges:
         bucketManager = Bucket.BucketManager(configuration)
