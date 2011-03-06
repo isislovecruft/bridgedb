@@ -176,9 +176,10 @@ class Database:
         self._cur.close()
         self._conn.close()
 
-    def insertBridgeAndGetRing(self, bridge, setRing, seenAt):
+    def insertBridgeAndGetRing(self, bridge, setRing, seenAt, validRings,
+                               defaultPool="unallocated"):
         '''updates info about bridge, setting ring to setRing if none was set.
-           Returns the bridge's ring.
+           Returns the bridge's validated ring.
         '''
         cur = self._cur
 
@@ -190,11 +191,15 @@ class Database:
                     "FROM Bridges WHERE hex_key = ?", (h,))
         v = cur.fetchone()
         if v is not None:
-            idx, ring = v
-            # Update last_seen and address.
+            i, ring = v
+            # Check if this is currently a valid ring name. If not, move back
+            # into default pool.
+            if ring not in validRings:
+                ring = defaultPool
+            # Update last_seen, address, port and (possibly) distributor.
             cur.execute("UPDATE Bridges SET address = ?, or_port = ?, "
-                        "last_seen = ? WHERE id = ?",
-                        (bridge.ip, bridge.orport, timeToStr(seenAt), idx))
+                        "distributor = ?, last_seen = ? WHERE id = ?",
+                        (bridge.ip, bridge.orport, ring, timeToStr(seenAt), i))
             return ring
         else:
             # Insert it.

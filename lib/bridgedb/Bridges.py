@@ -401,6 +401,7 @@ class BridgeSplitter(BridgeHolder):
         self.totalP = 0
         self.pValues = []
         self.rings = []
+        self.pseudoRings = []
         self.statsHolders = []
 
     def __len__(self):
@@ -422,6 +423,11 @@ class BridgeSplitter(BridgeHolder):
         self.pValues.append(self.totalP)
         self.rings.append(ringname)
         self.totalP += p
+
+    def addPseudoRing(self, ringname):
+        """Add a pseudo ring to the list of pseudo rings.
+        """
+        self.pseudoRings.append(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX + ringname)
 
     def addTracker(self, t):
         """Adds a statistics tracker that gets told about every bridge we see.
@@ -451,11 +457,15 @@ class BridgeSplitter(BridgeHolder):
         assert 0 <= pos < len(self.rings)
         ringname = self.rings[pos]
 
-        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time())
+        validRings = self.rings + self.pseudoRings
+
+        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
+                                             validRings)
         db.commit()
 
-        # Resolve pseudo distributor ring names
-        ringname = bridgedb.Bucket.getRealDistributorName(ringname)
+        # Pseudo distributors are always held in the "unallocated" ring
+        if ringname in self.pseudoRings:
+            ringname = "unallocated"
 
         ring = self.ringsByName.get(ringname)
         ring.insert(bridge)

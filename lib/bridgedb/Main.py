@@ -276,6 +276,10 @@ def startup(cfg):
                          "unallocated",
                          cfg.RESERVED_SHARE)
 
+    # Add pseudo distributors to splitter
+    for p in cfg.FILE_BUCKETS.keys():
+        splitter.addPseudoRing(p)
+
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
         logging.info("Caught SIGHUP")

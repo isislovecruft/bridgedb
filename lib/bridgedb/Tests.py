@@ -156,10 +156,11 @@ class SQLStorageTests(unittest.TestCase):
         b1_v2 = B("serv1", "1.2.3.5", 9099, fingerprint=k1)
         b2 = B("serv2", "2.3.4.5", 9990, fingerprint=k2)
         b3 = B("serv3", "2.3.4.6", 9008, fingerprint=k3)
+        validRings = ["ring1", "ring2", "ring3"]
 
-        r = db.insertBridgeAndGetRing(b1, "ring1", t)
+        r = db.insertBridgeAndGetRing(b1, "ring1", t, validRings)
         self.assertEquals(r, "ring1")
-        r = db.insertBridgeAndGetRing(b1, "ring10", t+500)
+        r = db.insertBridgeAndGetRing(b1, "ring10", t+500, validRings)
         self.assertEquals(r, "ring1")
 
         cur.execute("SELECT distributor, address, or_port, first_seen, "
@@ -170,7 +171,7 @@ class SQLStorageTests(unittest.TestCase):
                            bridgedb.Storage.timeToStr(t),
                            bridgedb.Storage.timeToStr(t+500)))
 
-        r = db.insertBridgeAndGetRing(b1_v2, "ring99", t+800)
+        r = db.insertBridgeAndGetRing(b1_v2, "ring99", t+800, validRings)
         self.assertEquals(r, "ring1")
         cur.execute("SELECT distributor, address, or_port, first_seen, "
                     "last_seen FROM Bridges WHERE hex_key = ?", (k1,))
@@ -180,8 +181,8 @@ class SQLStorageTests(unittest.TestCase):
                            bridgedb.Storage.timeToStr(t),
                            bridgedb.Storage.timeToStr(t+800)))
 
-        db.insertBridgeAndGetRing(b2, "ring2", t)
-        db.insertBridgeAndGetRing(b3, "ring3", t)
+        db.insertBridgeAndGetRing(b2, "ring2", t, validRings)
+        db.insertBridgeAndGetRing(b3, "ring3", t, validRings)
 
         cur.execute("SELECT COUNT(distributor) FROM Bridges")
         v = cur.fetchone()

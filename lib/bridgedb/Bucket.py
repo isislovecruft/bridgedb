@@ -28,18 +28,6 @@ import bridgedb.Storage
 # distinguish them from real distributors?
 PSEUDO_DISTRI_PREFIX = "pseudo_"
 
-def getRealDistributorName(distributor):
-    """Return the *real* ring name for a given one. This is needed because
-       with pseudo distributors, we've got strings in the database that aren't
-       real distributors. 
-    """
-
-    # If it starts with "pseudo_", its really "unallocated"
-    if distributor.startswith(PSEUDO_DISTRI_PREFIX):
-        distributor = "unallocated"
-
-    return distributor
-
 class BucketData:
     """A file bucket value class.
        name      - Name of the bucket (From config)
