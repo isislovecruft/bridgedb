@@ -178,8 +178,11 @@ class Database:
 
     def insertBridgeAndGetRing(self, bridge, setRing, seenAt, validRings,
                                defaultPool="unallocated"):
-        '''updates info about bridge, setting ring to setRing if none was set.
-           Returns the bridge's validated ring.
+        '''Updates info about bridge, setting ring to setRing if none was set.
+           Also sets distributor to `defaultPool' if the bridge was found in
+           the database, but its distributor isn't valid anymore.
+
+           Returns the name of the distributor the bridge is assigned to.
         '''
         cur = self._cur
 
