@@ -211,6 +211,9 @@ class BridgeHolder:
     def assignmentsArePersistent(self):
         return True
 
+    def dumpAssignments(self, f, description=""):
+        pass
+
 class BridgeRingParameters:
     """DOCDOC"""
     def __init__(self, needPorts=(), needFlags=()):
@@ -349,6 +352,15 @@ class BridgeRing(BridgeHolder):
 
         return self.bridgesByID.get(fp)
 
+    def dumpAssignments(self, f, description=""):
+        for b in self.bridges.itervalues():
+            desc = [ description ]
+            ident = b.getID()
+            for tp,val,_,subring in self.subrings:
+                if subring.getBridgeByID(ident):
+                    desc.append("%s=%s"%(tp,val))
+            f.write("%s %s\n"%( toHex(ident), " ".join(desc).strip()))
+
 class FixedBridgeSplitter(BridgeHolder):
     """A bridgeholder that splits bridges up based on an hmac and assigns
        them to several sub-bridgeholders with equal probability.
@@ -376,19 +388,45 @@ class FixedBridgeSplitter(BridgeHolder):
             n += len(r)
         return n
 
+    def dumpAssignments(self, f, description=""):
+        for i,r in zip(xrange(len(self.rings)), self.rings):
+            r.dumpAssignments(f, "%s ring=%s" % (description, i))
 
 class UnallocatedHolder(BridgeHolder):
     """A pseudo-bridgeholder that ignores its bridges and leaves them
        unassigned.
     """
+    def __init__(self):
+        self.fingerprints = []
+
     def insert(self, bridge):
         logging.debug("Leaving %s unallocated", bridge.getConfigLine(True))
+        if not bridge.fingerprint in self.fingerprints:
+            self.fingerprints.append(bridge.fingerprint)
 
     def assignmentsArePersistent(self):
         return False
 
     def __len__(self):
-        return 0
+        return len(self.fingerprints)
+
+    def clear(self):
+        self.fingerprints = []
+
+    def dumpAssignments(self, f, description=""):
+        db = bridgedb.Storage.getDB()
+        allBridges = db.getAllBridges()
+        for bridge in allBridges:
+            if bridge.hex_key not in self.fingerprints:
+                continue
+            dist = bridge.distributor
+            desc = [ description ]
+            if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
+                dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
+                desc.append("bucket=%s" % dist)
+            elif dist != "unallocated":
+                continue
+            f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
 
 class BridgeSplitter(BridgeHolder):
     """A BridgeHolder that splits incoming bridges up based on an hmac,
@@ -470,3 +508,6 @@ class BridgeSplitter(BridgeHolder):
         ring = self.ringsByName.get(ringname)
         ring.insert(bridge)
 
+    def dumpAssignments(self, f, description=""):
+        for name,ring in self.ringsByName.iteritems():
+            ring.dumpAssignments(f, "%s %s" % (description, name))

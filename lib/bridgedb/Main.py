@@ -9,6 +9,7 @@ This module sets up a bridgedb and starts the servers running.
 import os
 import signal
 import sys
+import time
 import logging
 import gettext
 
@@ -56,6 +57,8 @@ CONFIG = Conf(
 
     N_IP_CLUSTERS = 4,
     MASTER_KEY_FILE = "./secret_key",
+
+    ASSIGNMENTS_FILE = "assignments.log",
 
     FORCE_PORTS = [(443, 1)],
     FORCE_FLAGS = [("Stable", 1)],
@@ -197,8 +200,9 @@ def startup(cfg):
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE",
-                "STATUS_FILE"):
+                "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
+                "PIDFILE", "LOGFILE", "STATUS_FILE"):
+
         v = getattr(cfg, key, None)
         if v:
             setattr(cfg, key, os.path.expanduser(v))
@@ -298,6 +302,16 @@ def startup(cfg):
             for r in ipDistributor.categoryRings:
                 for name, b in r.bridges.items():
                     logging.info("%s" % b.getConfigLine(True))
+
+        # Dump bridge pool assignments to disk.
+        try:
+            f = open(cfg.ASSIGNMENTS_FILE, 'a')
+            f.write("bridge-pool-assignment %s\n" %
+                    time.strftime("%Y-%m-%d %H:%M:%S"))
+            splitter.dumpAssignments(f)
+            f.close()
+        except IOError:
+            logging.info("I/O error while writing assignments")
 
     global _reloadFn
     _reloadFn = reload
