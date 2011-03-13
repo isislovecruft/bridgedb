@@ -112,6 +112,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     def __len__(self):
         return sum(len(r) for r in self.rings)
 
+    def dumpAssignments(self, f, description=""):
+        self.splitter.dumpAssignments(f, description)
+
 # These characters are the ones that RFC2822 allows.
 #ASPECIAL = '!#$%&*+-/=?^_`{|}~'
 #ASPECIAL += "\\\'"
@@ -281,4 +284,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             raise
         else:
             db.commit()
+
+    def dumpAssignments(self, f, description=""):
+        self.ring.dumpAssignments(f, description)
 
