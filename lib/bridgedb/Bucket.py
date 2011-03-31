@@ -197,29 +197,38 @@ class BucketManager:
                     # from list
                     self.bucketList.remove(d)
 
-    def dumpBridgeToFile(self, bridge, filename):
-        """Dump a given bridge into a given file
+    def dumpBridgesToFile(self, filename, bridges):
+        """Dump a list of given bridges into a file
         """
         try:
-            f = open(filename, 'a')
-            line = "%s:%s" % (bridge.address, bridge.or_port)
-            f.write(line + '\n')
+            f = open(filename, 'w')
+            for b in bridges:
+                line = "%s:%s" % (b.address, b.or_port)
+                f.write(line + '\n')
             f.close()
         except IOError:
-            print "I/O error: %s" % filename
-         
+            print "I/O error: %s" % fileName
+
     def dumpBridges(self):
-        """Dump all known file distributors to files
+        """Dump all known file distributors to files, sort by distributor
         """
         allBridges = self.db.getAllBridges()
+        bridgeDict = {}
+        # Sort returned bridges by distributor
         for bridge in allBridges:
-            if bridge.distributor is "":
-                continue
-            distributor = bridge.distributor
-            if (distributor.startswith(self.distributor_prefix)):
+            dist = str(bridge.distributor)
+            if dist in bridgeDict.keys():
+                bridgeDict[dist].append(bridge)
+            else:
+                bridgeDict[dist] = [bridge]
+
+        # Now dump to file(s)
+        for k in bridgeDict.keys():
+            dist = k
+            if (dist.startswith(self.distributor_prefix)):
                 # Subtract the pseudo distributor prefix
-                distributor = distributor.replace(self.distributor_prefix, "")
+                dist = dist.replace(self.distributor_prefix, "")
             # Be safe. Replace all '/' in distributor names
-            distributor = distributor.replace("/", "_")
-            fileName = distributor + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
-            self.dumpBridgeToFile(bridge, fileName)
+            dist = dist.replace("/", "_")
+            filename = dist + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
+            self.dumpBridgesToFile(filename, bridgeDict[k])
