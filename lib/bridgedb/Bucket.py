@@ -133,7 +133,7 @@ class BucketManager:
         """
         hex_key = self.unallocatedList.pop()
         # Mark pseudo-allocators in the database as such
-        allocator_name = self.distributor_prefix + bucket.name
+        allocator_name = bucket.name
         #print "KEY: %d NAME: %s" % (hex_key, allocator_name)
         try:
             self.db.updateDistributorForHexKey(allocator_name, hex_key)
@@ -157,7 +157,8 @@ class BucketManager:
         """
         # Build distributor list
         for k, v in self.cfg.FILE_BUCKETS.items():
-            d = BucketData(k, v)
+            prefixed_key = self.distributor_prefix + k
+            d = BucketData(prefixed_key, v)
             self.bucketList.append(d)
 
         # Loop through all bridges and sort out distributors
