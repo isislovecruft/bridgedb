@@ -30,7 +30,8 @@ PSEUDO_DISTRI_PREFIX = "pseudo_"
 
 class BucketData:
     """A file bucket value class.
-       name      - Name of the bucket (From config)
+       name      - Name of the bucket (From config), prefixed by pseudo
+                   distributor prefix
        needed    - Needed number of bridges for that bucket (From config)
        allocated - Number of already allocated bridges for that bucket
     """
@@ -81,17 +82,17 @@ class BucketManager:
        files by calling the dumpBridges() routine.
 
        cfg                      - The central configuration instance
-       bucketList               - A list of BucketData instances, holding all 
+       bucketList               - A list of BucketData instances, holding all
                                   configured (and thus requested) buckets with
                                   their respective numbers
-        unallocatedList         - Holding all bridges from the 'unallocated' 
+       unallocatedList          - Holding all bridges from the 'unallocated'
                                   pool
-        unallocated_available   - Is at least one unallocated bridge 
+       unallocated_available    - Is at least one unallocated bridge
                                   available?
-        distributor_prefix      - The 'distributor' field in the database will
-                                  hold the name of our pseudo-distributor, 
-                                  prefixed by this 
-        db                      - The bridge database access instance
+       distributor_prefix       - The 'distributor' field in the database will
+                                  hold the name of our pseudo-distributor,
+                                  prefixed by this
+       db                       - The bridge database access instance
     """
 
     def __init__(self, cfg):
@@ -168,7 +169,8 @@ class BucketManager:
                 self.addToUnallocatedList(bridge.hex_key)
                 continue
 
-            # Filter 'https' and 'email' early, too
+            # Filter non-pseudo distributors (like 'https' and 'email') early,
+            # too
             if not bridge.distributor.startswith(self.distributor_prefix):
                 continue
 
@@ -186,13 +188,14 @@ class BucketManager:
             else:
                 self.addToUnallocatedList(bridge.hex_key)
 
-        # Loop though bucketList while we have and need unallocated 
+        # Loop through bucketList while we have and need unallocated
         # bridges, assign one bridge at a time
         while self.unallocated_available and len(self.bucketList) > 0:
             for d in self.bucketList:
                 if d.allocated < d.needed:
                     if not self.assignUnallocatedBridge(d):
-                        print "Couldn't assign unallocated bridge to %s" % d.name
+                        dist = d.name.replace(self.distributor_prefix, "")
+                        print "Couldn't assign unallocated bridge to %s" % dist
                 else:
                     # When we have enough bridges, remove bucket identifier 
                     # from list
@@ -208,7 +211,7 @@ class BucketManager:
                 f.write(line + '\n')
             f.close()
         except IOError:
-            print "I/O error: %s" % fileName
+            print "I/O error: %s" % filename
 
     def dumpBridges(self):
         """Dump all known file distributors to files, sort by distributor
