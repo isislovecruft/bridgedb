@@ -168,6 +168,10 @@ class BucketManager:
                 self.addToUnallocatedList(bridge.hex_key)
                 continue
 
+            # Filter 'https' and 'email' early, too
+            if not bridge.distributor.startswith(self.distributor_prefix):
+                continue
+
             # Return the bucket in case we know it already
             d = self.getBucketByIdent(bridge.distributor)
             if d is not None:
@@ -176,14 +180,11 @@ class BucketManager:
                 if d.allocated < d.needed:
                     d.allocated += 1
                 else:
+                    # Bucket has enough members already, free this one
                     self.addToUnallocatedList(bridge.hex_key)
             # We don't know it. Maybe an old entry. Free it.
             else:
-                # DON'T free anything important!
-                if bridge.distributor.startswith(self.distributor_prefix):
-                    self.addToUnallocatedList(bridge.hex_key)
-                # else 
-                #   SCREAM_LOUDLY? 
+                self.addToUnallocatedList(bridge.hex_key)
 
         # Loop though bucketList while we have and need unallocated 
         # bridges, assign one bridge at a time
