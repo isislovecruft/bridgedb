@@ -121,6 +121,11 @@
    BridgeDB may be configured to support one or more distributors that
    gives out bridges based on the requestor's IP address.  Currently, this
    is how the HTTPS distributor works.
+   The goal is to avoid handing out all the bridges to users in a similar
+   IP space and time.
+# Someone else should look at proposals/ideas/old/xxx-bridge-disbursement
+# to see if this section is missing relevant pieces from it.  -KL
+
    BridgeDB fixes the set of bridges to be returned for a defined time
    period.
    BridgeDB considers two IP addresses coming from the same /24 as the
@@ -179,6 +184,11 @@
    BridgeDB can be configured to support one or more distributors that are
    giving out bridges based on the requestor's email address.  Currently,
    this is how the email distributor works.
+   The goal is to bootstrap based on one or more popular email service's
+   sybil prevention algorithms.
+# Someone else should look at proposals/ideas/old/xxx-bridge-disbursement
+# to see if this section is missing relevant pieces from it.  -KL
+
    BridgeDB rejects email addresses containing other characters than the
    ones that RFC2822 allows.
    BridgeDB may be configured to reject email addresses containing other
