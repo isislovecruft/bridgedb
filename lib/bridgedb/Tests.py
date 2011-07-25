@@ -16,6 +16,7 @@ import bridgedb.Main
 import bridgedb.Dist
 import bridgedb.Time
 import bridgedb.Storage
+import re
 
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
@@ -23,11 +24,22 @@ def suppressWarnings():
 def randomIP():
     return ".".join([str(random.randrange(1,256)) for _ in xrange(4)])
 
+def random16IP():
+    upper = "123.123." # same 16
+    lower = ".".join([str(random.randrange(1,256)) for _ in xrange(2)]) 
+    return upper+lower
+
 def fakeBridge(orport=8080):
     nn = "bridge-%s"%random.randrange(0,1000000)
     ip = randomIP()
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     return bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
+
+def fake16Bridge(orport=8080):
+    nn = "bridge-%s"%random.randrange(0,1000000)
+    ip = random16IP()
+    fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
+    return bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)  
 
 class RhymesWith255Category:
     def contains(self, ip):
@@ -82,6 +94,19 @@ class IPBridgeDistTests(unittest.TestCase):
             self.assertEquals(len(fps), len(n))
             self.assertEquals(len(fps), 5)
             self.assertTrue(count >= 1)
+
+    def testDistWithFilter16(self):
+        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        for _ in xrange(256):
+            d.insert(fake16Bridge())
+        n = d.getBridgesForIP("1.2.3.4", "x", 10)
+
+        slash16s = dict()
+        for bridge in n:
+            m = re.match(r'(\d+\.\d+)\.\d+\.\d+', bridge.ip)
+            upper16 = m.group(1)
+            self.assertTrue(upper16 not in slash16s)
+            slash16s[upper16] = True 
 
 class DictStorageTests(unittest.TestCase):
     def setUp(self):

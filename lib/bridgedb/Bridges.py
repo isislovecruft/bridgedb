@@ -340,7 +340,19 @@ class BridgeRing(BridgeHolder):
                 keys.append(k)
         keys = keys[:N]
         keys.sort()
-        return [ self.bridges[k] for k in keys ]
+
+        #Do not return bridges from the same /16
+        bridges = [ self.bridges[k] for k in keys ]
+        filteredbridges = []
+        slash16s = dict()
+
+        for bridge in bridges:
+            m = re.match(r'(\d+\.\d+)\.\d+\.\d+', bridge.ip)
+            upper16 = m.group(1)
+            if upper16 not in slash16s:
+                filteredbridges.append(bridge)
+                slash16s[upper16] = True
+        return filteredbridges 
 
     def getBridgeByID(self, fp):
         """Return the bridge whose identity digest is fp, or None if no such

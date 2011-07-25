@@ -219,7 +219,7 @@ def getMailResponse(lines, ctx):
     try:
         _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
     except bridgedb.Dist.BadEmail:
-	logging.info("Ignoring bad address on incoming email.")
+        logging.info("Ignoring bad address on incoming email.")
         return None,None
     if not addrdomain:
         logging.info("Couldn't parse domain from %r", clientAddr)

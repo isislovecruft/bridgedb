@@ -76,7 +76,7 @@ class SqliteDict:
         self._cursor.execute(self._getStmt, (k,))
         val = self._cursor.fetchone()
         if val == None:
-            return v;
+            return v
         else:
             return val[0]
     def setdefault(self, k, v):
@@ -216,7 +216,7 @@ class Database:
         cur = self._cur
         t = timeToStr(expireBefore)
 
-        cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,));
+        cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,))
 
     def getEmailTime(self, addr):
         cur = self._cur

@@ -249,10 +249,10 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         """
         now = time.time()
         try:
-          emailaddress = normalizeEmail(emailaddress, self.domainmap,
-                                      self.domainrules)
+            emailaddress = normalizeEmail(emailaddress, self.domainmap,
+                                          self.domainrules)
         except BadEmail:
-          return [] #XXXX log the exception
+            return [] #XXXX log the exception
         if emailaddress is None:
             return [] #XXXX raise an exception.
 
