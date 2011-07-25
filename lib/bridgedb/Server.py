@@ -26,6 +26,16 @@ import twisted.mail.smtp
 import bridgedb.Dist
 import bridgedb.I18n as I18n
 
+try:
+    import GeoIP
+    # GeoIP data object: choose database here
+    # This is the same geoip implementation that pytorctl uses
+    geoip = GeoIP.new(GeoIP.GEOIP_STANDARD)
+    logging.info("GeoIP database loaded")
+except:
+    geoip = None
+    logging.warn("GeoIP database not found") 
+
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
        bridges in response to a request."""
@@ -51,6 +61,7 @@ class WebResource(twisted.web.resource.Resource):
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None
+        countryCode = None
         if self.useForwardedHeader:
             h = request.getHeader("X-Forwarded-For")
             if h:
@@ -61,26 +72,29 @@ class WebResource(twisted.web.resource.Resource):
         else:
             ip = request.getClientIP()
 
-        # See if we did get a request for a certain locale, otherwise fall back
-        # to 'en':
-        # Try evaluating the path /foo first, then check if we got a ?lang=foo
-        default_lang = lang = "en"
-        if len(request.path) > 1:
-            lang = request.path[1:]
-        if lang == default_lang:
-            lang = request.args.get("lang", [default_lang])
-            lang = lang[0]
-        t = I18n.getLang(lang)
+        if geoip:
+            countryCode = geoip.country_code_by_addr(ip)
+
+        # allow client to specify a country
+        forcecc = getCCFromRequest(request)
+        if forcecc != None:
+            countryCode = forcecc
+
+        # get locale
+        t = getLocaleFromRequest(request) 
 
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
 
         if ip:
             bridges = self.distributor.getBridgesForIP(ip, interval,
-                                                       self.nBridgesToGive)
+                                                       self.nBridgesToGive,
+                                                       countryCode)
         if bridges:
-            answer = "".join("%s\n" % b.getConfigLine(self.includeFingerprints)
-                             for b in bridges)
+            answer = "".join("%s %s\n" % (
+                b.getConfigLine(self.includeFingerprints),
+                (I18n.BRIDGEDB_TEXT[9] if b.isBlocked(countryCode) else "")
+                ) for b in bridges) 
         else:
             answer = t.gettext(I18n.BRIDGEDB_TEXT[7])
 
@@ -253,7 +267,8 @@ def getMailResponse(lines, ctx):
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
-                                                     interval, ctx.N)
+                                                     interval, ctx.N,
+                                                     countryCode=None)
     except bridgedb.Dist.BadEmail, e:
         logging.info("Got a mail from a bad email address %r: %s.",
                      clientAddr, e)
@@ -328,6 +343,7 @@ def getLocaleFromPlusAddr(address):
         replyLocale = match.group(3)
 
     return replyLocale
+
 
 class MailContext:
     """Helper object that holds information used by email subsystem."""
@@ -451,3 +467,20 @@ def runServers():
     """Start all the servers that we've configured. Exits when they do."""
     reactor.run()
 
+def getLocaleFromRequest(request):
+    # See if we did get a request for a certain locale, otherwise fall back
+    # to 'en':
+    # Try evaluating the path /foo first, then check if we got a ?lang=foo
+    default_lang = lang = "en"
+    if len(request.path) > 1:
+        lang = request.path[1:]
+    if lang == default_lang:
+        lang = request.args.get("lang", [default_lang])
+        lang = lang[0]
+    return I18n.getLang(lang)
+
+def getCCFromRequest(request):
+    path = re.sub(r'[^a-zA-Z]', '', request.path)
+    if len(path) ==  2:
+        return path.lower()
+    return None 

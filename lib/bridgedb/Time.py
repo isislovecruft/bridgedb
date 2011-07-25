@@ -13,11 +13,11 @@ KNOWN_INTERVALS = [ "hour", "day", "week", "month" ]
 
 class Schedule:
     def intervalStart(self, when):
-        raise NotImplemented()
+        raise NotImplementedError
     def getInterval(self, when):
-        raise NotImplemented()
+        raise NotImplementedError
     def nextIntervalStarts(self, when):
-        raise NotImplemented()
+        raise NotImplementedError
 
 class IntervalSchedule(Schedule):
     """An IntervalSchedule splits time into somewhat natural periods,

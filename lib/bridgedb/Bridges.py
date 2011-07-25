@@ -104,6 +104,7 @@ class Bridge:
     ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
     ##       no spaces.
     ##   running,stable -- DOCDOC
+    ##   blockingCountries -- list of country codes blocking this bridge
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
            set."""
@@ -111,6 +112,7 @@ class Bridge:
         self.ip = ip
         self.orport = orport
         self.running = self.stable = None
+        self.blockingCountries = None
         if id_digest is not None:
             assert fingerprint is None
             if len(id_digest) != DIGEST_LEN:
@@ -151,6 +153,15 @@ class Bridge:
         if stable is not None:
             self.stable = stable
 
+    def setBlockingCountries(self, blockingCountries):
+        if blockingCountries is not None:
+            self.blockingCountries = blockingCountries
+
+    def isBlocked(self, countryCode):
+        if self.blockingCountries is not None and countryCode is not None:
+            if countryCode in self.blockingCountries:
+                return True
+        return False 
 
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f', and yields a Bridge
@@ -200,10 +211,24 @@ def parseStatusFile(f):
             flags = line.split()
             yield ID, ("Running" in flags), ("Stable" in flags)
 
+def parseCountryBlockFile(f):
+    """Generator. Parses a blocked-bridges file 'f', and yields a
+       fingerprint, countryCode tuple for every entry"""
+    fingerprint = countryCode = None
+    for line in f:
+        line = line.strip()
+        m = re.match(r"fingerprint\s+(?P<fingerprint>\w+?)\s+country-code\s+(?P<countryCode>\w+)$", line)
+        try:
+            fingerprint = m.group('fingerprint').lower()
+            countryCode = m.group('countryCode').lower()
+            yield fingerprint, countryCode
+        except AttributeError, IndexError:
+            logging.warn("Unparseable line in blocked-bridges file: %s", line) 
+
 class BridgeHolder:
     """Abstract base class for all classes that hold bridges."""
     def insert(self, bridge):
-        raise NotImplemented()
+        raise NotImplementedError
 
     def clear(self):
         pass
@@ -326,7 +351,7 @@ class BridgeRing(BridgeHolder):
         assert len(r) == N
         return r
 
-    def getBridges(self, pos, N=1):
+    def getBridges(self, pos, N=1, countryCode=None):
         """Return the N bridges appearing in the ring after position pos"""
         forced = []
         for _,_,count,subring in self.subrings:
@@ -523,3 +548,40 @@ class BridgeSplitter(BridgeHolder):
     def dumpAssignments(self, f, description=""):
         for name,ring in self.ringsByName.iteritems():
             ring.dumpAssignments(f, "%s %s" % (description, name))
+
+class BridgeBlock:
+    """Base class that abstracts bridge blocking"""
+    def __init__(self):
+        pass
+
+    def insert(self, fingerprint, blockingRule):
+        raise NotImplementedError
+
+    def clear(self):
+        pass
+
+    def assignmentsArePersistent(self):
+        return True
+
+class CountryBlock(BridgeBlock):
+    """Countrywide bridge blocking"""
+    def __init__(self):
+        self.db = bridgedb.Storage.getDB()
+
+    def clear(self):
+        assert self.db
+        self.db.cleanBridgeBlocks()
+        self.db.commit()
+
+    def insert(self, fingerprint, blockingRule):
+        """ insert a country based blocking rule """
+        assert self.db
+        countryCode = blockingRule
+        self.db.addBridgeBlock(fingerprint, countryCode)
+        self.db.commit()
+
+    def getBlockingCountries(self, fingerprint):
+        """ returns a list of country codes where this fingerprint is blocked"""
+        assert self.db
+        if fingerprint is not None:
+            return self.db.getBlockingCountries(fingerprint) 

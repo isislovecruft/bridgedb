@@ -146,15 +146,24 @@ def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
     """
+    countryblock = Bridges.CountryBlock()
     if clear:
         logging.info("Clearing old bridges")
         splitter.clear()
+        logging.info("Clearing old blocked bridges")
+        countryblock.clear() 
     logging.info("Loading bridges")
     status = {}
     if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
         for ID, running, stable in Bridges.parseStatusFile(f):
             status[ID] = running, stable
+        f.close()
+    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+        f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
+        for fingerprint, countryCode in Bridges.parseCountryBlockFile(f):
+            countryblock.insert(fingerprint, countryCode)
+        f.close() 
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
@@ -162,6 +171,8 @@ def load(cfg, splitter, clear=False):
             if s is not None:
                 running, stable = s
                 bridge.setStatus(running=running, stable=stable)
+            bridge.setBlockingCountries(
+                    countryblock.getBlockingCountries(bridge.fingerprint)) 
             splitter.insert(bridge)
         f.close()
 

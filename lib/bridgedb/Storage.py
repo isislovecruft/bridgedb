@@ -111,7 +111,7 @@ class SqliteDict:
 
 # Here is the SQL schema.
 
-SCHEMA1_SCRIPT = """
+SCHEMA2_SCRIPT = """
  CREATE TABLE Config (
      key PRIMARY KEY NOT NULL,
      value
@@ -136,7 +136,15 @@ SCHEMA1_SCRIPT = """
 
  CREATE INDEX EmailedBridgesWhenMailed on EmailedBridges ( email );
 
- INSERT INTO Config VALUES ( 'schema-version', 1 );
+ CREATE TABLE BlockedBridges (
+     id INTEGER PRIMARY KEY NOT NULL,
+     hex_key,
+     blocking_country
+ );
+
+ CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);
+
+ INSERT INTO Config VALUES ( 'schema-version', 2 ); 
 """
 
 class BridgeData:
@@ -267,6 +275,52 @@ class Database:
         cur.execute("UPDATE Bridges SET distributor = ? WHERE hex_key = ?",
                     (distributor, hex_key))
 
+    def addBridgeBlock(self, fingerprint, countryCode):
+        cur = self._cur
+        cur.execute("INSERT OR REPLACE INTO BlockedBridges "
+                    "(hex_key,blocking_country) VALUES (?,?)",
+                    (fingerprint, countryCode))
+
+    def delBridgeBlock(self, fingerprint, countryCode):
+        cur = self._cur
+        cur.execute("DELETE FROM BlockedBridges WHERE hex_key = ? "
+                    "AND blocking_country = ?", (fingerprint, countryCode))
+
+    def cleanBridgeBlocks(self):
+        cur = self._cur
+        cur.execute("DELETE FROM BlockedBridges")
+
+    def getBlockingCountries(self, fingerprint):
+        cur = self._cur
+        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE hex_key = ? ",
+                    (fingerprint,))
+        v = cur.fetchall()
+        if v is None:
+            return None
+
+        # return list of country-codes
+        return [ str(result[1]) for (result) in v ]
+
+    def getBlockedBridges(self, countryCode):
+        cur = self._cur
+        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE blocking_country = ? ",
+                    (countryCode,))
+        v = cur.fetchall()
+        if v is None:
+            return None
+        # return list of fingerprints
+        return [ str(result[0]) for (result) in v ]
+
+    def isBlocked(self, fingerprint, countryCode):
+        cur = self._cur
+        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE "
+                    "hex_key = ? AND blocking_country = ?",
+                    (fingerprint, countryCode))
+        v = cur.fetchone()
+        if v is None:
+            return False
+        return True 
+
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
@@ -274,11 +328,11 @@ def openDatabase(sqlite_file):
         try:
             cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
             val, = cur.fetchone()
-            if val != 1:
+            if val != 2:
                 logging.warn("Unknown schema version %s in database.", val)
         except sqlite3.OperationalError:
             logging.warn("No Config table found in DB; creating tables")
-            cur.executescript(SCHEMA1_SCRIPT)
+            cur.executescript(SCHEMA2_SCRIPT)
             conn.commit()
     finally:
         cur.close()
@@ -292,7 +346,7 @@ def openOrConvertDatabase(sqlite_file, db_file):
 
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
-    cur.executescript(SCHEMA1_SCRIPT)
+    cur.executescript(SCHEMA2_SCRIPT)
     conn.commit()
 
     import anydbm

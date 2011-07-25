@@ -11,6 +11,9 @@ To set up:
    - You can make a self-signed certificate with
      openssl req -x509 -new -nodes > cert
  - Set up PYTHONPATH to include "~/lib/python2.4/site-packages/".
+ - To install Maxmind GeoIP
+   - Debian: apt-get install python-geoip
+   - Others: http://www.maxmind.com/app/python 
 
 To re-generate and update the i18n files (in case translated strings
 have changed in BridgeDB):
@@ -46,6 +49,19 @@ To use with HTTPS:
 To use with email:
  - Any mail sent to the email port with a subject or a single line _exactly_
    equal to "get bridges" will get answered, assuming the domain is okay.
+
+To indicate which bridges are blocked:
+ - Uncomment or add COUNTRY_BLOCK_FILE to your bridgedb.conf
+ - The syntax of the COUNTRY_BLOCK_FILE, 1 entry per line:
+   fingerprint <bridge fingerprint> country-code <country code>
+ - If this file is present, bridgedb will filter blocked bridges from responses
+ - For GeoIP support make sure to install Maxmind GeoIP
+
+To update the SQL schema:
+ - CREATE TABLE BlockedBridges ( id INTEGER PRIMARY KEY NOT NULL, hex_key, blocking_country);
+ - CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);
+ - REPLACE INTO Config VALUES ( 'schema-version', 2 );
+ 
 
 Support
  - Send your questions to nickm.

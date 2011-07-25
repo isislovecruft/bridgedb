@@ -233,6 +233,24 @@ class SQLStorageTests(unittest.TestCase):
         cur.execute("SELECT * FROM EmailedBridges")
         self.assertEquals(len(cur.fetchall()), 1)
 
+        db.addBridgeBlock(b2.fingerprint, 'us')
+        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), True)
+        db.delBridgeBlock(b2.fingerprint, 'us')
+        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), False)
+        db.addBridgeBlock(b2.fingerprint, 'uk')
+        db.addBridgeBlock(b3.fingerprint, 'uk')
+        self.assertEquals(set([b2.fingerprint, b3.fingerprint]),
+                set(db.getBlockedBridges('uk')))
+
+        db.addBridgeBlock(b2.fingerprint, 'cn')
+        db.addBridgeBlock(b2.fingerprint, 'de')
+        db.addBridgeBlock(b2.fingerprint, 'jp')
+        db.addBridgeBlock(b2.fingerprint, 'se')
+        db.addBridgeBlock(b2.fingerprint, 'kr')
+
+        self.assertEquals(set(db.getBlockingCountries(b2.fingerprint)),
+                set(['uk', 'cn', 'de', 'jp', 'se', 'kr']))
+
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()

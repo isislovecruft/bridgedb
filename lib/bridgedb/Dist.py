@@ -75,7 +75,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridgesForIP(self, ip, epoch, N=1):
+    def getBridgesForIP(self, ip, epoch, N=1, countryCode=None):
         """Return a list of bridges to give to a user.
            ip -- the user's IP address, as a dotted quad.
            epoch -- the time period when we got this request.  This can
@@ -94,7 +94,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             if category.contains(ip):
                 logging.info("category<%s>%s"%(epoch,area))
                 pos = self.areaOrderHmac("category<%s>%s"%(epoch,area))
-                return ring.getBridges(pos, N)
+                return ring.getBridges(pos, N, countryCode)
 
         # Which bridge cluster should we look at?
         h = int( self.areaClusterHmac(area)[:8], 16)
@@ -240,7 +240,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         """Assign a bridge to this distributor."""
         self.ring.insert(bridge)
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None):
+    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None, countryCode=None):
         """Return a list of bridges to give to a user.
            emailaddress -- the user's email address, as given in a from line.
            epoch -- the time period when we got this request.  This can
@@ -266,7 +266,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-        result = self.ring.getBridges(pos, N)
+        result = self.ring.getBridges(pos, N, countryCode)
 
         db.setEmailTime(emailaddress, now)
         db.commit()
