@@ -146,6 +146,10 @@ class TooSoonEmail(BadEmail):
     """Raised when we got a request from this address too recently."""
     pass
 
+class IgnoreEmail(BadEmail):
+    """Raised when we get requests from this address after rate warning."""
+    pass 
+
 def extractAddrSpec(addr):
     """Given an email From line, try to extract and parse the addrspec
        portion.  Returns localpart,domain on success; raises BadEmail
@@ -257,13 +261,26 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             return [] #XXXX raise an exception.
 
         db = bridgedb.Storage.getDB()
+        wasWarned = db.getWarnedEmail(emailaddress)
 
         lastSaw = db.getEmailTime(emailaddress)
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
+            if wasWarned:
+                logging.warn("Got a request for bridges from %r; we already "
+                             "sent a warning. Ignoring.", emailaddress)
+                raise IgnoreEmail("Client was warned", emailaddress)
+            else:
+                db.setWarnedEmail(emailaddress, True, now)
+                db.commit() 
+
             logging.warn("Got a request for bridges from %r; we already "
-                         "answered one within the last %d seconds. Ignoring.",
+                         "answered one within the last %d seconds. Warning.",
                          emailaddress, MAX_EMAIL_RATE)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+
+        # warning period is over
+        elif wasWarned:
+            db.setWarnedEmail(emailaddress, False) 
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
         result = self.ring.getBridges(pos, N, countryCode)
@@ -279,6 +296,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         db = bridgedb.Storage.getDB()
         try:
             db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
+            db.cleanWarnedBridges(time.time()-MAX_EMAIL_RATE)
         except:
             db.rollback()
             raise

@@ -274,6 +274,35 @@ def getMailResponse(lines, ctx):
                      clientAddr, e)
         return None, None
 
+    # Handle rate limited email
+    except bridgedb.Dist.TooSoonEmail, e:
+        logging.info("Got a mail too frequently; warning %r: %s.",
+                     clientAddr, e)
+
+        # Compose a warning email
+        f = StringIO()
+        w = MimeWriter.MimeWriter(f)
+        w.addheader("From", ctx.fromAddr)
+        w.addheader("To", clientAddr)
+        w.addheader("Message-ID", twisted.mail.smtp.messageid())
+        if not subject.startswith("Re:"): subject = "Re: %s"%subject
+        w.addheader("Subject", subject)
+        if msgID:
+            w.addheader("In-Reply-To", msgID)
+        w.addheader("Date", twisted.mail.smtp.rfc822date())
+        body = w.startbody("text/plain")
+
+        # MAX_EMAIL_RATE is in seconds, convert to hours
+        EMAIL_MESSAGE_RATELIMIT = buildSpamWarningTemplate(t)
+        body.write(EMAIL_MESSAGE_RATELIMIT % (bridgedb.Dist.MAX_EMAIL_RATE / 3600))
+        f.seek(0)
+        return clientAddr, f
+
+    except bridgedb.Dist.IgnoreEmail, e:
+        logging.info("Got a mail too frequently; ignoring %r: %s.",
+                      clientAddr, e)
+        return None, None 
+
     # Generate the message.
     f = StringIO()
     w = MimeWriter.MimeWriter(f)
@@ -310,6 +339,14 @@ def buildMessageTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
 
     return msg_template
+
+def buildSpamWarningTemplate(t):
+    msg_template =  t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[10]) + "\n\n" \
+                    + "%s " \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[11]) + "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
+    return msg_template 
 
 def replyToMail(lines, ctx):
     """Given a list of lines from an incoming email message, and a

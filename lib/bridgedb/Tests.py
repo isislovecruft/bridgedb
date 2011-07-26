@@ -45,6 +45,41 @@ class RhymesWith255Category:
     def contains(self, ip):
         return ip.endswith(".255")
 
+class EmailBridgeDistTests(unittest.TestCase):
+    def setUp(self):
+        self.fd, self.fname = tempfile.mkstemp()
+        self.db = bridgedb.Storage.Database(self.fname)
+        bridgedb.Storage.setGlobalDB(self.db)
+        self.cur = self.db._conn.cursor()
+
+    def tearDown(self):
+        self.db.close()
+        os.close(self.fd)
+        os.unlink(self.fname)
+
+    def testEmailRateLimit(self):
+        db = self.db
+        EMAIL_DOMAIN_MAP = {'example.com':'example.com'}
+        d = bridgedb.Dist.EmailBasedDistributor(
+                "Foo",
+                {'example.com': 'example.com',
+                    'dkim.example.com': 'dkim.example.com'},
+                {'example.com': [], 'dkim.example.com': ['dkim']})
+        for _ in xrange(256):
+            d.insert(fakeBridge())
+        d.getBridgesForEmail('abc@example.com', 1, 3)
+        self.assertRaises(bridgedb.Dist.TooSoonEmail,
+                d.getBridgesForEmail, 'abc@example.com', 1, 3)
+        self.assertRaises(bridgedb.Dist.IgnoreEmail,
+                d.getBridgesForEmail, 'abc@example.com', 1, 3)
+
+    def testUnsupportedDomain(self):
+        db = self.db
+        self.assertRaises(bridgedb.Dist.UnsupportedDomain,
+                bridgedb.Dist.normalizeEmail, 'bad@email.com',
+                {'example.com':'example.com'},
+                {'example.com':[]}) 
+
 class IPBridgeDistTests(unittest.TestCase):
     def dumbAreaMapper(self, ip):
         return ip
@@ -250,12 +285,22 @@ class SQLStorageTests(unittest.TestCase):
 
         self.assertEquals(set(db.getBlockingCountries(b2.fingerprint)),
                 set(['uk', 'cn', 'de', 'jp', 'se', 'kr']))
+        self.assertEquals(db.getWarnedEmail("def@example.com"), False)
+        db.setWarnedEmail("def@example.com")
+        self.assertEquals(db.getWarnedEmail("def@example.com"), True)
+        db.setWarnedEmail("def@example.com", False)
+        self.assertEquals(db.getWarnedEmail("def@example.com"), False)
+
+        db.setWarnedEmail("def@example.com")
+        self.assertEquals(db.getWarnedEmail("def@example.com"), True)
+        db.cleanWarnedEmails(t+200)
+        self.assertEquals(db.getWarnedEmail("def@example.com"), False) 
 
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
 
-    for klass in [ IPBridgeDistTests, DictStorageTests, SQLStorageTests ]:
+    for klass in [ IPBridgeDistTests, DictStorageTests, SQLStorageTests, EmailBridgeDistTests ]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
 
     for module in [ bridgedb.Bridges,

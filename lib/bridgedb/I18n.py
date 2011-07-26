@@ -51,5 +51,12 @@ bridge addresses."""),
  # BRIDGEDB_TEXT[8]
  _("""(e-mail requests not currently supported)"""),
  # BRIDGEDB_TEXT[9]
- _("""(Might be blocked)""") 
+ _("""To receive your bridge relays, please prove you are human"""),
+ # BRIDGEDB_TEXT[10]
+ _("""You have exceeded the rate limit. Please slow down, the minimum time between
+emails is: """),
+ # BRIDGEDB_TEXT[11]
+ _("""hours"""),
+ # BRIDGEDB_TEXT[12]
+ _("""All further emails will be ignored.""")
 ]

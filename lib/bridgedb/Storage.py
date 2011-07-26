@@ -8,6 +8,7 @@ import logging
 import binascii
 import sqlite3
 import time
+import sha
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
@@ -144,6 +145,13 @@ SCHEMA2_SCRIPT = """
 
  CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);
 
+ CREATE TABLE WarnedEmails (
+     email PRIMARY KEY NOT NULL,
+     when_warned
+ );
+
+ CREATE INDEX WarnedEmailsWasWarned on WarnedEmails ( email );
+
  INSERT INTO Config VALUES ( 'schema-version', 2 ); 
 """
 
@@ -227,6 +235,7 @@ class Database:
         cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,))
 
     def getEmailTime(self, addr):
+        addr = sha.new(addr).hexdigest()
         cur = self._cur
         cur.execute("SELECT when_mailed FROM EmailedBridges WHERE "
                     "email = ?", (addr,))
@@ -236,6 +245,7 @@ class Database:
         return strToTime(v[0])
 
     def setEmailTime(self, addr, whenMailed):
+        addr = sha.new(addr).hexdigest()
         cur = self._cur
         t = timeToStr(whenMailed)
         cur.execute("INSERT OR REPLACE INTO EmailedBridges "
@@ -320,6 +330,33 @@ class Database:
         if v is None:
             return False
         return True 
+
+    def getWarnedEmail(self, addr):
+        addr = sha.new(addr).hexdigest()
+        cur = self._cur
+        cur.execute("SELECT * FROM WarnedEmails WHERE "
+                    " email = ?", (addr,))
+        v = cur.fetchone()
+        if v is None:
+            return False
+        return True
+
+    def setWarnedEmail(self, addr, warned=True, whenWarned=time.time()):
+        addr = sha.new(addr).hexdigest()
+        t = timeToStr(whenWarned)
+        cur = self._cur
+        if warned == True:
+            cur.execute("INSERT INTO WarnedEmails"
+                        "(email,when_warned) VALUES (?,?)", (addr, t,))
+        elif warned == False:
+            cur.execute("DELETE FROM WarnedEmails WHERE "
+                        "email = ?", (addr,))
+
+    def cleanWarnedEmails(self, expireBefore):
+        cur = self._cur
+        t = timeToStr(expireBefore)
+
+        cur.execute("DELETE FROM WarnedEmails WHERE when_warned < ?", (t,))
 
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
