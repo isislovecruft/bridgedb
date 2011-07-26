@@ -14,6 +14,9 @@ To set up:
  - To install Maxmind GeoIP
    - Debian: apt-get install python-geoip
    - Others: http://www.maxmind.com/app/python 
+ - To enable recaptcha support, set the options RECAPTCHA_ENABLED,
+     RECAPTCHA_PUB_KEY, and RECAPTCHA_PRIV_KEY in bridgedb.conf. 
+     A recaptcha.net account is required. 
 
 To re-generate and update the i18n files (in case translated strings
 have changed in BridgeDB):

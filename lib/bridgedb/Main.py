@@ -95,7 +95,10 @@ CONFIG = Conf(
 
     RESERVED_SHARE=2,
 
-    FILE_BUCKETS = {}
+    FILE_BUCKETS = {},
+    RECAPTCHA_ENABLED = False,
+    RECAPTCHA_PUB_KEY = '',
+    RECAPTCHA_PRIV_KEY = '', 
   )
 
 def configureLogging(cfg):

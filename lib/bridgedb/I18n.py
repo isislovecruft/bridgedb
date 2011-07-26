@@ -58,5 +58,13 @@ emails is: """),
  # BRIDGEDB_TEXT[11]
  _("""hours"""),
  # BRIDGEDB_TEXT[12]
- _("""All further emails will be ignored.""")
+ _("""All further emails will be ignored."""),
+ # BRIDGEDB_TEXT[13]
+ _("""Type the two words"""),
+ # BRIDGEDB_TEXT[14]
+ _("""I am human"""),
+ # BRIDGEDB_TEXT[15]
+ _("""Upgrade your browser to Firefox"""),
+ # BRIDGEDB_TEXT[16]
+ _("""(Might be blocked)""") 
 ]
