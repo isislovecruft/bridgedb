@@ -191,6 +191,11 @@ class WebResource(twisted.web.resource.Resource):
 
     def buildHTMLMessageTemplateWithCaptcha(self, t, challenge, img):
         """Builds a translated html response with recaptcha"""
+        if self.domains:
+            email_domain_list = "<ul>" \
+                + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"
+        else:
+            email_domain_list = "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[8]) + "</p>" 
 
         recaptchaTemplate = textwrap.dedent("""\
             <form action="" method="POST">
@@ -225,6 +230,7 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[9]) + "</p>" \
                    + "<p>" + recaptchaTemplate + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
+                   + email_domain_list \
                    + "</body></html>"
         return html_msg 
 
