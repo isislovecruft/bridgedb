@@ -37,6 +37,9 @@ class Conf:
 CONFIG_DEFAULTS = {
     'HTTPS_INCLUDE_FINGERPRINTS' : False,
     'EMAIL_INCLUDE_FINGERPRINTS' : False,
+    'RECAPTCHA_ENABLED' : False,
+    'RECAPTCHA_PUB_KEY' : "",
+    'RECAPTCHA_PRIV_KEY' : ""
 }
 
 # An example configuration.  Used for testing.  See sample
