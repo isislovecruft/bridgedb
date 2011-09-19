@@ -296,7 +296,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         db = bridgedb.Storage.getDB()
         try:
             db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
-            db.cleanWarnedBridges(time.time()-MAX_EMAIL_RATE)
+            db.cleanWarnedEmails(time.time()-MAX_EMAIL_RATE)
         except:
             db.rollback()
             raise
