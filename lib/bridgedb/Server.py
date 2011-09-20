@@ -151,7 +151,7 @@ class WebResource(twisted.web.resource.Resource):
         if bridges:
             answer = "".join("%s %s\n" % (
                 b.getConfigLine(self.includeFingerprints),
-                (I18n.BRIDGEDB_TEXT[9] if b.isBlocked(countryCode) else "")
+                (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
                 ) for b in bridges) 
         else:
             answer = t.gettext(I18n.BRIDGEDB_TEXT[7])
