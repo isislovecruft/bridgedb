@@ -18,7 +18,6 @@ from twisted.internet import reactor
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
-import bridgedb.Server as Server
 import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
@@ -234,6 +233,11 @@ def startup(cfg):
 
     # Set up logging.
     configureLogging(cfg)
+
+    #XXX import Server after logging is set up
+    # Otherwise, python will create a default handler that logs to
+    # the console and ignore further basicConfig calls
+    import bridgedb.Server as Server
 
     # Load the master key, or create a new one.
     key = getKey(cfg.MASTER_KEY_FILE)
