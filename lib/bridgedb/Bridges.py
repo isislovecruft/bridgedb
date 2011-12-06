@@ -1,5 +1,3 @@
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
 """
@@ -15,6 +13,8 @@ import re
 import sha
 import socket
 import time
+import ipaddr
+import random
 
 import bridgedb.Storage
 import bridgedb.Bucket
@@ -44,15 +44,13 @@ def is_valid_ip(ip):
     False
     """
 
-    if not re.match(r'(\d+)\.(\d+)\.(\d+)\.(\d+)', ip):
-        # inet_aton likes "1.2" as a synonym for "0.0.1.2".  We don't.
-        return False
+    # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"
     try:
-        socket.inet_aton(ip)
-    except socket.error:
+        ipaddr.IPAddress(ip)
+    except ValueError:
+        # not a valid IPv4 or IPv6 address
         return False
-    else:
-        return True
+    return True
 
 def is_valid_fingerprint(fp):
     """Return true iff fp in the right format to be a hex fingerprint
@@ -66,6 +64,17 @@ def is_valid_fingerprint(fp):
         return False
     else:
         return True
+
+def is_valid_or_address(or_address):
+    """Return true iff or_address is in the right format
+       (ip,frozenset(port)) or (ip, frozenset(port_low,port_high)) for ranges
+    """
+    if len(or_address) != 2: return False
+    ip,port = or_address
+    if not is_valid_ip(ip): return False
+    if type(port) is not int: return False
+    if not (1 <= port <= 65535): return False
+    return True
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
@@ -105,12 +114,15 @@ class Bridge:
     ##       no spaces.
     ##   running,stable -- DOCDOC
     ##   blockingCountries -- list of country codes blocking this bridge
-    def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None):
+    def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
+                 or_addresses=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
            set."""
         self.nickname = nickname
         self.ip = ip
         self.orport = orport
+        if not or_addresses: or_addresses = {}
+        self.or_addresses = or_addresses
         self.running = self.stable = None
         self.blockingCountries = None
         if id_digest is not None:
@@ -132,15 +144,63 @@ class Bridge:
 
     def __repr__(self):
         """Return a piece of python that evaluates to this bridge."""
+        if self.or_addresses:
+            return "Bridge(%r,%r,%d,%r,or_addresses=%s)"%(
+                self.nickname, self.ip, self.orport, self.fingerprint,
+                self.or_addresses)
         return "Bridge(%r,%r,%d,%r)"%(
             self.nickname, self.ip, self.orport, self.fingerprint)
 
-    def getConfigLine(self,includeFingerprint=False):
+    def getConfigLine(self,includeFingerprint=False,
+            selectFromORAddresses=False,
+            needIPv4=True, needIPv6=False):
         """Return a line describing this bridge for inclusion in a torrc."""
-        if includeFingerprint:
-            return "bridge %s:%d %s" % (self.ip, self.orport, self.fingerprint)
+
+        # select an address:port from or-addresses
+        if selectFromORAddresses and self.or_addresses:
+            filtered_addresses = None
+            # bridges may have both classes. we only return one.
+            if needIPv4:
+                f = lambda x: type(x[0]) is ipaddr.IPv4Address
+                filtered_addresses = filter(f, self.or_addresses.items())
+            elif needIPv6:
+                f = lambda x: type(x[0]) is ipaddr.IPv6Address
+                filtered_addresses = filter(f, self.or_addresses.items())
+
+            #XXX: we could instead have two lists of or-addresses
+            if filtered_addresses:
+                address,portlist = random.choice(filtered_addresses)
+                if type(address) is ipaddr.IPv6Address:
+                    ip = "[%s]"%address
+                else:
+                    ip = "%s"%address
+                orport = portlist.getPort() #magic
+
+        # default to ip,orport ; ex. when logging
         else:
-            return "bridge %s:%d" % (self.ip, self.orport)
+            ip = self.ip
+            orport = self.orport
+
+        if includeFingerprint:
+            return "bridge %s:%d %s" % (ip, orport, self.fingerprint)
+        else:
+            return "bridge %s:%d" % (ip, orport)  
+
+    def getAllConfigLines(self,includeFingerprint=False):
+        """Generator. Iterate over all valid config lines for this bridge."""
+        # warning: a bridge with large port ranges may generate thousands
+        # of lines of output
+        for address,portlist in self.or_addresses.items():
+            if type(address) is ipaddr.IPv6Address:
+                ip = "[%s]" % address
+            else:
+                ip = "%s" % address
+
+            for orport in portlist:
+                if includeFingerprint:
+                    yield "bridge %s:%d %s" % (ip,orport,self.fingerprint)
+                else:
+                    yield "bridge %s:%d" % (ip,orport)
 
     def assertOK(self):
         assert is_valid_ip(self.ip)
@@ -164,10 +224,37 @@ class Bridge:
         return False 
 
 def parseDescFile(f, bridge_purpose='bridge'):
-    """Generator. Parses a cached-descriptors file 'f', and yields a Bridge
-       object for every entry whose purpose matches bridge_purpose.
+    """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
+       for every entry whose purpose matches bridge_purpose.
+       This Generator understands the new descriptor format described in 
+       186-multiple-orports.txt
+
+       The new specification provides for specifying multiple ORports as well
+       as supporting new address format for IPv6 addresses.
+
+       The router descriptor "or-address" may occur zero, one, or multiple times.
+       parseDescFile adds each ADDRESS:PORTSPEC to the Bridge.or_addresses list.
+
+       The "or-address" should not duplicate the address:port pair from the "router"
+       description. (Should we try to catch this case?)
+
+       A node may not list more than 8 or-address lines.
+         (should we try to enforce this too?)
+
+       Here is the new format:
+
+       or-address SP ADDRESS ":" PORTLIST NL
+       ADDRESS = IP6ADDR | IP4ADDR
+       IPV6ADDR = an ipv6 address, surrounded by square brackets.
+       IPV4ADDR = an ipv4 address, represented as a dotted quad.
+       PORTLIST = PORTSPEC | PORTSPEC "," PORTLIST
+       PORTSPEC = PORT | PORT "-" PORT
+       PORT = a number between 1 and 65535 inclusive.
     """
+   
     nickname = ip = orport = fingerprint = purpose = None
+    num_or_address_lines = 0
+    or_addresses = {}
 
     for line in f:
         line = line.strip()
@@ -185,14 +272,172 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
             fingerprint = line[12:].replace(" ", "")
+        elif line.startswith("or-address "):
+            if num_or_address_lines < 8:
+                line = line[11:]
+                address,portlist = parseORAddressLine(line)
+                try:
+                    or_addresses[address].add(portlist)
+                except KeyError:
+                    or_addresses[address] = portlist
+            else:
+                logging.warn("Skipping extra or-address line "\
+                             "from Bridge with ID %r" % id)
+            num_or_address_lines += 1
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or
                               bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ip, orport, fingerprint)
+                b = Bridge(nickname, ip, orport, fingerprint,
+                           or_addresses=or_addresses)
                 b.assertOK()
                 yield b
-            nickname = ip = orport = fingerprint = purpose = None
+            nickname = ip = orport = fingerprint = purpose = None 
+            num_or_address_lines = 0
+            or_addresses = {}
+
+class PortList:
+    """ container class for port ranges
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.ports = set()
+        self.ranges = [] 
+        self.portdispenser = None
+        if len(args) == 1:
+            if type(args[0]) is str:
+                ports = [p.split('-') for p in args[0].split(',')]
+                # truncate per spec
+                ports = ports[:16]
+                for ps in ports:
+                    try: ps = [int(x) for x in ps]
+                    except ValueError: break
+                    if len(ps) == 1: self.add(ps[0])
+                    elif len(ps) == 2: self.add(ps[0],ps[1])
+            else:
+                self.add(args[0])
+        elif len(args) == 2:
+            l,h = args
+            self.add(l,h)
+
+    def _sanitycheck(self, val):
+        #XXX: if debug=False this is disabled. bad!
+        assert type(val) is int
+        assert(val > 0)
+        assert(val <= 65535) 
+
+    def __contains__(self, val1, val2=None):
+        self._sanitycheck(val1)
+        if val2: self.sanitycheck(val2)
+
+        # check a single port
+        if not val2 and val1:
+            if val1 in self.ports: return True
+            for start,end in self.ranges:
+                f = lambda x: start <= x <= end
+                if f(val1): return True
+            return False
+
+        if val2 and val1:
+            for start,end in self.ranges:
+                f = lambda x: start <= x <= end
+                if f(val1) and f(val2): return True
+
+        for start,end in self.ranges:
+            f = lambda x: start <= x <= end
+            if f(val): return True
+
+    def add(self, val1, val2=None):
+        self._sanitycheck(val1)
+
+        # add as a single port instead
+        if val2 == val1: val2 = None
+        if val2:
+            self._sanitycheck(val2)
+            start = min(val1,val2)
+            end = max(val1,val2)
+            self.ranges.append((start,end))
+            # reduce to largest continuous ranges
+            self._squash()
+        else:
+            if val1 in self: return
+            self.ports.add(val1)
+
+        # reset port dispenser
+        if self.portdispenser:
+            self.portdispenser = None
+
+    def getPort(self):
+        # returns a single valid port
+        if not self.portdispenser:
+            self.portdispenser = self.__iter__()
+        try:
+            return self.portdispenser.next()
+        except StopIteration, AttributeError:
+            self.portdispenser = self.__iter__()
+            return self.portdispenser.next()
+
+    def _squash(self):
+        # merge intersecting ranges
+        if len(self.ranges) > 1:
+            self.ranges.sort(key=lambda x: x[0])
+            squashed = [self.ranges.pop(0)]
+            for r in self.ranges:
+                if (squashed[-1][0] <= r[0] <= squashed[-1][1]):
+                    #intersection, extend r1, drop r2
+                    if r[1] > squashed[-1][1]: 
+                        squashed[-1] = (squashed[-1][0],r[1])
+                    # drop r
+                else:
+                    # keep r
+                    squashed.append(r)
+
+            self.ranges = squashed
+
+        # drop enclosed ports
+        ports = self.ports.copy()
+        for p in self.ports:
+            for s,e in self.ranges:
+                if s <= p <= e:
+                    ports.remove(p)
+        self.ports = ports
+
+    def __iter__(self):
+        for p in self.ports:
+            yield p
+        for l,h in self.ranges:
+            # +1 for inclusive range
+            for rr in xrange(l,h+1):
+                yield rr
+
+    def __str__(self):
+        s = ""
+        for p in self.ports:
+            s += "".join(", %s"%p)
+        for l,h in self.ranges:
+            s += ", %s-%s" % (l,h)
+        return s.lstrip(", ")
+
+    def __repr__(self):
+        return "PortList('%s')" % self.__str__()
+
+def parseORAddressLine(line):
+    #XXX should these go somewhere else?
+    re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
+    re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
+
+    address = None
+    portlist = None
+    # try regexp to discover ip version
+    for regex in [re_ipv4, re_ipv6]:
+        m = regex.match(line)
+        if m:
+            try:
+                address  = ipaddr.IPAddress(m.group(1))
+                portstring = m.group(2)
+            except IndexError, ValueError: break
+            portlist = PortList(portstring)
+    return address,portlist
 
 def parseStatusFile(f):
     """DOCDOC"""
