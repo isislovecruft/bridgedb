@@ -1,0 +1,280 @@
+Filename: xxx-bridgedb-learns-ipv6.txt
+Title: BridgeDB Learns IPv6
+Author: Aaron Gibson
+Created: 5 Dec 2011
+Status: Draft
+
+Overview:
+
+  This document outlines what we'll do to make BridgeDB fully support IPv6
+  bridges, and fully support IPv6 with the email, https, and bucket
+  distributors.
+
+Motivation:
+
+  IPv6 bridges need a BridgeDB too.
+
+What needs to change:
+
+  There are two main tasks that must be completed for BridgeDB to support IPv6.
+
+    1. BridgeDB must be able to parse IPv6 addresses from router descriptors.
+    (Currently, BridgeDB does not recognize the or-address line described in
+    186-multiple-orports.txt)
+    
+    2. BridgeDB must decide how to hand out IPv6 addresses.  (Currently,
+    BridgeDB distributors are not IPv6 aware, and provide no support for
+    distinguishing bridges by address class)
+
+    
+1. BridgeDB learns to parse or-address
+
+    BridgeDB must learn how to parse the new or-address line from server
+    descriptors. The new or-address line allows a router to specify a list of
+    addresses and ports or port-ranges. 
+    
+    Here is the or-address specification (see: 186-multiple-orports.txt)
+          
+      or-address SP ADDRESS ":" PORTLIST NL
+      ADDRESS = IP6ADDR | IP4ADDR
+      IPV6ADDR = an ipv6 address, surrounded by square brackets.
+      IPV4ADDR = an ipv4 address, represented as a dotted quad.
+      PORTLIST = PORTSPEC | PORTSPEC "," PORTLIST
+      PORTSPEC = PORT | PORT "-" PORT
+      PORT = a number between 1 and 65535 inclusive.
+
+    BridgeDB must now comprehend and store multiple listening addresses and
+    ports. BridgeDB currently assumes that each bridge has only one listen
+    address. BridgeDB must be modified to take one of the following approaches:
+    
+      a. Treat each ADDRESS:PORT combination as a separate bridge entity
+      b. Display a subset of each bridges ADDRESS:PORT entries in a response
+      c. Display all of each bridges ADDRESS:PORT entries in a response
+
+    Given any address of the bridge you can learn its fingerprint, and use that
+    to look up its descriptor at tonga and learn the rest of the addresses. so
+    counting a bridge with 5 addresses as 5 bridges makes it more likely to get
+    blocked by a smart adversary. but more useful against a weaker adversary.
+    #XXX: thanks arma!
+    # any other thoughts here? option c. seems to be the simplest to implement.
+
+    BridgeDB should be able to mark specific IP:port pairs as blocked, and
+    indicate where it is blocked (e.g. by country code). This requirement is
+    complicated by the fact that or-address may specify a range of listening
+    ports.
+
+    How are IPv6 Addresses stored in BridgeDB?
+
+      IPv6 Addresses are stored as strings, the same way as IPv4 addresses.
+      #XXX: is this better than using the ipaddr.IPAddress class?
+
+      As the new or-address specification allows for multiple ADDRESS:PORT
+      BridgeDB's persistent database must also be modified.
+
+      A new table 'or-address' shall be created with the following fields:
+      ex. from updated BridgeDB schema:
+
+        CREATE TABLE BridgeOrAddresses (
+            id INTEGER PRIMARY KEY NOT NULL,
+            hex_key,
+            address,
+            or_port,
+            address_class,
+        );
+       
+        CREATE INDEX BridgeOrAddressesKeyIndex on BridgeOrAddresses ( hex_key ); 
+      
+    How are Bridges differentiated by address class?
+
+      Bridges are differentiated by the string representation of their IP
+      address.
+
+      When BridgeDB needs to make a distinction between IP address classes, the
+      python module ipaddr-py (https://code.google.com/p/ipaddr-py/) will be
+      used to determine address class.
+
+2. BridgeDB learns how to selectively distribute IPv6 bridges
+
+    BridgeDB's 3 distributors must be able to selectively provide both
+    IPv4 and/or IPv6 bridges to clients. Deployment of these distributors must
+    take care to mitigate reachability issues due partly to the ongoing
+    transition from IPv4 to IPv6. 
+
+    [One such issue is clients who have IPv6 support on their local network but
+    the client's ISP does not; such a client may try to reach the IPv6 address
+    specified by a AAAA record and fail to connect.]
+
+    The 3 distributor types that BridgeDB currently features are:
+
+      1. HTTPS Distributor
+         
+        The HTTPS distributor must be able to selectively offer both IPv4 and
+        IPv6 bridges to its' clients, and BridgeDB must support both IPv4 and
+        IPv6 connections.
+        
+        #XXX the twisted framework does not currently support ipv6. However,
+        # it is possible to place BridgeDB behind a forwarding proxy such as
+        # apache or nginx, which will pass the client address to BridgeDB in the
+        # X_FORWARDED_FOR header. BridgeDB HTTPS distributor must be able to
+        # parse the X_FORWARDED_FOR header for both IPv4 and IPv6 addresses.
+        # Additionally, BridgeDB should eventually support IPv6 natively when
+        # the twisted framework provides adequate IPv6 support.
+
+        How does bridgedb determine whether to respond with ipv4 or ipv6
+        bridges?
+
+          Users select IPv4 or IPv6 bridges by visiting different URLs. An
+          informational message added to the BridgeDB response will include the
+          other URL. Two separate BridgeDB instances are run, one for each URL.
+
+          Alternately, ipv6 bridges could be requested by visiting
+          bridges.tpo/ipv6 or similar URL path scheme.
+
+        Proposed Additional Hostname For IPv6 Bridges
+
+          BridgeDB shall listen for requests on two different hostnames,
+          bridges.torproject.org and bridgesv6.torproject.org.
+
+        DNS Configuration Details
+
+          bridges.torproject.org shall not have an AAAA record until the
+          addition of the record is determined to be sound.
+
+          bridgesv6.torproject.org shall have both an AAAA and A record.
+          
+          This is to avoid the confused-client scenario described above.
+
+        How does BridgeDB know which URL was requested?
+
+          This section describes how BridgeDB could be modified to support
+          requests to both bridges.torproject.org and bridgesv6.torproject.org
+          with a single BridgeDB instance.
+
+          A single BridgeDB instance could handle requests to both
+          bridges.torproject.org and bridgesv6.torproject.org by checking the
+          Host header sent by the browser. The Host header is optional. In
+          order to expose the selector explitely BridgeDB must check the query
+          string for the following parameters:
+
+            q=ipv4  - Request IPv4 bridges.
+            q=ipv6  - Request IPv6 bridges.  
+
+          Parameters may be repeated to select multiple classes, e.g.
+          
+            q=ipv4&q=ipv6  - Request both IPv4 and IPv6 bridges.
+
+          When no parameters are set, by default BridgeDB must return addresses
+          of the same class as the client. This default may promote IPv6 use
+          where possible.
+
+        How does someone end up at bridgesv6.torproject.org?
+
+          BridgeDB should include a message at the end of its' response.  
+          e.g.
+
+            "Get IPv4 bridges https://bridges.torproject.org"
+            "Get IPv6 bridges from https://bridgesv6.torproject.org"
+            "You must have IPv6 for these bridges to work."
+          #XXX: will users understand what this means?
+
+        How does IPv6 affect address datamining of https distribution?
+          A user may be allocated a /128, or a /64.
+          An adversary may control a /32 or perhaps larger
+          Proposal: Enable reCAPTCHA support by default.
+
+        How do IPv6 addresses work with the IPBasedDistributor?
+        #XXX: I need feedback on this
+        # do we use all 128 bits here?
+        # upper N bits? lower N bits? random or specific N bits?
+
+        How are IPv6 Bridges actually distinguished?
+
+          A new type of BridgeSplitter (sort of like a BridgeHolder)
+          is devised; the function of which is to split bridges into different
+          rings determined by a filter function.
+
+          The filtering mechanism here is similar to BridgeDB's ipCategories
+          implementation, the difference is that both the filters and ring
+          names are specified at instance construction.
+
+          The construction of a BridgeSplitter instance should be done by
+          passing lists of tuples (ringName,filterFunction) to the constructor.
+          This feature allows for dynamically creating filtered BridgeRings, 
+          which would prove useful for constructing more complex filters, for
+          example, filtering by both address class and reachability from
+          specific countries.
+
+          This implementation could increase the rate at which bridges are
+          detected and blocked, although the rate could be controlled by the
+          frequency that BridgeDB updates its knowledge of blocked bridges.
+          
+          #XXX: I have some concern about the performance of
+          # filtering bridges dynamically for each response. BridgeDB should
+          # learn to cache recently used dynamic filters so that the impact of
+          # popular requests will be reduced, and BridgeDB does not have to
+          # pre-compute or identify which types of requests will be popular.
+
+          The implementation could look similar to the current 'subring'
+          implementation; or the current 'ipCategories' implementation. Both of
+          the features are implemented using subrings that hold a subset of
+          the parent ring's bridges; the subset being defined by a filtering
+          function.
+
+          An accompanying Distributor based on the existing IPBasedDistributor
+          shall be designed to use the above BridgeSplitter so that sorted
+          Bridges are selectable by address type. Because a bridge
+          may now have both IPv6 and IPv4 addresses, BridgeDB needs to take
+          one of the following approaches when only a single address class is
+          requested:
+
+            a. filter addresses of the other address class from the response
+            b. include the other addresses in the response
+
+      2. Email Distributor
+
+        The Email Distributor must accept additional new commands parsed from
+        the subject or a single line in the body of an email message.
+
+          ipv4  - request IPv4 bridges.
+          ipv6  - request IPv6 bridges.
+
+        The default action may be set in bridgedb.conf with the option
+        EMAIL_DEFAULT_ADDRESS_CLASS, which must be one of 'ipv6' or 'ipv4'.  If
+        the option is not given in the config, EMAIL_DEFAULT_ADDRESS_CLASS shall
+        default to 'ipv4'.
+
+        Similar to the IPBasedDistributor, BridgeDB must determine how the
+        response should accommodate bridges with both address classes.
+
+      3. Unassigned Distributor and Buckets
+
+        BridgeDB must provide a selector to choose between exporting
+        IPv4, IPv6, or both types of bridges.
+
+        BridgeDB currently provides a way to export bucket files with
+        unallocated bridges. The existing syntax provides no mechanism to
+        differentiate by address class.
+
+        Proposed new FILE_BUCKET syntax:
+
+          A dictionary of dictionaries with the following acceptable keys and
+          values.
+
+          'filename_prefix' shall be a unique string used as the output filename
+          prefix. This is string is also the key to a dictionary that contains
+          the following key/values:
+
+          'address-class' : one of either 'ipv6' or 'ipv4'
+          'number'        : an integer > 0
+
+        Users may wish to provide descriptive names,
+        e.g.
+        
+          FILE_BUCKETS = {
+                  'filename_prefix': {'address-class': 'ipv6', 'number': 10},
+                  'descriptive_name': {'address-class': 'ipv6', 'number': 10},
+          }
+
+        Future BridgeDB enhancements may expand these options to include other
+        filters.
+        #XXX: e.g. buckets of bridges 'not-blocked-in'
