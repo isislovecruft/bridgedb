@@ -791,23 +791,6 @@ class FilteredBridgeSplitter(BridgeHolder):
     are passed to the constructor as a list of (filterFn, ringName)
     """
 
-#XXX: maybe limit the # of cached rings too?
-#XXX: keep the bridges around
-#XXX: when the # of rings hits RING_LIMIT drop the oldest
-#XXX: LRU is probably OK
-#XXX: max_cached_rings should be configurable
-
-
-#XXX: need a default ring (f(x): return True)
-#XXX: (don't make this a default, we'll just need to have it)
-
-#XXX: filterRings['NoFilter'] = [list,of,rings]
-#XXX: filterRings['Default'] = [list,of,rings]
-#XXX: filterRings['IPv6'] = [list,of,rings]
-
-#XXX: filterRings['more-complex-query-string?']
-
-
     def __init__(self, key, max_cached_rings=3):
         self.key = key
         self.filterRings = {}
