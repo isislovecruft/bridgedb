@@ -160,14 +160,12 @@ class Bridge:
         if selectFromORAddresses and self.or_addresses:
             filtered_addresses = None
             # bridges may have both classes. we only return one.
-            if needIPv4:
-                f = lambda x: type(x[0]) is ipaddr.IPv4Address
-                filtered_addresses = filter(f, self.or_addresses.items())
-            elif needIPv6:
+            if needIPv6:
                 f = lambda x: type(x[0]) is ipaddr.IPv6Address
                 filtered_addresses = filter(f, self.or_addresses.items())
-
-            #XXX: we could instead have two lists of or-addresses
+            elif needIPv4:
+                f = lambda x: type(x[0]) is ipaddr.IPv4Address
+                filtered_addresses = filter(f, self.or_addresses.items())
             if filtered_addresses:
                 address,portlist = random.choice(filtered_addresses)
                 if type(address) is ipaddr.IPv6Address:
@@ -613,16 +611,8 @@ class BridgeRing(BridgeHolder):
 
         #Do not return bridges from the same /16
         bridges = [ self.bridges[k] for k in keys ]
-        filteredbridges = []
-        slash16s = dict()
 
-        for bridge in bridges:
-            m = re.match(r'(\d+\.\d+)\.\d+\.\d+', bridge.ip)
-            upper16 = m.group(1)
-            if upper16 not in slash16s:
-                filteredbridges.append(bridge)
-                slash16s[upper16] = True
-        return filteredbridges 
+        return bridges
 
     def getBridgeByID(self, fp):
         """Return the bridge whose identity digest is fp, or None if no such
@@ -794,6 +784,94 @@ class BridgeSplitter(BridgeHolder):
         for name,ring in self.ringsByName.iteritems():
             ring.dumpAssignments(f, "%s %s" % (description, name))
 
+class FilteredBridgeSplitter(BridgeHolder):
+    """ A configurable BridgeHolder that filters bridges
+    into subrings.
+    The set of subrings and conditions used to assign Bridges
+    are passed to the constructor as a list of (filterFn, ringName)
+    """
+
+#XXX: maybe limit the # of cached rings too?
+#XXX: keep the bridges around
+#XXX: when the # of rings hits RING_LIMIT drop the oldest
+#XXX: LRU is probably OK
+#XXX: max_cached_rings should be configurable
+
+
+#XXX: need a default ring (f(x): return True)
+#XXX: (don't make this a default, we'll just need to have it)
+
+#XXX: filterRings['NoFilter'] = [list,of,rings]
+#XXX: filterRings['Default'] = [list,of,rings]
+#XXX: filterRings['IPv6'] = [list,of,rings]
+
+#XXX: filterRings['more-complex-query-string?']
+
+
+    def __init__(self, key, max_cached_rings=3):
+        self.key = key
+        self.filterRings = {}
+        self.hmac = get_hmac_fn(key, hex=True)
+        self.bridges = []
+
+        #XXX: unused
+        self.max_cached_rings = max_cached_rings
+
+    def __len__(self):
+        return len(self.bridges)
+
+    def clear(self):
+        #XXX syntax?
+        [r.clear() for n,(f,r) in self.filterRings.items()]
+	self.bridges = []
+        #self.filterRings = {}
+
+    def insert(self, bridge):
+        if not bridge.running:
+            logging.debug("insert non-running bridge %s" % bridge.getID())
+            return
+
+        self.bridges.append(bridge)
+
+        # insert in all matching rings
+        for n,(f,r) in self.filterRings.items():
+            if f(bridge):
+                r.insert(bridge)
+                logging.debug("insert bridge into %s" % n)
+
+        #XXX db.insertBridgeAndGetRing ??
+        #XXX persisent mapping?
+
+    def addRing(self, ring, ringname, filterFn, populate_from=None):
+        """Add a ring to this splitter.
+        ring -- the ring to add
+        ringname -- a unique string identifying the ring
+        filterFn -- a function whose input is a Bridge, and returns
+        True or False
+        populate_from -- an iterable of Bridges
+        """
+        assert isinstance(ring, BridgeHolder)
+        assert ringname not in self.filterRings.keys()
+        logging.debug("addRing %s" % ringname)
+
+    #XXX: drop LRU ring if len(self.filterRings) > self.max_cached_rings
+    #XXX: where do rings go after cache eviction?
+        self.filterRings[ringname] = (filterFn,ring)
+
+        # populate ring from an iterable
+        if populate_from:
+            logging.debug("populating ring %s" % ringname)
+            for bridge in populate_from:
+                if isinstance(bridge, Bridge) and filterFn(bridge):
+                    ring.insert(bridge)
+
+    def dumpAssignments(self, f, description=""):
+        for n,(_,r) in self.filterRings.items():
+            r.dumpAssignments(f, "%s %s" % (description, n))
+
+    def assignmentsArePersistent(self):
+        return False  #XXX: is this right?
+ 
 class BridgeBlock:
     """Base class that abstracts bridge blocking"""
     def __init__(self):
