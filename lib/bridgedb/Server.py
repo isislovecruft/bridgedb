@@ -31,6 +31,7 @@ from random import randint
 from bridgedb.Raptcha import Raptcha
 import base64
 import textwrap
+from ipaddr import IPv4Address, IPv6Address
  
 try:
     import GeoIP
@@ -147,13 +148,25 @@ class WebResource(twisted.web.resource.Resource):
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
 
+        # do want ipv6 support?
+        ipv6 = False
+        if "ipv6" in request.postpath: ipv6 = True
+
         if ip:
+            if ipv6:
+                rules=[filterBridgesByIP6]
+            else:
+                rules=[filterBridgesByIP4]
+
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive,
-                                                       countryCode)
+                                                       countryCode,
+                                                       bridgeFilterRules=rules)
+
         if bridges:
             answer = "".join("%s %s\n" % (
-                b.getConfigLine(self.includeFingerprints),
+                b.getConfigLine(self.includeFingerprints,needIPv6=ipv6,
+                                selectFromORAddresses=ipv6),
                 (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
                 ) for b in bridges) 
         else:
@@ -379,11 +392,22 @@ def getMailResponse(lines, ctx):
     #    return None,None
 
     # Figure out which bridges to send
+
+    # read subject, see if they want ipv6
+    ipv6 = False
+    for ln in lines:
+        if "ipv6" in ln.strip().lower():
+            ipv6 = True
+            rules=[filterBridgesByIP6]
+    else:
+        rules=[filterBridgesByIP4]
+
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
                                                      interval, ctx.N,
-                                                     countryCode=None)
+                                                     countryCode=None,
+                                                     bridgeFilterRules=rules)
     except bridgedb.Dist.BadEmail, e:
         logging.info("Got a mail from a bad email address %r: %s.",
                      clientAddr, e)
@@ -433,7 +457,8 @@ def getMailResponse(lines, ctx):
 
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
-        answer = "".join("  %s\n" % b.getConfigLine(with_fp) for b in bridges)
+        answer = "".join("  %s\n" % b.getConfigLine(with_fp, needIPv6=ipv6,\
+                                   selectFromORAddresses=ipv6) for b in bridges)
     else:
         answer = "(no bridges currently available)"
 
@@ -646,3 +671,25 @@ def getCCFromRequest(request):
     if len(path) ==  2:
         return path.lower()
     return None 
+
+def filterBridgesByIP4(bridge):
+    try:
+        if IPv4Address(bridge.ip): return True
+    except ValueError:
+        pass
+
+    for k in bridge.or_addresses.keys():
+        if type(k) is IPv4Address:
+            return True
+    return False
+
+def filterBridgesByIP6(bridge):
+    try:
+        if IPv6Address(bridge.ip): return True
+    except ValueError:
+        pass
+
+    for k in bridge.or_addresses.keys():
+        if type(k) is IPv6Address:
+            return True
+    return False

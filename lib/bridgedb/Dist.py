@@ -287,6 +287,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
+        self.answerParameters = answerParameters
 
         #XXX cache options not implemented
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
