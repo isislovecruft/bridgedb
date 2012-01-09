@@ -123,8 +123,12 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                 return ring.getBridges(pos, N, countryCode)
 
         # dynamic filter construction
+        #XXX: may bypass clusters! front-end must supply clustering function
+        # or provide another mechanism (perhaps geoip based) to sort and select
+        # bridges from separate pools.
         if bridgeFilterRules:
             logging.debug("bridgeFilterRules: %s" % bridgeFilterRules)
+            #XXX: is there a better way to cache by ruleset signature?
             ruleset = frozenset(bridgeFilterRules)
             if ruleset in self.splitter.filterRings.keys():
                 logging.debug("Cache hit %s" % ruleset)

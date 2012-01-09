@@ -154,9 +154,13 @@ class WebResource(twisted.web.resource.Resource):
 
         if ip:
             if ipv6:
+                #XXX: this ruleset bypasses areamapper and bridge clusters.
+                #     for now, there are very few IPv6 bridges.
                 rules=[filterBridgesByIP6]
             else:
-                rules=[filterBridgesByIP4]
+                #XXX: default to areamapper + cluster, does not use oraddress
+                rules = None
+                #rules=[filterBridgesByIP4]
 
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive,
