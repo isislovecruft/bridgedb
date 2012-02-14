@@ -185,6 +185,7 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
                    + email_domain_list \
+                   + "<hr /><p>Note for experts: if you can use IPv6, try upgrading to Tor 0.2.3.12-alpha and use this bridge line:<br /><tt>bridge [2001:948:7:2::163]:6001</tt><br />Let us know how it goes!</p>" \
                    + "</body></html>"
 
         return html_msg
