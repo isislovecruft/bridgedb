@@ -10,7 +10,7 @@ To set up:
  - Make sure that the input files referred to in bridgedb.conf exist.
    - You can make a self-signed certificate with
      openssl req -x509 -new -nodes > cert
- - Set up PYTHONPATH to include "~/lib/python2.4/site-packages/".
+ - Set up PYTHONPATH to include "~/lib/python2.6/site-packages/".
  - To install Maxmind GeoIP
    - Debian: apt-get install python-geoip
    - Others: http://www.maxmind.com/app/python 
