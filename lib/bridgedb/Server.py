@@ -32,6 +32,7 @@ from bridgedb.Raptcha import Raptcha
 import base64
 import textwrap
 from ipaddr import IPv4Address, IPv6Address
+from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
  
 try:
     import GeoIP
@@ -364,7 +365,7 @@ def getMailResponse(lines, ctx):
 
     try:
         _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
-    except bridgedb.Dist.BadEmail:
+    except BadEmail:
         logging.info("Ignoring bad address on incoming email.")
         return None,None
     if not addrdomain:
@@ -412,13 +413,8 @@ def getMailResponse(lines, ctx):
                                                      interval, ctx.N,
                                                      countryCode=None,
                                                      bridgeFilterRules=rules)
-    except bridgedb.Dist.BadEmail, e:
-        logging.info("Got a mail from a bad email address %r: %s.",
-                     clientAddr, e)
-        return None, None
-
     # Handle rate limited email
-    except bridgedb.Dist.TooSoonEmail, e:
+    except TooSoonEmail, e:
         logging.info("Got a mail too frequently; warning %r: %s.",
                      clientAddr, e)
 
@@ -441,9 +437,14 @@ def getMailResponse(lines, ctx):
         f.seek(0)
         return clientAddr, f
 
-    except bridgedb.Dist.IgnoreEmail, e:
+    except IgnoreEmail, e:
         logging.info("Got a mail too frequently; ignoring %r: %s.",
                       clientAddr, e)
+        return None, None 
+
+    except BadEmail, e:
+        logging.info("Got a mail from a bad email address %r: %s.",
+                     clientAddr, e)
         return None, None 
 
     # Generate the message.
