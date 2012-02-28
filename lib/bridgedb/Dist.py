@@ -12,6 +12,7 @@ import bridgedb.Storage
 import logging
 import re
 import time
+from ipaddr import IPv6Address, IPAddress
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -20,7 +21,10 @@ def uniformMap(ip):
     >>> uniformMap('1.2.3.4')
     '1.2.3'
     """
-    return ".".join( ip.split(".")[:3] )
+    if type(IPAddress(ip)) is IPv6Address:
+        return ":".join(IPv6Address(ip).exploded.split(':')[:4])
+    else:
+        return ".".join( ip.split(".")[:3] )
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     """Object that hands out bridges based on the IP address of an incoming
