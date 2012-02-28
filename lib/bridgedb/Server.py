@@ -514,9 +514,8 @@ class MailContext:
         # Reject any mail longer than this.
         self.maximumSize = 32*1024
         # Use this server for outgoing mail.
-#        self.smtpServer = "127.0.0.1" # XXX should make configurable
-        self.smtpServer = "172.22.121.1"
-        self.smtpPort = 25
+        self.smtpServer = (cfg.EMAIL_SMTP_HOST or "127.0.0.1")
+        self.smtpPort = (cfg.EMAIL_SMTP_PORT or 25)
         # Use this address in the MAIL FROM line for outgoing mail.
         self.smtpFromAddr = (cfg.EMAIL_SMTP_FROM_ADDR or
                              "bridges@torproject.org")
