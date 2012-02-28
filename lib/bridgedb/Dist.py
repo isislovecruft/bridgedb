@@ -338,14 +338,14 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         lastSaw = db.getEmailTime(emailaddress)
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
             if wasWarned:
-                logging.warn("Got a request for bridges from %r; we already "
+                logging.info("Got a request for bridges from %r; we already "
                              "sent a warning. Ignoring.", emailaddress)
                 raise IgnoreEmail("Client was warned", emailaddress)
             else:
                 db.setWarnedEmail(emailaddress, True, now)
                 db.commit() 
 
-            logging.warn("Got a request for bridges from %r; we already "
+            logging.info("Got a request for bridges from %r; we already "
                          "answered one within the last %d seconds. Warning.",
                          emailaddress, MAX_EMAIL_RATE)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
