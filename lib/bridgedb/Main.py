@@ -11,6 +11,7 @@ import signal
 import sys
 import time
 import logging
+import logging.handlers
 import gettext
 
 from twisted.internet import reactor
@@ -110,14 +111,18 @@ def configureLogging(cfg):
     """
     level = getattr(cfg, 'LOGLEVEL', 'WARNING')
     level = getattr(logging, level)
-    extra = {}
-    if getattr(cfg, "LOGFILE"):
-        extra['filename'] = cfg.LOGFILE
 
-    logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s',
-                        datefmt="%b %d %H:%M:%S",
-                        level=level,
-                        **extra)
+    logging.getLogger().setLevel(level)
+    if getattr(cfg, "LOGFILE"):
+        logfile_count = getattr(cfg, "LOGFILE_COUNT", 5)
+        logfile_rotate_size = getattr(cfg, "LOGFILE_ROTATE_SIZE", 10000000)
+
+        handler = logging.handlers.RotatingFileHandler(cfg.LOGFILE, 'a',
+                                                       logfile_rotate_size,
+                                                       logfile_count)
+        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%b %d %H:%M:%S")
+        handler.setFormatter(formatter)
+        logging.getLogger().addHandler(handler)
 
 def getKey(fname):
     """Load the key stored in fname, or create a new 32-byte key and store
