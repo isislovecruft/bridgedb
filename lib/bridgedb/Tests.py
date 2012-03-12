@@ -151,20 +151,25 @@ class IPBridgeDistTests(unittest.TestCase):
     def testDistWithCategories(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo",
                                              [RhymesWith255Category()])
-        assert len(d.categoryRings) == 1
-        rhymesWith255Ring = d.categoryRings[0]
+        assert len(d.categories) == 1
         for _ in xrange(256):
             d.insert(fakeBridge())
-        # Make sure this IP doesn't get any rhymes-with-255 bridges
-        n = d.getBridgesForIP("1.2.3.4", "x", 10)
-        for b in n:
-            self.assertFalse(b.getID() in rhymesWith255Ring.bridgesByID)
 
-        # Make sure these IPs all get rhymes-with-255 bridges
-        for ip in ("6.7.8.255", "10.10.10.255"):
-            n = d.getBridgesForIP("1.2.3.255", "xyz", 10)
+        for _ in xrange(256):
+            # Make sure that the categories do not overlap
+            f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
+            g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
+            n = d.getBridgesForIP(g(), "x", 10)
+            n2 = d.getBridgesForIP(f(), "x", 10) 
+
+            assert(len(n) > 0)
+            assert(len(n2) > 0)
+
             for b in n:
-                self.assertTrue(b.getID() in rhymesWith255Ring.bridgesByID)
+                assert (b not in n2)
+
+            for b in n2:
+                assert (b not in n)
 
     def testDistWithPortRestrictions(self):
         param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
