@@ -50,7 +50,7 @@ class WebResource(twisted.web.resource.Resource):
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
                  includeFingerprints=True,
                  useRecaptcha=False,recaptchaPrivKey='', recaptchaPubKey='',
-                 domains=[]): 
+                 domains=None): 
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -63,6 +63,9 @@ class WebResource(twisted.web.resource.Resource):
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
         self.includeFingerprints = includeFingerprints
+
+        # do not use mutable types as __init__ defaults!
+        if not domains: domains = []
         self.domains = domains
 
         # recaptcha options
