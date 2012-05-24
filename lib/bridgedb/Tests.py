@@ -19,6 +19,11 @@ import bridgedb.Storage
 import re
 import ipaddr
 
+from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.Filters import filterBridgesByOnlyIP4
+from bridgedb.Filters import filterBridgesByOnlyIP6
+
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
 
@@ -201,12 +206,6 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
-        def filterBridgesByIP6(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv6Address:
-                    return True
-            return False
-
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP6])
             assert filterBridgesByIP6(random.choice(b))
@@ -217,12 +216,6 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
-        def filterBridgesByIP4(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv4Address:
-                    return True
-            return False
-
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP4])
             assert filterBridgesByIP4(random.choice(b))
@@ -232,18 +225,6 @@ class IPBridgeDistTests(unittest.TestCase):
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
-
-        def filterBridgesByIP4(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv4Address:
-                    return True
-            return False
-
-        def filterBridgesByIP6(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv6Address:
-                    return True
-            return False
 
         for i in xrange(50):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[
@@ -258,22 +239,6 @@ class IPBridgeDistTests(unittest.TestCase):
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
-
-        def filterBridgesByOnlyIP4(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv6Address:
-                    return False
-            if type(k) is ipaddr.IPv4Address:
-                return True
-            return False
-
-        def filterBridgesByOnlyIP6(bridge):
-            for k in bridge.or_addresses.keys():
-                if type(k) is ipaddr.IPv4Address:
-                    return False
-            if type(k) is ipaddr.IPv6Address:
-                return True
-            return False
 
         for i in xrange(5):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[

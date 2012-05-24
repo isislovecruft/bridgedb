@@ -14,6 +14,9 @@ import re
 import time
 from ipaddr import IPv6Address, IPAddress
 
+from bridgedb.Filters import filterAssignBridgesToRing
+from bridgedb.Filters import filterBridgesByRules
+
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
        get the same string.
@@ -54,24 +57,15 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         key4 = bridgedb.Bridges.get_hmac(key, "Assign-Areas-To-Rings")
         self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
 
-    # add splitter and cache the default rings
-    # plus leave room for dynamic filters
+        # add splitter and cache the default rings
+        # plus leave room for dynamic filters
         ring_cache_size  = nClusters + len(ipCategories) + 5
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
                                                max_cached_rings=ring_cache_size)
 
         logging.debug("added splitter %s" % self.splitter)
 
-    # assign bridges using a filter function
-        def filterAssignBridgesToRing(hmac, numRings, assignedRing):
-            def f(bridge):
-                digest = hmac(bridge.getID())
-                pos = long( digest[:8], 16 )
-                which = pos % numRings
-                if which == assignedRing: return True
-                return False
-            return f
-
+        # assign bridges using a filter function
         for n in xrange(nClusters):
             key1 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring-%d"%n)
             ring = bridgedb.Bridges.BridgeRing(key1, answerParameters)
@@ -139,12 +133,6 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                 _,ring = self.splitter.filterRings[ruleset]
             else:
                 logging.debug("Cache miss %s" % ruleset)
-                def filterBridgesByRules(rules):
-                    def g(x):
-                        r = [f(x) for f in rules]
-                        if False in r: return False
-                        return True
-                    return g
                 # add new ring 
                 #XXX what key do we use here? does it matter? 
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key, str(bridgeFilterRules))
@@ -365,12 +353,6 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             else:
                 # cache miss, add new ring
                 logging.debug("Cache miss %s" % ruleset)
-                def filterBridgesByRules(rules):
-                    def g(x):
-                        r = [f(x) for f in rules]
-                        if False in r: return False
-                        return True
-                    return g
                 # add new ring 
                 #XXX what key do we use here? does it matter? 
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,

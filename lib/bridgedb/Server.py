@@ -33,6 +33,9 @@ import base64
 import textwrap
 from ipaddr import IPv4Address, IPv6Address
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
+
+from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.Filters import filterBridgesByIP4
  
 try:
     import GeoIP
@@ -676,25 +679,3 @@ def getCCFromRequest(request):
     if len(path) ==  2:
         return path.lower()
     return None 
-
-def filterBridgesByIP4(bridge):
-    try:
-        if IPv4Address(bridge.ip): return True
-    except ValueError:
-        pass
-
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv4Address:
-            return True
-    return False
-
-def filterBridgesByIP6(bridge):
-    try:
-        if IPv6Address(bridge.ip): return True
-    except ValueError:
-        pass
-
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv6Address:
-            return True
-    return False
