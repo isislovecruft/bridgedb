@@ -4,21 +4,35 @@
 
 from ipaddr import IPv6Address, IPv4Address
 
+funcs = {}
+
 def filterAssignBridgesToRing(hmac, numRings, assignedRing):
-    def f(bridge):
-        digest = hmac(bridge.getID())
-        pos = long( digest[:8], 16 )
-        which = pos % numRings
-        if which == assignedRing: return True
-        return False
-    return f
+    ruleset = frozenset([hmac, numRings, assignedRing]) 
+    try: 
+        return funcs[ruleset]
+    except KeyError:
+        def f(bridge):
+            digest = hmac(bridge.getID())
+            pos = long( digest[:8], 16 )
+            which = pos % numRings
+            if which == assignedRing: return True
+            return False
+        f.__name__ = "filterAssignBridgesToRing(%s, %s, %s)" % (hmac, numRings,
+                                                                 assignedRing)
+        funcs[ruleset] = f
+        return f
 
 def filterBridgesByRules(rules):
-    def g(x):
-        r = [f(x) for f in rules]
-        if False in r: return False
-        return True
-    return g
+    ruleset = frozenset(rules)
+    try: 
+        return funcs[ruleset] 
+    except KeyError:
+        def g(x):
+            r = [f(x) for f in rules]
+            if False in r: return False
+            return True
+        funcs[ruleset] = g
+        return g  
 
 def filterBridgesByIP4(bridge):
     try:
