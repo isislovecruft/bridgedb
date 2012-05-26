@@ -319,7 +319,7 @@ def startup(cfg):
         proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
-            logging.info("%d for email", len(emailDistributor.ring))
+            logging.info("%d for email", len(emailDistributor.splitter))
         if ipDistributor:
             logging.info("%d for web:", len(ipDistributor.splitter))
             logging.info("  by location set: %s",

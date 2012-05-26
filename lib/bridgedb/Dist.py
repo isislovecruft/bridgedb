@@ -102,7 +102,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             # IP Categories
             logging.info("---------------------------------")
             if category.contains(ip):
-                g = Filters.filterAssignBridgesToRing(self.splitter.hmac,
+                g = filterAssignBridgesToRing(self.splitter.hmac,
                                                       self.nClusters +
                                                       len(self.categories),
                                                       n)
@@ -121,7 +121,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             # length of numClusters
             clusterNum = h % self.nClusters
  
-            g = Filters.filterAssignBridgesToRing(self.splitter.hmac,
+            g = filterAssignBridgesToRing(self.splitter.hmac,
                                           self.nClusters +
                                           len(self.categories),
                                           clusterNum) 
@@ -145,7 +145,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         else:
             logging.debug("Cache miss %s" % ruleset)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.splitter.addRing(ring, ruleset, Filters.filterBridgesByRules(bridgeFilterRules),
+            self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
 
         # get the bridge.
@@ -273,8 +273,6 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
-        self.ring = bridgedb.Bridges.BridgeRing(key2, answerParameters)
-        self.ring.name = "email ring"
         # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
@@ -284,15 +282,9 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
                                                             max_cached_rings=5)
 
-        #XXX default ring.
-        def g(x):
-            return True
-
-        self.splitter.addRing(self.ring, self.ring.name, g)
-
     def clear(self):
         self.splitter.clear()
-        self.ring.clear() # should be take care of by above
+        #self.ring.clear() # should be take care of by above
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
@@ -306,6 +298,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
+        if not bridgeFilterRules: bridgeFilterRules=[]
         now = time.time()
         try:
             emailaddress = normalizeEmail(emailaddress, self.domainmap,
@@ -340,34 +333,32 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
 
         ring = None
-        if bridgeFilterRules:
-            ruleset = frozenset(bridgeFilterRules)
-            if ruleset in self.splitter.filterRings.keys():
-                logging.debug("Cache hit %s" % ruleset)
-                _,ring = self.splitter.filterRings[ruleset]
-            else:
-                # cache miss, add new ring
-                logging.debug("Cache miss %s" % ruleset)
-                # add new ring 
-                #XXX what key do we use here? does it matter? 
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 str(bridgeFilterRules))
-                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                # debug log: cache miss 
-                self.splitter.addRing(ring, ruleset,
-                                      filterBridgesByRules(bridgeFilterRules),
-                                      populate_from=self.splitter.bridges)
+        ruleset = frozenset(bridgeFilterRules)
+        if ruleset in self.splitter.filterRings.keys():
+            logging.debug("Cache hit %s" % ruleset)
+            _,ring = self.splitter.filterRings[ruleset]
         else:
-            ring = self.ring
-                
-        result = ring.getBridges(pos, N, countryCode)
+            # cache miss, add new ring
+            logging.debug("Cache miss %s" % ruleset)
+
+            # add new ring 
+            #XXX what key do we use here? does it matter? 
+            key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
+                                             str(bridgeFilterRules))
+            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+            # debug log: cache miss 
+            self.splitter.addRing(ring, ruleset,
+                                  filterBridgesByRules(bridgeFilterRules),
+                                  populate_from=self.splitter.bridges)
+
+        result = ring.getBridges(pos, N)
 
         db.setEmailTime(emailaddress, now)
         db.commit()
         return result
 
     def __len__(self):
-        return len(self.ring)
+        return len(self.splitter)
 
     def cleanDatabase(self):
         db = bridgedb.Storage.getDB()

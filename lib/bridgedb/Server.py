@@ -401,19 +401,21 @@ def getMailResponse(lines, ctx):
 
     # read subject, see if they want ipv6
     ipv6 = False
+    bridgeFilterRules = []
     for ln in lines:
         if "ipv6" in ln.strip().lower():
             ipv6 = True
-            rules=[filterBridgesByIP6]
+            bridgeFilterRules.append(filterBridgesByIP6)
+            break
     else:
-        rules=[filterBridgesByIP4]
+        bridgeFilterRules.append(filterBridgesByIP4)
 
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
-                                                     interval, ctx.N,
-                                                     countryCode=None,
-                                                     bridgeFilterRules=rules)
+			interval, ctx.N,
+			countryCode=None,
+			bridgeFilterRules=bridgeFilterRules)
     # Handle rate limited email
     except TooSoonEmail, e:
         logging.info("Got a mail too frequently; warning %r: %s.",
