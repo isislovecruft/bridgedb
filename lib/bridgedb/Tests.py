@@ -43,24 +43,16 @@ def randomPort():
 
 def randomPortSpec():
     """
-    returns a random list of ports and port ranges (strings)
-    ranges are portlow-porthigh
+    returns a random list of ports
     """
     ports = []
     for i in range(0,24):
         ports.append(random.randint(1,65535))
     ports.sort(reverse=True)
 
-    ports = [str(x) for x in ports]
-
-    ranges = []
-    for i in range(0,8):
-        ranges.append("%s-%s" % (ports.pop(),ports.pop()))
-    ports.extend(ranges)
-
     portspec = ""
     for i in range(0,16):
-        portspec += "%s," % random.choice(ports)
+        portspec += "%d," % random.choice(ports)
     portspec = portspec.rstrip(',') #remove trailing ,
     return portspec
 
@@ -73,8 +65,14 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False):
 
     if or_addresses:
         for i in xrange(0,8):
-            b.or_addresses[ipaddr.IPv4Address(randomIP())] =\
-                    bridgedb.Bridges.PortList(randomPortSpec())
+            address,portlist = bridgedb.Bridges.parseORAddressLine(
+                    "%s:%s" % (randomIP(),randomPortSpec()))
+            try:
+                portlist.add(b.or_addresses[address])
+            except KeyError:
+                pass
+            finally:
+                b.or_addresses[address] = portlist
     return b
 
 def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False):
@@ -86,8 +84,14 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False):
 
     if or_addresses:
         for i in xrange(0,8):
-            b.or_addresses[ipaddr.IPv6Address(randomIP6())] =\
-                    bridgedb.Bridges.PortList(randomPortSpec())
+            address,portlist = bridgedb.Bridges.parseORAddressLine(
+                    "[%s]:%s" % (randomIP6(),randomPortSpec()))
+            try:
+                portlist.add(b.or_addresses[address])
+            except KeyError:
+                pass
+            finally:
+                b.or_addresses[address] = portlist
     return b
 
 def fake16Bridge(orport=8080, running=True, stable=True):
@@ -213,6 +217,9 @@ class IPBridgeDistTests(unittest.TestCase):
 
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP6])
+            address, portlist = bridgedb.Bridges.parseORAddressLine(
+                    random.choice(b).getConfigLine(needIPv6=True)[7:])
+            assert type(address) is ipaddr.IPv6Address
             assert filterBridgesByIP6(random.choice(b))
 
     def testDistWithFilterIP4(self):
@@ -223,6 +230,10 @@ class IPBridgeDistTests(unittest.TestCase):
 
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP4])
+            address, portlist = bridgedb.Bridges.parseORAddressLine(
+                    random.choice(b).getConfigLine(needIPv4=True)[7:])
+            assert type(address) is ipaddr.IPv4Address
+
             assert filterBridgesByIP4(random.choice(b))
 
     def testDistWithFilterBoth(self):
@@ -238,6 +249,13 @@ class IPBridgeDistTests(unittest.TestCase):
                 t = b.pop()
                 assert filterBridgesByIP4(t)
                 assert filterBridgesByIP6(t)
+                address, portlist = bridgedb.Bridges.parseORAddressLine(
+                    t.getConfigLine(needIPv4=True)[7:])
+                assert type(address) is ipaddr.IPv4Address
+                address, portlist = bridgedb.Bridges.parseORAddressLine(
+                    t.getConfigLine(needIPv6=True)[7:])
+                assert type(address) is ipaddr.IPv6Address
+
 
     def testDistWithFilterAll(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
