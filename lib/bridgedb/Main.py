@@ -285,6 +285,7 @@ def startup(cfg):
             Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
             categories,
             answerParameters=ringParams)
+        ipDistributor.prepopulateRings() # create default rings
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
         #webSchedule = Time.IntervalSchedule("day", 2)
         webSchedule = Time.NoSchedule()
@@ -298,6 +299,7 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
+        emailDistributor.prepopulateRings() # create default rings
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         #emailSchedule = Time.IntervalSchedule("day", 1)
         emailSchedule = Time.NoSchedule()
@@ -322,14 +324,16 @@ def startup(cfg):
             logging.info("%d for email", len(emailDistributor.splitter))
         if ipDistributor:
             logging.info("%d for web:", len(ipDistributor.splitter))
-            logging.info("  by location set: %s",
-                         " ".join(str(len(r)) for r in ipDistributor.rings))
-            logging.info("  by category set: %s",
-                         " ".join(str(len(r)) for r in ipDistributor.categoryRings))
-            logging.info("Here are all known bridges in the category section:")
-            for r in ipDistributor.categoryRings:
-                for name, b in r.bridges.items():
-                    logging.info("%s" % b.getConfigLine(True))
+	    for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
+                logging.info(" by filter set %s, %d" % (n, len(r)))
+            #logging.info("  by location set: %s",
+            #             " ".join(str(len(r)) for r in ipDistributor.rings))
+            #logging.info("  by category set: %s",
+            #             " ".join(str(len(r)) for r in ipDistributor.categoryRings))
+            #logging.info("Here are all known bridges in the category section:")
+            #for r in ipDistributor.categoryRings:
+            #    for name, b in r.bridges.items():
+            #        logging.info("%s" % b.getConfigLine(True))
 
         # Dump bridge pool assignments to disk.
         try:

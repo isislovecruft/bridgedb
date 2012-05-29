@@ -16,6 +16,8 @@ from ipaddr import IPv6Address, IPAddress
 
 from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
+from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByIP6
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -67,6 +69,43 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         logging.debug("added splitter %s" % self.splitter)
 
+    def prepopulateRings(self):
+        # populate all rings (for dumping assignments and testing)
+        for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
+            n = self.nClusters
+            for category in self.categories:
+                g = filterAssignBridgesToRing(self.splitter.hmac,
+                        self.nClusters +
+                        len(self.categories),
+                        n)
+                bridgeFilterRules = [g]
+                if filterFn:
+                    bridgeFilterRules.append(filterFn)
+                ruleset = frozenset(bridgeFilterRules)
+                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
+                        "Order-Bridges-In-Ring-%d"%n) 
+                n += 1
+                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                                      populate_from=self.splitter.bridges)
+
+
+            # populate all ip clusters
+            for clusterNum in xrange(self.nClusters):
+                g = filterAssignBridgesToRing(self.splitter.hmac,
+                                              self.nClusters +
+                                              len(self.categories),
+                                              clusterNum) 
+                bridgeFilterRules = [g]
+                if filterFn:
+                    bridgeFilterRules.append(filterFn)
+                ruleset = frozenset(bridgeFilterRules)
+                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
+                                                 "Order-Bridges-In-Ring-%d"%clusterNum) 
+                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                                      populate_from=self.splitter.bridges)
+
     def clear(self):
         self.splitter.clear()
 
@@ -100,7 +139,6 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         # try to match the request to an ip category
         for category in self.categories:
             # IP Categories
-            logging.info("---------------------------------")
             if category.contains(ip):
                 g = filterAssignBridgesToRing(self.splitter.hmac,
                                                       self.nClusters +
@@ -290,15 +328,16 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None, countryCode=None,
-                           bridgeFilterRules=None):
+    def getBridgesForEmail(self, emailaddress, epoch, N=1,
+            parameters=None, countryCode=None, bridgeFilterRules=None):
         """Return a list of bridges to give to a user.
            emailaddress -- the user's email address, as given in a from line.
            epoch -- the time period when we got this request.  This can
                be any string, so long as it changes with every period.
            N -- the number of bridges to try to give back.
         """
-        if not bridgeFilterRules: bridgeFilterRules=[]
+        if not bridgeFilterRules:
+            bridgeFilterRules=[]
         now = time.time()
         try:
             emailaddress = normalizeEmail(emailaddress, self.domainmap,
@@ -342,9 +381,8 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             logging.debug("Cache miss %s" % ruleset)
 
             # add new ring 
-            #XXX what key do we use here? does it matter? 
             key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             str(bridgeFilterRules))
+                    "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             # debug log: cache miss 
             self.splitter.addRing(ring, ruleset,
@@ -373,3 +411,14 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
+
+    def prepopulateRings(self):
+        # populate all rings (for dumping assignments and testing)
+        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
+            ruleset = frozenset([filterFn])
+            key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
+                    "Order-Bridges-In-Ring")
+            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+            self.splitter.addRing(ring, ruleset,
+                                  filterBridgesByRules([filterFn]),
+                                  populate_from=self.splitter.bridges)
