@@ -166,10 +166,12 @@ def load(cfg, splitter, clear=False):
         countryblock.clear() 
     logging.info("Loading bridges")
     status = {}
+    addresses = {}
     if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
-        for ID, running, stable in Bridges.parseStatusFile(f):
+        for ID, running, stable, or_addresses in Bridges.parseStatusFile(f):
             status[ID] = running, stable
+            addresses[ID] = or_addresses
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
@@ -183,6 +185,7 @@ def load(cfg, splitter, clear=False):
             if s is not None:
                 running, stable = s
                 bridge.setStatus(running=running, stable=stable)
+            bridge.or_addresses = addresses.get(bridge.getID())
             bridge.setBlockingCountries(
                     countryblock.getBlockingCountries(bridge.fingerprint)) 
             splitter.insert(bridge)
@@ -324,8 +327,8 @@ def startup(cfg):
             logging.info("%d for email", len(emailDistributor.splitter))
         if ipDistributor:
             logging.info("%d for web:", len(ipDistributor.splitter))
-	    for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
-                logging.info(" by filter set %s, %d" % (n, len(r)))
+            for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
+                    logging.info(" by filter set %s, %d" % (n, len(r)))
             #logging.info("  by location set: %s",
             #             " ".join(str(len(r)) for r in ipDistributor.rings))
             #logging.info("  by category set: %s",

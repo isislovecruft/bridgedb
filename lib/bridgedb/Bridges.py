@@ -268,37 +268,14 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
             fingerprint = line[12:].replace(" ", "")
-        elif line.startswith("or-address "):
-            if num_or_address_lines < 8:
-                line = line[11:]
-                try:
-                    address,portlist = parseORAddressLine(line)
-                except ParseORAddressError: 
-                    logging.warn("Invalid or-address line "\
-                            "from bridge with ID %r" %fingerprint)
-                    continue
-                try:
-                    # distinct ports only
-                    portlist.add(or_addresses[address])
-                except KeyError:
-                    pass
-                finally:
-                    or_addresses[address] = portlist
-            else:
-                logging.warn("Skipping extra or-address line "\
-                             "from Bridge with ID %r" % id)
-            num_or_address_lines += 1
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or
                               bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ip, orport, fingerprint,
-                           or_addresses=or_addresses)
+                b = Bridge(nickname, ip, orport, fingerprint)
                 b.assertOK()
                 yield b
             nickname = ip = orport = fingerprint = purpose = None 
-            num_or_address_lines = 0
-            or_addresses = {}
 
 class PortList:
     """ container class for port ranges
@@ -374,6 +351,8 @@ def parseORAddressLine(line):
 def parseStatusFile(f):
     """DOCDOC"""
     ID = None
+    num_or_address_lines = 0
+    or_addresses = {}
     for line in f:
         line = line.strip()
         if line.startswith("opt "):
@@ -384,9 +363,26 @@ def parseStatusFile(f):
                 ID = binascii.a2b_base64(line.split()[2]+"=")
             except binascii.Error:
                 logging.warn("Unparseable base64 ID %r", line.split()[2])
+
+        elif ID and line.startswith("a "):
+            if num_or_address_lines < 8:
+                line = line[2:]
+                address,portlist = parseORAddressLine(line)
+                try:
+                    or_addresses[address].add(portlist)
+                except KeyError:
+                    or_addresses[address] = portlist
+            else:
+                logging.warn("Skipping extra or-address line "\
+                             "from Bridge with ID %r" % id)
+            num_or_address_lines += 1
+
         elif ID and line.startswith("s "):
             flags = line.split()
-            yield ID, ("Running" in flags), ("Stable" in flags)
+            yield ID, ("Running" in flags), ("Stable" in flags), or_addresses
+            ID = None
+            num_or_address_lines = 0
+            or_addresses = {}
 
 def parseCountryBlockFile(f):
     """Generator. Parses a blocked-bridges file 'f', and yields a
