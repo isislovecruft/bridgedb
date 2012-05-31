@@ -156,7 +156,7 @@ class WebResource(twisted.web.resource.Resource):
         ipv6 = False
         if "ipv6" in request.postpath: ipv6 = True
 
-	rules = []
+        rules = []
 
         if ip:
             if ipv6:
@@ -171,8 +171,7 @@ class WebResource(twisted.web.resource.Resource):
 
         if bridges:
             answer = "".join("%s %s\n" % (
-                b.getConfigLine(self.includeFingerprints,needIPv6=ipv6,
-                                selectFromORAddresses=ipv6),
+                b.getConfigLine(self.includeFingerprints,needIPv6=ipv6),
                 (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
                 ) for b in bridges) 
         else:
@@ -413,9 +412,9 @@ def getMailResponse(lines, ctx):
     try:
         interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
-			interval, ctx.N,
-			countryCode=None,
-			bridgeFilterRules=bridgeFilterRules)
+            interval, ctx.N,
+            countryCode=None,
+            bridgeFilterRules=bridgeFilterRules)
     # Handle rate limited email
     except TooSoonEmail, e:
         logging.info("Got a mail too frequently; warning %r: %s.",
@@ -465,8 +464,8 @@ def getMailResponse(lines, ctx):
 
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
-        answer = "".join("  %s\n" % b.getConfigLine(with_fp, needIPv6=ipv6,\
-                                   selectFromORAddresses=ipv6) for b in bridges)
+        answer = "".join("  %s\n" %b.getConfigLine(with_fp,
+                needIPv6=ipv6) for b in bridges)
     else:
         answer = "(no bridges currently available)"
 
