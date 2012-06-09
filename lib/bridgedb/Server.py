@@ -161,8 +161,10 @@ class WebResource(twisted.web.resource.Resource):
         if ip:
             if ipv6:
                 rules.append(filterBridgesByIP6)
+                addressClass = IPv6Address
             else:
                 rules.append(filterBridgesByIP4)
+                addressClass = IPv4Address
 
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive,
@@ -171,7 +173,11 @@ class WebResource(twisted.web.resource.Resource):
 
         if bridges:
             answer = "".join("%s %s\n" % (
-                b.getConfigLine(self.includeFingerprints,needIPv6=ipv6),
+                b.getConfigLine(
+                    includeFingerprint=self.includeFingerprints,
+                    addressClass=addressClass,
+                    request=bridgedb.Dist.uniformMap(ip)
+                    ),
                 (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
                 ) for b in bridges) 
         else:
@@ -401,13 +407,16 @@ def getMailResponse(lines, ctx):
     # read subject, see if they want ipv6
     ipv6 = False
     bridgeFilterRules = []
+    addressClass = None
     for ln in lines:
         if "ipv6" in ln.strip().lower():
             ipv6 = True
             bridgeFilterRules.append(filterBridgesByIP6)
+            addressClass = IPv6Address
             break
     else:
         bridgeFilterRules.append(filterBridgesByIP4)
+        addressClass = IPv4Address
 
     try:
         interval = ctx.schedule.getInterval(time.time())
@@ -464,8 +473,11 @@ def getMailResponse(lines, ctx):
 
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
-        answer = "".join("  %s\n" %b.getConfigLine(with_fp,
-                needIPv6=ipv6) for b in bridges)
+        answer = "".join("  %s\n" %b.getConfigLine(
+            includeFingerprint=with_fp,
+            addressClass=addressClass,
+            request=clientAddr
+            ) for b in bridges)
     else:
         answer = "(no bridges currently available)"
 

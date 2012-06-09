@@ -218,7 +218,7 @@ class IPBridgeDistTests(unittest.TestCase):
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP6])
             address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    random.choice(b).getConfigLine(needIPv6=True)[7:])
+                    random.choice(b).getConfigLine(addressClass=ipaddr.IPv6Address)[7:])
             assert type(address) is ipaddr.IPv6Address
             assert filterBridgesByIP6(random.choice(b))
 
@@ -231,7 +231,7 @@ class IPBridgeDistTests(unittest.TestCase):
         for i in xrange(500):
             b = d.getBridgesForIP(randomIP(), "x", 1, bridgeFilterRules=[filterBridgesByIP4])
             address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    random.choice(b).getConfigLine(needIPv4=True)[7:])
+                    random.choice(b).getConfigLine(addressClass=ipaddr.IPv4Address)[7:])
             assert type(address) is ipaddr.IPv4Address
 
             assert filterBridgesByIP4(random.choice(b))
@@ -250,10 +250,10 @@ class IPBridgeDistTests(unittest.TestCase):
                 assert filterBridgesByIP4(t)
                 assert filterBridgesByIP6(t)
                 address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    t.getConfigLine(needIPv4=True)[7:])
+                    t.getConfigLine(addressClass=ipaddr.IPv4Address)[7:])
                 assert type(address) is ipaddr.IPv4Address
                 address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    t.getConfigLine(needIPv6=True)[7:])
+                    t.getConfigLine(addressClass=ipaddr.IPv6Address)[7:])
                 assert type(address) is ipaddr.IPv6Address
 
 
