@@ -141,40 +141,41 @@ class Bridge:
         return "Bridge(%r,%r,%d,%r)"%(
             self.nickname, self.ip, self.orport, self.fingerprint)
 
-    def getConfigLine(self,includeFingerprint=False,
-            needIPv4=True, needIPv6=False):
-        """Return a line describing this bridge for inclusion in a torrc."""
+    def getConfigLine(self, includeFingerprint=False, addressClass=None,
+            request=None):
+        """Returns a valid bridge line for inclusion in a torrc"""
+        #arguments:
+        #    includeFingerprint
+        #    addressClass - type of address to choose 
+        #    request - a string unique to this request
+        #        e.g. email-address or uniformMap(ip)
 
-        # select an address:port from or-addresses
-        filtered_addresses = None
-        # bridges may have both classes. we only return one.
-        if needIPv6:
-            f = lambda x: type(x[0]) is ipaddr.IPv6Address
-            filtered_addresses = filter(f, self.or_addresses.items())
-        elif needIPv4:
-            f = lambda x: type(x[0]) is ipaddr.IPv4Address
-            filtered_addresses = filter(f, self.or_addresses.items())
-            # default ip, orport should get a chance at being selected
-            if type(ipaddr.IPAddress(self.ip)) is ipaddr.IPv4Address:
-                filtered_addresses.append((ipaddr.IPAddress(self.ip), set([int(self.orport)])))
+        if not request: request = 'default'
+        digest = get_hmac_fn('Order-Or-Addresses')(request)
+        pos = long(digest[:8], 16) # lower 8 bytes -> long
 
-        if filtered_addresses:
-            address,portlist = random.choice(filtered_addresses)
-            if type(address) is ipaddr.IPv6Address:
-                ip = "[%s]"%address
+        # default address type
+        if not addressClass: addressClass = ipaddr.IPv4Address
+
+        # filter addresses by address class
+        addresses = filter(lambda x: isinstance(x[0], addressClass),
+                self.or_addresses.items())
+
+        # default ip, orport should get a chance at being selected
+        if isinstance(self.ip, addressClass):
+            addresses.insert(0,self.ip, PortList(self.orport))
+
+        if addresses:
+            address,portlist = addresses[pos % len(addresses)]
+            if isinstance(address, ipaddr.IPv6Address): ip = "[%s]"%address
+            else: ip = "%s"%address
+            orport = portlist[pos % len(portlist)]
+
+            if includeFingerprint:
+                return "bridge %s:%d %s" % (ip, orport, self.fingerprint)
             else:
-                ip = "%s"%address
-            orport = random.choice(list(portlist))
+                return "bridge %s:%d" % (ip, orport)  
 
-        # default to ip,orport 
-        else:
-            ip = self.ip
-            orport = self.orport
-
-        if includeFingerprint:
-            return "bridge %s:%d %s" % (ip, orport, self.fingerprint)
-        else:
-            return "bridge %s:%d" % (ip, orport)  
 
     def getAllConfigLines(self,includeFingerprint=False):
         """Generator. Iterate over all valid config lines for this bridge."""
@@ -322,6 +323,9 @@ class PortList:
 
     def __len__(self):
         return len(self.ports)
+
+    def __getitem__(self, x):
+        return list(self.ports)[x]
 
 class ParseORAddressError(Exception):
     def __init__(self):
