@@ -58,15 +58,17 @@ def randomPortSpec():
 
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False):
     nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = randomIP()
+    ip = ipaddr.IPAddress(randomIP())
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
 
     if or_addresses:
         for i in xrange(0,8):
+            if random.choice(xrange(2)): ip = randomIP()
+            else: ip = "[%s]"%randomIP6()
             address,portlist = bridgedb.Bridges.parseORAddressLine(
-                    "%s:%s" % (randomIP(),randomPortSpec()))
+                    "%s:%s" % (ip,randomPortSpec()))
             try:
                 portlist.add(b.or_addresses[address])
             except KeyError:
@@ -77,13 +79,15 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False):
 
 def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False):
     nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = randomIP6()
+    ip = ipaddr.IPAddress(randomIP6())
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
 
     if or_addresses:
         for i in xrange(0,8):
+            if random.choice(xrange(2)): ip = randomIP()
+            else: ip = "[%s]"%randomIP6()
             address,portlist = bridgedb.Bridges.parseORAddressLine(
                     "[%s]:%s" % (randomIP6(),randomPortSpec()))
             try:
