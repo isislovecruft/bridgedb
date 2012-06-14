@@ -163,7 +163,7 @@ class Bridge:
 
         # default ip, orport should get a chance at being selected
         if isinstance(self.ip, addressClass):
-            addresses.insert(0,self.ip, PortList(self.orport))
+            addresses.insert(0,(self.ip, PortList(self.orport)))
 
         if addresses:
             address,portlist = addresses[pos % len(addresses)]
@@ -273,7 +273,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
             purposeMatches = (purpose == bridge_purpose or
                               bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ip, orport, fingerprint)
+                b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
                 b.assertOK()
                 yield b
             nickname = ip = orport = fingerprint = purpose = None 
@@ -783,8 +783,38 @@ class FilteredBridgeSplitter(BridgeHolder):
                     ring.insert(bridge)
 
     def dumpAssignments(self, f, description=""):
-        for n,(_,r) in self.filterRings.items():
-            r.dumpAssignments(f, "%s %s" % (description, n))
+        # one ring per filter set
+        # bridges may be present in multiple filter sets
+        # only one line should be dumped per bridge
+
+        for b in self.bridges:
+            # gather all the filter descriptions
+            desc = []
+            for n,(g,r) in self.filterRings.items():
+                if g(b):
+                    # ghetto. get subring flags, ports
+                    for tp,val,_,subring in r.subrings:
+                        if subring.getBridgeByID(b.getID()):
+                            desc.append("%s=%s"%(tp,val))
+                    try:
+                        desc.extend(g.description.split())
+                    except TypeError:
+                        desc.append(g.description)
+
+            # dedupe and group
+            desc = set(desc)
+            grouped = dict()
+            for kw in desc:
+                l,r = kw.split('=')
+                try:
+                    grouped[l] = "%s,%s"%(grouped[l],r)
+                except KeyError:
+                    grouped[l] = kw
+
+            # add to assignments
+            desc = "%s %s" % (description.strip(),
+                    " ".join([v for k,v in grouped.items()]).strip())
+            f.write("%s %s\n"%( toHex(b.getID()), desc))
 
     def assignmentsArePersistent(self):
         return False  #XXX: is this right?
