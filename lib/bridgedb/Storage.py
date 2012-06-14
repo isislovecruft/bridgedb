@@ -218,14 +218,14 @@ class Database:
             # Update last_seen, address, port and (possibly) distributor.
             cur.execute("UPDATE Bridges SET address = ?, or_port = ?, "
                         "distributor = ?, last_seen = ? WHERE id = ?",
-                        (bridge.ip, bridge.orport, ring, timeToStr(seenAt), i))
+                        (str(bridge.ip), bridge.orport, ring, timeToStr(seenAt), i))
             return ring
         else:
             # Insert it.
             cur.execute("INSERT INTO Bridges (hex_key, address, or_port, "
                         "distributor, first_seen, last_seen) "
                         "VALUES (?, ?, ?, ?, ?, ?)",
-                        (h, bridge.ip, bridge.orport, setRing, t, t))
+                        (h, str(bridge.ip), bridge.orport, setRing, t, t))
             return setRing
 
     def cleanEmailedBridges(self, expireBefore):
