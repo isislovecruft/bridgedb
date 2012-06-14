@@ -19,6 +19,7 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
             return False
         f.__name__ = "filterAssignBridgesToRing(%s, %s, %s)" % (hmac, numRings,
                                                                  assignedRing)
+        setattr(f, "description", "ring=%d" % assignedRing)
         funcs[ruleset] = f
         return f
 
@@ -31,6 +32,7 @@ def filterBridgesByRules(rules):
             r = [f(x) for f in rules]
             if False in r: return False
             return True
+        setattr(g, "description", " ".join([getattr(f,'description','') for f in rules]))
         funcs[ruleset] = g
         return g  
 
@@ -44,6 +46,7 @@ def filterBridgesByIP4(bridge):
         if type(k) is IPv4Address:
             return True
     return False
+setattr(filterBridgesByIP4, "description", "ip=4")
 
 def filterBridgesByIP6(bridge):
     try:
@@ -55,6 +58,7 @@ def filterBridgesByIP6(bridge):
         if type(k) is IPv6Address:
             return True
     return False
+setattr(filterBridgesByIP6, "description", "ip=6")
 
 def filterBridgesByOnlyIP4(bridge):
     for k in bridge.or_addresses.keys():
