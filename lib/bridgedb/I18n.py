@@ -53,8 +53,8 @@ bridge addresses."""),
  # BRIDGEDB_TEXT[9]
  _("""To receive your bridge relays, please prove you are human"""),
  # BRIDGEDB_TEXT[10]
- _("""You have exceeded the rate limit. Please slow down, the minimum time between
-emails is: """),
+ _("""You have exceeded the rate limit. Please slow down, the minimum time
+between emails is: """),
  # BRIDGEDB_TEXT[11]
  _("""hours"""),
  # BRIDGEDB_TEXT[12]
@@ -66,5 +66,12 @@ emails is: """),
  # BRIDGEDB_TEXT[15]
  _("""Upgrade your browser to Firefox"""),
  # BRIDGEDB_TEXT[16]
- _("""(Might be blocked)""") 
+ _("""(Might be blocked)"""),
+ # BRIDGEDB_TEXT[17]
+ _("""The following commands are also supported:"""),
+ # BRIDGEDB_TEXT[18]
+ _(""" ipv6 : request ipv6 bridges """),
+ # bridgedb_text[19]
+ _(""" transport TRANSPORT_NAME : request bridges with transport
+TRANSPORT_NAME, such as obfs3.""")
 ]

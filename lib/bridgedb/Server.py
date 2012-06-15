@@ -161,7 +161,6 @@ class WebResource(twisted.web.resource.Resource):
 
         try:
             # validate method name
-            logging.debug("trans: %s" % request.args.get("transport")[0])
             transport = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
                     request.args.get("transport")[0]).group()
         except (TypeError, IndexError):
@@ -430,7 +429,7 @@ def getMailResponse(lines, ctx):
             ipv6 = True
         if "transport" in ln.strip().lower():
             transport = re.search("transport ([_a-zA-Z][_a-zA-Z0-9]*)", ln).group(1).strip()
-            logging.debug("transport %s" % transport)
+            logging.debug("Got request for transport: %s" % transport)
 
     if ipv6:
         bridgeFilterRules.append(filterBridgesByIP6)
@@ -448,29 +447,16 @@ def getMailResponse(lines, ctx):
             interval, ctx.N,
             countryCode=None,
             bridgeFilterRules=bridgeFilterRules)
+
     # Handle rate limited email
     except TooSoonEmail, e:
         logging.info("Got a mail too frequently; warning %r: %s.",
                      clientAddr, e)
 
         # Compose a warning email
-        f = StringIO()
-        w = MimeWriter.MimeWriter(f)
-        w.addheader("From", ctx.fromAddr)
-        w.addheader("To", clientAddr)
-        w.addheader("Message-ID", twisted.mail.smtp.messageid())
-        if not subject.startswith("Re:"): subject = "Re: %s"%subject
-        w.addheader("Subject", subject)
-        if msgID:
-            w.addheader("In-Reply-To", msgID)
-        w.addheader("Date", twisted.mail.smtp.rfc822date())
-        body = w.startbody("text/plain")
-
         # MAX_EMAIL_RATE is in seconds, convert to hours
-        EMAIL_MESSAGE_RATELIMIT = buildSpamWarningTemplate(t)
-        body.write(EMAIL_MESSAGE_RATELIMIT % (bridgedb.Dist.MAX_EMAIL_RATE / 3600))
-        f.seek(0)
-        return clientAddr, f
+        body  = buildSpamWarningTemplate(t) % (bridgedb.Dist.MAX_EMAIL_RATE / 3600)
+        return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID)
 
     except IgnoreEmail, e:
         logging.info("Got a mail too frequently; ignoring %r: %s.",
@@ -481,19 +467,6 @@ def getMailResponse(lines, ctx):
         logging.info("Got a mail from a bad email address %r: %s.",
                      clientAddr, e)
         return None, None 
-
-    # Generate the message.
-    f = StringIO()
-    w = MimeWriter.MimeWriter(f)
-    w.addheader("From", ctx.fromAddr)
-    w.addheader("To", clientAddr)
-    w.addheader("Message-ID", twisted.mail.smtp.messageid())
-    if not subject.startswith("Re:"): subject = "Re: %s"%subject
-    w.addheader("Subject", subject)
-    if msgID:
-        w.addheader("In-Reply-To", msgID)
-    w.addheader("Date", twisted.mail.smtp.rfc822date())
-    body = w.startbody("text/plain")
 
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
@@ -506,15 +479,9 @@ def getMailResponse(lines, ctx):
     else:
         answer = "(no bridges currently available)"
 
-    EMAIL_MESSAGE_TEMPLATE = buildMessageTemplate(t)
-    body.write(EMAIL_MESSAGE_TEMPLATE % answer)
-
-    #XXX debug
-    f.seek(0)
-    logging.debug(f.readlines())
-    f.seek(0)
-    logging.info("Email looks good; we should send an answer.")
-    return clientAddr, f
+    body = buildMessageTemplate(t) % answer
+    # Generate the message.
+    return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID)
 
 def buildMessageTemplate(t):
     msg_template =  t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
@@ -523,8 +490,10 @@ def buildMessageTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
-
     return msg_template
 
 def buildSpamWarningTemplate(t):
@@ -718,3 +687,23 @@ def getCCFromRequest(request):
     if len(path) ==  2:
         return path.lower()
     return None 
+
+def composeEmail(fromAddr, clientAddr, subject, body, msgID=False):
+    f = StringIO()
+    w = MimeWriter.MimeWriter(f)
+    w.addheader("From", fromAddr)
+    w.addheader("To", clientAddr)
+    w.addheader("Message-ID", twisted.mail.smtp.messageid())
+    if not subject.startswith("Re:"): subject = "Re: %s"%subject
+    w.addheader("Subject", subject)
+    if msgID:
+        w.addheader("In-Reply-To", msgID)
+    w.addheader("Date", twisted.mail.smtp.rfc822date())
+    mailbody = w.startbody("text/plain")
+    mailbody.write(body)
+
+    f.seek(0)
+    logging.debug(f.readlines())
+    f.seek(0)
+    logging.info("Email looks good; we should send an answer.")
+    return clientAddr, f
