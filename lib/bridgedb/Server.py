@@ -36,6 +36,7 @@ from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByTransport
  
 try:
     import GeoIP
@@ -153,8 +154,18 @@ class WebResource(twisted.web.resource.Resource):
         if format and len(format): format = format[0] # choose the first arg
 
         # do want ipv6 support?
-        ipv6 = False
-        if "ipv6" in request.postpath: ipv6 = True
+        transport = ipv6 = False
+
+        ipv6 = request.args.get("ipv6", False)
+        if ipv6: ipv6 = True # if anything after ?ipv6=
+
+        try:
+            # validate method name
+            logging.debug("trans: %s" % request.args.get("transport")[0])
+            transport = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
+                    request.args.get("transport")[0]).group()
+        except (TypeError, IndexError):
+            transport = None
 
         rules = []
 
@@ -166,6 +177,12 @@ class WebResource(twisted.web.resource.Resource):
                 rules.append(filterBridgesByIP4)
                 addressClass = IPv4Address
 
+            if transport:
+                #XXX: A cleaner solution would differentiate between
+                # addresses by protocol rather than have separate lists
+                # Tor to be a transport, and selecting between them.
+                rules = [filterBridgesByTransport(transport, addressClass)]
+
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive,
                                                        countryCode,
@@ -176,6 +193,7 @@ class WebResource(twisted.web.resource.Resource):
                 b.getConfigLine(
                     includeFingerprint=self.includeFingerprints,
                     addressClass=addressClass,
+                    transport=transport,
                     request=bridgedb.Dist.uniformMap(ip)
                     ),
                 (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
@@ -212,7 +230,8 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
                    + email_domain_list \
-                   + "<hr /><p>Note for experts: if you can use IPv6, try upgrading to Tor 0.2.3.12-alpha and use this IPv6 address in your bridge line:<br /><tt>[2001:948:7:2::164]:6001</tt><br />Let us know how it goes!</p>" \
+                   + "<hr /><p><a href='?ipv6=true'>Looking for IPv6 bridges?</a></p>" \
+                   + "<p><a href='?transport=obfs3'>Looking for obfsproxy bridges?</a></p>" \
                    + "</body></html>"
 
         return html_msg
@@ -403,20 +422,25 @@ def getMailResponse(lines, ctx):
     #    return None,None
 
     # Figure out which bridges to send
-
-    # read subject, see if they want ipv6
-    ipv6 = False
+    transport = ipv6 = False
     bridgeFilterRules = []
     addressClass = None
     for ln in lines:
         if "ipv6" in ln.strip().lower():
             ipv6 = True
-            bridgeFilterRules.append(filterBridgesByIP6)
-            addressClass = IPv6Address
-            break
+        if "transport" in ln.strip().lower():
+            transport = re.search("transport ([_a-zA-Z][_a-zA-Z0-9]*)", ln).group(1).strip()
+            logging.debug("transport %s" % transport)
+
+    if ipv6:
+        bridgeFilterRules.append(filterBridgesByIP6)
+        addressClass = IPv6Address
     else:
         bridgeFilterRules.append(filterBridgesByIP4)
         addressClass = IPv4Address
+
+    if transport:
+        bridgeFilterRules = [filterBridgesByTransport(transport, addressClass)]
 
     try:
         interval = ctx.schedule.getInterval(time.time())
@@ -476,6 +500,7 @@ def getMailResponse(lines, ctx):
         answer = "".join("  %s\n" %b.getConfigLine(
             includeFingerprint=with_fp,
             addressClass=addressClass,
+            transport=transport,
             request=clientAddr
             ) for b in bridges)
     else:
@@ -484,6 +509,9 @@ def getMailResponse(lines, ctx):
     EMAIL_MESSAGE_TEMPLATE = buildMessageTemplate(t)
     body.write(EMAIL_MESSAGE_TEMPLATE % answer)
 
+    #XXX debug
+    f.seek(0)
+    logging.debug(f.readlines())
     f.seek(0)
     logging.info("Email looks good; we should send an answer.")
     return clientAddr, f
