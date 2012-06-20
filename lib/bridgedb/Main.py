@@ -172,15 +172,18 @@ def load(cfg, splitter, clear=False):
         for ID, running, stable, or_addresses in Bridges.parseStatusFile(f):
             status[ID] = running, stable
             addresses[ID] = or_addresses
+            #transports[ID] = transports
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
         for fingerprint, countryCode in Bridges.parseCountryBlockFile(f):
             countryblock.insert(fingerprint, countryCode)
         f.close() 
+    bridges = {} 
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
+            bridges[bridge.getID()] = bridge
             s = status.get(bridge.getID())
             if s is not None:
                 running, stable = s
@@ -190,6 +193,17 @@ def load(cfg, splitter, clear=False):
                     countryblock.getBlockingCountries(bridge.fingerprint)) 
             splitter.insert(bridge)
         f.close()
+    # read pluggable transports from extra-info document
+    # XXX: should read from networkstatus after bridge-authority
+    # does a reachability test
+    if hasattr(cfg, "EXTRA_INFO_FILE"):
+        f = open(cfg.EXTRA_INFO_FILE, 'r')
+        for transport in Bridges.parseExtraInfoFile(f):
+            ID, method_name, address, port, argdict = transport
+            if bridges[ID].running:
+                bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
+                    method_name, address, port, argdict))
+    bridges = None
 
 def loadProxyList(cfg):
     ipset = {}
