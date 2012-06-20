@@ -31,6 +31,15 @@ def uniformMap(ip):
     else:
         return ".".join( ip.split(".")[:3] )
 
+def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
+    if len(ring) < 20: n_bridges_per_answer = 1
+    if 20 < len(ring) < 100: n_bridges_per_answer = min(2, max_bridges_per_answer)
+    if len(ring) > 100: n_bridges_per_answer = max_bridges_per_answer
+
+    logging.debug("Returning %d bridges from ring of len: %d" % \
+            (n_bridges_per_answer, len(ring)))
+    return n_bridges_per_answer
+
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     """Object that hands out bridges based on the IP address of an incoming
        request and the current time period.
@@ -186,14 +195,15 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
 
-        # get the bridge.
-        return ring.getBridges(pos, N)
+        # get an appropriate number of bridges
+        return ring.getBridges(pos, getNumBridgesPerAnswer(ring, max_bridges_per_answer=N))
 
     def __len__(self):
         return len(self.splitter)
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
+
 
 # These characters are the ones that RFC2822 allows.
 #ASPECIAL = '!#$%&*+-/=?^_`{|}~'
@@ -389,7 +399,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                   filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
 
-        result = ring.getBridges(pos, N)
+        result = ring.getBridges(pos, getNumBridgesPerAnswer(ring, max_bridges_per_answer=N))
 
         db.setEmailTime(emailaddress, now)
         db.commit()
