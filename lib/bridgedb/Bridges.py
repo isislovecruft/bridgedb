@@ -105,7 +105,7 @@ class Bridge:
     ##   running,stable -- DOCDOC
     ##   blockingCountries -- list of country codes blocking this bridge
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
-                 or_addresses=None):
+                 or_addresses=None, transports=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
            set."""
         self.nickname = nickname
@@ -113,8 +113,11 @@ class Bridge:
         self.orport = orport
         if not or_addresses: or_addresses = {}
         self.or_addresses = or_addresses
+        if not transports: transports = []
+        self.transports = transports
         self.running = self.stable = None
         self.blockingCountries = None
+
         if id_digest is not None:
             assert fingerprint is None
             if len(id_digest) != DIGEST_LEN:
@@ -142,13 +145,14 @@ class Bridge:
             self.nickname, self.ip, self.orport, self.fingerprint)
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
-            request=None):
+            request=None, transport=None):
         """Returns a valid bridge line for inclusion in a torrc"""
         #arguments:
         #    includeFingerprint
         #    addressClass - type of address to choose 
         #    request - a string unique to this request
         #        e.g. email-address or uniformMap(ip)
+        #    transport - a pluggable transport method name
 
         if not request: request = 'default'
         digest = get_hmac_fn('Order-Or-Addresses')(request)
@@ -156,6 +160,18 @@ class Bridge:
 
         # default address type
         if not addressClass: addressClass = ipaddr.IPv4Address
+
+        # pluggable transports
+        if transport:
+            # filter by 'methodname'
+            transports = filter(lambda x: transport == x.methodname,
+                    self.transports)
+            # filter by 'addressClass' 
+            transports = filter(lambda x: isinstance(x.address, addressClass),
+                    transports)
+            if transports:
+                pt = transports[pos % len(transports)]
+                return pt.getTransportLine(includeFingerprint)
 
         # filter addresses by address class
         addresses = filter(lambda x: isinstance(x[0], addressClass),
@@ -179,8 +195,6 @@ class Bridge:
 
     def getAllConfigLines(self,includeFingerprint=False):
         """Generator. Iterate over all valid config lines for this bridge."""
-        # warning: a bridge with large port ranges may generate thousands
-        # of lines of output
         for address,portlist in self.or_addresses.items():
             if type(address) is ipaddr.IPv6Address:
                 ip = "[%s]" % address
@@ -192,6 +206,9 @@ class Bridge:
                     yield "bridge %s:%d %s" % (ip,orport,self.fingerprint)
                 else:
                     yield "bridge %s:%d" % (ip,orport)
+        for pt in self.transports:
+            yield pt.getTransportLine(includeFingerprints)
+
 
     def assertOK(self):
         assert is_valid_ip(self.ip)
@@ -351,6 +368,108 @@ def parseORAddressLine(line):
     # return a valid address, portlist or raise ParseORAddressError
     if address and portlist and len(portlist): return address,portlist
     raise ParseORAddressError
+
+class PluggableTransport:
+    """
+    an object that represents a pluggable-transport method
+    and a reference to the relevant bridge 
+    """
+    def __init__(self, bridge, methodname, address, port, argdict=None):
+
+        #XXX: assert are disabled with python -O
+        assert isinstance(bridge, Bridge)
+        assert type(address) in (ipaddr.IPv4Address, ipaddr.IPv6Address)
+        assert type(port) is int
+        assert (0 < port < 65536)
+        assert type(methodname) is str
+
+        self.bridge = bridge
+        self.address = address
+        self.port = port
+        self.methodname = methodname
+        if type(argdict) is dict:
+            self.argdict = argdict
+        else: self.argdict = {}
+
+    def getTransportLine(self, includeFingerprint=False):
+        """
+        returns a torrc bridge line for this transport
+        """
+        if isinstance(self.address,ipaddr.IPv6Address):
+            address = "[%s]" % self.address
+        else: address = self.address
+        host = "bridge %s %s:%d" % (self.methodname, address, self.port)
+        fp = ''
+        if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
+        args = " ".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
+        return "%s %s %s" % (host, fp, args)
+
+def parseExtraInfoFile(f):
+    """
+    parses lines in Bridges extra-info documents.
+    returns an object whose type corresponds to the
+    relevant set of extra-info lines.
+
+    presently supported lines and the accompanying type are:
+    
+        { 'transport': PluggableTransport, }
+
+    'transport' lines (torspec.git/proposals/180-pluggable-transport.txt)
+
+        Bridges put the 'transport' lines in their extra-info documents.
+        the format is:
+    
+            transport SP <methodname> SP <address:port> [SP arglist] NL
+    """
+
+    ID = None
+    for line in f:
+        line = line.strip()
+
+        argdict = {}
+
+        # do we need to skip 'opt' here?
+        # if line.startswith("opt "):
+        #     line = line[4:]
+
+        # get the bridge ID ?
+        if line.startswith("extra-info "): #XXX: get the router ID
+            line = line[11:]
+            (nickname, ID) = line.split()
+            if is_valid_fingerprint(ID):
+                ID = fromHex(ID)
+
+        # get the transport line
+        if ID and line.startswith("transport "):
+            fields = line[10:].split()
+            # [ arglist ] field, optional
+            if len(fields) >= 3:
+                arglist = fields[2:]
+                # parse arglist [k=v,...k=v] as argdict {k:v,...,k:v} 
+                argdict = {}
+                for arg in arglist:
+                    try: k,v = arg.split('=')
+                    except ValueError: continue
+                    argdict[k] = v
+
+            # get the required fields, method name and address
+            if len(fields) >= 2:
+                # get the method name
+                # Method names must be C identifiers
+                for regex in [re_ipv4, re_ipv6]:
+                    try:
+                        method_name = re.match('[_a-zA-Z][_a-zA-Z0-9]*',fields[0]).group()
+                        m = regex.match(fields[1])
+                        address  = ipaddr.IPAddress(m.group(1))
+                        port = int(m.group(2))
+                        yield ID, method_name, address, port, argdict
+                    except (IndexError, ValueError, AttributeError):
+                        # skip this line
+                        continue
+
+        # end of descriptor is defined how? 
+        if ID and line.startswith("router-signature"):
+            ID = None
 
 def parseStatusFile(f):
     """DOCDOC"""
@@ -760,7 +879,9 @@ class FilteredBridgeSplitter(BridgeHolder):
                 logging.debug("insert bridge into %s" % n)
 
         #XXX db.insertBridgeAndGetRing ??
+        # already 'assigned' by the FixedBridgeSplitter
         #XXX persisent mapping?
+        # the filters rebuild
 
     def addRing(self, ring, ringname, filterFn, populate_from=None):
         """Add a ring to this splitter.
@@ -803,6 +924,10 @@ class FilteredBridgeSplitter(BridgeHolder):
                         desc.extend(g.description.split())
                     except TypeError:
                         desc.append(g.description)
+
+            # add transports
+            for transport in b.transports:
+                desc.append("transport=%s"%(transport.methodname))
 
             # dedupe and group
             desc = set(desc)
