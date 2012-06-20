@@ -6,7 +6,7 @@
 This module implements the web and email interfaces to the bridge database.
 """
 
-from cStringIO import StringIO
+from StringIO import StringIO
 import MimeWriter
 import rfc822
 import time
@@ -31,12 +31,15 @@ from random import randint
 from bridgedb.Raptcha import Raptcha
 import base64
 import textwrap
+
 from ipaddr import IPv4Address, IPv6Address
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
+
+import gpgme
  
 try:
     import GeoIP
@@ -458,7 +461,8 @@ def getMailResponse(lines, ctx):
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
         body  = buildSpamWarningTemplate(t) % (bridgedb.Dist.MAX_EMAIL_RATE / 3600)
-        return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID)
+        return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
+                gpgContext=ctx.gpgContext)
 
     except IgnoreEmail, e:
         logging.info("Got a mail too frequently; ignoring %r: %s.",
@@ -483,7 +487,8 @@ def getMailResponse(lines, ctx):
 
     body = buildMessageTemplate(t) % answer
     # Generate the message.
-    return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID)
+    return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
+            gpgContext=ctx.gpgContext)
 
 def buildMessageTemplate(t):
     msg_template =  t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
@@ -574,6 +579,9 @@ class MailContext:
         self.schedule = sched
         # The number of bridges to send for each email.
         self.N = cfg.EMAIL_N_BRIDGES_PER_ANSWER
+
+        # Initialize a gpg context or set to None for backward compatibliity.
+        self.gpgContext = getGPGContext(cfg)
 
         self.cfg = cfg
 
@@ -690,7 +698,9 @@ def getCCFromRequest(request):
         return path.lower()
     return None 
 
-def composeEmail(fromAddr, clientAddr, subject, body, msgID=False):
+def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
+        gpgContext=None):
+
     f = StringIO()
     w = MimeWriter.MimeWriter(f)
     w.addheader("From", fromAddr)
@@ -702,10 +712,65 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False):
         w.addheader("In-Reply-To", msgID)
     w.addheader("Date", twisted.mail.smtp.rfc822date())
     mailbody = w.startbody("text/plain")
-    mailbody.write(body)
 
-    f.seek(0)
-    logging.debug(f.readlines())
+    # gpg-clearsign messages
+    if gpgContext:
+        signature = StringIO()
+        plaintext = StringIO(body)
+        sigs = gpgContext.sign(plaintext, signature, gpgme.SIG_MODE_CLEAR)
+        if (len(sigs) != 1):
+            logging.warn('Failed to sign message!')
+        signature.seek(0)
+        [mailbody.write(l) for l in signature]
+    else:
+        mailbody.write(body)
+
     f.seek(0)
     logging.info("Email looks good; we should send an answer.")
     return clientAddr, f
+
+def getGPGContext(cfg):
+    """ Returns a gpgme Context() with the signers initialized by the keyfile 
+    specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or None
+    if the option was not enabled or unable to initialize.
+
+    The key should not be protected by a passphrase.
+    """
+    try:
+        # must have enabled signing and specified a key file
+        if not cfg.EMAIL_GPG_SIGNING_ENABLED or not cfg.EMAIL_GPG_SIGNING_KEY:
+            return None
+    except AttributeError:
+        return None
+
+    try:
+        # import the key
+        keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
+        logging.debug("Opened GPG Keyfile %s" % cfg.EMAIL_GPG_SIGNING_KEY)
+        ctx = gpgme.Context()
+        result = ctx.import_(keyfile)
+
+        assert len(result.imports) == 1
+        fingerprint = result.imports[0][0]
+        keyfile.close()
+        logging.debug("GPG Key with fingerprint %s imported" % fingerprint)
+
+        ctx.armor = True
+        ctx.signers = [ctx.get_key(fingerprint)]
+        assert len(ctx.signers) == 1
+
+        # make sure we can sign
+        message = StringIO('Test')
+        signature = StringIO()
+        new_sigs = ctx.sign(message, signature, gpgme.SIG_MODE_CLEAR)
+        assert len(new_sigs) == 1
+
+        # return the ctx
+        return ctx
+
+    except IOError, e:
+        # exit noisily if keyfile not found
+        exit(e)
+    except AssertionError:
+        # exit noisily if key does not pass tests
+        exit('Invalid GPG Signing Key')

@@ -20,10 +20,11 @@ To set up:
    - A recaptcha.net account is required. 
    - Install these required packages:
      - Debian: apt-get install python-recaptcha python-beautifulsoup
-     - Python: pip install recaptcha-client BeautifulSoup
+       python-gpgme
+     - Python: pip install recaptcha-client BeautifulSoup pygpgme
      - Others: http://pypi.python.org/pypi/recaptcha-client
-             : http://pypi.python.org/pypi/BeautifulSoup
-
+               http://pypi.python.org/pypi/BeautifulSoup
+               http://pypi.python.org/pypi/pygpgme
 
 To re-generate and update the i18n files (in case translated strings
 have changed in BridgeDB):
@@ -66,6 +67,15 @@ To indicate which bridges are blocked:
    fingerprint <bridge fingerprint> country-code <country code>
  - If this file is present, bridgedb will filter blocked bridges from responses
  - For GeoIP support make sure to install Maxmind GeoIP
+
+To sign emails with gpg:
+ - Add these two options to your bridgedb.conf:
+
+            EMAIL_GPG_SIGNING_ENABLED, EMAIL_GPG_SIGNING_KEY
+    
+   The former may be either True or False, and the latter must
+   point to the ascii-armored key file. The keyfile must not be
+   passphrase protected.
 
 To update the SQL schema:
  - Install sqlite3:
