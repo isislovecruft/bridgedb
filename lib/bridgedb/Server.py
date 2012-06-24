@@ -233,9 +233,9 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
                    + email_domain_list \
                    + "<hr /><p><a href='?ipv6=true'>" \
-		   + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
                    + "<p><a href='?transport=obfs2'>" \
-		   + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
                    + "</body></html>"
 
         return html_msg
@@ -497,9 +497,11 @@ def buildMessageTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
+                    + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n"
+                    # list supported commands, e.g. ipv6, transport
+    msg_template = msg_template \
+                    + "  " + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n" \
+                    + "  " + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
                     + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
     return msg_template
 
@@ -726,7 +728,8 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         mailbody.write(body)
 
     f.seek(0)
-    logging.info("Email looks good; we should send an answer.")
+    logging.debug("Email body:\n%s" % f.read())
+    f.seek(0)
     return clientAddr, f
 
 def getGPGContext(cfg):
