@@ -336,6 +336,18 @@ def startup(cfg):
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
         logging.info("Caught SIGHUP")
+
+        # re open config file
+        options, arguments = Opt.parseOpts()
+        configuration = {}
+        if options.configfile:
+            execfile(options.configfile, configuration)
+            cfg = Conf(**configuration)
+            # update loglevel on (re)load
+            level = getattr(cfg, 'LOGLEVEL', 'WARNING')
+            level = getattr(logging, level)
+            logging.getLogger().setLevel(level)
+
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
