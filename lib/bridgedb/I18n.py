@@ -70,10 +70,9 @@ between emails is: """),
  # BRIDGEDB_TEXT[17]
  _("""The following commands are also supported:"""),
  # BRIDGEDB_TEXT[18]
- _(""" ipv6 : request ipv6 bridges """),
+ _("""ipv6 : request ipv6 bridges."""),
  # BRIDGEDB_TEXT[19]
- _(""" transport TRANSPORT_NAME : request bridges with transport
-TRANSPORT_NAME, such as obfs2."""),
+ _("""transport NAME : request transport NAME. Example: 'transport obfs2'"""),
  # BRIDGEDB_TEXT[20]
  _("""Looking for IPv6 bridges?"""),
  # BRIDGEDB_TEXT[21]
