@@ -56,6 +56,23 @@ def randomPortSpec():
     portspec = portspec.rstrip(',') #remove trailing ,
     return portspec
 
+def randomCountry():
+    countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
+    #XXX: load from geoip
+    return random.choice(countries)
+
+def randomCountrySpec():
+    countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
+    #XXX: load from geoip
+    spec = ""
+    choices = []
+    for i in xrange(10):
+        choices.append(random.choice(countries))
+    choices = set(choices) #dedupe
+    choices = list(choices)
+    spec += ",".join(choices)
+    return spec
+
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False):
     nn = "bridge-%s"%random.randrange(0,1000000)
     ip = ipaddr.IPAddress(randomIP())
@@ -179,6 +196,7 @@ class IPBridgeDistTests(unittest.TestCase):
             for b in n2:
                 assert (b not in n)
 
+    #XXX: #6175 breaks this test!
     def testDistWithPortRestrictions(self):
         param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Baz",
@@ -501,6 +519,30 @@ class ParseDescFileTests(unittest.TestCase):
 
         for b in bs:
             b.assertOK()   
+
+    def testParseCountryBlockFile(self):
+        simpleBlock = "%s:%s %s\n"
+        countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
+        test = str()
+        # test ipv4
+        for i in range(50):
+            test += simpleBlock % (randomIP(), randomPort(),
+                    randomCountrySpec())
+        # test ipv6
+        for i in range(50):
+            test += simpleBlock % ("[%s]" % randomIP6(), randomPortSpec(),
+                    randomCountrySpec())
+
+        for a,p,c in bridgedb.Bridges.parseCountryBlockFile(test.split('\n')):
+            assert type(a) in (ipaddr.IPv6Address, ipaddr.IPv4Address)
+            assert isinstance(p, bridgedb.Bridges.PortList)
+            assert isinstance(c, list)
+            assert len(c) > 0
+            for y in c:
+                assert y in countries
+            #print "address: %s" % a
+            #print "portlist: %s" % p
+            #print "countries: %s" % c
 
 def testSuite():
     suite = unittest.TestSuite()
