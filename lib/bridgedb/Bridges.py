@@ -116,7 +116,7 @@ class Bridge:
         if not transports: transports = []
         self.transports = transports
         self.running = self.stable = None
-        self.blockingCountries = None
+        self.blockingCountries = {}
 
         if id_digest is not None:
             assert fingerprint is None
@@ -227,15 +227,44 @@ class Bridge:
         if stable is not None:
             self.stable = stable
 
-    def setBlockingCountries(self, blockingCountries):
-        if blockingCountries is not None:
-            self.blockingCountries = blockingCountries
+    def isBlocked(self, countryCode, addressClass, methodname=None):
+        """ if at least one address:port of the selected addressClass and
+        (optional) transport type is not blocked in countryCode, return True
+        """
+        # 1) transport is specified
+        if methodname is not None:
+            for transport in self.transports:
+                key = "%s:%s" % (transport.address, transport.port)
+                if (isinstance(transport.address, addressClass)
+                        and transport.methodname.lower() == methodname.lower()):
+                    try:
+                        if countryCode not in self.blockingCountries[key]:
+                            return False
+                    except KeyError:
+                        return False # no blocklist
+            return True
+        # 2) no transport specified (default)
+        else:
+            # 3) check primary ip, port
+            # XXX: could be more elegant if ip,orport were not special case
+            if isinstance(self.ip, addressClass):
+                key = "%s:%s" % (self.ip, self.orport)
+                try:
+                    if countryCode not in self.blockingCountries[key]:
+                        return False
+                except KeyError: return False # no blocklist
 
-    def isBlocked(self, countryCode):
-        if self.blockingCountries is not None and countryCode is not None:
-            if countryCode in self.blockingCountries:
-                return True
-        return False 
+            # 4) check or addresses
+            for address,portlist in self.or_addresses.items():
+                if isinstance(address, addressClass):
+                    # check each port
+                    for port in portlist:
+                        key = "%s:%s" % (address, port)
+                        try:
+                            if countryCode not in self.blockingCountries[key]:
+                                return False
+                        except KeyError: return False # no blocklist
+            return True 
 
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
@@ -282,7 +311,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
             items = line.split()
             if len(items) >= 4:
                 nickname = items[1]
-                ip = items[2]
+                ip = items[2].strip('[]')
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
             fingerprint = line[12:].replace(" ", "")
@@ -508,18 +537,31 @@ def parseStatusFile(f):
             or_addresses = {}
 
 def parseCountryBlockFile(f):
-    """Generator. Parses a blocked-bridges file 'f', and yields a
-       fingerprint, countryCode tuple for every entry"""
-    fingerprint = countryCode = None
+    """Generator. Parses a blocked-bridges file 'f', and yields
+       a fingerprint (ID), address, a list of ports, and a list of country
+       codes where the bridge is blocked for each valid line:
+       address, port [], countrycode []"""
     for line in f:
+        ID = address = fields = portlist = countries = None
         line = line.strip()
-        m = re.match(r"fingerprint\s+(?P<fingerprint>\w+?)\s+country-code\s+(?P<countryCode>\w+)$", line)
         try:
-            fingerprint = m.group('fingerprint').lower()
-            countryCode = m.group('countryCode').lower()
-            yield fingerprint, countryCode
-        except AttributeError, IndexError:
-            logging.warn("Unparseable line in blocked-bridges file: %s", line) 
+            ID, addrspec, countries = line.split()
+            if is_valid_fingerprint(ID):
+                ID = fromHex(ID)
+            else:
+                print "failed to parse ID!"
+                continue # skip this line
+
+            for regex in [re_ipv4, re_ipv6]:
+                m = regex.match(addrspec)
+                if m:
+                    address = ipaddr.IPAddress(m.group(1))
+                    portlist = PortList(m.group(2))
+                    countries = countries.split(',')
+        except (IndexError, ValueError):
+            continue # skip this line
+        if ID and address and portlist and countries:
+            yield ID, address, portlist, countries
 
 class BridgeHolder:
     """Abstract base class for all classes that hold bridges."""
