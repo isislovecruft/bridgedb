@@ -38,6 +38,7 @@ from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
+from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 import gpgme
  
@@ -156,8 +157,8 @@ class WebResource(twisted.web.resource.Resource):
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
 
-        # do want ipv6 support?
-        transport = ipv6 = False
+        # do want any options?
+        transport = ipv6 = unblocked = False
 
         ipv6 = request.args.get("ipv6", False)
         if ipv6: ipv6 = True # if anything after ?ipv6=
@@ -168,6 +169,12 @@ class WebResource(twisted.web.resource.Resource):
                     request.args.get("transport")[0]).group()
         except (TypeError, IndexError):
             transport = None
+
+        try:
+            unblocked = re.match('[a-zA-Z]{2,4}',
+                    request.args.get("unblocked")[0]).group()
+        except (TypeError, IndexError):
+            unblocked = False
 
         rules = []
 
@@ -185,20 +192,21 @@ class WebResource(twisted.web.resource.Resource):
                 # Tor to be a transport, and selecting between them.
                 rules = [filterBridgesByTransport(transport, addressClass)]
 
+            if unblocked:
+                rules.append(filterBridgesByNotBlockedIn(unblocked,
+                    addressClass, transport))
+
             bridges = self.distributor.getBridgesForIP(ip, interval,
                                                        self.nBridgesToGive,
                                                        countryCode,
                                                        bridgeFilterRules=rules)
 
         if bridges:
-            answer = "".join("%s %s\n" % (
-                b.getConfigLine(
-                    includeFingerprint=self.includeFingerprints,
-                    addressClass=addressClass,
-                    transport=transport,
-                    request=bridgedb.Dist.uniformMap(ip)
-                    ),
-                (I18n.BRIDGEDB_TEXT[16] if b.isBlocked(countryCode) else "")
+            answer = "".join("  %s\n" % b.getConfigLine(
+                includeFingerprint=self.includeFingerprints,
+                addressClass=addressClass,
+                transport=transport,
+                request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
         else:
             answer = t.gettext(I18n.BRIDGEDB_TEXT[7])
@@ -435,6 +443,8 @@ def getMailResponse(lines, ctx):
         if "transport" in ln.strip().lower():
             transport = re.search("transport ([_a-zA-Z][_a-zA-Z0-9]*)", ln).group(1).strip()
             logging.debug("Got request for transport: %s" % transport)
+        if "unblocked" in ln.strip.lower():
+            unblocked = re.search("unblocked ([a-zA-Z]{2,4})", ln).group(1).strip()
 
     if ipv6:
         bridgeFilterRules.append(filterBridgesByIP6)
@@ -445,6 +455,10 @@ def getMailResponse(lines, ctx):
 
     if transport:
         bridgeFilterRules = [filterBridgesByTransport(transport, addressClass)]
+
+    if unblocked:
+        rules.append(filterBridgesByNotBlockedIn(unblocked,
+            addressClass, transport))
 
     try:
         interval = ctx.schedule.getInterval(time.time())
