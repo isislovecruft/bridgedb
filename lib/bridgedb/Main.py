@@ -160,12 +160,9 @@ def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
     """
-    countryblock = Bridges.CountryBlock()
     if clear:
         logging.info("Clearing old bridges")
         splitter.clear()
-        logging.info("Clearing old blocked bridges")
-        countryblock.clear() 
     logging.info("Loading bridges")
     status = {}
     addresses = {}
@@ -176,11 +173,6 @@ def load(cfg, splitter, clear=False):
             addresses[ID] = or_addresses
             #transports[ID] = transports
         f.close()
-    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
-        f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
-        for fingerprint, countryCode in Bridges.parseCountryBlockFile(f):
-            countryblock.insert(fingerprint, countryCode)
-        f.close() 
     bridges = {} 
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
@@ -191,8 +183,6 @@ def load(cfg, splitter, clear=False):
                 running, stable = s
                 bridge.setStatus(running=running, stable=stable)
             bridge.or_addresses = addresses.get(bridge.getID())
-            bridge.setBlockingCountries(
-                    countryblock.getBlockingCountries(bridge.fingerprint)) 
             splitter.insert(bridge)
         f.close()
     # read pluggable transports from extra-info document
@@ -205,6 +195,21 @@ def load(cfg, splitter, clear=False):
             if bridges[ID].running:
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
+    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+        f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
+        for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
+            if ID in bridges.keys() and bridges[ID].running:
+                for port in portlist:
+                    logging.debug(":.( Tears! %s blocked %s %s:%s" % (
+                        countries, bridges[ID].fingerprint, address, port))
+                    try:
+                        bridges[ID].blockingCountries["%s:%s" % \
+                                (address, port)].update(countries)
+                    except KeyError:
+                        bridges[ID].blockingCountries["%s:%s" % \
+                                (address, port)] = set(countries)
+        f.close() 
+
     bridges = None
 
 def loadProxyList(cfg):
