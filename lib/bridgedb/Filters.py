@@ -3,10 +3,13 @@
 # See LICENSE for licensing information 
 
 from ipaddr import IPv6Address, IPv4Address
+import logging
 
 funcs = {}
 
 def filterAssignBridgesToRing(hmac, numRings, assignedRing):
+    #XXX: ruleset should have a key unique to this function
+    # ruleset ensures that the same 
     ruleset = frozenset([hmac, numRings, assignedRing]) 
     try: 
         return funcs[ruleset]
@@ -76,7 +79,8 @@ def filterBridgesByOnlyIP6(bridge):
         return True
     return False
 
-def filterBridgesByTransport(methodname, addressClass):
+def filterBridgesByTransport(methodname, addressClass=None):
+    if addressClass is None: addressClass = IPv4Address
     assert (addressClass) in (IPv4Address, IPv6Address)
     ruleset = frozenset([methodname, addressClass])
     try:
@@ -89,7 +93,33 @@ def filterBridgesByTransport(methodname, addressClass):
                 transport.methodname.lower() == methodname.lower(): return True
             return False
         f.__name__ = "filterBridgesByTransport(%s,%s)" % (methodname,
-                type(addressClass))
+                addressClass)
         setattr(f, "description", "transport=%s"%methodname)
+        funcs[ruleset] = f
+        return f
+
+def filterBridgesByNotBlockedIn(countryCode, addressClass=None, methodname=None):
+    """ if at least one address:port of the selected addressClass and
+    (optional) transport type is not blocked in countryCode, return True
+    """
+    # default to IPv4 if not specified
+    if addressClass is None: addressClass = IPv4Address
+    assert (addressClass) in (IPv4Address, IPv6Address)
+    ruleset = frozenset([countryCode, addressClass, methodname])
+    try:
+        return funcs[ruleset]
+    except KeyError:
+        def f(bridge):
+            if bridge.isBlocked(countryCode, addressClass, methodname):
+                if addressClass is IPv4Address: ac = "IPv4"
+                else: ac = "IPv6"
+                logmsg = "Removing %s from set of results for country"
+                logmsg += " '%s' with address class %s and transport %s"
+                logging.debug(logmsg % ( bridge.fingerprint, countryCode, ac,
+                    methodname))
+                return False
+            return True # not blocked
+        f.__name__ = "filterBridgesNotBlockedIn(%s,%s,%s)" % \
+                (countryCode,methodname,addressClass)
         funcs[ruleset] = f
         return f
