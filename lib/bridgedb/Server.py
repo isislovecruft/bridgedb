@@ -290,6 +290,10 @@ class WebResource(twisted.web.resource.Resource):
                    + "<p>" + recaptchaTemplate + "</p>" \
                    + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
                    + email_domain_list \
+                   + "<hr /><p><a href='?ipv6=true'>" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
+                   + "<p><a href='?transport=obfs2'>" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
                    + "</body></html>"
         return html_msg 
 
