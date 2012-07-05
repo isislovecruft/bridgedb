@@ -76,5 +76,9 @@ between emails is: """),
  # BRIDGEDB_TEXT[20]
  _("""Looking for IPv6 bridges?"""),
  # BRIDGEDB_TEXT[21]
- _("""Looking for obfsproxy bridges?""")
+ _("""Looking for obfsproxy bridges?"""),
+ # BRIDGEDB_TEXT[22]
+ _("""Specify transport by name:"""),
+ # BRIDGEDB_TEXT[23]
+ _("""Submit""")
 ]
