@@ -146,11 +146,6 @@ class WebResource(twisted.web.resource.Resource):
         if geoip:
             countryCode = geoip.country_code_by_addr(ip)
 
-        # allow client to specify a country
-        forcecc = getCCFromRequest(request)
-        if forcecc != None:
-            countryCode = forcecc
-
         # get locale
         t = getLocaleFromRequest(request) 
 
@@ -167,13 +162,13 @@ class WebResource(twisted.web.resource.Resource):
             # validate method name
             transport = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
                     request.args.get("transport")[0]).group()
-        except (TypeError, IndexError):
+        except (TypeError, IndexError, AttributeError):
             transport = None
 
         try:
             unblocked = re.match('[a-zA-Z]{2,4}',
                     request.args.get("unblocked")[0]).group()
-        except (TypeError, IndexError):
+        except (TypeError, IndexError, AttributeError):
             unblocked = False
 
         rules = []
@@ -244,8 +239,13 @@ class WebResource(twisted.web.resource.Resource):
                    + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
                    + "<p><a href='?transport=obfs2'>" \
                    + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
+                   + "<form method='GET'>" \
+                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[22]) + "</p>" \
+                   + "<input name='transport'>" \
+                   + "<input type='submit' value='" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[23]) +"'>" \
+                   + "</form>" \
                    + "</body></html>"
-
         return html_msg
 
     def buildHTMLMessageTemplateWithCaptcha(self, t, challenge, img):
@@ -294,6 +294,11 @@ class WebResource(twisted.web.resource.Resource):
                    + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
                    + "<p><a href='?transport=obfs2'>" \
                    + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
+                   + "<form method='GET'>" \
+                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[22]) + "</p>" \
+                   + "<input name='transport'>" \
+                   + "<input name='submit' type='submit'>" \
+                   + "</form>" \
                    + "</body></html>"
         return html_msg 
 
@@ -438,17 +443,25 @@ def getMailResponse(lines, ctx):
     #    return None,None
 
     # Figure out which bridges to send
-    transport = ipv6 = False
+    unblocked = transport = ipv6 = False
     bridgeFilterRules = []
     addressClass = None
     for ln in lines:
         if "ipv6" in ln.strip().lower():
             ipv6 = True
         if "transport" in ln.strip().lower():
-            transport = re.search("transport ([_a-zA-Z][_a-zA-Z0-9]*)", ln).group(1).strip()
+            try:
+                transport = re.search("transport ([_a-zA-Z][_a-zA-Z0-9]*)",
+                        ln).group(1).strip()
+            except (TypeError, AttributeError):
+                transport = None
             logging.debug("Got request for transport: %s" % transport)
-        if "unblocked" in ln.strip.lower():
-            unblocked = re.search("unblocked ([a-zA-Z]{2,4})", ln).group(1).strip()
+        if "unblocked" in ln.strip().lower():
+            try:
+                unblocked = re.search("unblocked ([a-zA-Z]{2,4})",
+                        ln).group(1).strip()
+            except (TypeError, AttributeError):
+                transport = None
 
     if ipv6:
         bridgeFilterRules.append(filterBridgesByIP6)
@@ -711,12 +724,6 @@ def getLocaleFromRequest(request):
         lang = request.args.get("lang", [default_lang])
         lang = lang[0]
     return I18n.getLang(lang)
-
-def getCCFromRequest(request):
-    path = re.sub(r'[^a-zA-Z]', '', request.path)
-    if len(path) ==  2:
-        return path.lower()
-    return None 
 
 def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         gpgContext=None):
