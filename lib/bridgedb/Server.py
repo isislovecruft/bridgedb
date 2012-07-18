@@ -443,10 +443,15 @@ def getMailResponse(lines, ctx):
     #    return None,None
 
     # Figure out which bridges to send
-    unblocked = transport = ipv6 = False
+    unblocked = transport = ipv6 = skippedheaders = False
     bridgeFilterRules = []
     addressClass = None
     for ln in lines:
+        # ignore all lines before the subject header
+        if "subject" in ln.strip().lower():
+            skippedheaders = True
+        if not skippedheaders: continue
+
         if "ipv6" in ln.strip().lower():
             ipv6 = True
         if "transport" in ln.strip().lower():
