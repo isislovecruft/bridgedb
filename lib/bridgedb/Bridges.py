@@ -902,10 +902,8 @@ class FilteredBridgeSplitter(BridgeHolder):
         return len(self.bridges)
 
     def clear(self):
-        #XXX syntax?
-        [r.clear() for n,(f,r) in self.filterRings.items()]
         self.bridges = []
-        #self.filterRings = {}
+        self.filterRings = {}
 
     def insert(self, bridge):
         if not bridge.running:
@@ -920,11 +918,6 @@ class FilteredBridgeSplitter(BridgeHolder):
                 r.insert(bridge)
                 logging.debug("insert bridge into %s" % n)
 
-        #XXX db.insertBridgeAndGetRing ??
-        # already 'assigned' by the FixedBridgeSplitter
-        #XXX persisent mapping?
-        # the filters rebuild
-
     def addRing(self, ring, ringname, filterFn, populate_from=None):
         """Add a ring to this splitter.
         ring -- the ring to add
@@ -937,8 +930,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         assert ringname not in self.filterRings.keys()
         logging.debug("addRing %s" % ringname)
 
-    #XXX: drop LRU ring if len(self.filterRings) > self.max_cached_rings
-    #XXX: where do rings go after cache eviction?
+        #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
         self.filterRings[ringname] = (filterFn,ring)
 
         # populate ring from an iterable
@@ -987,7 +979,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             f.write("%s %s\n"%( toHex(b.getID()), desc))
 
     def assignmentsArePersistent(self):
-        return False  #XXX: is this right?
+        return False
  
 class BridgeBlock:
     """Base class that abstracts bridge blocking"""
