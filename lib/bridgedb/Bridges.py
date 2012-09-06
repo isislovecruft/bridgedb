@@ -266,6 +266,68 @@ class Bridge:
                         except KeyError: return False # no blocklist
             return True 
 
+    # Bridge Stability (#5482) properties.
+    @property
+    def familiar(self):
+        """
+        A bridge is 'familiar' if 1/8 of all active bridges have appeared
+        more recently than it, or if it has been around for a Weighted Time of 8 days.
+        """
+        # if self.wt >= 8 days: return True
+        # bridges = session.query(Bridges).filter(time_first_seen, order=asc)
+        # if bridges[len(bridges) / 8].time_first_seen > self.time_first_seen: return True
+        # return False
+        pass
+
+    @property
+    def wfu(self):
+        """Weighted Fractional Uptime"""
+        pass
+
+    @property
+    def wt(self):
+        """Weighted Time"""
+        pass
+
+    @property
+    def wmtbac(self):
+        """Weighted Mean Time Between Address Change"""
+        pass
+
+    @property
+    def tosa(self):
+        """the Time On Same Address (TOSA)"""
+        pass
+
+    @property
+    def lastSeenWithDifferentAddressAndPort(self):
+        """Timestamp in milliseconds when this bridge was last
+        seen with a different address or port"""
+        db = bridgedb.Storage.getDB()
+        descs = db.getBridgeDescriptors(self.fingerprint)
+        assert(descs is not None) # should not happen
+        # sort by timestamp, newest first XXX: what is the db order?
+        descs.sort(lambda x,y: cmp(x[3] , y[3]), reverse=True)
+        # grab the most recent descriptor
+        last = descs.pop(0)
+        last_orport = last[2] # (fp, ip, orport, timestamp)
+        last_ip = last[1]
+        for desc in descs:
+            if desc[2] != last_orport or desc[1] != last_ip:
+                return desc[3]*1000 # timestamp in milliseconds
+        #XXX: hmm, we have never seen a different orport. What now?
+        return descs[-1][3]*1000 # the oldest descriptor known... maybe this is right
+    @property
+    def lastSeenWithThisAddressAndPort(self):
+        """Timestamp in milliseconds when this bridge was last
+        seen with this address and port"""
+        #XXX: what address and port would that be?
+        db = bridgedb.Storage.getDB()
+        descs = db.getBridgeDescriptors(self.fingerprint)
+        assert(descs is not None) # should not happen
+        descs.sort(lambda x,y: cmp(x[3] , y[3]), reverse=True)
+        return descs.pop(0)[3]*1000 # just return the most recent timestamp
+
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
        for every entry whose purpose matches bridge_purpose.
@@ -295,7 +357,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
        PORT = a number between 1 and 65535 inclusive.
     """
    
-    nickname = ip = orport = fingerprint = purpose = None
+    nickname = ip = orport = fingerprint = purpose = timestamp = None
     num_or_address_lines = 0
     or_addresses = {}
 
@@ -303,7 +365,6 @@ def parseDescFile(f, bridge_purpose='bridge'):
         line = line.strip()
         if line.startswith("opt "):
             line = line[4:]
-
         if line.startswith("@purpose "):
             items = line.split()
             purpose = items[1]
@@ -315,14 +376,19 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
             fingerprint = line[12:].replace(" ", "")
+        elif line.startswith("published "):
+            if line.startswith("published "):
+                try:
+                    timestamp = time.strptime(line[10:],"%Y-%M-%d %H:%m:%S")
+                    timestamp = time.mktime(timestamp)
+                except ValueError: timestamp = None
         elif line.startswith("router-signature"):
-            purposeMatches = (purpose == bridge_purpose or
-                              bridge_purpose is None)
-            if purposeMatches and nickname and ip and orport and fingerprint:
+            purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
+            if purposeMatches and nickname and ip and orport and fingerprint and timestamp:
                 b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
                 b.assertOK()
-                yield b
-            nickname = ip = orport = fingerprint = purpose = None 
+                yield b, timestamp
+            nickname = ip = orport = fingerprint = purpose = timestamp = None 
 
 class PortList:
     """ container class for port ranges
