@@ -309,7 +309,6 @@ def startup(cfg):
             Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
             categories,
             answerParameters=ringParams)
-        ipDistributor.prepopulateRings() # create default rings
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
         #webSchedule = Time.IntervalSchedule("day", 2)
         webSchedule = Time.NoSchedule()
@@ -323,7 +322,6 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
-        emailDistributor.prepopulateRings() # create default rings
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         #emailSchedule = Time.IntervalSchedule("day", 1)
         emailSchedule = Time.NoSchedule()
@@ -357,8 +355,10 @@ def startup(cfg):
         proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
+            emailDistributor.prepopulateRings() # create default rings
             logging.info("%d for email", len(emailDistributor.splitter))
         if ipDistributor:
+            ipDistributor.prepopulateRings() # create default rings
             logging.info("%d for web:", len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
                     logging.info(" by filter set %s, %d" % (n, len(r)))
