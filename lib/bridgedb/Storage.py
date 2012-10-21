@@ -9,6 +9,10 @@ import binascii
 import sqlite3
 import time
 import sha
+from ipaddr import IPAddress, IPv6Address, IPv4Address
+
+import bridgedb.Stability as Stability
+from bridgedb.Stability import BridgeHistory
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
@@ -112,6 +116,8 @@ class SqliteDict:
 
 # Here is the SQL schema.
 
+
+
 SCHEMA2_SCRIPT = """
  CREATE TABLE Config (
      key PRIMARY KEY NOT NULL,
@@ -154,6 +160,26 @@ SCHEMA2_SCRIPT = """
 
  INSERT INTO Config VALUES ( 'schema-version', 2 ); 
 """
+
+SCHEMA_2TO3_SCRIPT = """
+ CREATE TABLE BridgeHistory (
+     fingerprint PRIMARY KEY NOT NULL,
+     address,
+     port INT,
+     weightedUptime LONG,
+     weightedTime LONG,
+     weightedRunLength DOUBLE,
+     totalRunWeights DOUBLE,
+     lastSeenWithDifferentAddressAndPort LONG,
+     lastSeenWithThisAddressAndPort LONG,
+     lastDiscountedHistoryValues LONG
+ );
+
+ CREATE INDEX BridgeHistoryIndex on BridgeHistory ( fingerprint );
+
+ INSERT OR REPLACE INTO Config VALUES ( 'schema-version', 3 ); 
+ """
+SCHEMA3_SCRIPT = SCHEMA2_SCRIPT + SCHEMA_2TO3_SCRIPT
 
 class BridgeData:
     """Value class carrying bridge information:
@@ -358,6 +384,61 @@ class Database:
 
         cur.execute("DELETE FROM WarnedEmails WHERE when_warned < ?", (t,))
 
+    def updateIntoBridgeHistory(self, bhe):
+        cur = self._cur
+        cur.execute("INSERT OR REPLACE INTO BridgeHistory values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (bhe.fingerprint, str(bhe.ip), bhe.port,
+                bhe.weightedUptime, bhe.weightedTime, bhe.weightedRunLength,
+                bhe.totalRunWeights, bhe.lastSeenWithDifferentAddressAndPort,
+                bhe.lastSeenWithThisAddressAndPort, bhe.lastDiscountedHistoryValues))
+        return bhe
+
+    def delBridgeHistory(self, fp):
+        cur = self._cur
+        cur.execute("DELETE FROM BridgeHistory WHERE fingerprint = ?", (fp,))
+
+    def getBridgeHistory(self, fp):
+        cur = self._cur
+        cur.execute("SELECT * FROM BridgeHistory WHERE fingerprint = ?", (fp,))
+        h = cur.fetchone()
+        if h is None: return None
+        return BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
+
+    def getAllBridgeHistory(self):
+        cur = self._cur
+        v = cur.execute("SELECT * FROM BridgeHistory")
+        if v is None: return
+        for h in v:
+            yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
+
+    def addBridgeDescriptor(self, fp, ip, port, timestamp):
+        _ip = str(ip).strip('[]')
+        cur = self._cur
+        logging.debug("Adding Descriptor to BridgeDescriptors Table")
+        logging.debug("Values {0}, {1}, {2}, {3}".format(fp, ip, port, timestamp))
+        cur.execute("INSERT OR REPLACE INTO BridgeDescriptors"
+                "(fingerprint,ip,orport,timestamp) VALUES (?,?,?,?)",
+                (fp, _ip, port, timestamp))
+
+    def getBridgeDescriptors(self, fp):
+        #XXX: should we limit to the last 28 days of descriptors?
+        cur = self._cur
+        cur.execute("SELECT fingerprint, ip, orport, timestamp FROM BridgeDescriptors WHERE fingerprint = ?", (fp,))
+        v = cur.fetchall()
+
+        # always return an iterable.
+        if v is None: return []
+
+        # return an IPv4Address or IPv6Address
+        return [(i[0], IPAddress(i[1]), i[2], i[3]) for i in v]
+
+    def cleanBridgeDescriptors(self, timestamp=None):
+        cur = self._cur
+        # purge only descriptors older than timestamp
+        if timestamp:
+            cur.execute("DELETE * FROM BridgeDescriptors WHERE timestamp > ?", (timestamp,))
+        else: cur.execute("DELETE * FROM BridgeDescriptors")
+
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
@@ -365,11 +446,14 @@ def openDatabase(sqlite_file):
         try:
             cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
             val, = cur.fetchone()
-            if val != 2:
+            if val == 2:
+                logging.notice("Adding new table BridgeHistory")
+                cur.executescript(SCHEMA_2TO3_SCRIPT)
+            elif val != 3:
                 logging.warn("Unknown schema version %s in database.", val)
         except sqlite3.OperationalError:
             logging.warn("No Config table found in DB; creating tables")
-            cur.executescript(SCHEMA2_SCRIPT)
+            cur.executescript(SCHEMA3_SCRIPT)
             conn.commit()
     finally:
         cur.close()
@@ -383,7 +467,7 @@ def openOrConvertDatabase(sqlite_file, db_file):
 
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
-    cur.executescript(SCHEMA2_SCRIPT)
+    cur.executescript(SCHEMA3_SCRIPT)
     conn.commit()
 
     import anydbm
