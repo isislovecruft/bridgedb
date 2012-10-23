@@ -10,6 +10,7 @@ import tempfile
 import unittest
 import warnings
 import time
+from datetime import datetime
 
 import bridgedb.Bridges
 import bridgedb.Main
@@ -151,6 +152,14 @@ def fake16Bridge(orport=8080, running=True, stable=True):
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)  
     b.setStatus(running, stable)
     return b
+
+simpleDesc = "router Unnamed %s %s 0 9030\n"\
+"opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
+"opt @purpose bridge\n"
+orAddress = "or-address %s:%s\n"
+def gettimestamp():
+    ts = datetime.today().strftime("%Y-%M-%d %H:%m:%S")
+    return "opt published %s\n" % ts
 
 class RhymesWith255Category:
     def contains(self, ip):
@@ -534,74 +543,76 @@ class SQLStorageTests(unittest.TestCase):
         db.cleanWarnedEmails(t+200)
         self.assertEquals(db.getWarnedEmail("def@example.com"), False) 
 
+    def testDescriptorStorage(self):
+        db = self.db
+        cur = self.cur
+        for i in xrange(10):
+            ts = [time.strftime("%Y-%M-%d %H:%m:%S") for x in xrange(3)]
+            b = random.choice([fakeBridge(), fakeBridge6()])
+            [ db.addBridgeDescriptor(b.fingerprint, b.ip, b.orport, t) for t in ts ]
+            ds = db.getBridgeDescriptors(b.fingerprint)
+            assert(ds is not None)
+            for d in ds:
+                assert(d[3] in ts)
+                assert(d[0] == b.fingerprint)
+                assert(d[1] == b.ip)
+                assert(d[2] == b.orport)
+
 class ParseDescFileTests(unittest.TestCase):
     def testSimpleDesc(self):
-        simpleDesc = "router Unnamed %s %s 0 9030\n"\
-        "opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-        "opt @purpose bridge\n"\
-        "router-signature\n"
         test = ""
 
         for i in range(100):
             test+= "".join(simpleDesc % (randomIP(), randomPort()))
+            test+=gettimestamp()
+            test+="router-signature\n"
 
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
             b.assertOK()
 
     def testSingleOrAddress(self):
-        simpleDesc = "router Unnamed %s %s 0 9030\n"\
-        "opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-        "opt @purpose bridge\n"
-        orAddress = "or-address %s:%s\n"
         test = ""
 
         for i in range(100):
             test+= simpleDesc % (randomIP(), randomPort())
             test+= orAddress % (randomIP(),randomPort())
+            test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
             b.assertOK() 
 
     def testMultipleOrAddress(self):
-        simpleDesc = "router Unnamed %s %s 0 9030\n"\
-        "opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-        "opt @purpose bridge\n"
-        orAddress = "or-address %s:%s\n"
         test = ""
-
         for i in range(100):
             test+= simpleDesc % (randomIPString(), randomPort())
             for i in xrange(8):
                 test+= orAddress % (randomIPString(),randomPortSpec())
+            test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
             b.assertOK()  
 
     def testConvolutedOrAddress(self):
-        simpleDesc = "router Unnamed %s %s 0 9030\n"\
-        "opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-        "opt @purpose bridge\n"
-        orAddress = "or-address %s:%s\n"
         test = ""
-
         for i in range(100):
             test+= simpleDesc % (randomIPString(), randomPort())
             for i in xrange(8):
                 test+= orAddress % (randomIPString(),randomPortSpec())
+            test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
@@ -614,6 +625,7 @@ class ParseDescFileTests(unittest.TestCase):
         for i in range(100):
             test += simpleBlock % (randomIPString(), randomPort(),
                     randomCountrySpec())
+            test+=gettimestamp()
 
         for a,p,c in bridgedb.Bridges.parseCountryBlockFile(test.split('\n')):
             assert type(a) in (ipaddr.IPv6Address, ipaddr.IPv4Address)
