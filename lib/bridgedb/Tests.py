@@ -27,6 +27,8 @@ from bridgedb.Filters import filterBridgesByOnlyIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
+from bridgedb.Stability import BridgeHistory
+
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
 
@@ -158,7 +160,7 @@ simpleDesc = "router Unnamed %s %s 0 9030\n"\
 "opt @purpose bridge\n"
 orAddress = "or-address %s:%s\n"
 def gettimestamp():
-    ts = datetime.today().strftime("%Y-%M-%d %H:%m:%S")
+    ts = time.strftime("%Y-%M-%d %H:%m:%S")
     return "opt published %s\n" % ts
 
 class RhymesWith255Category:
@@ -543,21 +545,6 @@ class SQLStorageTests(unittest.TestCase):
         db.cleanWarnedEmails(t+200)
         self.assertEquals(db.getWarnedEmail("def@example.com"), False) 
 
-    def testDescriptorStorage(self):
-        db = self.db
-        cur = self.cur
-        for i in xrange(10):
-            ts = [time.strftime("%Y-%M-%d %H:%m:%S") for x in xrange(3)]
-            b = random.choice([fakeBridge(), fakeBridge6()])
-            [ db.addBridgeDescriptor(b.fingerprint, b.ip, b.orport, t) for t in ts ]
-            ds = db.getBridgeDescriptors(b.fingerprint)
-            assert(ds is not None)
-            for d in ds:
-                assert(d[3] in ts)
-                assert(d[0] == b.fingerprint)
-                assert(d[1] == b.ip)
-                assert(d[2] == b.orport)
-
 class ParseDescFileTests(unittest.TestCase):
     def testSimpleDesc(self):
         test = ""
@@ -638,12 +625,85 @@ class ParseDescFileTests(unittest.TestCase):
             #print "portlist: %s" % p
             #print "countries: %s" % c
 
+class BridgeStabilityTests(unittest.TestCase):
+    def setUp(self):
+        self.fd, self.fname = tempfile.mkstemp()
+        self.db = bridgedb.Storage.Database(self.fname)
+        bridgedb.Storage.setGlobalDB(self.db)
+        self.cur = self.db._conn.cursor()
+
+    def tearDown(self):
+        self.db.close()
+        os.close(self.fd)
+        os.unlink(self.fname)
+
+    def testAddOrUpdateSingleBridgeHistory(self):
+        db = self.db
+        b = fakeBridge()
+        timestamp = time.time()
+        bhe = bridgedb.Stability.addOrUpdateBridgeHistory(b, timestamp)
+        assert isinstance(bhe, BridgeHistory)
+        assert isinstance(db.getBridgeHistory(b.fingerprint), BridgeHistory)
+        assert len([y for y in db.getAllBridgeHistory()]) == 1
+
+    def testDeletingSingleBridgeHistory(self):
+        db = self.db
+        b = fakeBridge()
+        timestamp = time.time()
+        bhe = bridgedb.Stability.addOrUpdateBridgeHistory(b, timestamp)
+        assert isinstance(bhe, BridgeHistory)
+        assert isinstance(db.getBridgeHistory(b.fingerprint), BridgeHistory)
+        db.delBridgeHistory(b.fingerprint)
+        assert db.getBridgeHistory(b.fingerprint) is None
+        assert len([y for y in db.getAllBridgeHistory()]) == 0
+
+    def testTOSA(self):
+        db = self.db
+        b = random.choice([fakeBridge,fakeBridge6])()
+        def timestampSeries(x):
+            for i in xrange(61):
+                yield i*60*30 + x # 30 minute intervals
+        now = time.time()
+        time_on_address = long(60*30*60) # 30 hours
+        downtime = 60*60*random.randint(0,4) # random hours of downtime
+
+        for t in timestampSeries(now):
+            bridgedb.Stability.addOrUpdateBridgeHistory(b,t)
+        assert db.getBridgeHistory(b.fingerprint).tosa == time_on_address
+
+        b.orport += 1
+
+        for t in timestampSeries(now + time_on_address + downtime):
+            bhe = bridgedb.Stability.addOrUpdateBridgeHistory(b,t)
+        assert db.getBridgeHistory(b.fingerprint).tosa == time_on_address + downtime
+
+    def testLastSeenWithDifferentAddressAndPort(self):
+        db = self.db
+        for i in xrange(10):
+            ts = []
+            ts = [ time.time() for x in xrange(5) ] 
+            b = random.choice([fakeBridge(), fakeBridge6()])
+            [ bridgedb.Stability.addOrUpdateBridgeHistory(b, t) for t in ts ]
+            # last seen
+            last_seen = ts[-1]
+            # change the port
+            time_on_address = random.randint(60*60*.1,60*60*24*12)
+            ts = [ x + time_on_address for x in ts[:]]
+            b.orport = b.orport+1
+            [ bridgedb.Stability.addOrUpdateBridgeHistory(b, t) for t in ts ]
+            b = db.getBridgeHistory(b.fingerprint)
+            assert b.tosa == time_on_address
+            assert (long(last_seen*1000) == b.lastSeenWithDifferentAddressAndPort)
+            assert (long(ts[-1]*1000) == b.lastSeenWithThisAddressAndPort)
+
+    # test familiar
+
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
 
     for klass in [ IPBridgeDistTests, DictStorageTests, SQLStorageTests,
-                  EmailBridgeDistTests, ParseDescFileTests ]:
+                  EmailBridgeDistTests, ParseDescFileTests, BridgeStabilityTests ]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
 
     for module in [ bridgedb.Bridges,
