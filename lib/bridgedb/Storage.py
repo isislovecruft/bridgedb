@@ -401,7 +401,8 @@ class Database:
         cur = self._cur
         cur.execute("SELECT * FROM BridgeHistory WHERE fingerprint = ?", (fp,))
         h = cur.fetchone()
-        if h is None: return None
+        if h is None: 
+            return
         return BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
 
     def getAllBridgeHistory(self):
@@ -447,7 +448,7 @@ def openDatabase(sqlite_file):
             cur.execute("SELECT value FROM Config WHERE key = 'schema-version'")
             val, = cur.fetchone()
             if val == 2:
-                logging.notice("Adding new table BridgeHistory")
+                logging.info("Adding new table BridgeHistory")
                 cur.executescript(SCHEMA_2TO3_SCRIPT)
             elif val != 3:
                 logging.warn("Unknown schema version %s in database.", val)
