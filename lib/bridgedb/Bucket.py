@@ -208,6 +208,8 @@ class BucketManager:
             f = open(filename, 'w')
             for b in bridges:
                 line = "%s:%s" % (b.address, b.or_port)
+                bh = self.db.getBridgeHistory(b.hex_key)
+                if bh: line += "\n On address for %s" % bh.tosa
                 f.write(line + '\n')
             f.close()
         except IOError:
