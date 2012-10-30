@@ -80,5 +80,7 @@ between emails is: """),
  # BRIDGEDB_TEXT[22]
  _("""Specify transport by name:"""),
  # BRIDGEDB_TEXT[23]
- _("""Submit""")
+ _("""Submit"""),
+ # BRIDGEDB_TEXT[24]
+ _("""days at this address""")
 ]
