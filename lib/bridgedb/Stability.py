@@ -88,6 +88,7 @@ class BridgeHistory(object):
     @property
     def weightedFractionalUptime(self):
         """Weighted Fractional Uptime"""
+        if self.weightedTime <0.0001: return long(0)
         return long(10000) * self.weightedUptime / self.weightedTime
 
     @property
