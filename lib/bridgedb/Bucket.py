@@ -212,8 +212,8 @@ class BucketManager:
         for b in bridges:
             bh = self.db.getBridgeHistory(b.hex_key)
             if bh: bridgeHistories.append(bh)
-        bridgeHistories.sort(lambda x,y: cmp(x.tosa, y.tosa))
-
+        bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
+            y.weightedFractionalUptime))
         try:
             f = open(filename, 'w')
             for bh in bridgeHistories:
