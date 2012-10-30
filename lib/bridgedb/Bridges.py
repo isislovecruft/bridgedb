@@ -273,60 +273,32 @@ class Bridge:
         A bridge is 'familiar' if 1/8 of all active bridges have appeared
         more recently than it, or if it has been around for a Weighted Time of 8 days.
         """
-        # if self.wt >= 8 days: return True
-        # bridges = session.query(Bridges).filter(time_first_seen, order=asc)
-        # if bridges[len(bridges) / 8].time_first_seen > self.time_first_seen: return True
-        # return False
-        pass
+        db = bridgedb.Storage.getDB()
+        return db.getBridgeHistory(self.wmtbac).familiar
 
     @property
     def wfu(self):
         """Weighted Fractional Uptime"""
-        pass
+        db = bridgedb.Storage.getDB()
+        return db.getBridgeHistory(self.wmtbac).weightedFractionalUptime
 
     @property
     def wt(self):
         """Weighted Time"""
-        pass
+        db = bridgedb.Storage.getDB()
+        return db.getBridgeHistory(self.wmtbac).weightedTime
 
     @property
     def wmtbac(self):
         """Weighted Mean Time Between Address Change"""
-        pass
+        db = bridgedb.Storage.getDB()
+        return db.getBridgeHistory(self.fingerprint).wmtbac
 
     @property
     def tosa(self):
         """the Time On Same Address (TOSA)"""
-        pass
-
-    @property
-    def lastSeenWithDifferentAddressAndPort(self):
-        """Timestamp in milliseconds when this bridge was last
-        seen with a different address or port"""
         db = bridgedb.Storage.getDB()
-        descs = db.getBridgeDescriptors(self.fingerprint)
-        assert(descs is not None) # should not happen
-        # sort by timestamp, newest first XXX: what is the db order?
-        descs.sort(lambda x,y: cmp(x[3] , y[3]), reverse=True)
-        # grab the most recent descriptor
-        last = descs.pop(0)
-        last_orport = last[2] # (fp, ip, orport, timestamp)
-        last_ip = last[1]
-        for desc in descs:
-            if desc[2] != last_orport or desc[1] != last_ip:
-                return desc[3]*1000 # timestamp in milliseconds
-        #XXX: hmm, we have never seen a different orport. What now?
-        return descs[-1][3]*1000 # the oldest descriptor known... maybe this is right
-    @property
-    def lastSeenWithThisAddressAndPort(self):
-        """Timestamp in milliseconds when this bridge was last
-        seen with this address and port"""
-        #XXX: what address and port would that be?
-        db = bridgedb.Storage.getDB()
-        descs = db.getBridgeDescriptors(self.fingerprint)
-        assert(descs is not None) # should not happen
-        descs.sort(lambda x,y: cmp(x[3] , y[3]), reverse=True)
-        return descs.pop(0)[3]*1000 # just return the most recent timestamp
+        return db.getBridgeHistory(self.fingerprint).tosa
 
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
