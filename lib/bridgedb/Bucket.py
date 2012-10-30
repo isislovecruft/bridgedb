@@ -23,6 +23,7 @@ instead of 'unallocated'. This is why they are called pseudo-distributors.
 
 import time
 import bridgedb.Storage
+from bridgedb.I18n import BRIDGEDB_TEXT
 
 # What should pseudo distributors be prefixed with in the database so we can
 # distinguish them from real distributors?
@@ -204,12 +205,21 @@ class BucketManager:
     def dumpBridgesToFile(self, filename, bridges):
         """Dump a list of given bridges into a file
         """
+
+
+        # get the bridge histories and sort by Time On Same Address
+        bridgeHistories = []
+        for b in bridges:
+            bh = self.db.getBridgeHistory(b.hex_key)
+            if bh: bridgeHistories.append(bh)
+        bridgeHistories.sort(lambda x,y: cmp(x.tosa, y.tosa))
+
         try:
             f = open(filename, 'w')
-            for b in bridges:
-                line = "%s:%s" % (b.address, b.or_port)
-                bh = self.db.getBridgeHistory(b.hex_key)
-                if bh: line += "\n On address for %s" % bh.tosa
+            for bh in bridgeHistories:
+                days = bh.tosa / long(60*60*24)
+                line = "%s:%s\t(%d %s)" %  \
+                        (bh.ip, bh.port, days, BRIDGEDB_TEXT[24])
                 f.write(line + '\n')
             f.close()
         except IOError:
