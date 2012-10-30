@@ -24,6 +24,10 @@ instead of 'unallocated'. This is why they are called pseudo-distributors.
 import time
 import bridgedb.Storage
 from bridgedb.I18n import BRIDGEDB_TEXT
+import bridgedb.Bridges 
+import binascii
+toHex = binascii.b2a_hex
+
 
 # What should pseudo distributors be prefixed with in the database so we can
 # distinguish them from real distributors?
@@ -205,8 +209,6 @@ class BucketManager:
     def dumpBridgesToFile(self, filename, bridges):
         """Dump a list of given bridges into a file
         """
-
-
         # get the bridge histories and sort by Time On Same Address
         bridgeHistories = []
         for b in bridges:
@@ -214,12 +216,24 @@ class BucketManager:
             if bh: bridgeHistories.append(bh)
         bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
             y.weightedFractionalUptime))
+
+        # for a bridge, get the list of countries it might not work in
+        blocklist = dict()
+        if hasattr(self.cfg, "COUNTRY_BLOCK_FILE"):
+            f = open(self.cfg.COUNTRY_BLOCK_FILE, 'r')
+            for ID,address,portlist,countries in bridgedb.Bridges.parseCountryBlockFile(f):
+                blocklist[toHex(ID)] = countries
+            f.close()
+
         try:
             f = open(filename, 'w')
             for bh in bridgeHistories:
                 days = bh.tosa / long(60*60*24)
                 line = "%s:%s\t(%d %s)" %  \
                         (bh.ip, bh.port, days, BRIDGEDB_TEXT[24])
+                if str(bh.fingerprint) in blocklist.keys():
+                    line = line + "\t%s: (%s)" % (BRIDGEDB_TEXT[16],
+                            ",".join(blocklist[bh.fingerprint]),)
                 f.write(line + '\n')
             f.close()
         except IOError:
