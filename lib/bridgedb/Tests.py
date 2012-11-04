@@ -160,7 +160,7 @@ simpleDesc = "router Unnamed %s %s 0 9030\n"\
 "opt @purpose bridge\n"
 orAddress = "or-address %s:%s\n"
 def gettimestamp():
-    ts = time.strftime("%Y-%M-%d %H:%m:%S")
+    ts = time.strftime("%Y-%m-%d %H:%M:%S")
     return "opt published %s\n" % ts
 
 class RhymesWith255Category:

@@ -351,7 +351,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
         elif line.startswith("published "):
             if line.startswith("published "):
                 try:
-                    timestamp = time.strptime(line[10:],"%Y-%M-%d %H:%m:%S")
+                    timestamp = time.strptime(line[10:],"%Y-%m-%d %H:%M:%S")
                     timestamp = time.mktime(timestamp)
                 except ValueError: timestamp = None
         elif line.startswith("router-signature"):
