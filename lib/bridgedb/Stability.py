@@ -12,7 +12,7 @@ import logging
 import bridgedb.Storage
 
 # tunables 
-weighting_factor = long(19)/long(20)
+weighting_factor = float(19)/float(20)
 discountIntervalMillis = long(60*60*12*1000)
 
 class BridgeHistory(object):
