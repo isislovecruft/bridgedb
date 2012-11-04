@@ -412,34 +412,6 @@ class Database:
         for h in v:
             yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
 
-    def addBridgeDescriptor(self, fp, ip, port, timestamp):
-        _ip = str(ip).strip('[]')
-        cur = self._cur
-        logging.debug("Adding Descriptor to BridgeDescriptors Table")
-        logging.debug("Values {0}, {1}, {2}, {3}".format(fp, ip, port, timestamp))
-        cur.execute("INSERT OR REPLACE INTO BridgeDescriptors"
-                "(fingerprint,ip,orport,timestamp) VALUES (?,?,?,?)",
-                (fp, _ip, port, timestamp))
-
-    def getBridgeDescriptors(self, fp):
-        #XXX: should we limit to the last 28 days of descriptors?
-        cur = self._cur
-        cur.execute("SELECT fingerprint, ip, orport, timestamp FROM BridgeDescriptors WHERE fingerprint = ?", (fp,))
-        v = cur.fetchall()
-
-        # always return an iterable.
-        if v is None: return []
-
-        # return an IPv4Address or IPv6Address
-        return [(i[0], IPAddress(i[1]), i[2], i[3]) for i in v]
-
-    def cleanBridgeDescriptors(self, timestamp=None):
-        cur = self._cur
-        # purge only descriptors older than timestamp
-        if timestamp:
-            cur.execute("DELETE * FROM BridgeDescriptors WHERE timestamp > ?", (timestamp,))
-        else: cur.execute("DELETE * FROM BridgeDescriptors")
-
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
