@@ -114,7 +114,7 @@ class BridgeHistory(object):
         numBridges = len(allWeightedTimes)
         logging.debug("Got %d weightedTimes", numBridges)
         allWeightedTimes.sort(lambda x,y: cmp(x.weightedTime, y.weightedTime))
-        if self.weighedTime > allWeighedTimes[numBridges/8].weightedTime:
+        if self.weightedTime > allWeightedTimes[numBridges/8].weightedTime:
             return True
         return False
 
