@@ -274,19 +274,19 @@ class Bridge:
         more recently than it, or if it has been around for a Weighted Time of 8 days.
         """
         db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.wmtbac).familiar
+        return db.getBridgeHistory(self.fingerprint).familiar
 
     @property
     def wfu(self):
         """Weighted Fractional Uptime"""
         db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.wmtbac).weightedFractionalUptime
+        return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
 
     @property
     def wt(self):
         """Weighted Time"""
         db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.wmtbac).weightedTime
+        return db.getBridgeHistory(self.fingerprint).weightedTime
 
     @property
     def wmtbac(self):
