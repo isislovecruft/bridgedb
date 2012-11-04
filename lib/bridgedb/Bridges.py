@@ -329,7 +329,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
        PORT = a number between 1 and 65535 inclusive.
     """
    
-    nickname = ip = orport = fingerprint = purpose = timestamp = None
+    nickname = ip = orport = fingerprint = purpose = None
     num_or_address_lines = 0
     or_addresses = {}
 
@@ -348,19 +348,13 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
             fingerprint = line[12:].replace(" ", "")
-        elif line.startswith("published "):
-            if line.startswith("published "):
-                try:
-                    timestamp = time.strptime(line[10:],"%Y-%m-%d %H:%M:%S")
-                    timestamp = time.mktime(timestamp)
-                except ValueError: timestamp = None
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
-            if purposeMatches and nickname and ip and orport and fingerprint and timestamp:
+            if purposeMatches and nickname and ip and orport and fingerprint:
                 b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
                 b.assertOK()
-                yield b, timestamp
-            nickname = ip = orport = fingerprint = purpose = timestamp = None 
+                yield b
+            nickname = ip = orport = fingerprint = purpose = None 
 
 class PortList:
     """ container class for port ranges
@@ -540,7 +534,7 @@ def parseExtraInfoFile(f):
 
 def parseStatusFile(f):
     """DOCDOC"""
-    ID = None
+    timestamp = ID = None
     num_or_address_lines = 0
     or_addresses = {}
     for line in f:
@@ -551,8 +545,11 @@ def parseStatusFile(f):
         if line.startswith("r "):
             try:
                 ID = binascii.a2b_base64(line.split()[2]+"=")
+                timestamp = time.strptime(line.split()[4],"%Y-%m-%d %H:%M:%S")
+                timestamp = time.mktime(timestamp)
             except binascii.Error:
                 logging.warn("Unparseable base64 ID %r", line.split()[2])
+            except ValueError: timestamp = None
 
         elif ID and line.startswith("a "):
             if num_or_address_lines < 8:
@@ -567,10 +564,16 @@ def parseStatusFile(f):
                              "from Bridge with ID %r" % id)
             num_or_address_lines += 1
 
-        elif ID and line.startswith("s "):
+        elif ID and timestamp and line.startswith("s "):
             flags = line.split()
-            yield ID, ("Running" in flags), ("Stable" in flags), or_addresses
-            ID = None
+            yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
+            # add or update BridgeHistory entries into the database
+            # XXX: what do we do with all these or_addresses?
+            # The bridge stability metrics are only concerned with a single ip:port
+            # So for now, we will only consider the bridges primary IP:port
+            bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+
+            timestamp = ID = None
             num_or_address_lines = 0
             or_addresses = {}
 

@@ -168,16 +168,18 @@ def load(cfg, splitter, clear=False):
     addresses = {}
     if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
-        for ID, running, stable, or_addresses in Bridges.parseStatusFile(f):
+        for ID, running, stable, or_addresses, timestamp in Bridges.parseStatusFile(f):
             status[ID] = running, stable
             addresses[ID] = or_addresses
+            if ID in timestamps.keys(): timestamps[ID].append(timestamp)
+            else: timestamps[ID] = [timestamp]
             #transports[ID] = transports
         f.close()
     bridges = {} 
     db = bridgedb.Storage.getDB()
     for fname in cfg.BRIDGE_FILES:
         f = open(fname, 'r')
-        for bridge, timestamp in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
+        for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             bridges[bridge.getID()] = bridge
             s = status.get(bridge.getID())
             if s is not None:
@@ -189,7 +191,10 @@ def load(cfg, splitter, clear=False):
             # XXX: what do we do with all these or_addresses?
             # The bridge stability metrics are only concerned with a single ip:port
             # So for now, we will only consider the bridges primary IP:port
-            bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+            ts = timestamps[ID][:]
+            ts.sort()
+            for timestamp in ts:
+                bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
         f.close()
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority

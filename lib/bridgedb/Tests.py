@@ -554,7 +554,7 @@ class ParseDescFileTests(unittest.TestCase):
             test+=gettimestamp()
             test+="router-signature\n"
 
-        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
@@ -569,7 +569,7 @@ class ParseDescFileTests(unittest.TestCase):
             test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
@@ -584,7 +584,7 @@ class ParseDescFileTests(unittest.TestCase):
             test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
@@ -599,7 +599,7 @@ class ParseDescFileTests(unittest.TestCase):
             test+=gettimestamp()
             test+= "router-signature\n"
 
-        bs = [b for b,_ in bridgedb.Bridges.parseDescFile(test.split('\n'))]
+        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
         self.assertEquals(len(bs), 100) 
 
         for b in bs:
