@@ -80,7 +80,6 @@ class BridgeHistory(object):
     def numDiscountRounds(self, discountUntilMillis):
         """ return the number of rounds of discounting needed to bring this
         history element current """
-              
         result = discountUntilMillis - self.lastDiscountedHistoryValues
         result = int(result/discountIntervalMillis)
         return max(result,0)
@@ -113,8 +112,8 @@ class BridgeHistory(object):
         allWeightedTimes = [ bh.weightedTime for bh in db.getAllBridgeHistory()]
         numBridges = len(allWeightedTimes)
         logging.debug("Got %d weightedTimes", numBridges)
-        allWeightedTimes.sort(lambda x,y: cmp(x.weightedTime, y.weightedTime))
-        if self.weightedTime > allWeightedTimes[numBridges/8].weightedTime:
+        allWeightedTimes.sort()
+        if self.weightedTime >= allWeightedTimes[numBridges/8]:
             return True
         return False
 
