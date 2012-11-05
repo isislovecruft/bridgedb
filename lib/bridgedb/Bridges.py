@@ -283,7 +283,7 @@ class Bridge:
         return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
 
     @property
-    def wt(self):
+    def weightedTime(self):
         """Weighted Time"""
         db = bridgedb.Storage.getDB()
         return db.getBridgeHistory(self.fingerprint).weightedTime
@@ -299,6 +299,12 @@ class Bridge:
         """the Time On Same Address (TOSA)"""
         db = bridgedb.Storage.getDB()
         return db.getBridgeHistory(self.fingerprint).tosa
+
+    @property
+    def weightedUptime(self):
+        """Weighted Uptime"""
+        db = bridgedb.Storage.getDB()
+        return db.getBridgeHistory(self.fingerprint).weightedUptime
 
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
@@ -545,8 +551,9 @@ def parseStatusFile(f):
         if line.startswith("r "):
             try:
                 ID = binascii.a2b_base64(line.split()[2]+"=")
-                timestamp = time.strptime(line.split()[4],"%Y-%m-%d %H:%M:%S")
-                timestamp = time.mktime(timestamp)
+                timestamp = time.mktime(time.strptime(
+                    " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
+                    )
             except binascii.Error:
                 logging.warn("Unparseable base64 ID %r", line.split()[2])
             except ValueError: timestamp = None
@@ -561,18 +568,12 @@ def parseStatusFile(f):
                     or_addresses[address] = portlist
             else:
                 logging.warn("Skipping extra or-address line "\
-                             "from Bridge with ID %r" % id)
+                             "from Bridge with ID %r" % ID)
             num_or_address_lines += 1
 
         elif ID and timestamp and line.startswith("s "):
             flags = line.split()
             yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
-            # add or update BridgeHistory entries into the database
-            # XXX: what do we do with all these or_addresses?
-            # The bridge stability metrics are only concerned with a single ip:port
-            # So for now, we will only consider the bridges primary IP:port
-            bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
-
             timestamp = ID = None
             num_or_address_lines = 0
             or_addresses = {}
