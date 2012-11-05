@@ -166,6 +166,7 @@ def load(cfg, splitter, clear=False):
     logging.info("Loading bridges")
     status = {}
     addresses = {}
+    timestamps = {}
     if hasattr(cfg, "STATUS_FILE"):
         f = open(cfg.STATUS_FILE, 'r')
         for ID, running, stable, or_addresses, timestamp in Bridges.parseStatusFile(f):
@@ -191,7 +192,7 @@ def load(cfg, splitter, clear=False):
             # XXX: what do we do with all these or_addresses?
             # The bridge stability metrics are only concerned with a single ip:port
             # So for now, we will only consider the bridges primary IP:port
-            ts = timestamps[ID][:]
+            ts = timestamps[bridge.getID()][:]
             ts.sort()
             for timestamp in ts:
                 bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
