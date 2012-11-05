@@ -696,7 +696,21 @@ class BridgeStabilityTests(unittest.TestCase):
             assert (long(last_seen*1000) == b.lastSeenWithDifferentAddressAndPort)
             assert (long(ts[-1]*1000) == b.lastSeenWithThisAddressAndPort)
 
-    # test familiar
+    def testFamiliar(self):
+        # create some bridges
+        num_bridges = 100
+        num_desc = 4*48 # 30m intervals, 48 per day
+        time_start = time.time()
+        bridges = [ fakeBridge() for x in xrange(num_bridges) ]
+        t = time.time()
+        ts = [ i*60*30+t for i in xrange(num_bridges) ]
+        for b in bridges:
+            time_series = [ 60*30*(i+1) + time_start for i in xrange(num_desc) ]
+            [ bridgedb.Stability.addOrUpdateBridgeHistory(b, i) for i in time_series ]
+        assert None not in bridges
+        # +1 to avoid rounding errors
+        assert bridges[-(num_bridges/8 + 1)].familiar == True
+
 
 def testSuite():
     suite = unittest.TestSuite()
