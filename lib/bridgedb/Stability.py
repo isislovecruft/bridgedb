@@ -174,9 +174,12 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     
     # Increment total weighted time for all bridges by seconds since the last
     # status was published. Note, capped at 1 hour
+    toupdate = []
+
     for bh in db.getAllBridgeHistory():
         bh.weightedTime += secondsSinceLastStatusPublication
-        db.updateIntoBridgeHistory(bh)
+        toupdate.append(bh)
+    [ db.updateIntoBridgeHistory(bh) for bh in toupdate ]
 
     # For Running Bridges only:
     # compare the stored history against the descriptor and see if the
@@ -207,23 +210,25 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
 def discountAndPruneBridgeHistories(discountUntilMillis):
     db = bridgedb.Storage.getDB()
     bhToRemove = []
+    bhToUpdate = []
     # Just check the first item to see if we're anywhere close yet
     sample = None
     for y in db.getAllBridgeHistory():
         sample = y
         break
-    if not sample: return 0
+    if not sample: return
 
-    if discountUntilMillis - sample.lastDiscountedHistoryValues < discountIntervalMillis:
-        return 0
+    if discountUntilMillis - sample.lastDiscountedHistoryValues \
+            < discountIntervalMillis: return
     for bh in db.getAllBridgeHistory():
         # discount previous values by factor of 0.95 every 12 hours
         bh.discountWeightedFractionalUptimeAndWeightedTime(discountUntilMillis)
 
-        if (bh.weightedTime != 0 and (bh.weightedUptime * 10000 / bh.weightedTime) < 1):
-            bhToRemove.append(k)
+        if (bh.weightedTime != 0 and bh.weightedUptime != 0 and (bh.weightedUptime * 10000 / bh.weightedTime) < 1):
+            logging.debug("Removing bridge from history: %s" % bh.fingerprint)
+            bhToRemove.append(bh.fingerprint)
         else:
-            db.updateIntoBridgeHistory(bh)
-
+            bhToUpdate.append(bh)
+    for k in bhToUpdate: db.updateIntoBridgeHistory(k)
     # prune items
     for k in bhToRemove: db.delBridgeHistory(k)
