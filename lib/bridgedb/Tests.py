@@ -28,6 +28,7 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 from bridgedb.Stability import BridgeHistory
+from math import log
 
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
@@ -662,7 +663,7 @@ class BridgeStabilityTests(unittest.TestCase):
         b = random.choice([fakeBridge,fakeBridge6])()
         def timestampSeries(x):
             for i in xrange(61):
-                yield i*60*30 + x # 30 minute intervals
+                yield (i+1)*60*30 + x # 30 minute intervals
         now = time.time()
         time_on_address = long(60*30*60) # 30 hours
         downtime = 60*60*random.randint(0,4) # random hours of downtime
@@ -680,30 +681,31 @@ class BridgeStabilityTests(unittest.TestCase):
     def testLastSeenWithDifferentAddressAndPort(self):
         db = self.db
         for i in xrange(10):
-            ts = []
-            ts = [ time.time() for x in xrange(5) ] 
+            num_desc = 30
+            time_start = time.time()
+            ts = [ 60*30*(i+1) + time_start for i in xrange(num_desc) ]
             b = random.choice([fakeBridge(), fakeBridge6()])
             [ bridgedb.Stability.addOrUpdateBridgeHistory(b, t) for t in ts ]
-            # last seen
-            last_seen = ts[-1]
+
             # change the port
-            time_on_address = random.randint(60*60*.1,60*60*24*12)
-            ts = [ x + time_on_address for x in ts[:]]
             b.orport = b.orport+1
+            last_seen = ts[-1]
+            ts = [ 60*30*(i+1) + last_seen for i in xrange(num_desc) ]
             [ bridgedb.Stability.addOrUpdateBridgeHistory(b, t) for t in ts ]
             b = db.getBridgeHistory(b.fingerprint)
-            assert b.tosa == time_on_address
+            assert b.tosa == ts[-1] - last_seen
             assert (long(last_seen*1000) == b.lastSeenWithDifferentAddressAndPort)
             assert (long(ts[-1]*1000) == b.lastSeenWithThisAddressAndPort)
 
     def testFamiliar(self):
         # create some bridges
-        num_bridges = 100
+        # XXX: slow
+        num_bridges = 10
         num_desc = 4*48 # 30m intervals, 48 per day
         time_start = time.time()
         bridges = [ fakeBridge() for x in xrange(num_bridges) ]
         t = time.time()
-        ts = [ i*60*30+t for i in xrange(num_bridges) ]
+        ts = [ (i+1)*60*30+t for i in xrange(num_bridges) ]
         for b in bridges:
             time_series = [ 60*30*(i+1) + time_start for i in xrange(num_desc) ]
             [ bridgedb.Stability.addOrUpdateBridgeHistory(b, i) for i in time_series ]
@@ -711,6 +713,48 @@ class BridgeStabilityTests(unittest.TestCase):
         # +1 to avoid rounding errors
         assert bridges[-(num_bridges/8 + 1)].familiar == True
 
+    def testDiscountAndPruneBridgeHistory(self):
+        """ Test pruning of old Bridge History """
+        db = self.db
+
+        # make a bunch of bridges
+        num_bridges = 20
+        time_start = time.time()
+        bridges = [ random.choice([fakeBridge, fakeBridge6])() \
+                for i in xrange(num_bridges) ]
+
+        # run some of the bridges for the full time series
+        running = bridges[:num_bridges/2]
+        # and some that are not
+        expired = bridges[num_bridges/2:]
+
+        for b in running: assert b not in expired
+
+        # Solving: 
+        # 1 discount event per 12 hours, 24 descriptors 30m apart
+        num_successful = random.randint(2,60)
+        # figure out how many intervals it will take for weightedUptime to
+        # decay to < 1
+        num_desc = int(30*log(1/float(num_successful*30*60))/(-0.05))
+        timeseries = [ 60*30*(i+1) + time_start for i in xrange(num_desc) ]
+
+        for i in timeseries:
+            for b in running:
+                bridgedb.Stability.addOrUpdateBridgeHistory(b, i)
+
+            if num_successful > 0:
+                for b in expired:
+                    bridgedb.Stability.addOrUpdateBridgeHistory(b, i)
+            num_successful -= 1
+
+        # now we expect to see the bridge has been removed from history
+        for bridge in expired:
+            b = db.getBridgeHistory(bridge.fingerprint)
+            assert b is None
+        # and make sure none of the others have
+        for bridge in running:
+            b = db.getBridgeHistory(bridge.fingerprint)
+            assert b is not None
 
 def testSuite():
     suite = unittest.TestSuite()
