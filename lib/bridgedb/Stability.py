@@ -161,6 +161,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     statusPublicationMillis = long(timestamp * 1000)
     if (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort) > 60*60*1000:
         secondsSinceLastStatusPublication = long(60*60)
+        logging.debug("Capping secondsSinceLastStatusPublication to 1 hour")    
     # otherwise, roll with it
     else:
         secondsSinceLastStatusPublication = \
@@ -181,6 +182,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     # compare the stored history against the descriptor and see if the
     # bridge has changed its address or port
     bhe = db.getBridgeHistory(bridge.fingerprint)
+
     if not bridge.running:
         log.notice("%s is not running" % bridge.fingerprint)
         return bhe
@@ -198,7 +200,6 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     # current address and port, and that we saw it using them.
     bhe.weightedUptime += secondsSinceLastStatusPublication
     bhe.lastSeenWithThisAddressAndPort = statusPublicationMillis
-
     bhe.ip = str(bridge.ip)
     bhe.port = bridge.orport
     return db.updateIntoBridgeHistory(bhe)
@@ -207,26 +208,18 @@ def discountAndPruneBridgeHistories(discountUntilMillis):
     db = bridgedb.Storage.getDB()
     bhToRemove = []
     bhToUpdate = []
-    # Just check the first item to see if we're anywhere close yet
-    sample = None
-    for y in db.getAllBridgeHistory():
-        sample = y
-        break
-    if not sample: return
 
-    if discountUntilMillis - sample.lastDiscountedHistoryValues \
-            < discountIntervalMillis: return
     for bh in db.getAllBridgeHistory():
         # discount previous values by factor of 0.95 every 12 hours
         bh.discountWeightedFractionalUptimeAndWeightedTime(discountUntilMillis)
-
-        if (bh.weightedTime != 0 and bh.weightedUptime != 0 and (bh.weightedUptime * 10000 / bh.weightedTime) < 1):
+        # give the thing at least 24 hours before pruning it
+        if bh.weightedFractionalUptime < 1 and bh.weightedTime > 60*60*24:
             logging.debug("Removing bridge from history: %s" % bh.fingerprint)
             bhToRemove.append(bh.fingerprint)
         else:
             bhToUpdate.append(bh)
+
     for k in bhToUpdate: db.updateIntoBridgeHistory(k)
-    # prune items
     for k in bhToRemove: db.delBridgeHistory(k)
 
 def updateWeightedTime(statusPublicationMillis):
