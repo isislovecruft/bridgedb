@@ -168,11 +168,12 @@ SCHEMA_2TO3_SCRIPT = """
      port INT,
      weightedUptime LONG,
      weightedTime LONG,
-     weightedRunLength DOUBLE,
+     weightedRunLength LONG,
      totalRunWeights DOUBLE,
      lastSeenWithDifferentAddressAndPort LONG,
      lastSeenWithThisAddressAndPort LONG,
-     lastDiscountedHistoryValues LONG
+     lastDiscountedHistoryValues LONG,
+     lastUpdatedWeightedTime LONG
  );
 
  CREATE INDEX BridgeHistoryIndex on BridgeHistory ( fingerprint );
@@ -384,14 +385,15 @@ class Database:
 
         cur.execute("DELETE FROM WarnedEmails WHERE when_warned < ?", (t,))
 
-    def updateIntoBridgeHistory(self, bhe):
+    def updateIntoBridgeHistory(self, bh):
         cur = self._cur
-        cur.execute("INSERT OR REPLACE INTO BridgeHistory values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (bhe.fingerprint, str(bhe.ip), bhe.port,
-                bhe.weightedUptime, bhe.weightedTime, bhe.weightedRunLength,
-                bhe.totalRunWeights, bhe.lastSeenWithDifferentAddressAndPort,
-                bhe.lastSeenWithThisAddressAndPort, bhe.lastDiscountedHistoryValues))
-        return bhe
+        cur.execute("INSERT OR REPLACE INTO BridgeHistory values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (bh.fingerprint, str(bh.ip), bh.port,
+                bh.weightedUptime, bh.weightedTime, bh.weightedRunLength,
+                bh.totalRunWeights, bh.lastSeenWithDifferentAddressAndPort,
+                bh.lastSeenWithThisAddressAndPort, bh.lastDiscountedHistoryValues,
+                bh.lastUpdatedWeightedTime))
+        return bh
 
     def delBridgeHistory(self, fp):
         cur = self._cur
@@ -403,15 +405,22 @@ class Database:
         h = cur.fetchone()
         if h is None: 
             return
-        return BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
+        return BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
 
     def getAllBridgeHistory(self):
         cur = self._cur
         v = cur.execute("SELECT * FROM BridgeHistory")
         if v is None: return
+        fp = {}
         for h in v:
-            yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9])
+            yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
 
+    def getBridgesLastUpdatedBefore(self, statusPublicationMillis):
+        cur = self._cur
+        v = cur.execute("SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime < ?", (statusPublicationMillis,))
+        if v is None: return
+        for h in v:
+            yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
