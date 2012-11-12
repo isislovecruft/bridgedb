@@ -44,28 +44,31 @@ class BridgeHistory(object):
 
     lastDiscountedHistoryValues:
         Timestamp in milliseconds when this bridge was last discounted. (long int)
+
+    lastUpdatedWeightedTime:
+        Timestamp in milliseconds when the weighted time was updated. (long int)
     """
     def __init__(self, fingerprint, ip, port,
             weightedUptime, weightedTime, weightedRunLength, totalRunWeights,
             lastSeenWithDifferentAddressAndPort, lastSeenWithThisAddressAndPort,
-            lastDiscountedHistoryValues=None):
+            lastDiscountedHistoryValues, lastUpdatedWeightedTime):
         self.fingerprint = fingerprint
         self.ip = ip 
         self.port = port
         self.weightedUptime = long(weightedUptime)
         self.weightedTime = long(weightedTime)
-        self.weightedRunLength = float(weightedRunLength)
+        self.weightedRunLength = long(weightedRunLength)
         self.totalRunWeights = float(totalRunWeights)
         self.lastSeenWithDifferentAddressAndPort = \
                 long(lastSeenWithDifferentAddressAndPort)
         self.lastSeenWithThisAddressAndPort = long(lastSeenWithThisAddressAndPort)
-        if lastDiscountedHistoryValues:
-            self.lastDiscountedHistoryValues = long(lastDiscountedHistoryValues)
-        else:
-            self.lastDiscountedHistoryValues = long(lastSeenWithThisAddressAndPort)
+        self.lastDiscountedHistoryValues = long(lastDiscountedHistoryValues)
+        self.lastUpdatedWeightedTime = long(lastUpdatedWeightedTime)
 
     def discountWeightedFractionalUptimeAndWeightedTime(self, discountUntilMillis):
         """ discount weighted times """
+        if self.lastDiscountedHistoryValues == 0:
+            self.lastDiscountedHistoryValues = discountUntilMillis
         rounds = self.numDiscountRounds(discountUntilMillis)
         if rounds > 0:
             discount = lambda x: (weighting_factor**rounds)*x
@@ -146,9 +149,12 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
                 0,#weightedRunLength
                 0,# totalRunWeights
                 lastSeenWithDifferentAddressAndPort, # first timestamnp
-                lastSeenWithThisAddressAndPort
+                lastSeenWithThisAddressAndPort,
+                0,#lastDiscountedHistoryValues,
+                0,#lastUpdatedWeightedTime
                 )
-    
+        # first time we have seen this descriptor
+        db.updateIntoBridgeHistory(bhe)
     # Calculate the seconds since the last parsed status.  If this is
     # the first status or we haven't seen a status for more than 60
     # minutes, assume 60 minutes.
