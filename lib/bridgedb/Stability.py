@@ -165,7 +165,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     else:
         secondsSinceLastStatusPublication = \
                 (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort)/1000
-    if statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort < 0:
+    if secondsSinceLastStatusPublication <= 0 and bhe.weightedTime > 0:
         # old descriptor, bail
         logging.warn("Received old descriptor for bridge %s with timestamp %d",
                 bhe.fingerprint, statusPublicationMillis/1000)
@@ -174,18 +174,8 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     # iterate over all known bridges and apply weighting factor
     discountAndPruneBridgeHistories(statusPublicationMillis)
     
-    # add or update the descriptor in history
-    db.updateIntoBridgeHistory(bhe)
-    bhe = None
-    
-    # Increment total weighted time for all bridges by seconds since the last
-    # status was published. Note, capped at 1 hour
-    toupdate = []
-
-    for bh in db.getAllBridgeHistory():
-        bh.weightedTime += secondsSinceLastStatusPublication
-        toupdate.append(bh)
-    [ db.updateIntoBridgeHistory(bh) for bh in toupdate ]
+    # Update the weighted times of bridges
+    updateWeightedTime(statusPublicationMillis)
 
     # For Running Bridges only:
     # compare the stored history against the descriptor and see if the
@@ -238,3 +228,17 @@ def discountAndPruneBridgeHistories(discountUntilMillis):
     for k in bhToUpdate: db.updateIntoBridgeHistory(k)
     # prune items
     for k in bhToRemove: db.delBridgeHistory(k)
+
+def updateWeightedTime(statusPublicationMillis):
+    bhToUpdate = []
+    db = bridgedb.Storage.getDB()
+    for bh in db.getBridgesLastUpdatedBefore(statusPublicationMillis):
+        interval = (statusPublicationMillis - bh.lastUpdatedWeightedTime)/1000
+        if interval > 0:
+            bh.weightedTime += min(3600,interval) # cap to 1hr
+            bh.lastUpdatedWeightedTime = statusPublicationMillis
+            #db.updateIntoBridgeHistory(bh)
+            bhToUpdate.append(bh)
+
+    for bh in bhToUpdate:
+        db.updateIntoBridgeHistory(bh)
