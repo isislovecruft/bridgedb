@@ -6,4 +6,4 @@ test:
 	python setup.py test
 
 install:
-	@echo 'To install, run python setup.py --prefix=$$HOME'
+	python setup.py install
