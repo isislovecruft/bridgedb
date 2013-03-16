@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>BridgeDB &middot;</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bridge IP database">
+    <meta name="author" content="The Tor Project">
+
+    <!-- Le styles -->
+    <link href="assets/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/custom.css" rel="stylesheet">
+
+</head>
+<body>
+<div class="container-narrow">
+
+<div class="masthead">
+  <ul class="nav nav-pills pull-right">
+    <h3 class="muted">BridgeDB</h3>
+  </ul>            
+  <img src="assets/tor.svg" height="10%" width="20%"/>
+</div>
+
+<hr>
+<h2> Bridges </h3>
+<br />
+<pre>
+  bridge 0.1.2.3:2222
+  bridge 0.1.2.3:9001
+  bridge 0.1.2.3:9003
+</pre>
+<br />
+<p >To use the above lines, go to Vidalia's Network settings page, and click "My ISP blocks connections to the Tor network". Then add each bridge address one at a time.
+</p>
+<hr>
+
+<div class="faq">
+<div class="row-fluid marketing">
+<div class="span6">
+  <h4>What are bridges?</h4>
+  <p><a href="https://www.torproject.org/docs/bridges">Bridge relays</a>
+  (or "bridges" for short) are Tor relays that aren't
+  listed in the main directory. Since there is no complete public list
+  of them, even if your ISP is filtering connections to all the known
+  Tor relays, they probably won't be able to block all the bridges.</p>
+
+  <h4>How to use this site?</h4>
+  <a href="https://www.torproject.org/docs/bridges#UsingBridges">This</a>
+  is a website where you can get bridge addresses. Select what kind
+  of bridges you want, and then add them to Tor using Vidalia.</p>
+
+
+  <h4>What are obfuscated bridges?</h4>
+  <p>Please read <a href="https://www.torproject.org/docs/bridges#PluggableTransports">here</a>
+  for an introduction to obfuscated bridges and
+  pluggable transports.</p>
+</div>
+
+<div class="span6">
+  <h4>My bridges don't work! I need help!</h4>
+  <p>If your Tor doesn't work, you should email
+  <a href="mailto:help@rt.torproject.org">help@rt.torproject.org</a>. Try
+  including as much info about your case as you can, including the
+  list of bridges you used, the bundle filename/version you used, the
+  messages that Tor gave out, etc.</p>
+
+  <h4>I need an alternative way of getting bridges!</h4>
+  <p>Another way to find public bridge addresses is to send an email (from
+  a <a href="https://mail.google.com/">gmail</a> or a <a
+  href="https://mail.yahoo.com/"> yahoo</a> address) to <a
+  href="mailto:bridges@torproject.org">bridges@torproject.org</a>
+  with the line "get bridges" by itself in the body of the mail.</p>
+</div>
+</div>
+</div>
+<hr>
+
+<div class="footer">
+  <p>&copy; The Tor Project</p>
+</div>
+
+</div> <!-- /container -->
+</body>
+</html>
