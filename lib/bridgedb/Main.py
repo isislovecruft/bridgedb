@@ -280,10 +280,11 @@ def startup(cfg):
     # Set up logging.
     configureLogging(cfg)
 
-    #XXX import Server after logging is set up
+    #XXX import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
     # the console and ignore further basicConfig calls
-    import bridgedb.Server as Server
+    from bridgedb import EmailServer
+    from bridgedb import HTTPServer
 
     # Load the master key, or create a new one.
     key = getKey(cfg.MASTER_KEY_FILE)
@@ -402,16 +403,16 @@ def startup(cfg):
 
     # Configure HTTP and/or HTTPS servers.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
-        Server.addWebServer(cfg, ipDistributor, webSchedule)
+        HTTPServer.addWebServer(cfg, ipDistributor, webSchedule)
 
     # Configure Email servers.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
-        Server.addSMTPServer(cfg, emailDistributor, emailSchedule)
+        EmailServer.addSMTPServer(cfg, emailDistributor, emailSchedule)
 
     # Actually run the servers.
     try:
         logging.info("Starting reactors.")
-        Server.runServers()
+        reactor.run()
     finally:
         db.close()
         if cfg.PIDFILE:
