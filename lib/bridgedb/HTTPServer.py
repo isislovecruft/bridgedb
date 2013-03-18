@@ -334,10 +334,6 @@ def addWebServer(cfg, dist, sched):
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
     return site
 
-def runServers():
-    """Start all the servers that we've configured. Exits when they do."""
-    reactor.run()
-
 def getLocaleFromRequest(request):
     # See if we did get a request for a certain locale, otherwise fall back
     # to 'en':
