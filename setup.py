@@ -6,51 +6,11 @@
 import distutils
 import subprocess
 from distutils.command.install_data import install_data as _install_data
+from babel.messages import frontend as babel
 import os
 import sys
 
 from distutils.core import setup, Command
-
-class createTrans(Command):
-    # Based on setup.py from 
-    # http://wiki.maemo.org/Internationalize_a_Python_application
-    description = "Install necessary translation files"
-    user_options = []
-    def initialize_options(self):
-        pass
- 
-    def finalize_options(self):
-        pass
- 
-    def run(self):
-        po_dir = os.path.join(os.path.dirname(os.curdir), 'i18n')
-        for path, dirnames, filenames in os.walk(po_dir):
-            for d in dirnames:
-                if d.endswith("templates"):
-                    continue
-                src = os.path.join('i18n', d, "bridgedb.po")
-                lang = d
-                dest_path = os.path.join('build', 'locale', lang, 'LC_MESSAGES')
-                dest = os.path.join(dest_path, 'bridgedb.mo')
-                if not os.path.exists(dest_path):
-                    os.makedirs(dest_path)
-                if not os.path.exists(dest):
-                    print 'Compiling %s' % src
-                    self.msgfmt(src, dest)
-                else:
-                    src_mtime = os.stat(src)[8]
-                    dest_mtime = os.stat(dest)[8]
-                    if src_mtime > dest_mtime:
-                        print 'Compiling %s' % src
-                        self.msgfmt(src, dest)
-    def msgfmt(self, src, dest):
-        args = src + " -o " + dest
-        try:
-            ret = subprocess.call("msgfmt" + " " + args, shell=True)
-            if ret < 0:
-                print 'Error in msgfmt execution: %s' % ret
-        except OSError, e:
-            print 'Comilation failed: ' % e
 
 class installData(_install_data):
     def run(self):
@@ -99,8 +59,15 @@ setup(name='BridgeDB',
       packages=['bridgedb'],
       py_modules=['TorBridgeDB'],
       cmdclass={'test' : runTests,
-                'trans': createTrans,
-                'install_data': installData}
-      )
-
-
+                'compile_catalog': babel.compile_catalog,
+                'extract_messages': babel.extract_messages,
+                'init_catalog': babel.init_catalog,
+                'update_catalog': babel.update_catalog,
+                'install_data': installData},
+      include_package_data=True,
+      package_data={'bridgedb':['i18n/*/LC_MESSAGES/*.mo','templates/*.html']},
+      message_extractors = {'bridgedb': [
+              ('**.py', 'python', None),
+              ('templates/**.html', 'mako', None),
+              ('public/**', 'ignore', None)]},
+)
