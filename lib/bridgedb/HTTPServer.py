@@ -12,10 +12,13 @@ import logging
 import re
 import textwrap
 import time
+import os
 
 from twisted.internet import reactor
 import twisted.web.resource
-import twisted.web.server
+from twisted.web.server import Site, Session
+from twisted.web import static
+from twisted.web.util import redirectTo
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
@@ -27,6 +30,23 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
+from mako.template import Template
+from mako.lookup import TemplateLookup
+from zope.interface import Interface, Attribute, implements
+from twisted.python.components import registerAdapter
+
+template_root = os.path.join(os.path.dirname(__file__),'templates')
+lookup = TemplateLookup(directories=[template_root],
+                        output_encoding='utf-8')
+class ICaptchaState(Interface):
+    value = Attribute("A bool that indicates whether a Captcha has been solved")
+
+class CaptchaState(object):
+    implements(ICaptchaState)
+    def __init__(self, session):
+        self.value = False
+
+registerAdapter(CaptchaState, Session, ICaptchaState) 
 
 try:
     import GeoIP
@@ -38,15 +58,63 @@ except:
     geoip = None
     logging.warn("GeoIP database not found") 
 
+class WebRoot(twisted.web.resource.Resource):
+    isLeaf = True
+    def render_GET(self, request):
+        return lookup.get_template('index.html').render()
+
+class Captcha(twisted.web.resource.Resource):
+    isLeaf = True
+
+    def __init__(self, useRecaptcha=False, recaptchaPrivKey='', recaptchaPubKey=''):
+        self.recaptchaPrivKey = recaptchaPrivKey
+        self.recaptchaPubKey = recaptchaPubKey
+
+    def render_GET(self, request):
+        if not ICaptchaState(request.getSession()).value:
+            # get a captcha
+            c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+            c.get()
+
+            # TODO: this does not work for versions of IE < 8.0
+            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
+            return lookup.get_template('captcha.html').render()
+        else:
+            return redirectTo("", request)
+
+    def render_POST(self, request):
+        try:
+            challenge = request.args['recaptcha_challenge_field'][0]
+            response = request.args['recaptcha_response_field'][0]
+        except:
+            return redirectTo('captcha', request)
+
+        # generate a random IP for the captcha submission
+        remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
+                                     randint(1,255),randint(1,255))
+
+        recaptcha_response = captcha.submit(challenge, response,
+                                        self.recaptchaPrivKey, remote_ip)
+        if recaptcha_response.is_valid:
+            logging.info("Valid recaptcha from %s. Parameters were %r",
+                    remote_ip, request.args)
+            # set a valid captcha solved for this session!
+            captcha = ICaptchaState(request.getSession())
+            captcha.value = True
+            return redirectTo('', request)
+        else:
+            logging.info("Invalid recaptcha from %s. Parameters were %r",
+                         remote_ip, request.args)
+            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
+            return redirectTo('captcha', request)
+
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
        bridges in response to a request."""
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
-                 includeFingerprints=True,
-                 useRecaptcha=False,recaptchaPrivKey='', recaptchaPubKey='',
-                 domains=None): 
+                 includeFingerprints=True, domains=None): 
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -64,52 +132,10 @@ class WebResource(twisted.web.resource.Resource):
         if not domains: domains = []
         self.domains = domains
 
-        # recaptcha options
-        self.useRecaptcha = useRecaptcha
-        self.recaptchaPrivKey = recaptchaPrivKey
-        self.recaptchaPubKey = recaptchaPubKey
-
     def render_GET(self, request):
-        if self.useRecaptcha:
-            # get a captcha
-            c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
-            c.get()
-
-            # TODO: this does not work for versions of IE < 8.0
-            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-            HTML_CAPTCHA_TEMPLATE = self.buildHTMLMessageTemplateWithCaptcha(
-                    getLocaleFromRequest(request), c.challenge, imgstr)
-            return HTML_CAPTCHA_TEMPLATE
-        else:
-            return self.getBridgeRequestAnswer(request)
-
+        return self.getBridgeRequestAnswer(request)
 
     def render_POST(self, request):
-
-        # check captcha if recaptcha support is enabled
-        if self.useRecaptcha:
-            try:
-                challenge = request.args['recaptcha_challenge_field'][0]
-                response = request.args['recaptcha_response_field'][0]
-
-            except:
-                return self.render_GET(request)
-
-            # generate a random IP for the captcha submission
-            remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
-                                         randint(1,255),randint(1,255))
-
-            recaptcha_response = captcha.submit(challenge, response,
-                                            self.recaptchaPrivKey, remote_ip)
-            if recaptcha_response.is_valid:
-                logging.info("Valid recaptcha from %s. Parameters were %r",
-                        remote_ip, request.args)
-            else:
-                logging.info("Invalid recaptcha from %s. Parameters were %r",
-                             remote_ip, request.args)
-                logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
-                return self.render_GET(request) # redirect back to captcha
-
         return self.getBridgeRequestAnswer(request)
 
     def getBridgeRequestAnswer(self, request):
@@ -198,95 +224,8 @@ class WebResource(twisted.web.resource.Resource):
             request.setHeader("Content-Type", "text/plain")
             return answer
         else:
-            HTML_MESSAGE_TEMPLATE = self.buildHTMLMessageTemplate(t)
-            return HTML_MESSAGE_TEMPLATE % answer
-
-    def buildHTMLMessageTemplate(self, t):
-        """DOCDOC"""
-        if self.domains:
-            email_domain_list = "<ul>" \
-                + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"
-        else:
-            email_domain_list = "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[8]) + "</p>"
-        html_msg = "<html><head>"\
-                   + "<meta http-equiv=\"Content-Type\" content=\"text/html;"\
-                   + " charset=UTF-8\"/>" \
-                   + "</head><body>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[0]) \
-                   + "<pre id=\"bridges\">" \
-                   + "%s" \
-                   + "</pre></p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "</p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "</p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "</p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
-                   + email_domain_list \
-                   + "<hr /><p><a href='?ipv6=true'>" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
-                   + "<p><a href='?transport=obfs2'>" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
-                   + "<form method='GET'>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[22]) + "</p>" \
-                   + "<input name='transport'>" \
-                   + "<input type='submit' value='" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[23]) +"'>" \
-                   + "</form>" \
-                   + "</body></html>"
-        return html_msg
-
-    def buildHTMLMessageTemplateWithCaptcha(self, t, challenge, img):
-        """Builds a translated html response with recaptcha"""
-        if self.domains:
-            email_domain_list = "<ul>" \
-                + "".join(("<li>%s</li>"%d for d in self.domains)) + "</ul>"
-        else:
-            email_domain_list = "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[8]) + "</p>" 
-
-        recaptchaTemplate = textwrap.dedent("""\
-            <form action="" method="POST">
-              <input type="hidden" name="recaptcha_challenge_field"
-                id="recaptcha_challenge_field"\
-                        value="{recaptchaChallengeField}">
-              <img width="300" height="57" alt="{bridgeDBText14}"\
-                      src="{recaptchaImgSrc}">
-              <div class="recaptcha_input_area">
-                <label for="recaptcha_response_field">{bridgeDBText12}</label>
-              </div>
-              <div>
-                <input name="recaptcha_response_field"\
-                        id="recaptcha_response_field"
-                type="text" autocomplete="off">
-              </div>
-              <div>
-                <input type="submit" name="submit" value="{bridgeDBText13}">
-              </div>
-            </form>
-            """).strip()
-
-        recaptchaTemplate = recaptchaTemplate.format(
-                recaptchaChallengeField=challenge,
-                recaptchaImgSrc=img,
-                bridgeDBText12=t.gettext(I18n.BRIDGEDB_TEXT[13]),
-                bridgeDBText13=t.gettext(I18n.BRIDGEDB_TEXT[14]),
-                bridgeDBText14=t.gettext(I18n.BRIDGEDB_TEXT[15]))
-
-        html_msg = "<html><body>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "</p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[9]) + "</p>" \
-                   + "<p>" + recaptchaTemplate + "</p>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "</p>" \
-                   + email_domain_list \
-                   + "<hr /><p><a href='?ipv6=true'>" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[20]) + "</a></p>" \
-                   + "<p><a href='?transport=obfs2'>" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[21]) + "</a></p>" \
-                   + "<form method='GET'>" \
-                   + "<p>" + t.gettext(I18n.BRIDGEDB_TEXT[22]) + "</p>" \
-                   + "<input name='transport'>" \
-                   + "<input name='submit' type='submit'>" \
-                   + "</form>" \
-                   + "</body></html>"
-        return html_msg 
+            request.setHeader("Content-Type", "text/html")
+            return lookup.get_template('bridges.html').render()
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -304,19 +243,26 @@ def addWebServer(cfg, dist, sched):
          dist -- an IPBasedDistributor object.
          sched -- an IntervalSchedule object.
     """
-    Site = twisted.web.server.Site
     site = None
+    httpdist = twisted.web.resource.Resource()
+    httpdist.putChild('', WebRoot())
+    httpdist.putChild('assets', static.File(os.path.join(template_root, 'assets/')))
+
+    if cfg.RECAPTCHA_ENABLED:
+        httpdist.putChild('captcha', Captcha(recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
+                                             recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY)) 
+        #XXX add a session guard
+
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                        cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                        includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                       useRecaptcha=cfg.RECAPTCHA_ENABLED,
-                       domains=cfg.EMAIL_DOMAINS,
-                       recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
-                       recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY) 
-        site = Site(resource)
+                       domains=cfg.EMAIL_DOMAINS)
+        httpdist.putChild('bridges', resource)
+        site = Site(httpdist)
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
+
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
         #from OpenSSL.SSL import SSLv3_METHOD
@@ -326,12 +272,11 @@ def addWebServer(cfg, dist, sched):
         resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                        cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER,
                        includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                       domains=cfg.EMAIL_DOMAINS,
-                       useRecaptcha=cfg.RECAPTCHA_ENABLED,
-                       recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
-                       recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY) 
-        site = Site(resource)
+                       domains=cfg.EMAIL_DOMAINS)
+        httpdist.putChild('bridges', resource)
+        site = Site(httpdist)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
+
     return site
 
 def getLocaleFromRequest(request):
