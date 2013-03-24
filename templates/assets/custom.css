@@ -1,0 +1,91 @@
+body {
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+
+/* Custom container */
+.container-narrow {
+    margin: 0 auto;
+    max-width: 700px;
+}
+.container-narrow > hr {
+    margin: 30px 0;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+    margin: 60px 0;
+    text-align: center;
+}
+.jumbotron h1 {
+    font-size: 72px;
+    line-height: 1;
+}
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+.marketing {
+    margin: 60px 0;
+}
+.marketing p + h4 {
+    margin-top: 28px;
+}
+
+.captcha {
+    margin: auto;
+    display: block;
+    width: 250px;
+}
+
+.captcha .btn {
+    margin: auto;
+    width: 100px;
+    display: block;
+}
+
+.fixed-size-btn {
+    margin: 10px;
+    width: 200px;
+}
+
+.main-steps {
+    margin: 50px;
+}
+
+
+.main-btns {
+    margin: auto;
+    width: 450px;
+    display: block;
+}
+
+.step{
+border: 1px solid #ccc;
+border: 1px solid rgba(0, 0, 0, 0.2);
+-webkit-border-radius: 6px;
+-moz-border-radius: 6px;
+border-radius: 6px;
+-webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+-moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+-webkit-background-clip: padding-box;
+-moz-background-clip: padding;
+background-clip: padding-box;
+padding: 10px 20px 0px;
+margin-bottom: 10px;
+}
+
+.step-title {
+color: #9da0a4;
+font-size: 18px;
+font-weight: 100;
+}
+
+.step-text {
+    font-size: 18px;
+line-height: 30px;
+margin-top: 2px;
+}
