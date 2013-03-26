@@ -38,15 +38,6 @@ from twisted.python.components import registerAdapter
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],
                         output_encoding='utf-8')
-class ICaptchaState(Interface):
-    value = Attribute("A bool that indicates whether a Captcha has been solved")
-
-class CaptchaState(object):
-    implements(ICaptchaState)
-    def __init__(self, session):
-        self.value = False
-
-registerAdapter(CaptchaState, Session, ICaptchaState) 
 
 try:
     import GeoIP
@@ -58,36 +49,68 @@ except:
     geoip = None
     logging.warn("GeoIP database not found") 
 
-class WebRoot(twisted.web.resource.Resource):
-    isLeaf = True
-    def render_GET(self, request):
-        return lookup.get_template('index.html').render()
+class ICaptchaState(Interface):
+    captchaSolved = Attribute("A bool that indicates whether a Captcha has been solved")
+    clientIP  = Attribute("The IP address of the client")
 
-class Captcha(twisted.web.resource.Resource):
-    isLeaf = True
+class CaptchaState(object):
+    implements(ICaptchaState)
+    def __init__(self, session):
+        self.captchaSolved = False
+        self.clientIP = ""
 
-    def __init__(self, useRecaptcha=False, recaptchaPrivKey='', recaptchaPubKey=''):
+class CaptchaProtectedResource(twisted.web.resource.Resource):
+    def __init__(self, useRecaptcha=False, recaptchaPrivKey='', recaptchaPubKey='',
+            useForwardedHeader=False, resource=None):
+        self.isLeaf = resource.isLeaf
+        self.useForwardedHeader = useForwardedHeader
         self.recaptchaPrivKey = recaptchaPrivKey
         self.recaptchaPubKey = recaptchaPubKey
+        self.resource = resource
+
+    def getClientIP(self, request):
+        ip = None
+        if self.useForwardedHeader:
+            h = request.getHeader("X-Forwarded-For")
+            if h:
+                ip = h.split(",")[-1].strip()
+                if not bridgedb.Bridges.is_valid_ip(ip):
+                    logging.warn("Got weird forwarded-for value %r",h)
+                    ip = None
+        else:
+            ip = request.getClientIP()
+        return ip
 
     def render_GET(self, request):
-        if not ICaptchaState(request.getSession()).value:
-            # get a captcha
-            c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
-            c.get()
+        if self.captchaSolved(request):
+            getSession(request).expire()
+            return self.resource.render(request)
 
-            # TODO: this does not work for versions of IE < 8.0
-            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-            return lookup.get_template('captcha.html').render()
-        else:
-            return redirectTo("", request)
+        # get a captcha
+        c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+        c.get()
 
+        # TODO: this does not work for versions of IE < 8.0
+        imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
+        return lookup.get_template('captcha.html').render(imgstr=imgstr, challenge_field=c.challenge)
+
+    def captchaSolved(self, request):
+        s = ICaptchaState(getSession(request))
+        ip = self.getClientIP(request)
+        if s.captchaSolved and ip == s.clientIP:
+            return True
+        return False
+        
     def render_POST(self, request):
+        if self.captchaSolved(request):
+            getSession(request).expire()
+            return self.resource.render(request)
+
         try:
             challenge = request.args['recaptcha_challenge_field'][0]
             response = request.args['recaptcha_response_field'][0]
         except:
-            return redirectTo('captcha', request)
+            return redirectTo(request.URLPath(), request)
 
         # generate a random IP for the captcha submission
         remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
@@ -99,14 +122,14 @@ class Captcha(twisted.web.resource.Resource):
             logging.info("Valid recaptcha from %s. Parameters were %r",
                     remote_ip, request.args)
             # set a valid captcha solved for this session!
-            captcha = ICaptchaState(request.getSession())
-            captcha.value = True
-            return redirectTo('', request)
+            c = ICaptchaState(getSession(request))
+            c.captchaSolved = True
+            c.clientIP = self.getClientIP(request)
         else:
             logging.info("Invalid recaptcha from %s. Parameters were %r",
                          remote_ip, request.args)
             logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
-            return redirectTo('captcha', request)
+        return redirectTo(request.URLPath(), request)
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
@@ -135,12 +158,8 @@ class WebResource(twisted.web.resource.Resource):
     def render_GET(self, request):
         return self.getBridgeRequestAnswer(request)
 
-    def render_POST(self, request):
-        return self.getBridgeRequestAnswer(request)
-
     def getBridgeRequestAnswer(self, request):
         """ returns a response to a bridge request """
- 
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None
@@ -208,6 +227,7 @@ class WebResource(twisted.web.resource.Resource):
                                                        countryCode,
                                                        bridgeFilterRules=rules)
 
+        answer = None
         if bridges:
             answer = "".join("  %s\n" % b.getConfigLine(
                 includeFingerprint=self.includeFingerprints,
@@ -215,8 +235,6 @@ class WebResource(twisted.web.resource.Resource):
                 transport=transport,
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
-        else:
-            answer = t.gettext(I18n.BRIDGEDB_TEXT[7])
 
         logging.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
@@ -225,7 +243,32 @@ class WebResource(twisted.web.resource.Resource):
             return answer
         else:
             request.setHeader("Content-Type", "text/html")
-            return lookup.get_template('bridges.html').render()
+            return lookup.get_template('bridges.html').render(answer=answer)
+
+class WebRoot(twisted.web.resource.Resource):
+    isLeaf = True
+    def render_GET(self, request):
+        return lookup.get_template('index.html').render()
+
+def getSession(self, sessionInterface = None):
+    # Session management
+    if not self.session:
+        cookiename = b"_".join([b'TWISTED_SESSION'] + self.sitepath)
+        sessionCookie = self.getCookie(cookiename)
+        if sessionCookie:
+            try:
+                self.session = self.site.getSession(sessionCookie)
+            except KeyError:
+                pass
+        # if it still hasn't been set, fix it up.
+        if not self.session:
+            self.session = self.site.makeSession()
+            #XXX: secure cookies
+            self.addCookie(cookiename, self.session.uid, path=b'/', secure=True, max_age=60)
+    self.session.touch()
+    if sessionInterface:
+        return self.session.getComponent(sessionInterface)
+    return self.session
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -248,19 +291,26 @@ def addWebServer(cfg, dist, sched):
     httpdist.putChild('', WebRoot())
     httpdist.putChild('assets', static.File(os.path.join(template_root, 'assets/')))
 
+    resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
+                   cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
+                   domains=cfg.EMAIL_DOMAINS)
+
     if cfg.RECAPTCHA_ENABLED:
-        httpdist.putChild('captcha', Captcha(recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
-                                             recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY)) 
-        #XXX add a session guard
+        registerAdapter(CaptchaState, Session, ICaptchaState) 
+        protected = CaptchaProtectedResource(
+                recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
+                recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
+                useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+                resource=resource)
+        httpdist.putChild('bridges', protected)
+    else:
+        httpdist.putChild('bridges', resource)
+        
+    site = Site(httpdist)
 
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
-        resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-                       cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                       domains=cfg.EMAIL_DOMAINS)
-        httpdist.putChild('bridges', resource)
-        site = Site(httpdist)
         reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
 
     if cfg.HTTPS_PORT:
@@ -269,12 +319,6 @@ def addWebServer(cfg, dist, sched):
         ip = cfg.HTTPS_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
-        resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-                       cfg.HTTPS_USE_IP_FROM_FORWARDED_HEADER,
-                       includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                       domains=cfg.EMAIL_DOMAINS)
-        httpdist.putChild('bridges', resource)
-        site = Site(httpdist)
         reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
 
     return site
