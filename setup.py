@@ -10,7 +10,7 @@ from babel.messages import frontend as babel
 import os
 import sys
 
-from distutils.core import setup, Command
+from setuptools import setup, Command, find_packages
 
 class installData(_install_data):
     def run(self):
@@ -56,7 +56,7 @@ setup(name='BridgeDB',
       author_email='nickm at torproject dot org',
       url='https://www.torproject.org',
       package_dir= {'' : 'lib'},
-      packages=['bridgedb'],
+      packages=find_packages('lib'),
       py_modules=['TorBridgeDB'],
       cmdclass={'test' : runTests,
                 'compile_catalog': babel.compile_catalog,
@@ -68,8 +68,8 @@ setup(name='BridgeDB',
       package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*.html',
                                  'templates/assets/*']},
-      message_extractors = {'bridgedb': [
+      message_extractors = {'lib/bridgedb': [
               ('**.py', 'python', None),
               ('templates/**.html', 'mako', None),
-              ('public/**', 'ignore', None)]},
+              ('public/**', 'ignore', None)]},  
 )
