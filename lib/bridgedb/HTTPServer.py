@@ -16,7 +16,7 @@ import os
 
 from twisted.internet import reactor
 import twisted.web.resource
-from twisted.web.server import Site, Session
+from twisted.web.server import Site
 from twisted.web import static
 from twisted.web.util import redirectTo
 
@@ -33,7 +33,6 @@ from random import randint
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
-from twisted.python.components import registerAdapter
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],
@@ -49,19 +48,9 @@ except:
     geoip = None
     logging.warn("GeoIP database not found") 
 
-class ICaptchaState(Interface):
-    captchaSolved = Attribute("A bool that indicates whether a Captcha has been solved")
-    clientIP  = Attribute("The IP address of the client")
-
-class CaptchaState(object):
-    implements(ICaptchaState)
-    def __init__(self, session):
-        self.captchaSolved = False
-        self.clientIP = ""
-
 class CaptchaProtectedResource(twisted.web.resource.Resource):
-    def __init__(self, useRecaptcha=False, recaptchaPrivKey='', recaptchaPubKey='',
-            useForwardedHeader=False, resource=None):
+    def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
+            recaptchaPubKey='', useForwardedHeader=False, resource=None):
         self.isLeaf = resource.isLeaf
         self.useForwardedHeader = useForwardedHeader
         self.recaptchaPrivKey = recaptchaPrivKey
@@ -82,10 +71,6 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return ip
 
     def render_GET(self, request):
-        if self.captchaSolved(request):
-            getSession(request).expire()
-            return self.resource.render(request)
-
         # get a captcha
         c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
         c.get()
@@ -94,18 +79,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
         return lookup.get_template('captcha.html').render(imgstr=imgstr, challenge_field=c.challenge)
 
-    def captchaSolved(self, request):
-        s = ICaptchaState(getSession(request))
-        ip = self.getClientIP(request)
-        if s.captchaSolved and ip == s.clientIP:
-            return True
-        return False
-        
     def render_POST(self, request):
-        if self.captchaSolved(request):
-            getSession(request).expire()
-            return self.resource.render(request)
-
         try:
             challenge = request.args['recaptcha_challenge_field'][0]
             response = request.args['recaptcha_response_field'][0]
@@ -121,10 +95,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         if recaptcha_response.is_valid:
             logging.info("Valid recaptcha from %s. Parameters were %r",
                     remote_ip, request.args)
-            # set a valid captcha solved for this session!
-            c = ICaptchaState(getSession(request))
-            c.captchaSolved = True
-            c.clientIP = self.getClientIP(request)
+            return self.resource.render(request)
         else:
             logging.info("Invalid recaptcha from %s. Parameters were %r",
                          remote_ip, request.args)
@@ -155,7 +126,7 @@ class WebResource(twisted.web.resource.Resource):
         if not domains: domains = []
         self.domains = domains
 
-    def render_GET(self, request):
+    def render(self, request):
         return self.getBridgeRequestAnswer(request)
 
     def getBridgeRequestAnswer(self, request):
@@ -250,26 +221,6 @@ class WebRoot(twisted.web.resource.Resource):
     def render_GET(self, request):
         return lookup.get_template('index.html').render()
 
-def getSession(self, sessionInterface = None):
-    # Session management
-    if not self.session:
-        cookiename = b"_".join([b'TWISTED_SESSION'] + self.sitepath)
-        sessionCookie = self.getCookie(cookiename)
-        if sessionCookie:
-            try:
-                self.session = self.site.getSession(sessionCookie)
-            except KeyError:
-                pass
-        # if it still hasn't been set, fix it up.
-        if not self.session:
-            self.session = self.site.makeSession()
-            #XXX: secure cookies
-            self.addCookie(cookiename, self.session.uid, path=b'/', secure=True, max_age=60)
-    self.session.touch()
-    if sessionInterface:
-        return self.session.getComponent(sessionInterface)
-    return self.session
-
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
          cfg -- a configuration object from Main.  We use these options:
@@ -297,7 +248,6 @@ def addWebServer(cfg, dist, sched):
                    domains=cfg.EMAIL_DOMAINS)
 
     if cfg.RECAPTCHA_ENABLED:
-        registerAdapter(CaptchaState, Session, ICaptchaState) 
         protected = CaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
