@@ -6,11 +6,16 @@
 import distutils
 import subprocess
 from distutils.command.install_data import install_data as _install_data
-from babel.messages import frontend as babel
 import os
 import sys
-
 from setuptools import setup, Command, find_packages
+
+# Fix circular dependency with setup.py install
+try:
+    from babel.messages.frontend import compile_catalog, extract_messages
+    from babel.messages.frontend import init_catalog, update_catalog
+except ImportError:
+    compile_catalog = extract_messages = init_catalog = update_catalog = None
 
 class installData(_install_data):
     def run(self):
@@ -59,10 +64,10 @@ setup(name='BridgeDB',
       packages=find_packages('lib'),
       py_modules=['TorBridgeDB'],
       cmdclass={'test' : runTests,
-                'compile_catalog': babel.compile_catalog,
-                'extract_messages': babel.extract_messages,
-                'init_catalog': babel.init_catalog,
-                'update_catalog': babel.update_catalog,
+                'compile_catalog': compile_catalog,
+                'extract_messages': extract_messages,
+                'init_catalog': init_catalog,
+                'update_catalog': update_catalog,
                 'install_data': installData},
       include_package_data=True,
       package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
