@@ -1,8 +1,16 @@
-
 To set up:
  - Install Python 2.4 or later.
- - Install Twisted-Web, Twisted-Mail, PyOpenSSL, and all their dependencies.
+ - Install depdencencies. On Debian, you can do:
+   sudo apt-get install python-twisted python-openssl python-ipaddr \
+        python-gpgme python-babel python-recaptcha python-beautifulsoup \
+	python-mako
+ - If you use a virtualenv, we recommend you use pip 1.3.1 or later, else it
+   will download over http. You can install dependencies with:
+   pip install -r requirements.txt
+   Note that some dependencies (ipaddr) do not have SSL URLs in the pypi index
+   and will still download over http.
  - To run unit tests, "python setup.py test"
+ - Set the prefix in setup.cfg, or comment out if using a virtualenv
  - python setup.py install
  - To generate translation files, run "python setup.py trans" 
  - Run "python setup.py install_data" to install them
@@ -26,12 +34,18 @@ To set up:
                http://pypi.python.org/pypi/BeautifulSoup
                http://pypi.python.org/pypi/pygpgme
 
-To re-generate and update the i18n files (in case translated strings
-have changed in BridgeDB):
- - Run:
-     xgettext lib/bridgedb/I18n.py -dbridgedb -oi18n/templates/bridgedb.pot
-     msgen -o i18n/en/bridgedb.po --lang=en i18n/templates/bridgedb.pot
-     msgmerge -U i18n/de/bridgedb.po i18n/templates/bridgedb.pot
+To translate:
+   - extract all strings:
+      python setup.py extract_messages
+      a .pot file will be created in ./i18n/templates/bridgedb.pot
+   - init catalogs for each desired languages:
+      python setup.py init_catalog -l LANG
+      (where 'LANG' is the 2 or 4 letter country-code, eg. 'es')
+   - edit strings in ./i18n/LANG/bridgedb.po
+   - convert to binary format
+     python setup.py compile_catalog
+   - Don't forget to reinstall to update the templates!:
+     python setup.py install
 
 To run:
  - Run "python -m TorBridgeDB bridgedb.conf"
@@ -89,6 +103,5 @@ To update the SQL schema:
    CREATE INDEX WarnedEmailsWasWarned on WarnedEmails ( email );
    REPLACE INTO Config VALUES ( 'schema-version', 2 );
  
-
 Support
- - Send your questions to nickm.
+ - Send your questions to aagbsn@torproject.org.
