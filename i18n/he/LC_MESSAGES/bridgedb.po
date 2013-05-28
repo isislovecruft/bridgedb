@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+#   <aharonoosh1@gmail.com>, 2012.
+#   <static.172@gmail.com>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2011-01-01 07:48-0800\n"
+"PO-Revision-Date: 2012-10-03 10:10+0000\n"
+"Last-Translator: aharonoosh <aharonoosh1@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: he\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/bridgedb/I18n.py:21
+msgid "Here are your bridge relays: "
+msgstr "הנה ממסרי הגשר שלך:"
+
+#: lib/bridgedb/I18n.py:23
+msgid ""
+"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
+"in the main directory. Since there is no complete public list of them,\n"
+"even if your ISP is filtering connections to all the known Tor relays,\n"
+"they probably won't be able to block all the bridges."
+msgstr "ממסרי גשר (או \"גשרים\" בקיצור) הם ממסרי Tor שאינם רשומים\nבספרייה הראשית. מאחר ואין רשימה מלאה ציבורית שלהם,\n גם אם ספק האינטרנט שלך הוא סינון חיבורים לכל ממסרי הטור הידועים,\n הם כנראה לא יוכלו לחסום את כל הגשרים."
+
+#: lib/bridgedb/I18n.py:28
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click\n"
+"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"address one at a time."
+msgstr "כדי להשתמש בקווים הנ\"ל, עבור לדף הגדרות הרשת של Vidalia, ולחץ על\n \"קשרי ISP שלי חוסם את רשת Tor\". ואז הוסף כל גשר\n כתובת אחת בכל פעם."
+
+#: lib/bridgedb/I18n.py:32
+msgid ""
+"Configuring more than one bridge address will make your Tor connection\n"
+"more stable, in case some of the bridges become unreachable."
+msgstr "הגדרת כתובת יותר מגשר אחד תעשה את חיבור תור\n יציב יותר, במקרה של כמה גשרים זה יהפך לבלתי ניתן להשגה."
+
+#: lib/bridgedb/I18n.py:35
+msgid ""
+"Another way to find public bridge addresses is to send mail to\n"
+"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
+"of the mail. However, so we can make it harder for an attacker to learn\n"
+"lots of bridge addresses, you must send this request from an email address at\n"
+"one of the following domains:"
+msgstr "עוד דרך למצא כתובת גשר פומבי היא לשלוח מייל לbridges@torproject.org\nאך ורק עם השורה \"get bridges\" בגוף המייל.\nלמרות זאת, כדי שנקשה על התוקפים להשיג הרבה כתובות של גשרים, הינך חייב לשלוח את הבקשה הזו מאחד הדומיינים ההבאים:"
+
+#: lib/bridgedb/I18n.py:41
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[זוהי הודעה אוטומטית. נא לא להשיב עליה."
+
+#: lib/bridgedb/I18n.py:43
+msgid ""
+"Another way to find public bridge addresses is to visit\n"
+"https://bridges.torproject.org/. The answers you get from that page\n"
+"will change every few days, so check back periodically if you need more\n"
+"bridge addresses."
+msgstr "דרך נוספת למצא גשרים פומביים היא לבקר ב\nhttps://bridges.torproject.org/.\nהתשובות שתקבל בעמוד זה ישתנו כל כמה ימים, תבדוק כל כמה זמן עמוד זה אם תצתרך בכתובות גשרים נוספים."
+
+#: lib/bridgedb/I18n.py:48
+msgid "(no bridges currently available)"
+msgstr "(אין גשרים זמינים כרגע)"
+
+#: lib/bridgedb/I18n.py:50
+msgid "(e-mail requests not currently supported)"
+msgstr "(בקשות אימייל אינן זמינות כעת)"

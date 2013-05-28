@@ -1,25 +1,27 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Christian Fromme <kaner@strace.org>, 2010
-#
-#, fuzzy
+# 
+# Translators:
+# Shondoit Walker <shondoit+transifex@gmail.com>, 2011.
+#   <therbom@gmail.com>, 2012.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-09-20 21:23+0000\n"
+"Last-Translator: therbom <therbom@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/I18n.py:21
 msgid "Here are your bridge relays: "
-msgstr "Here are your bridge relays: "
+msgstr "Uw bridge-relays:"
 
 #: lib/bridgedb/I18n.py:23
 msgid ""
@@ -27,49 +29,33 @@ msgid ""
 "in the main directory. Since there is no complete public list of them,\n"
 "even if your ISP is filtering connections to all the known Tor relays,\n"
 "they probably won't be able to block all the bridges."
-msgstr ""
-"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
-"in the main directory. Since there is no complete public list of them,\n"
-"even if your ISP is filtering connections to all the known Tor relays,\n"
-"they probably won't be able to block all the bridges."
+msgstr "Bridge-relays (of \"bridges\" in het kort) zijn Tor-relays die niet in de hoofdlijst vermeld zijn. Omdat er geen volledige openbare lijst beschikbaar is, ook al filtert uw provider verbindingen naar alle bekende Tor-relays, kunnen waarschijnlijk niet all bridges worden geblokkerd."
 
 #: lib/bridgedb/I18n.py:28
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click\n"
 "\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
 "address one at a time."
-msgstr ""
-"To use the above lines, go to Vidalia's Network settings page, and click\n"
-"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
-"address one at a time."
+msgstr "Om de bovenstaande regels te gebruiken, gaat u naar de netwerkinstellingen van Vidalia en klikt u op \"Mijn provider blokkeert verbindingen naar het Tor-netwerk\". Daarna voegt u elke bridge toe, één regel per keer."
 
 #: lib/bridgedb/I18n.py:32
 msgid ""
 "Configuring more than one bridge address will make your Tor connection\n"
 "more stable, in case some of the bridges become unreachable."
-msgstr ""
-"Configuring more than one bridge address will make your Tor connection\n"
-"more stable, in case some of the bridges become unreachable."
+msgstr "Het instellen van meerde bridges komt ten goede aan de stabiliteit van uw Tor-verbinding, indien een aantal bridges niet bereikbaar zijn."
 
 #: lib/bridgedb/I18n.py:35
 msgid ""
 "Another way to find public bridge addresses is to send mail to\n"
 "bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
 "of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address "
-"at\n"
+"lots of bridge addresses, you must send this request from an email address at\n"
 "one of the following domains:"
-msgstr ""
-"Another way to find public bridge addresses is to send mail to\n"
-"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
-"of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address "
-"at\n"
-"one of the following domains:"
+msgstr "Een andere manier om openbare bridge-adressen op te zoeken, is om een e-mail te sturen naar bridges@torproject.org met alleen de regel \"get bridges\" daarin. Echter, om het moeilijker te maken aanvallers om veel bridge-adressen te ontdekken, dient u uw verzoek te versturen met een e-mailadres van één van de volgende domeinen:"
 
 #: lib/bridgedb/I18n.py:41
 msgid "[This is an automated message; please do not reply.]"
-msgstr "[This is an automated message; please do not reply.]"
+msgstr "[Dit is een automatisch bericht, gelieve niet te beantwoorden.]"
 
 #: lib/bridgedb/I18n.py:43
 msgid ""
@@ -77,16 +63,12 @@ msgid ""
 "https://bridges.torproject.org/. The answers you get from that page\n"
 "will change every few days, so check back periodically if you need more\n"
 "bridge addresses."
-msgstr ""
-"Another way to find public bridge addresses is to visit\n"
-"https://bridges.torproject.org/. The answers you get from that page\n"
-"will change every few days, so check back periodically if you need more\n"
-"bridge addresses."
+msgstr "Om op een andere manier openbare bridges op te zoeken, gaat u naar https://bridges.torproject.org/. De gegevens op die pagina worden om de paar dagen bijgewerkt, dus wordt het aangeraden regelmatig de pagina te bezoeken voor meer bridges."
 
 #: lib/bridgedb/I18n.py:48
 msgid "(no bridges currently available)"
-msgstr "(no bridges currently available)"
+msgstr "(momenteel geen bridges beschikbaar)"
 
 #: lib/bridgedb/I18n.py:50
 msgid "(e-mail requests not currently supported)"
-msgstr "(e-mail requests not currently supported)"
+msgstr "(e-mailverzoeken worden momenteel niet ondersteund)"

@@ -1,25 +1,27 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Christian Fromme <kaner@strace.org>, 2010
 # 
+# Translators:
+# Elisa  <valhalla@gishpuppy.com>, 2011.
+#   <gsanky+transifex@gmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2011-03-22 16:45+0000\n"
-"Last-Translator: NinjaTuna <nort0ngh0st@hotmail.com>\n"
-"Language-Team: Spanish (Castilian) <None>\n"
+"PO-Revision-Date: 2012-02-14 10:04+0000\n"
+"Last-Translator: Sanky <gsanky+transifex@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
 #: lib/bridgedb/I18n.py:21
 msgid "Here are your bridge relays: "
-msgstr "Aquí tiene sus relés de puente"
+msgstr "Tady jsou vaše přemosťující spojení:"
 
 #: lib/bridgedb/I18n.py:23
 msgid ""
@@ -27,30 +29,20 @@ msgid ""
 "in the main directory. Since there is no complete public list of them,\n"
 "even if your ISP is filtering connections to all the known Tor relays,\n"
 "they probably won't be able to block all the bridges."
-msgstr ""
-"Relés de puente(o \"puentes\") son relés de Tor que no están puestos en el "
-"directorio principal. Desde ahí no hay una lista pública completa para "
-"ellos, aún cuando tu proveedor de internet este filtrando conexiones de "
-"todos los conocidos relés de Tor, ellos probablemente no serán capaz de "
-"bloquear todos los puentes."
+msgstr "Přemosťující spojení (nebo zkráceně \"mosty\") jsou Tor relaye, které nejsou zaznamenány v hlavním adresáři Tor relayí. Protože neexistuje veřejný seznam těchto uzlů, ani váš poskytovatel internetu, pokud blokuje připojení ke všem známým Tor relayím, pravděpodobně nedokáže zablokovat všechny mosty."
 
 #: lib/bridgedb/I18n.py:28
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click\n"
 "\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
 "address one at a time."
-msgstr ""
-"Para usar las lineas de arriba, ir a la página de la red de Vadalia, y "
-"cliquear en \"Mí proveedor de internet bloquea las conexiones de la red de "
-"Tor\"."
+msgstr "Pro použití zmíněných řádek jděte do síťového nastavení Vidalie a klikněte na \"My ISP blocks connections to the Tor network\" (Můj ISP blokuje připojení k síti Tor). Poté přidejte mosty adresu po adrese."
 
 #: lib/bridgedb/I18n.py:32
 msgid ""
 "Configuring more than one bridge address will make your Tor connection\n"
 "more stable, in case some of the bridges become unreachable."
-msgstr ""
-"Configurando más de un puente de dirección hará que tu conexión de Tor sea "
-"mas estable, en algunos casos los puentes se hacen inalcanzables."
+msgstr "Nastavení více než jednoho mostu udělá vaše Tor připojení stabilnější v případě, že by se staly některé mosty nedostupné."
 
 #: lib/bridgedb/I18n.py:35
 msgid ""
@@ -59,17 +51,11 @@ msgid ""
 "of the mail. However, so we can make it harder for an attacker to learn\n"
 "lots of bridge addresses, you must send this request from an email address at\n"
 "one of the following domains:"
-msgstr ""
-"Otra manera de encontrar puentes de direcciones públicas es enviando un "
-"correo a bridges@torproject.org con la linea \"conseguir puentes\" por esto "
-"mismo en el cuerpo del correo. Como sea, de esta manera nosotros podemos "
-"hacer más difícil para que un atacante aprenda muchos puentes de "
-"direcciones, tu debes enviar este pedido por una dirección de correo a uno "
-"de los siguientes dominios:"
+msgstr "Další způsob jak získat veřejné adresy mostů je posláním emailu na bridges@torproject.org pouze s textem \"get bridges\" v těle emailu. Abychom ztížili útočníkovi získat velký počet adres mostů, musí emailová adresa vaší žádosti pocházet z jedné z těchto domén:"
 
 #: lib/bridgedb/I18n.py:41
 msgid "[This is an automated message; please do not reply.]"
-msgstr "[Esto es un mensaje automatizado, porfavor no responder]"
+msgstr "[Toto je automatická zpráva; prosím, neodpovídejte na ni]"
 
 #: lib/bridgedb/I18n.py:43
 msgid ""
@@ -77,16 +63,12 @@ msgid ""
 "https://bridges.torproject.org/. The answers you get from that page\n"
 "will change every few days, so check back periodically if you need more\n"
 "bridge addresses."
-msgstr ""
-"Otra manera de encontrar direcciones de puente público es visitando "
-"'https://bridges.torproject.org/. Las respuestas que consigues de la página "
-"cambiarán diariamente, por eso veelas periódicamente si necesitas mas "
-"direcciones de puente."
+msgstr "Další způsob, jak najít adresy veřejných mostů, je jít na https://bridges.torproject.org/. Odpovědi, které naleznete na stránce se pravidelně mění, takže stránku pravidelně kontrolujte, pokud potřebujete víc adres mostů."
 
 #: lib/bridgedb/I18n.py:48
 msgid "(no bridges currently available)"
-msgstr "(no hay puentes disponibles)"
+msgstr "(nejsou momentálně dostupné žádné mosty)"
 
 #: lib/bridgedb/I18n.py:50
 msgid "(e-mail requests not currently supported)"
-msgstr "(peticiones por correo no están disponibles por el momento)"
+msgstr "(e-mailové žádosti nejsou momentálně podporovány)"

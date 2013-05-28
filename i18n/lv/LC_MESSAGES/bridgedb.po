@@ -3,7 +3,8 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# runasand <runa.sandvik@gmail.com>, 2011
+# Ojars Balcers <ojars.balcers@gmail.com>, 2012
+# Ojars Balcers <ojars.balcers@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
@@ -16,22 +17,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: en\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: lv\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
-msgstr "What are bridges?"
+msgstr "Kas ir tilti?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
 msgid ""
 "%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Tiltu retranslatori %s ir Tor'a retranslatori, kuri palīdz apiet cenzūru."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
-msgstr "I need an alternative way of getting bridges!"
+msgstr "Man nepieciešams alternatīvs tiltu iegūšanas veids!"
 
 #: lib/bridgedb/templates/base.html:40
 #, python-format
@@ -39,11 +40,11 @@ msgid ""
 "Another way to find public bridge addresses is to send an email (from a %s "
 "or a %s address) to %s with the line 'get bridges' by itself in the body of "
 "the mail."
-msgstr "Another way to find public bridge addresses is to send an email (from a %s or a %s address) to %s with the line 'get bridges' by itself in the body of the mail."
+msgstr "Cits veids kā uzzināt tiltu publiskās adreses ir nosūtīt e-pastu (no %s vai %s adresēm) uz %s , iekļaujot rindu 'get bridges' ziņojuma korpusā."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
-msgstr "My bridges don't work! I need help!"
+msgstr "Mani tilti nestrādā! Man nepieciešama palīdzība!"
 
 #: lib/bridgedb/templates/base.html:49
 #, python-format
@@ -51,50 +52,50 @@ msgid ""
 "If your Tor doesn't work, you should email %s. Try including as much info "
 "about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "If your Tor doesn't work, you should email %s. Try including as much info about your case as you can, including the list of bridges you used, the bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Ja Jūsu Tor nestrādā, rakstiet e-pastu %s. Iekļaujiet pēc iespējas vairāk informācijas par konkrēto situāciju, tostarp lietoto tiltu sarakstu, izmantotā komplekta versiju/datnes vārdu, Tor sniegtos ziņojumus, utt."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "To use the above lines, go to Vidalia's Network settings page, and click \"My ISP blocks connections to the Tor network\". Then add each bridge address one at a time."
+msgstr "Lai izmantotu augstāk norādītās rindas, atveriet Vidalia's Tīkla iestatījumu lapu un noklikšķiniet \"Mans IPS bloķē savienojumus ar tīklu Tor\". Pēc tam pievienojiet pa vienam katra tilta adresi."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
-msgstr "No bridges currently available"
+msgstr "Pašreiz neviens tilts nav pieejams"
 
 #: lib/bridgedb/templates/captcha.html:6
 msgid "Upgrade your browser to Firefox"
-msgstr "Upgrade your browser to Firefox"
+msgstr "Jauniniet savu pārlūku uz Firefox"
 
 #: lib/bridgedb/templates/captcha.html:8
 msgid "Type the two words"
-msgstr "Type the two words"
+msgstr "Rakstiet divus vārdus"
 
 #: lib/bridgedb/templates/index.html:6
 msgid "Step 1"
-msgstr "Step 1"
+msgstr "1. solis"
 
 #: lib/bridgedb/templates/index.html:8
 #, python-format
 msgid "Get %s Tor Browser Bundle %s"
-msgstr "Get %s Tor Browser Bundle %s"
+msgstr "Saņemt %s Pārlūka Tor komplektu %s"
 
 #: lib/bridgedb/templates/index.html:13
 msgid "Step 2"
-msgstr "Step 2"
+msgstr "2. solis"
 
 #: lib/bridgedb/templates/index.html:15
 #, python-format
 msgid "Get %s bridges %s"
-msgstr "Get %s bridges %s"
+msgstr "Saņemt %s tiltus %s"
 
 #: lib/bridgedb/templates/index.html:19
 msgid "Step 3"
-msgstr "Step 3"
+msgstr "3. solis"
 
 #: lib/bridgedb/templates/index.html:21
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
-msgstr "Now %s add the bridges to Tor %s"
+msgstr "Tagad %s pievienot Tor'am tiltus %s"

@@ -1,25 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Christian Fromme <kaner@strace.org>, 2010
 # 
+# Translators:
+# Weldan Jamili <mweldan@gmail.com>, 2012.
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2011-04-08 21:34+0000\n"
-"Last-Translator: hanl <iamh4n@gmail.com>\n"
+"PO-Revision-Date: 2012-05-31 12:46+0000\n"
+"Last-Translator: Weldan Jamili <mweldan@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_CN\n"
+"Language: ms_MY\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: lib/bridgedb/I18n.py:21
 msgid "Here are your bridge relays: "
-msgstr "以下为桥接中继服务器地址："
+msgstr "Berikut adalah geganti jambatan anda:"
 
 #: lib/bridgedb/I18n.py:23
 msgid ""
@@ -27,22 +28,20 @@ msgid ""
 "in the main directory. Since there is no complete public list of them,\n"
 "even if your ISP is filtering connections to all the known Tor relays,\n"
 "they probably won't be able to block all the bridges."
-msgstr ""
-"网桥中继服务器（Bridge relays），简称网桥（bridges)为未公开在主目录的中继服务器⏎\n"
-"因为完整的网桥地址是不公开的，即使您的ISP过滤所有的 Tor 的中继服务器他们估计无法封锁所有的网桥。"
+msgstr "Geganti jambatan (atau \"jambatan\" untuk pendek) geganti Tor yang tidak disenaraikan ⏎\ndalam direktori utama. Memandangkan terdapat tiada senarai lengkap awam mereka, ⏎\nwalaupun jika ISP anda penapisan sambungan kepada semua geganti Tor yang diketahui, ⏎\nmereka mungkin tidak akan mampu untuk menyekat semua jambatan."
 
 #: lib/bridgedb/I18n.py:28
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click\n"
 "\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
 "address one at a time."
-msgstr "使用下列地址，请打开 Vidalia 网络设置。 选中“我的 ISP 阻挡了对 Tor 网络的连接\"。 之后请依次添加服务器。"
+msgstr "Untuk menggunakan talian di atas, pergi ke halaman ini tetapan Rangkaian Vidalia, dan klik ⏎\n\"Blok sambungan ISP Saya rangkaian Tor\". Kemudian tambah jambatan setiap ⏎\nmenyelesaikan satu pada satu-satu masa."
 
 #: lib/bridgedb/I18n.py:32
 msgid ""
 "Configuring more than one bridge address will make your Tor connection\n"
 "more stable, in case some of the bridges become unreachable."
-msgstr "如果桥接变得不稳定，配置两个桥接会使你的链接更稳定。"
+msgstr "Konfigurasi lebih daripada satu alamat jambatan akan membuat sambungan Tor anda\nlebih stabil, dalam hal jambatan menjadi sukar untuk dicapai."
 
 #: lib/bridgedb/I18n.py:35
 msgid ""
@@ -51,13 +50,11 @@ msgid ""
 "of the mail. However, so we can make it harder for an attacker to learn\n"
 "lots of bridge addresses, you must send this request from an email address at\n"
 "one of the following domains:"
-msgstr ""
-"您也可以发送内容为“get bridges” 的邮件到 bridges@torproject.org "
-"获取更多的公开网桥地址。为了使攻击者难以获取网桥地址，你必须从以下域名（邮件服务商）发送邮件："
+msgstr "Satu lagi cara untuk mencari alamat jambatan awam adalah untuk menghantar mel kepada ⏎\nbridges@torproject.org dengan garisan \"jambatan\" dengan sendirinya dalam badan ⏎\nmel. Walau bagaimanapun, jadi kita boleh membuat lebih sukar bagi penyerang untuk mempelajari ⏎\nbanyak alamat jambatan, anda mesti menghantar permintaan ini dari alamat e-mel pada ⏎\nsalah satu domain berikut:"
 
 #: lib/bridgedb/I18n.py:41
 msgid "[This is an automated message; please do not reply.]"
-msgstr "自动生成内容，请勿回复。"
+msgstr "[Ini adalah mesej automatik; sila tidak menjawab.]"
 
 #: lib/bridgedb/I18n.py:43
 msgid ""
@@ -65,13 +62,12 @@ msgid ""
 "https://bridges.torproject.org/. The answers you get from that page\n"
 "will change every few days, so check back periodically if you need more\n"
 "bridge addresses."
-msgstr ""
-"您也可以访问 https://bridges.torproject.org 获取公开网桥服务器地址。 网桥服务器地址会经常更新，请定期回访。"
+msgstr "Satu lagi cara untuk mencari alamat jambatan awam adalah untuk melawat ⏎\nhttps://bridges.torproject.org/. Jawapan yang anda dapat dari laman utama itu ⏎\nakan berubah setiap beberapa hari, jadi periksa kembali secara berkala jika anda memerlukan lebih banyak ⏎\njambatan alamat."
 
 #: lib/bridgedb/I18n.py:48
 msgid "(no bridges currently available)"
-msgstr "暂无网桥服务器"
+msgstr "(tiada jambatan yang sedia ada)"
 
 #: lib/bridgedb/I18n.py:50
 msgid "(e-mail requests not currently supported)"
-msgstr "电子邮件请求尚未支持"
+msgstr "(e-mel meminta tidak disokong pada masa ini)"

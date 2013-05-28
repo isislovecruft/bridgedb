@@ -1,0 +1,102 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# kotkotkot <kotakota@gmail.com>, 2012
+# mitzie <soldizach@gmail.com>, 2013
+# Wasilis <inactive+Wasilis@transifex.com>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-05-20 02:05+0000\n"
+"Last-Translator: Wasilis <inactive+Wasilis@transifex.com>\n"
+"Language-Team: Greek (http://www.transifex.com/projects/p/torproject/language/el/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: el\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Τι ειναι οι γεφυρες?"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Γέφυρeς ρελέ %s είναι Tor ρελέ που σας βοηθούν να παρακάμψετε την λογοκρισία."
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Χρειάζομαι έναν εναλλακτικό τρόπο για χρησιμοποιηση γέφυρων! "
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "Ένας άλλος τρόπος για να βρείτε δημόσιες διευθύνσεις γέφυρων είναι να στείλετε ένα email (από %s ή στην διεύθυνση ενός %s) στο %s με τον τιτλο «χρησιμοποιηση γέφυρων» από μόνη της στο σώμα του μηνύματος."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Οι γέφυρες μου δεν λειτουργούν! Χρειάζομαι βοήθεια! "
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Αν Tor σας δεν λειτουργεί, θα πρέπει να στείλετε ενα email %s. Προσπαθήστε να συμπεριλάβετε όσες πληροφορίες σχετικά με την υπόθεσή σας μπορείτε, συμπεριλαμβανομένου του καταλόγου των γεφυρών που χρησιμοποιείται, το όνομα του αρχείου δέσμης/έκδοση που χρησιμοποιήθηκε, τα μηνύματα που το Tor εμφανισε, κλπ. "
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "Για να χρησιμοποιήσετε τις παραπάνω γραμμές, πήγαινετε στην σελίδα Δικτυακές Ρυθμίσεις του Vidalia και κάντε κλικ στο \"Ο ISP μου μπλοκάρει τις συνδέσεις στο δίκτυο του Tor\". Εκεί προσθέστε την διεύθυνση κάθε γέφυρας, μία ανά γραμμή."
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "Δέν υπάρχει καμία γέφυρα διαθέσιμη αυτή τη στιγμή"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Αναβαθμίστε το πρόγραμμα περιήγησής σας στο Firefox "
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "Πληκτρολογήστε τις δύο λέξεις "
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Βημα 1"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Παρτε το %s Πακέτο Περιηγητής Tor %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Βημα 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Παρτε τις %s γεφυρες %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Βημα 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Τωρα %s χρησιμοποιηστε τις γεφυρες στο Tor  %s"

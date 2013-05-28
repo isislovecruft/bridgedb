@@ -1,0 +1,75 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+#   <ergungorler@gmail.com>, 2012.
+# Sercan Altundaş <>, 2012.
+# Tekel Bira <psycookie@gmail.com>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2011-01-01 07:48-0800\n"
+"PO-Revision-Date: 2012-07-19 04:47+0000\n"
+"Last-Translator: erg26 <ergungorler@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: tr\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+#: lib/bridgedb/I18n.py:21
+msgid "Here are your bridge relays: "
+msgstr "Köprü anahtarlamalarınız şu şekildedir:"
+
+#: lib/bridgedb/I18n.py:23
+msgid ""
+"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
+"in the main directory. Since there is no complete public list of them,\n"
+"even if your ISP is filtering connections to all the known Tor relays,\n"
+"they probably won't be able to block all the bridges."
+msgstr "Köprü anahtarlamaları (yada kısaca \"köprüler\") ana dizinde listenmemiş olan Tor anahtarlamalarıdır.  Bağlı bulunduğunuz ISS bilinen tüm Tor anahtarlamalarına filtre uyguluyor olsa bile umumi olarak yayınlanmış tam bir liste mevcut olmadığından büyük bir ihtimalle bütün köprüleri bloklayamayacaktır."
+
+#: lib/bridgedb/I18n.py:28
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click\n"
+"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"address one at a time."
+msgstr "Yukarıdaki satırları kullanmak için Vidalia Ağ Ayarları sayfasını açın ve \"ISS Tor ağına bağlantılarımı engelliyor\" maddesine tıklayın. Sonrasında her seferinde bir tane olmak üzere köprülerinizi ekleyebilirsiniz."
+
+#: lib/bridgedb/I18n.py:32
+msgid ""
+"Configuring more than one bridge address will make your Tor connection\n"
+"more stable, in case some of the bridges become unreachable."
+msgstr "Birden fazla köprü adresi ayarlamak, bazı köprüler ulaşılamaz durumda olduğunda Tor bağlantınızı daha stabil hale getirir"
+
+#: lib/bridgedb/I18n.py:35
+msgid ""
+"Another way to find public bridge addresses is to send mail to\n"
+"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
+"of the mail. However, so we can make it harder for an attacker to learn\n"
+"lots of bridge addresses, you must send this request from an email address at\n"
+"one of the following domains:"
+msgstr "Umumi olarak yayınlanmış olan köprü adreslerini elde etmenin bir diğer yolu da bridges@torproject.org mail adresine gövdesinde \"get bridges\" yazan bir mail atmaktır. Ancak herhangi bir saldırı planlayan kişinin, bu köprü adreslerini öğrenmesini zorlaştırmak amacıyla sadece aşağıda yazılı olan alan adlarına bağlı bir e-mail adresinden bu isteği göndermelisiniz:"
+
+#: lib/bridgedb/I18n.py:41
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[Bu otomatik bir mesajdır; lütfen cevaplamayınız.]"
+
+#: lib/bridgedb/I18n.py:43
+msgid ""
+"Another way to find public bridge addresses is to visit\n"
+"https://bridges.torproject.org/. The answers you get from that page\n"
+"will change every few days, so check back periodically if you need more\n"
+"bridge addresses."
+msgstr "Umumi olarak yayınlanmış köprü adreslerine ulaşmak için şu adresi ziyaret edebilirsiniz: https://bridges.torproject.org/. Buradan alacağınız köprü adresleri birkaç günde bir değişecektir. Daha fazla köprü adresine ihtiyacınız oluyor ise bu sayfayı periyodik olarak kontrol etmelisiniz."
+
+#: lib/bridgedb/I18n.py:48
+msgid "(no bridges currently available)"
+msgstr "(uygun köprü şimdilik bulunmamaktadır)"
+
+#: lib/bridgedb/I18n.py:50
+msgid "(e-mail requests not currently supported)"
+msgstr "(e-posta istekleri şimdilik desteklenmemektedir)"

@@ -3,35 +3,37 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# runasand <runa.sandvik@gmail.com>, 2011
+# arashaalaei <aalaeiarash@gmail.com>, 2011
+# Ardeshir <ardeshir@redteam.io>, 2013
+# perspolis <rezarms@yahoo.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
-"PO-Revision-Date: 2013-04-29 09:24+0000\n"
-"Last-Translator: runasand <runa.sandvik@gmail.com>\n"
+"PO-Revision-Date: 2013-05-01 00:10+0000\n"
+"Last-Translator: Ardeshir <ardeshir@redteam.io>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: en\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: fa\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
-msgstr "What are bridges?"
+msgstr "پل‌ها چه هستند؟"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
 msgid ""
 "%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s پل‌ها %s بازپخش کننده‌هایی هستند که به شما برای دور زدن سانسور کمک میکنند"
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
-msgstr "I need an alternative way of getting bridges!"
+msgstr "به یک راه دیگر برای دریافت پل‌ها احتیاج دارم!"
 
 #: lib/bridgedb/templates/base.html:40
 #, python-format
@@ -39,11 +41,11 @@ msgid ""
 "Another way to find public bridge addresses is to send an email (from a %s "
 "or a %s address) to %s with the line 'get bridges' by itself in the body of "
 "the mail."
-msgstr "Another way to find public bridge addresses is to send an email (from a %s or a %s address) to %s with the line 'get bridges' by itself in the body of the mail."
+msgstr "یک راه دیگر برای دریافت پل‌های عمومی، فرستادن یک ایمیل (از آدرس‌های %s و یا %s) به %s و قرار دادن عبارت 'get bridges' در متن ایمیل است."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
-msgstr "My bridges don't work! I need help!"
+msgstr "به کمک احتیاج دارم! پل‌های من کار نمیکنند!"
 
 #: lib/bridgedb/templates/base.html:49
 #, python-format
@@ -51,50 +53,50 @@ msgid ""
 "If your Tor doesn't work, you should email %s. Try including as much info "
 "about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "If your Tor doesn't work, you should email %s. Try including as much info about your case as you can, including the list of bridges you used, the bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "اگر \"تور\" شما کار نمیکند، ایمیلی به آدرس %s بفرستید. سعی کنید تا آنجا که ممکن است اطلاعات بیشتری راجع به مشکلتان، شامل لیست پل‌ها، نام و نسخه بسته‌ای که استفاده کردید و پیغام‌های خروجی تور."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "To use the above lines, go to Vidalia's Network settings page, and click \"My ISP blocks connections to the Tor network\". Then add each bridge address one at a time."
+msgstr "برای استفاده از خطوط بالا، به قسمت تنظیمات شبکه‌ی ویدالیا رفته و گزینه \"سرویس دهنده اینترنت من ارتباط با شبکه تور را مسدود کرده است\" را انتخاب کنید. و آدرس پل‌ها را یکی یکی وارد کنید."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
-msgstr "No bridges currently available"
+msgstr "هیچ پلی درحال حاضر موجود نیست"
 
 #: lib/bridgedb/templates/captcha.html:6
 msgid "Upgrade your browser to Firefox"
-msgstr "Upgrade your browser to Firefox"
+msgstr "مرورگر خود را به فایرفاکس ارتقا دهید"
 
 #: lib/bridgedb/templates/captcha.html:8
 msgid "Type the two words"
-msgstr "Type the two words"
+msgstr "دو واژه زیر را تایپ کنید"
 
 #: lib/bridgedb/templates/index.html:6
 msgid "Step 1"
-msgstr "Step 1"
+msgstr "مرحله 1"
 
 #: lib/bridgedb/templates/index.html:8
 #, python-format
 msgid "Get %s Tor Browser Bundle %s"
-msgstr "Get %s Tor Browser Bundle %s"
+msgstr "دریافت %s بسته مرورگر تور %s"
 
 #: lib/bridgedb/templates/index.html:13
 msgid "Step 2"
-msgstr "Step 2"
+msgstr "مرحله 2"
 
 #: lib/bridgedb/templates/index.html:15
 #, python-format
 msgid "Get %s bridges %s"
-msgstr "Get %s bridges %s"
+msgstr "دریافت %s پل‌ها %s"
 
 #: lib/bridgedb/templates/index.html:19
 msgid "Step 3"
-msgstr "Step 3"
+msgstr "مرحله 3"
 
 #: lib/bridgedb/templates/index.html:21
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
-msgstr "Now %s add the bridges to Tor %s"
+msgstr "حالا %s پل‌ها را به تور اضافه کنید %s"

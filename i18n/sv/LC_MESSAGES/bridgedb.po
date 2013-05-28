@@ -1,25 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Christian Fromme <kaner@strace.org>, 2010
 # 
+# Translators:
+#   <petomatick@hotmail.com>, 2011.
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2011-03-22 16:45+0000\n"
-"Last-Translator: snezak <mr.marko@gmail.com>\n"
+"PO-Revision-Date: 2012-02-14 10:04+0000\n"
+"Last-Translator: Petomatick <petomatick@hotmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sl_SI\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3)\n"
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: lib/bridgedb/I18n.py:21
 msgid "Here are your bridge relays: "
-msgstr "Tukaj so vaši mostni releji:"
+msgstr "Här är dina bro reläer:"
 
 #: lib/bridgedb/I18n.py:23
 msgid ""
@@ -27,29 +28,20 @@ msgid ""
 "in the main directory. Since there is no complete public list of them,\n"
 "even if your ISP is filtering connections to all the known Tor relays,\n"
 "they probably won't be able to block all the bridges."
-msgstr ""
-"Mostni releji (ali \"mostovi\" na kratko), so Tor releji, ki niso na seznamu"
-" v glavnem imeniku. Ker popoln javni seznam Tor relejev ne obstaja, tudi če "
-"vaš ISP filtrira povezave do vseh znanih Tor relejev, verjetno ne bo mogel "
-"blokirati vseh mostov."
+msgstr "Bridge reläer (eller \"broar\" för kort) är Tor-servrar som inte finns i huvudkatalogen. Eftersom det inte finns någon fullständig offentlig förteckning över dem, även om din ISP filtrerar alla de kända Tor-servrarna, kan de sannolikt inte  att kunna blockera alla broar."
 
 #: lib/bridgedb/I18n.py:28
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click\n"
 "\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
 "address one at a time."
-msgstr ""
-"Za uporabo zgornjih vrstic, pojdite na Vidalia Network stran z nastavitvami "
-"in kliknite »Moj ISP blokira povezave na Tor omrežje\". Nato posamično "
-"dodajte naslov vsakega mostu."
+msgstr "För att använda ovanstående rader, gå till Vidalia nätverksinställningar sidan och klicka på \"Min ISP blockerar anslutningar till Tor-nätverket\". Tillsätt sedan varje bro adress i taget."
 
 #: lib/bridgedb/I18n.py:32
 msgid ""
 "Configuring more than one bridge address will make your Tor connection\n"
 "more stable, in case some of the bridges become unreachable."
-msgstr ""
-"Nastavitev več kot enega naslova mostu vam bo omogočila bolj stabilno Tor "
-"povezavo v primeru, da kateri izmed mostov postane nedosegljiv."
+msgstr "Konfigurera fler än en bro-adress kommer att göra din Tor-anslutning mer stabil, i det fall att några broar blir onåbara."
 
 #: lib/bridgedb/I18n.py:35
 msgid ""
@@ -58,16 +50,11 @@ msgid ""
 "of the mail. However, so we can make it harder for an attacker to learn\n"
 "lots of bridge addresses, you must send this request from an email address at\n"
 "one of the following domains:"
-msgstr ""
-"Drug način, kako poiskati naslove javnih mostov, je, da pošljete e-pošto na "
-"bridges@torproject.org, ki bo imela v vsebini sporočila samo vrstico \"get "
-"bridges\". Da bi onemogočili napadalcem poizvedbo velikega števila naslovov "
-"mostov, je zahtevo potrebno poslati iz e-poštnega naslova ene izmed "
-"naslednjih domen:"
+msgstr "Ett annat sätt att hitta offentliga bro adresser är att skicka e-post till bridges@torproject.org med raden \"get bridges\" av sig själv i kroppen av posten. Men för att göra det svårare för en angripare att lära sig massor av bro-adresser måste du skicka denna begäran från en e-postadress vid ett av följande områden:"
 
 #: lib/bridgedb/I18n.py:41
 msgid "[This is an automated message; please do not reply.]"
-msgstr "[To je samodejno sporočilo, prosimo, da nanj ne odgovarjate.]"
+msgstr "[Detta är ett automatiskt meddelande; Var god svara ej]"
 
 #: lib/bridgedb/I18n.py:43
 msgid ""
@@ -75,16 +62,12 @@ msgid ""
 "https://bridges.torproject.org/. The answers you get from that page\n"
 "will change every few days, so check back periodically if you need more\n"
 "bridge addresses."
-msgstr ""
-"Drug način, kako poiskati naslove javnih mostov, je, da obiščete "
-"https://bridges.torproject.org/. Odgovor, ki ga boste dobili na tej strani, "
-"se bo spremenil vsakih nekaj dni, zato v primeru, da potrebujete več "
-"naslovov mostov, preverjajte to stran redno."
+msgstr "Ett annat sätt att hitta offentliga bro-adresser är att besöka https://bridges.torproject.org/. Svaren du får från den sidan kommer att förändras med några dagars mellanrum, så titta in med jämna mellanrum om du behöver mer bro adresser."
 
 #: lib/bridgedb/I18n.py:48
 msgid "(no bridges currently available)"
-msgstr "(Trenutno ni na voljo nobenega mostu)"
+msgstr "(Inga broar tillgängliga för närvarande)"
 
 #: lib/bridgedb/I18n.py:50
 msgid "(e-mail requests not currently supported)"
-msgstr "(Zahteve preko e-pošte trenutno niso podprte)"
+msgstr "(E-post förfrågningar stöds för närvarande inte)"
