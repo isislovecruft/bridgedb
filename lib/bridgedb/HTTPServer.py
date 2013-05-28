@@ -150,8 +150,8 @@ class WebResource(twisted.web.resource.Resource):
         if geoip:
             countryCode = geoip.country_code_by_addr(ip)
 
-        # get locale
-        t = getLocaleFromRequest(request) 
+        # set locale
+        setLocaleFromRequestHeader(request)
 
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
@@ -215,12 +215,13 @@ class WebResource(twisted.web.resource.Resource):
             request.setHeader("Content-Type", "text/plain")
             return answer
         else:
-            request.setHeader("Content-Type", "text/html")
+            request.setHeader("Content-Type", "text/html; charset=utf-8")
             return lookup.get_template('bridges.html').render(answer=answer)
 
 class WebRoot(twisted.web.resource.Resource):
     isLeaf = True
     def render_GET(self, request):
+        setLocaleFromRequestHeader(request)
         return lookup.get_template('index.html').render()
 
 def addWebServer(cfg, dist, sched):
@@ -275,14 +276,16 @@ def addWebServer(cfg, dist, sched):
 
     return site
 
-def getLocaleFromRequest(request):
-    # See if we did get a request for a certain locale, otherwise fall back
-    # to 'en':
-    # Try evaluating the path /foo first, then check if we got a ?lang=foo
+def setLocaleFromRequestHeader(request):
     default_lang = lang = "en"
-    if len(request.path) > 1:
-        lang = request.path[1:]
-    if lang == default_lang:
-        lang = request.args.get("lang", [default_lang])
-        lang = lang[0]
-    return I18n.getLang(lang)
+    langs = request.getHeader('accept-language').split(',')
+    logging.debug("Accept-Language: %s" % langs)
+    localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
+
+    if langs:
+        langs = filter(lambda x: re.match('^[a-z_]{1,5}$', x), langs)
+        logging.debug("Languages: %s" % langs)
+        map(lambda x: x.replace("-","_").lower(),langs)
+        lang = gettext.translation("bridgedb", localedir=localedir,
+                languages=langs, fallback=True)
+        lang.install()
