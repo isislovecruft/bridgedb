@@ -23,9 +23,9 @@ instead of 'unallocated'. This is why they are called pseudo-distributors.
 
 import time
 import bridgedb.Storage
-from bridgedb.I18n import BRIDGEDB_TEXT
 import bridgedb.Bridges 
 import binascii
+from gettext import gettext as _
 toHex = binascii.b2a_hex
 
 
@@ -230,9 +230,9 @@ class BucketManager:
             for bh in bridgeHistories:
                 days = bh.tosa / long(60*60*24)
                 line = "%s:%s\t(%d %s)" %  \
-                        (bh.ip, bh.port, days, BRIDGEDB_TEXT[24])
+                        (bh.ip, bh.port, days,  _("""days at this address"""))
                 if str(bh.fingerprint) in blocklist.keys():
-                    line = line + "\t%s: (%s)" % (BRIDGEDB_TEXT[16],
+                    line = line + "\t%s: (%s)" % (_("""(Might be blocked)"""),
                             ",".join(blocklist[bh.fingerprint]),)
                 f.write(line + '\n')
             f.close()
