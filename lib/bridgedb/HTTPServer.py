@@ -38,6 +38,8 @@ template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],
                         output_encoding='utf-8')
 
+logging.debug("Set template root to %s" % template_root)
+
 try:
     import GeoIP
     # GeoIP data object: choose database here
