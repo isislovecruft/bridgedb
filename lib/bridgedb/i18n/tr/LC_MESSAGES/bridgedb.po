@@ -1,75 +1,103 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-#   <ergungorler@gmail.com>, 2012.
-# Sercan Altundaş <>, 2012.
-# Tekel Bira <psycookie@gmail.com>, 2012.
+# Tosbaa <conan@operamail.com>, 2013
+# erg26 <ergungorler@gmail.com>, 2012
+# Sercan Altundaş <>, 2012
+# Tekel Bira <psycookie@gmail.com>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2012-07-19 04:47+0000\n"
-"Last-Translator: erg26 <ergungorler@gmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-06-07 22:00+0000\n"
+"Last-Translator: Tosbaa <conan@operamail.com>\n"
+"Language-Team: Turkish (http://www.transifex.com/projects/p/torproject/language/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
 "Language: tr\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: lib/bridgedb/I18n.py:21
-msgid "Here are your bridge relays: "
-msgstr "Köprü anahtarlamalarınız şu şekildedir:"
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Köprüler nedir?"
 
-#: lib/bridgedb/I18n.py:23
+#: lib/bridgedb/templates/base.html:34
+#, python-format
 msgid ""
-"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
-"in the main directory. Since there is no complete public list of them,\n"
-"even if your ISP is filtering connections to all the known Tor relays,\n"
-"they probably won't be able to block all the bridges."
-msgstr "Köprü anahtarlamaları (yada kısaca \"köprüler\") ana dizinde listenmemiş olan Tor anahtarlamalarıdır.  Bağlı bulunduğunuz ISS bilinen tüm Tor anahtarlamalarına filtre uyguluyor olsa bile umumi olarak yayınlanmış tam bir liste mevcut olmadığından büyük bir ihtimalle bütün köprüleri bloklayamayacaktır."
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Köprü aktarıcıları, sansürü aşmanızı sağlayan %s Tor aktarıcılarıdır."
 
-#: lib/bridgedb/I18n.py:28
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Köprüleri edinmek için alternatif yola ihtiyacım var'"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click\n"
-"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "Halka açık köprü adreslerini edinmenin bir yolu da, mesaj gövdesinin bir satırında \"get bridges\" yazılı bir e-postayı (Bir %s ya da %s adresinden) %s'e göndermektir."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Köprülerim çalışmıyor! Yardıma ihtiyacım var!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Eğer Tor çalışmıyorsa, %s 'e e-posta gönderin. Durumunuz hakkında, kullandığınız köprülerin listesi, kullandığınız paket sürümü/dosya ismi, Tor'un hata mesajları dahil olmak üzere mümkün olduğunca fazla bilgiyi ekleyin."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Yukarıdaki satırları kullanmak için Vidalia Ağ Ayarları sayfasını açın ve \"ISS Tor ağına bağlantılarımı engelliyor\" maddesine tıklayın. Sonrasında her seferinde bir tane olmak üzere köprülerinizi ekleyebilirsiniz."
+msgstr "Yukarıdaki satırları kullanmak için, Vidalia'nınağ ayarları sayfasına gidip \"Servis sağlayıcım Tor ağına erişimlerini engelliyor\"a tıklayın. Bundan sonra tüm köprüleri birer birer ekleyin. "
 
-#: lib/bridgedb/I18n.py:32
-msgid ""
-"Configuring more than one bridge address will make your Tor connection\n"
-"more stable, in case some of the bridges become unreachable."
-msgstr "Birden fazla köprü adresi ayarlamak, bazı köprüler ulaşılamaz durumda olduğunda Tor bağlantınızı daha stabil hale getirir"
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "Şu an uygun köprü yok."
 
-#: lib/bridgedb/I18n.py:35
-msgid ""
-"Another way to find public bridge addresses is to send mail to\n"
-"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
-"of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address at\n"
-"one of the following domains:"
-msgstr "Umumi olarak yayınlanmış olan köprü adreslerini elde etmenin bir diğer yolu da bridges@torproject.org mail adresine gövdesinde \"get bridges\" yazan bir mail atmaktır. Ancak herhangi bir saldırı planlayan kişinin, bu köprü adreslerini öğrenmesini zorlaştırmak amacıyla sadece aşağıda yazılı olan alan adlarına bağlı bir e-mail adresinden bu isteği göndermelisiniz:"
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Tarayıcınızı Firefox'a güncelleyin."
 
-#: lib/bridgedb/I18n.py:41
-msgid "[This is an automated message; please do not reply.]"
-msgstr "[Bu otomatik bir mesajdır; lütfen cevaplamayınız.]"
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "İki kelimeyi yazın"
 
-#: lib/bridgedb/I18n.py:43
-msgid ""
-"Another way to find public bridge addresses is to visit\n"
-"https://bridges.torproject.org/. The answers you get from that page\n"
-"will change every few days, so check back periodically if you need more\n"
-"bridge addresses."
-msgstr "Umumi olarak yayınlanmış köprü adreslerine ulaşmak için şu adresi ziyaret edebilirsiniz: https://bridges.torproject.org/. Buradan alacağınız köprü adresleri birkaç günde bir değişecektir. Daha fazla köprü adresine ihtiyacınız oluyor ise bu sayfayı periyodik olarak kontrol etmelisiniz."
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Adım 1"
 
-#: lib/bridgedb/I18n.py:48
-msgid "(no bridges currently available)"
-msgstr "(uygun köprü şimdilik bulunmamaktadır)"
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "%s Tor Tarayıcı paketini edinin %s"
 
-#: lib/bridgedb/I18n.py:50
-msgid "(e-mail requests not currently supported)"
-msgstr "(e-posta istekleri şimdilik desteklenmemektedir)"
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Adım 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "%s köprülerini %s edinin"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Adım 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Şimdi %s köprüleri Tor'a ekleyin %s"

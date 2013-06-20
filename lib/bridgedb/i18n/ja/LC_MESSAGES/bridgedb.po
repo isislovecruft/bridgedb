@@ -1,73 +1,101 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-#  <87@itokei.info>, 2013.
+# brt <87@itokei.info>, 2013
+# plazmism <gomidori@live.jp>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2013-01-23 03:14+0000\n"
-"Last-Translator: brt <87@itokei.info>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-05-31 02:50+0000\n"
+"Last-Translator: plazmism <gomidori@live.jp>\n"
+"Language-Team: Japanese (http://www.transifex.com/projects/p/torproject/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/bridgedb/I18n.py:21
-msgid "Here are your bridge relays: "
-msgstr "こちらがあなたのブリッジリレーです:"
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "ブリッジとはなんですか？"
 
-#: lib/bridgedb/I18n.py:23
+#: lib/bridgedb/templates/base.html:34
+#, python-format
 msgid ""
-"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
-"in the main directory. Since there is no complete public list of them,\n"
-"even if your ISP is filtering connections to all the known Tor relays,\n"
-"they probably won't be able to block all the bridges."
-msgstr "ブリッジリレー (もしくは \"ブリッジ\") はメインディレクトリにリストされていないTorリレーです。\n完全な公のリストがなければ、あなたのISPがすべての既知のリレーをブロックしたとしても、\n恐らく彼らはすべてのブリッジを遮断できません。"
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s ブリッジリレー %sは検閲を回避することを助けるTorリレーです。"
 
-#: lib/bridgedb/I18n.py:28
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "ブリッジを得る他の方法が必要です!"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click\n"
-"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "パブリックブリッジのアドレスを探す他の方法は、(%sか%sのアドレスから) メールの文面に「get bridges」の行をつけて%sにメールを送ることです。"
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "私のブリッジが動きません! 助けてください!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "あなたのTorが動作しないなら、%sにメールするべきです。 使っていたブリッジのリスト、使っていたバンドルのファイル名/バージョン、Torが出したメッセージなど、できるだけ問題についての情報を多く含めるようにしてください。"
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "上記を使用するには、Vidaliaのネットワーク設定ページに行き、\"ISP が Tor ネットワーク\nへの接続をブロックする\"をクリックします。そして個々のブリッジアドレスを一つづつ追加します。"
+msgstr "以上の記述を使用するには、Vidaliaのネットワーク設定ページに行き、「私のISPはTorネットワークへの接続をブロックしています」をクリックしてください。その後、各ブリッジアドレスが1つずつ追加されます。"
 
-#: lib/bridgedb/I18n.py:32
-msgid ""
-"Configuring more than one bridge address will make your Tor connection\n"
-"more stable, in case some of the bridges become unreachable."
-msgstr "ブリッジに接続できない状態に備えて複数のブリッジアドレスを設定しておくと、Torの接続はより\n安定します。"
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "現在利用できるブリッジがありません"
 
-#: lib/bridgedb/I18n.py:35
-msgid ""
-"Another way to find public bridge addresses is to send mail to\n"
-"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
-"of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address at\n"
-"one of the following domains:"
-msgstr "パブリックなブリッジアドレスを見つけるもう一つの方法は、本文に<b>get bridges</b>と記入したE-mailを <b>bridges@torproject.org</b> 宛に送信する\nことです。しかし、アタッカーがたくさんのブリッジアドレスを収集するのを困難にするため、\nあなたは下記のドメインのどれかからこのリクエストを送らなければなりません。"
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "ブラウザをFirefoxにアップグレード"
 
-#: lib/bridgedb/I18n.py:41
-msgid "[This is an automated message; please do not reply.]"
-msgstr "[このメールは自動送信されたメッセージです。返信しないでください。]"
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "2つの単語をタイプしてください"
 
-#: lib/bridgedb/I18n.py:43
-msgid ""
-"Another way to find public bridge addresses is to visit\n"
-"https://bridges.torproject.org/. The answers you get from that page\n"
-"will change every few days, so check back periodically if you need more\n"
-"bridge addresses."
-msgstr "パブリックブリッジアドレスを見つける別の方法は\nhttps://bridges.torproject.org/ を訪れることです。このページで得られる\n情報は数日おきに更新されるので、さらにブリッジアドレスが必要な場合は\n定期的にチェックして下さい"
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "ステップ 1"
 
-#: lib/bridgedb/I18n.py:48
-msgid "(no bridges currently available)"
-msgstr "(現在利用可能なブリッジはありません)"
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Tor %s Browser Bundle %sを手に入れる"
 
-#: lib/bridgedb/I18n.py:50
-msgid "(e-mail requests not currently supported)"
-msgstr "(email リクエストは現在サポートされていません)"
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "ステップ 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "%s ブリッジ %s を手に入れる"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "ステップ 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "すぐに%s Torにブリッジを追加 %s"
