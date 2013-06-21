@@ -288,4 +288,4 @@ def setLocaleFromRequestHeader(request):
         map(lambda x: x.replace("-","_").lower(),langs)
         lang = gettext.translation("bridgedb", localedir=localedir,
                 languages=langs, fallback=True)
-        lang.install()
+        lang.install(True)
