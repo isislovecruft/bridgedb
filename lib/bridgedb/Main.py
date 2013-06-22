@@ -192,11 +192,11 @@ def load(cfg, splitter, clear=False):
             # XXX: what do we do with all these or_addresses?
             # The bridge stability metrics are only concerned with a single ip:port
             # So for now, we will only consider the bridges primary IP:port
-	    if bridge.getID() in timestamps.keys():
-            	ts = timestamps[bridge.getID()][:]
-            	ts.sort()
-            	for timestamp in ts:
-            	    bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+            if bridge.getID() in timestamps.keys():
+                ts = timestamps[bridge.getID()][:]
+                ts.sort()
+                for timestamp in ts:
+                    bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
         f.close()
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
