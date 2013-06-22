@@ -184,7 +184,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     bhe = db.getBridgeHistory(bridge.fingerprint)
 
     if not bridge.running:
-        log.notice("%s is not running" % bridge.fingerprint)
+        logging.info("%s is not running" % bridge.fingerprint)
         return bhe
 
     # Parse the descriptor and see if the address or port changed
