@@ -277,7 +277,6 @@ def addWebServer(cfg, dist, sched):
     return site
 
 def setLocaleFromRequestHeader(request):
-    default_lang = lang = "en"
     langs = request.getHeader('accept-language').split(',')
     logging.debug("Accept-Language: %s" % langs)
     localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
