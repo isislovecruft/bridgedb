@@ -282,9 +282,13 @@ def setLocaleFromRequestHeader(request):
     localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
 
     if langs:
-        langs = filter(lambda x: re.match('^[a-z_]{1,5}$', x), langs)
+        langs = filter(lambda x: re.match('^[a-z\-]{1,5}$', x), langs)
         logging.debug("Languages: %s" % langs)
-        map(lambda x: x.replace("-","_").lower(),langs)
+        # add fallback languages
+        langs_only = filter(lambda x: '-' in x, langs)
+        langs.extend(map(lambda x: x.split('-')[0], langs_only))
+        # gettext wants _, not -
+        map(lambda x: x.replace('-', '_'), langs)
         lang = gettext.translation("bridgedb", localedir=localedir,
-                languages=langs, fallback=True)
+                 languages=langs, fallback=True)
         lang.install(True)
