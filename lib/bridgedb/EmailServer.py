@@ -7,7 +7,7 @@ This module implements the email interface to the bridge database.
 """
 
 from StringIO import StringIO
-
+import MimeWriter
 import gettext
 import gpgme
 import logging
