@@ -7,8 +7,12 @@
 <pre>
 ${answer}
 </pre>
-<br />
-<p>${_("""To use the above lines, go to Vidalia's Network settings page, and click "My ISP blocks connections to the Tor network". Then add each bridge address one at a time.""")}
+<br \>
+<p>
+<p>
+${_("""To use the above lines, go to Vidalia's Network settings page, and """ \
+    """click "My ISP blocks connections to the Tor network". Then add """ \
+    """each bridge address one at a time.""")}
 </p>
 % else:
 <h3> ${_("No bridges currently available")} </h3>

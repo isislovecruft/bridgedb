@@ -19,6 +19,7 @@ import twisted.web.resource
 from twisted.web.server import Site
 from twisted.web import static
 from twisted.web.util import redirectTo
+from twisted.python import filepath
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
@@ -38,6 +39,7 @@ from zope.interface import Interface, Attribute, implements
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],
                         output_encoding='utf-8')
+rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 logging.debug("Set template root to %s" % template_root)
 
@@ -152,7 +154,7 @@ class WebResource(twisted.web.resource.Resource):
             countryCode = geoip.country_code_by_addr(ip)
 
         # set locale
-        setLocaleFromRequestHeader(request)
+        rtl = usingRTLLang(request)
 
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
@@ -217,13 +219,13 @@ class WebResource(twisted.web.resource.Resource):
             return answer
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
-            return lookup.get_template('bridges.html').render(answer=answer)
+            return lookup.get_template('bridges.html').render(answer=answer, rtl=rtl)
 
 class WebRoot(twisted.web.resource.Resource):
     isLeaf = True
     def render_GET(self, request):
-        setLocaleFromRequestHeader(request)
-        return lookup.get_template('index.html').render()
+        rtl = usingRTLLang(request)
+        return lookup.get_template('index.html').render(rtl=rtl)
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -277,13 +279,65 @@ def addWebServer(cfg, dist, sched):
 
     return site
 
+def usingRTLLang(request):
+    """
+    Check if we should translate the text into a RTL language
+
+    Retrieve the headers from the request. Obtain the Accept-Language header
+    and decide if we need to translate the text. Install the requisite
+    languages via gettext, if so. Then, manually check which languages we
+    support. Choose the first language from the header that we support and
+    return True if it is a RTL language, else return False.
+
+    :param request twisted.web.server.Request: Incoming request
+    :returns bool: Language is right-to-left
+    """
+    langs = setLocaleFromRequestHeader(request)
+
+    # Grab only the language (first two characters) so we know if the language
+    # is read right-to-left
+    #langs = [ lang[:2] for lang in langs ]
+    lang = getAssumedChosenLang(langs)
+    if lang in rtl_langs:
+        return True
+    return False
+
+def getAssumedChosenLang(langs):
+    """
+    Return the first language in ``langs`` and we supprt
+
+    :param langs list: All requested languages
+    :returns string: Chosen language
+    """
+    i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
+    path = filepath.FilePath(i18npath)
+    assert path.isdir()
+
+    lang = 'en-US'
+    supp_langs = path.listdir() + ['en']
+    for l in langs:
+        if l in supp_langs:
+            lang = l
+            break
+    return lang
+
 def setLocaleFromRequestHeader(request):
+    """
+    Retrieve the languages from the accept-language header and insall
+
+    Parse the languages in the header, if any of them contain locales then
+    add their languages to the list, also. Then install all of them using
+    gettext, it will choose the best one.
+
+    :param request twisted.web.server.Request: Incoming request
+    :returns list: All requested languages
+    """
     langs = request.getHeader('accept-language').split(',')
     logging.debug("Accept-Language: %s" % langs)
     localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
 
     if langs:
-        langs = filter(lambda x: re.match('^[a-z\-]{1,5}$', x), langs)
+        langs = filter(lambda x: re.match('^[a-z\-]{1,5}', x), langs)
         logging.debug("Languages: %s" % langs)
         # add fallback languages
         langs_only = filter(lambda x: '-' in x, langs)
@@ -293,3 +347,4 @@ def setLocaleFromRequestHeader(request):
         lang = gettext.translation("bridgedb", localedir=localedir,
                  languages=langs, fallback=True)
         lang.install(True)
+    return langs
