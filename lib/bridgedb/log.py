@@ -38,8 +38,9 @@ from twisted.python.log import startLoggingWithObserver
 
 from twisted.python.threadable import synchronize
 
-from zope.interface import directlyProvides
-from zope.interface import implements
+from zope.interface            import directlyProvides
+from zope.interface.exceptions import BrokenImplementation
+from zope.interface.verify     import verifyObject
 
 
 _keepErrors = 0
@@ -320,11 +321,11 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         self.debug("Suspend called for log observer %r" % repr(observer))
         if observer in observers:
             self.debug("Observer found in observer list. Suspending observer")
-            try:
-                self.removeObserver(observer) ## xxx zope.implements check
-            except ValueError as verr:
-                self.debug("Observer %r not in observers list"
-                           % repr(observer))
+            try: verifyObject(ILogObserver, observer)
+            except BrokenImplementation as bi: pass
+            else: self.removeObserver(observer)
+        else:
+            self.debug("Observer %r not in observers list" % repr(observer))
 
     def exception(self, error):
         """Log an exception with its traceback.
