@@ -16,6 +16,7 @@ import gettext
 
 from twisted.internet import reactor
 
+import bridgedb.config as config
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
@@ -23,90 +24,6 @@ import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
 
-class Conf:
-    """A configuration object.  Holds unvalidated attributes.
-    """
-    def __init__(self, **attrs):
-        self.__dict__.update(attrs)
-        self.setMissing()
-
-    def setMissing(self):
-        for k,v in CONFIG_DEFAULTS.items():
-            if not hasattr(self, k):
-                setattr(self,k,v)
-
-CONFIG_DEFAULTS = {
-    'HTTPS_INCLUDE_FINGERPRINTS' : False,
-    'EMAIL_INCLUDE_FINGERPRINTS' : False,
-    'RECAPTCHA_ENABLED' : False,
-    'RECAPTCHA_PUB_KEY' : "",
-    'RECAPTCHA_PRIV_KEY' : ""
-}
-
-# An example configuration.  Used for testing.  See sample
-# bridgedb.conf for documentation.
-CONFIG = Conf(
-    RUN_IN_DIR = ".",
-
-    PIDFILE = "bridgedb.pid",
-    LOGFILE = None,
-    LOGLEVEL = "DEBUG",
-
-    BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
-    STATUS_FILE = "networkstatus-bridges",
-    BRIDGE_PURPOSE = "bridge",
-    DB_FILE = "./bridgedist.db",
-    DB_LOG_FILE = "./bridgedist.log",
-
-    N_IP_CLUSTERS = 4,
-    MASTER_KEY_FILE = "./secret_key",
-
-    ASSIGNMENTS_FILE = "assignments.log",
-
-    FORCE_PORTS = [(443, 1)],
-    FORCE_FLAGS = [("Stable", 1)],
-    PROXY_LIST_FILES = [ ],
-
-    HTTPS_DIST = True,
-    HTTPS_SHARE=10,
-    HTTPS_BIND_IP=None,
-    HTTPS_PORT=6789,
-    HTTPS_CERT_FILE="cert",
-    HTTPS_KEY_FILE="privkey.pem",
-    HTTPS_USE_IP_FROM_FORWARDED_HEADER=0,
-    HTTP_UNENCRYPTED_BIND_IP=None,
-    HTTP_UNENCRYPTED_PORT=6788,
-    HTTP_USE_IP_FROM_FORWARDED_HEADER=1,
-    HTTPS_N_BRIDGES_PER_ANSWER=2,
-    HTTPS_INCLUDE_FINGERPRINTS = False,
-
-    EMAIL_DIST = True,
-    EMAIL_SHARE=10,
-    EMAIL_FROM_ADDR = "bridges@torproject.org",
-    EMAIL_SMTP_FROM_ADDR = "bridges@torproject.org",
-    EMAIL_USERNAME = "bridges",
-    EMAIL_DOMAINS = [ "gmail.com", "yahoo.com", "catbus.wangafu.net" ],
-    EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
-                         "googlemail.com" : "gmail.com", },
-    EMAIL_DOMAIN_RULES = { 'gmail.com' : ["ignore_dots", "dkim"],
-                           'yahoo.com' : ["dkim"] },
-    EMAIL_RESTRICT_IPS=[],
-    EMAIL_BIND_IP="127.0.0.1",
-    EMAIL_PORT=6725,
-    EMAIL_N_BRIDGES_PER_ANSWER=2,
-    EMAIL_INCLUDE_FINGERPRINTS = False,
-    EMAIL_SMTP_HOST="127.0.0.1",
-    EMAIL_SMTP_PORT=25,
-    EMAIL_GPG_SIGNING_ENABLED = False,
-    EMAIL_GPG_SIGNING_KEY = "bridgedb-gpg.sec",
-
-    RESERVED_SHARE=2,
-
-    FILE_BUCKETS = {},
-    RECAPTCHA_ENABLED = False,
-    RECAPTCHA_PUB_KEY = '',
-    RECAPTCHA_PRIV_KEY = '', 
-  )
 
 def configureLogging(cfg):
     """Set up Python's logging subsystem based on the configuratino.
@@ -201,14 +118,14 @@ def load(cfg, splitter, clear=False):
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
-    if hasattr(cfg, "EXTRA_INFO_FILE"):
+    if cfg.EXTRA_INFO_FILE is not None:
         f = open(cfg.EXTRA_INFO_FILE, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
-    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+    if cfg.COUNTRY_BLOCK_FILE is not None:
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
         for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
@@ -274,14 +191,13 @@ def startup(cfg):
 
     # Write the pidfile.
     if cfg.PIDFILE:
-        f = open(cfg.PIDFILE, 'w')
-        f.write("%s\n"%os.getpid())
-        f.close()
+        with open(cfg.PIDFILE, 'w') as pidfile:
+            pidfile.write("{}\n".format(os.getpid()))
 
     # Set up logging.
     configureLogging(cfg)
 
-    #XXX import Servers after logging is set up
+    # Import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
     # the console and ignore further basicConfig calls
     from bridgedb import EmailServer
@@ -291,8 +207,8 @@ def startup(cfg):
     key = getKey(cfg.MASTER_KEY_FILE)
 
     # Initialize our DB file.
-    db = bridgedb.Storage.Database(cfg.DB_FILE+".sqlite",
-                                   cfg.DB_FILE)
+    dbfile = cfg.get('DB_FILE')
+    db = bridgedb.Storage.Database(dbfile + ".sqlite", dbfile)
     bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
@@ -304,10 +220,8 @@ def startup(cfg):
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
 
     # Create ring parameters.
-    forcePorts = getattr(cfg, "FORCE_PORTS")
-    forceFlags = getattr(cfg, "FORCE_FLAGS")
-    if not forcePorts: forcePorts = []
-    if not forceFlags: forceFlags = []
+    forcePorts = cfg.get("FORCE_PORTS", list())
+    forceFlags = cfg.get("FORCE_FLAGS", list())
     ringParams=Bridges.BridgeRingParameters(needPorts=forcePorts,
                                             needFlags=forceFlags)
 
@@ -333,18 +247,17 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_MAP[d] = d
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
-            cfg.EMAIL_DOMAIN_MAP.copy(),
-            cfg.EMAIL_DOMAIN_RULES.copy(),
+            cfg['EMAIL_DOMAIN_MAP'].copy(),
+            cfg['EMAIL_DOMAIN_RULES'].copy(),
             answerParameters=ringParams)
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         #emailSchedule = Time.IntervalSchedule("day", 1)
         emailSchedule = Time.NoSchedule()
 
     # As appropriate, tell the splitter to leave some bridges unallocated.
-    if cfg.RESERVED_SHARE:
-        splitter.addRing(Bridges.UnallocatedHolder(),
-                         "unallocated",
-                         cfg.RESERVED_SHARE)
+    reserved = cfg.get('RESERVED_SHARE')
+    if reserved:
+        splitter.addRing(Bridges.UnallocatedHolder(), "unallocated", reserved)
 
     # Add pseudo distributors to splitter
     for p in cfg.FILE_BUCKETS.keys():
@@ -358,12 +271,9 @@ def startup(cfg):
         options, arguments = Opt.parseOpts()
         configuration = {}
         if options.configfile:
-            execfile(options.configfile, configuration)
-            cfg = Conf(**configuration)
-            # update loglevel on (re)load
-            level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-            level = getattr(logging, level)
-            logging.getLogger().setLevel(level)
+            conf = config.Conf()
+            conf.load(options.configfile)
+            conf.update(**configuration)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
@@ -427,19 +337,18 @@ def run():
     configuration = {}
 
     if options.testing:
-        configuration = CONFIG
+        configuration = config.TESTING_CONFIG
     elif not options.configfile:
-        print "Syntax: %s -c CONFIGFILE" % sys.argv[0]
-        sys.exit(1)
+        raise SystemExit("Syntax: %s -c CONFIGFILE" % sys.argv[0])
     else:
-        configFile = options.configfile
-        execfile(configFile, configuration)
-        C = Conf(**configuration)
-        configuration = C
+        conf = config.Conf()
+        conf.load(options.configfile)
+        conf.update(**configuration)
+        configuration = conf
 
     # Change to the directory where we're supposed to run.
-    if configuration.RUN_IN_DIR:
-        os.chdir(os.path.expanduser(configuration.RUN_IN_DIR))
+    if conf.RUN_IN_DIR:
+        os.chdir(os.path.expanduser(conf.RUN_IN_DIR))
 
     if options.dumpbridges:
         bucketManager = Bucket.BucketManager(configuration)
