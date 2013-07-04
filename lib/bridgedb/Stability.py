@@ -8,7 +8,8 @@ https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf
 
 [2] https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java
 """
-import logging
+
+import bridgedb.log as logging
 import bridgedb.Storage
 
 # tunables 
@@ -114,7 +115,7 @@ class BridgeHistory(object):
         db = bridgedb.Storage.getDB()
         allWeightedTimes = [ bh.weightedTime for bh in db.getAllBridgeHistory()]
         numBridges = len(allWeightedTimes)
-        logging.debug("Got %d weightedTimes", numBridges)
+        logging.debug("Got %d weightedTimes" % numBridges)
         allWeightedTimes.sort()
         if self.weightedTime >= allWeightedTimes[numBridges/8]:
             return True
@@ -168,8 +169,8 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
                 (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort)/1000
     if secondsSinceLastStatusPublication <= 0 and bhe.weightedTime > 0:
         # old descriptor, bail
-        logging.warn("Received old descriptor for bridge %s with timestamp %d",
-                bhe.fingerprint, statusPublicationMillis/1000)
+        logging.warn("Received old descriptor for bridge %s with timestamp %d"
+                     % (bhe.fingerprint, statusPublicationMillis/1000))
         return bhe
     
     # iterate over all known bridges and apply weighting factor
