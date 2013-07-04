@@ -16,6 +16,7 @@ import gettext
 
 from twisted.internet import reactor
 
+import bridgedb.config as config
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
@@ -24,90 +25,6 @@ import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
 import bridgedb.Util as Util
 
-class Conf:
-    """A configuration object.  Holds unvalidated attributes.
-    """
-    def __init__(self, **attrs):
-        self.__dict__.update(attrs)
-        self.setMissing()
-
-    def setMissing(self):
-        for k,v in CONFIG_DEFAULTS.items():
-            if not hasattr(self, k):
-                setattr(self,k,v)
-
-CONFIG_DEFAULTS = {
-    'HTTPS_INCLUDE_FINGERPRINTS' : False,
-    'EMAIL_INCLUDE_FINGERPRINTS' : False,
-    'RECAPTCHA_ENABLED' : False,
-    'RECAPTCHA_PUB_KEY' : "",
-    'RECAPTCHA_PRIV_KEY' : ""
-}
-
-# An example configuration.  Used for testing.  See sample
-# bridgedb.conf for documentation.
-CONFIG = Conf(
-    RUN_IN_DIR = ".",
-
-    PIDFILE = "bridgedb.pid",
-    LOGFILE = None,
-    LOGLEVEL = "DEBUG",
-
-    BRIDGE_FILES = [ "./cached-descriptors", "./cached-descriptors.new" ],
-    STATUS_FILE = "networkstatus-bridges",
-    BRIDGE_PURPOSE = "bridge",
-    DB_FILE = "./bridgedist.db",
-    DB_LOG_FILE = "./bridgedist.log",
-
-    N_IP_CLUSTERS = 4,
-    MASTER_KEY_FILE = "./secret_key",
-
-    ASSIGNMENTS_FILE = "assignments.log",
-
-    FORCE_PORTS = [(443, 1)],
-    FORCE_FLAGS = [("Stable", 1)],
-    PROXY_LIST_FILES = [ ],
-
-    HTTPS_DIST = True,
-    HTTPS_SHARE=10,
-    HTTPS_BIND_IP=None,
-    HTTPS_PORT=6789,
-    HTTPS_CERT_FILE="cert",
-    HTTPS_KEY_FILE="privkey.pem",
-    HTTPS_USE_IP_FROM_FORWARDED_HEADER=0,
-    HTTP_UNENCRYPTED_BIND_IP=None,
-    HTTP_UNENCRYPTED_PORT=6788,
-    HTTP_USE_IP_FROM_FORWARDED_HEADER=1,
-    HTTPS_N_BRIDGES_PER_ANSWER=2,
-    HTTPS_INCLUDE_FINGERPRINTS = False,
-
-    EMAIL_DIST = True,
-    EMAIL_SHARE=10,
-    EMAIL_FROM_ADDR = "bridges@torproject.org",
-    EMAIL_SMTP_FROM_ADDR = "bridges@torproject.org",
-    EMAIL_USERNAME = "bridges",
-    EMAIL_DOMAINS = [ "gmail.com", "yahoo.com", "catbus.wangafu.net" ],
-    EMAIL_DOMAIN_MAP = { "mail.google.com" : "gmail.com",
-                         "googlemail.com" : "gmail.com", },
-    EMAIL_DOMAIN_RULES = { 'gmail.com' : ["ignore_dots", "dkim"],
-                           'yahoo.com' : ["dkim"] },
-    EMAIL_RESTRICT_IPS=[],
-    EMAIL_BIND_IP="127.0.0.1",
-    EMAIL_PORT=6725,
-    EMAIL_N_BRIDGES_PER_ANSWER=2,
-    EMAIL_INCLUDE_FINGERPRINTS = False,
-    EMAIL_SMTP_HOST="127.0.0.1",
-    EMAIL_SMTP_PORT=25,
-    EMAIL_GPG_SIGNING_ENABLED = False,
-    EMAIL_GPG_SIGNING_KEY = "bridgedb-gpg.sec",
-
-    RESERVED_SHARE=2,
-
-    FILE_BUCKETS = {},
-    RECAPTCHA_ENABLED = False,
-    RECAPTCHA_PUB_KEY = '',
-    RECAPTCHA_PRIV_KEY = '', 
-  )
 
 def configureLogging(cfg):
     """Set up Python's logging subsystem based on the configuratino.
