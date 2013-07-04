@@ -11,12 +11,9 @@
 """log.py - logging facilities for BridgeDB and related utilities"""
 
 from __future__ import print_function
-from datetime   import date
 from datetime   import datetime
-from functools  import wraps
 from types      import NoneType
 
-import logging
 import os
 import stat
 import sys
