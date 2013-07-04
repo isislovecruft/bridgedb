@@ -147,19 +147,27 @@ def load(cfg, splitter, clear=False):
     bridges = None
 
 def loadProxyList(cfg):
+    """Read IP addresses from PROXY_LIST_FILES and return all valid IPs.
+
+    The PROXY_LIST_FILES should contain all currently known Tor exit relays,
+    so that BridgeDB can disallow them from being used to obtain Bridge IPs.
+
+    :param cfg: The current configuration object :class:`bridgedb.Main.Conf`
+    :rtype: dict
+    :returns: A dict whose keys are valid IP addresses of Tor exit relays.
+    """
     ipset = {}
-    for fname in cfg.PROXY_LIST_FILES:
-        f = open(fname, 'r')
-        for line in f:
-            line = line.strip()
-            if line.startswith("#"):
-                continue
-            elif Bridges.is_valid_ip(line):
-                ipset[line] = True
-            elif line:
-                logging.info("Skipping line %r in %s: not an IP.",
-                             line, fname)
-        f.close()
+    proxy_files = cfg.get('PROXY_LIST_FILES')
+
+    if proxy_files:
+        for fname in proxy_files:
+            with open(fname) as proxylist:
+                for line in proxylist.readlines():
+                    line = line.strip()
+                    if line.startswith("#"): continue
+                    elif Bridges.is_valid_ip(line): ipset[line] = True
+                    elif line: log.msg("Skipping %r in %s: not IP"
+                                       % (line, fname))
     return ipset
 
 _reloadFn = lambda: True
