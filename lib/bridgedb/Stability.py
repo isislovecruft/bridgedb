@@ -8,7 +8,8 @@ https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf
 
 [2] https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java
 """
-import logging
+
+import bridgedb.log as log
 import bridgedb.Storage
 
 # tunables 
@@ -114,7 +115,7 @@ class BridgeHistory(object):
         db = bridgedb.Storage.getDB()
         allWeightedTimes = [ bh.weightedTime for bh in db.getAllBridgeHistory()]
         numBridges = len(allWeightedTimes)
-        logging.debug("Got %d weightedTimes", numBridges)
+        log.debug("Got %d weightedTimes", numBridges)
         allWeightedTimes.sort()
         if self.weightedTime >= allWeightedTimes[numBridges/8]:
             return True
@@ -161,14 +162,14 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     statusPublicationMillis = long(timestamp * 1000)
     if (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort) > 60*60*1000:
         secondsSinceLastStatusPublication = long(60*60)
-        logging.debug("Capping secondsSinceLastStatusPublication to 1 hour")    
+        log.debug("Capping secondsSinceLastStatusPublication to 1 hour")    
     # otherwise, roll with it
     else:
         secondsSinceLastStatusPublication = \
                 (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort)/1000
     if secondsSinceLastStatusPublication <= 0 and bhe.weightedTime > 0:
         # old descriptor, bail
-        logging.warn("Received old descriptor for bridge %s with timestamp %d",
+        log.warn("Received old descriptor for bridge %s with timestamp %d",
                 bhe.fingerprint, statusPublicationMillis/1000)
         return bhe
     
@@ -184,7 +185,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     bhe = db.getBridgeHistory(bridge.fingerprint)
 
     if not bridge.running:
-        logging.info("%s is not running" % bridge.fingerprint)
+        log.info("%s is not running" % bridge.fingerprint)
         return bhe
 
     # Parse the descriptor and see if the address or port changed
@@ -214,7 +215,7 @@ def discountAndPruneBridgeHistories(discountUntilMillis):
         bh.discountWeightedFractionalUptimeAndWeightedTime(discountUntilMillis)
         # give the thing at least 24 hours before pruning it
         if bh.weightedFractionalUptime < 1 and bh.weightedTime > 60*60*24:
-            logging.debug("Removing bridge from history: %s" % bh.fingerprint)
+            log.debug("Removing bridge from history: %s" % bh.fingerprint)
             bhToRemove.append(bh.fingerprint)
         else:
             bhToUpdate.append(bh)
