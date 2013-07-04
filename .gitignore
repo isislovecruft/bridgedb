@@ -47,3 +47,29 @@ nosetests.xml
 
 # etags/ctags
 TAGS
+
+# BridgeDB specific files:
+#-------------------------
+
+# databases and keys
+*.db
+*.sqlite
+secret_key
+cert
+privkey.pem
+bridgedb-gpg.sec
+
+# pid file and runtime directory
+bridgedb.pid
+run/*
+
+# logs
+*/bridgedb*.log
+*/assignments.log
+*/bridgedist.log
+
+*bridge-descriptors
+*cached-descriptors*
+*networkstatus-bridges
+*blocked-bridges
+*extra-infos
