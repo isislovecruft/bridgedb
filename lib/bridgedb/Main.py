@@ -22,6 +22,7 @@ import bridgedb.Time as Time
 import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
+import bridgedb.Util as Util
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -111,20 +112,39 @@ CONFIG = Conf(
 def configureLogging(cfg):
     """Set up Python's logging subsystem based on the configuratino.
     """
+
+    # Turn on safe logging by default
+    safelogging = getattr(cfg, 'SAFELOGGING', True)
+
     level = getattr(cfg, 'LOGLEVEL', 'WARNING')
     level = getattr(logging, level)
+    logfile = getattr(cfg, 'LOGFILE', "")
+    logfile_count = getattr(cfg, 'LOGFILE_COUNT', 5)
+    logfile_rotate_size = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
+    Util.set_safe_logging(safelogging)
 
     logging.getLogger().setLevel(level)
-    if getattr(cfg, "LOGFILE"):
-        logfile_count = getattr(cfg, "LOGFILE_COUNT", 5)
-        logfile_rotate_size = getattr(cfg, "LOGFILE_ROTATE_SIZE", 10000000)
-
-        handler = logging.handlers.RotatingFileHandler(cfg.LOGFILE, 'a',
+    if logfile:
+        handler = logging.handlers.RotatingFileHandler(logfile, 'a',
                                                        logfile_rotate_size,
                                                        logfile_count)
         formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%b %d %H:%M:%S")
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
+
+    logging.info("Logger Started.")
+    logging.info("Level: %s", level)
+    if logfile:
+        logging.info("Log File: %s", os.path.abspath(logfile))
+        logging.info("Log File Count: %d", logfile_count)
+        logging.info("Rotate Logs After Size: %d",  logfile_rotate_size)
+    else:
+        logging.info("Logging to stderr")
+    if safelogging:
+        logging.info("Safe Logging: Enabled")
+    else:
+        logging.warn("Safe Logging: Disabled")
+
 
 def getKey(fname):
     """Load the key stored in fname, or create a new 32-byte key and store
@@ -168,6 +188,7 @@ def load(cfg, splitter, clear=False):
     addresses = {}
     timestamps = {}
     if hasattr(cfg, "STATUS_FILE"):
+        logging.info("Opening Network Status document %s", os.path.abspath(cfg.STATUS_FILE))
         f = open(cfg.STATUS_FILE, 'r')
         for ID, running, stable, or_addresses, timestamp in Bridges.parseStatusFile(f):
             status[ID] = running, stable
@@ -175,10 +196,13 @@ def load(cfg, splitter, clear=False):
             if ID in timestamps.keys(): timestamps[ID].append(timestamp)
             else: timestamps[ID] = [timestamp]
             #transports[ID] = transports
+        logging.debug("Closing status document")
         f.close()
     bridges = {} 
     db = bridgedb.Storage.getDB()
     for fname in cfg.BRIDGE_FILES:
+        logging.info("Opening cached Descriptor document %s", fname)
+        logging.debug("Parsing document for purpose=%s", cfg.BRIDGE_PURPOSE)
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             bridges[bridge.getID()] = bridge
@@ -197,30 +221,35 @@ def load(cfg, splitter, clear=False):
                 ts.sort()
                 for timestamp in ts:
                     bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+        logging.debug("Closing descriptor document")
         f.close()
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
     if hasattr(cfg, "EXTRA_INFO_FILE"):
+        logging.info("Opening Extra Info document %s", os.path.abspath(cfg.EXTRA_INFO_FILE))
         f = open(cfg.EXTRA_INFO_FILE, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
+        logging.debug("Closing extra-info document")
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+        logging.info("Opening Blocking Countries file %s", os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
         for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
                 for port in portlist:
-                    logging.debug(":.( Tears! %s blocked %s %s:%s" % (
-                        countries, bridges[ID].fingerprint, address, port))
+                    logging.debug(":.( Tears! %s blocked %s %s:%s",
+                        countries, bridges[ID].fingerprint, address, port)
                     try:
                         bridges[ID].blockingCountries["%s:%s" % \
                                 (address, port)].update(countries)
                     except KeyError:
                         bridges[ID].blockingCountries["%s:%s" % \
                                 (address, port)] = set(countries)
+        logging.debug("Closing blocking-countries document")
         f.close() 
 
     bridges = None
