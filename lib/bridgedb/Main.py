@@ -235,6 +235,7 @@ def load(cfg, splitter, clear=False):
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
         logging.debug("Closing extra-info document")
+        f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
         logging.info("Opening Blocking Countries file %s", os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
