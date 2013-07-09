@@ -3,7 +3,9 @@
 # See LICENSE for licensing information 
 
 from ipaddr import IPv6Address, IPv4Address
-import logging
+
+import bridgedb.log as logging
+
 
 funcs = {}
 
