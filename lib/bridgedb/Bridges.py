@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # See LICENSE for licensing information
 
 """
@@ -8,7 +10,6 @@ them in rings.
 import binascii
 import bisect
 import hmac
-import logging
 import re
 import sha
 import socket
@@ -16,6 +17,7 @@ import time
 import ipaddr
 import random
 
+import bridgedb.log as logging
 import bridgedb.Storage
 import bridgedb.Bucket
 
@@ -586,8 +588,9 @@ def parseStatusFile(f):
                 except KeyError:
                     or_addresses[address] = portlist
             else:
-                logging.warn("  Skipping extra or-address line "\
-                             "from Bridge with ID %r" % ID)
+                logging.warn(
+                    "Skipping extra or-address line from Bridge with ID %r"
+                    % ID)
             num_or_address_lines += 1
 
         elif ID and timestamp and line.startswith("s "):
