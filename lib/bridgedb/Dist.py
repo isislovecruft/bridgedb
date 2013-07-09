@@ -10,7 +10,6 @@ import bridgedb.Bridges
 import bridgedb.Storage
 import bridgedb.Util as Util
 
-import logging
 import re
 import time
 from ipaddr import IPv6Address, IPAddress
@@ -19,6 +18,9 @@ from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
+
+import bridgedb.log as logging
+
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -37,8 +39,8 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     if 20 <= len(ring) < 100: n_bridges_per_answer = min(2, max_bridges_per_answer)
     if len(ring) >= 100: n_bridges_per_answer = max_bridges_per_answer
 
-    logging.debug("Returning %d bridges from ring of len: %d" % \
-            (n_bridges_per_answer, len(ring)))
+    logging.debug("Returning %d bridges from ring of len: %d"
+                  % (n_bridges_per_answer, len(ring)))
     return n_bridges_per_answer
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
@@ -132,15 +134,15 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
            N -- the number of bridges to try to give back.
         """
         if not bridgeFilterRules: bridgeFilterRules=[]
-        logging.debug("getBridgesForIP(%s, %s, %s, %s",
-                Util.logSafely(ip), epoch, N, bridgeFilterRules)
+        logging.debug("getBridgesForIP(%s, %s, %s, %s"
+                      % (Util.logSafely(ip), epoch, N, bridgeFilterRules))
         if not len(self.splitter):
             logging.debug("bailing without splitter")
             return []
 
         area = self.areaMapper(ip)
 
-        logging.info("area is %s", Util.logSafely(area))
+        logging.info("area is %s" % Util.logSafely(area))
         
         key1 = ''
         pos = 0
@@ -156,7 +158,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                       len(self.categories),
                                                       n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, Util.logSafely(area))
+                logging.info("category<%s>%s" % (epoch, Util.logSafely(area)))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                              "Order-Bridges-In-Ring-%d"%n) 
@@ -363,18 +365,21 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         wasWarned = db.getWarnedEmail(emailaddress)
 
         lastSaw = db.getEmailTime(emailaddress)
+        safe = Util.logSafely(emailaddress)
+
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
             if wasWarned:
-                logging.info("Got a request for bridges from %r; we already "
-                             "sent a warning. Ignoring.", Util.logSafely(emailaddress))
-                raise IgnoreEmail("Client was warned", Util.logSafely(emailaddress))
+                msg  = "Got a request for bridges from %r; we already" % safe
+                msg += " sent a warning. Ignoring." % safe
+                logging.info(msg)
+                raise IgnoreEmail("Client was warned" % Util.logSafely(emailaddress))
             else:
                 db.setWarnedEmail(emailaddress, True, now)
                 db.commit() 
 
-            logging.info("Got a request for bridges from %r; we already "
-                         "answered one within the last %d seconds. Warning.",
-                         Util.logSafely(emailaddress), MAX_EMAIL_RATE)
+            msg  = "Got a request for bridges from %r; we already" % safe
+            msg += " answered in the last %d seconds. Warning." % MAX_EMAIL_RATE
+            logging.info(msg)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         # warning period is over
