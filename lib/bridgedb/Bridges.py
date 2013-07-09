@@ -501,13 +501,19 @@ def parseExtraInfoFile(f):
 
         # get the bridge ID ?
         if line.startswith("extra-info "): #XXX: get the router ID
+            logging.debug("Parsing extra-info line")
             line = line[11:]
             (nickname, ID) = line.split()
+            logging.debug("Parsed Nickname: %s", nickname)
             if is_valid_fingerprint(ID):
+                logging.debug("Parsed fingerprint: %s", ID)
                 ID = fromHex(ID)
+            else:
+                logging.debug("Parsed invalid fingerprint: %s", ID)
 
         # get the transport line
         if ID and line.startswith("transport "):
+            logging.debug("Parsing transport line")
             fields = line[10:].split()
             # [ arglist ] field, optional
             if len(fields) >= 3:
@@ -518,6 +524,7 @@ def parseExtraInfoFile(f):
                     try: k,v = arg.split('=')
                     except ValueError: continue
                     argdict[k] = v
+                    logging.debug("Parsing Argument: %s: %s", k, v)
 
             # get the required fields, method name and address
             if len(fields) >= 2:
@@ -529,6 +536,8 @@ def parseExtraInfoFile(f):
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
+                        logging.debug("Parsed Transport: %s", method_name)
+                        logging.debug("Parsed Transport Address: %s:%d", address, port)
                         yield ID, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
@@ -554,14 +563,22 @@ def parseStatusFile(f):
                 timestamp = time.mktime(time.strptime(
                     " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
                     )
+                logging.debug("Timestamp: %s", timestamp)
             except binascii.Error:
                 logging.warn("Unparseable base64 ID %r", line.split()[2])
-            except ValueError: timestamp = None
+            except ValueError:
+                timestamp = None
+                logging.debug("Timestamp; Invalid")
 
         elif ID and line.startswith("a "):
             if num_or_address_lines < 8:
                 line = line[2:]
-                address,portlist = parseORAddressLine(line)
+                try:
+                    address,portlist = parseORAddressLine(line)
+                    logging.debug("Parsed address: %s", address)
+                    logging.debug("Parsed port(s): %s", portlist)
+                except ParseORAddressError:
+                    logging.debug("Failed to Parsed address: %s", address)
                 try:
                     or_addresses[address].add(portlist)
                 except KeyError:
@@ -573,8 +590,10 @@ def parseStatusFile(f):
 
         elif ID and timestamp and line.startswith("s "):
             flags = line.split()
+            logging.debug("Parsed Flags: %s", flags)
             yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
             timestamp = ID = None
+            logging.debug("Total: %d OR address lines", num_or_address_lines)
             num_or_address_lines = 0
             or_addresses = {}
 
@@ -590,6 +609,7 @@ def parseCountryBlockFile(f):
             ID, addrspec, countries = line.split()
             if is_valid_fingerprint(ID):
                 ID = fromHex(ID)
+                logging.debug("Parsed ID: %s", ID)
             else:
                 print "failed to parse ID!"
                 continue # skip this line
@@ -600,7 +620,11 @@ def parseCountryBlockFile(f):
                     address = ipaddr.IPAddress(m.group(1))
                     portlist = PortList(m.group(2))
                     countries = countries.split(',')
+                    logging.debug("Parsed address: %s", address)
+                    logging.debug("Parsed portlist: %s", portlist)
+                    logging.debug("Parsed countries: %s", countries)
         except (IndexError, ValueError):
+            logging.debug("Skipping line")
             continue # skip this line
         if ID and address and portlist and countries:
             yield ID, address, portlist, countries
