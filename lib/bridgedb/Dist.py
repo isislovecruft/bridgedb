@@ -8,6 +8,7 @@ This module has functions to decide which bridges to hand out to whom.
 
 import bridgedb.Bridges
 import bridgedb.Storage
+import bridgedb.Util as Util
 
 import logging
 import re
@@ -131,14 +132,15 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
            N -- the number of bridges to try to give back.
         """
         if not bridgeFilterRules: bridgeFilterRules=[]
-        logging.debug("getBridgesForIP(%s, %s, %s, %s" % (ip, epoch, N, bridgeFilterRules))
+        logging.debug("getBridgesForIP(%s, %s, %s, %s",
+                Util.logSafely(ip), epoch, N, bridgeFilterRules)
         if not len(self.splitter):
             logging.debug("bailing without splitter")
             return []
 
         area = self.areaMapper(ip)
 
-        logging.info("area is %s" % area)
+        logging.info("area is %s", Util.logSafely(area))
         
         key1 = ''
         pos = 0
@@ -154,8 +156,8 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                       len(self.categories),
                                                       n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s"%(epoch,area))
-                pos = self.areaOrderHmac("category<%s>%s"%(epoch,area))
+                logging.info("category<%s>%s", epoch, Util.logSafely(area))
+                pos = self.areaOrderHmac("category<%s>%s", epoch, area)
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                              "Order-Bridges-In-Ring-%d"%n) 
                 break;
@@ -364,15 +366,15 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
             if wasWarned:
                 logging.info("Got a request for bridges from %r; we already "
-                             "sent a warning. Ignoring.", emailaddress)
-                raise IgnoreEmail("Client was warned", emailaddress)
+                             "sent a warning. Ignoring.", Util.logSafely(emailaddress))
+                raise IgnoreEmail("Client was warned", Util.logSafely(emailaddress))
             else:
                 db.setWarnedEmail(emailaddress, True, now)
                 db.commit() 
 
             logging.info("Got a request for bridges from %r; we already "
                          "answered one within the last %d seconds. Warning.",
-                         emailaddress, MAX_EMAIL_RATE)
+                         Util.logSafely(emailaddress), MAX_EMAIL_RATE)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         # warning period is over

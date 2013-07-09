@@ -25,6 +25,7 @@ import twisted.mail.smtp
 from zope.interface import implements
 
 import bridgedb.Dist
+import bridgedb.Util as Util
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -99,11 +100,11 @@ def getMailResponse(lines, ctx):
         logging.info("Ignoring bad address on incoming email.")
         return None,None
     if not addrdomain:
-        logging.info("Couldn't parse domain from %r", clientAddr)
+        logging.info("Couldn't parse domain from %r", Util.logSafely(clientAddr))
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
     if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
-        logging.info("Unrecognized email domain %r", addrdomain)
+        logging.info("Unrecognized email domain %r", Util.logSafely(addrdomain))
         return None,None
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
     if 'dkim' in rules:
@@ -176,7 +177,7 @@ def getMailResponse(lines, ctx):
     # Handle rate limited email
     except TooSoonEmail, e:
         logging.info("Got a mail too frequently; warning %r: %s.",
-                     clientAddr, e)
+                     Util.logSafely(clientAddr), e)
 
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
@@ -186,12 +187,12 @@ def getMailResponse(lines, ctx):
 
     except IgnoreEmail, e:
         logging.info("Got a mail too frequently; ignoring %r: %s.",
-                      clientAddr, e)
+                      Util.logSafely(clientAddr), e)
         return None, None 
 
     except BadEmail, e:
         logging.info("Got a mail from a bad email address %r: %s.",
-                     clientAddr, e)
+                     Util.logSafely(clientAddr), e)
         return None, None 
 
     if bridges:
@@ -251,7 +252,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-    logging.info("Sending reply to %r", sendToUser)
+    logging.info("Sending reply to %r", Util.logSafely(sendToUser))
     return d
 
 def getLocaleFromPlusAddr(address):
