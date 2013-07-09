@@ -10,12 +10,12 @@ import os
 import signal
 import sys
 import time
-import logging
-import logging.handlers
 import gettext
 
 from twisted.internet import reactor
 
+import bridgedb.log as log
+import bridgedb.Util as util
 import bridgedb.config as config
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
@@ -24,24 +24,6 @@ import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
 
-
-def configureLogging(cfg):
-    """Set up Python's logging subsystem based on the configuratino.
-    """
-    level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-    level = getattr(logging, level)
-
-    logging.getLogger().setLevel(level)
-    if getattr(cfg, "LOGFILE"):
-        logfile_count = getattr(cfg, "LOGFILE_COUNT", 5)
-        logfile_rotate_size = getattr(cfg, "LOGFILE_ROTATE_SIZE", 10000000)
-
-        handler = logging.handlers.RotatingFileHandler(cfg.LOGFILE, 'a',
-                                                       logfile_rotate_size,
-                                                       logfile_count)
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%b %d %H:%M:%S")
-        handler.setFormatter(formatter)
-        logging.getLogger().addHandler(handler)
 
 def getKey(fname):
     """Load the key stored in fname, or create a new 32-byte key and store
@@ -100,9 +82,9 @@ def load(cfg, splitter, clear=False):
        object.
     """
     if clear:
-        logging.info("Clearing old bridges")
+        log.info("Clearing old bridges")
         splitter.clear()
-    logging.info("Loading bridges")
+    log.info("Loading bridges")
     status = {}
     addresses = {}
     timestamps = {}
@@ -152,7 +134,7 @@ def load(cfg, splitter, clear=False):
         for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
                 for port in portlist:
-                    logging.debug(":.( Tears! %s blocked %s %s:%s" % (
+                    log.debug(":.( Tears! %s blocked %s %s:%s" % (
                         countries, bridges[ID].fingerprint, address, port))
                     try:
                         bridges[ID].blockingCountries["%s:%s" % \
@@ -228,6 +210,9 @@ def startup(cfg):
         to the current working directory if not set.
     :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
+    rundir = util.touch(cfg.RUN_IN_DIR)
+    os.chdir(rundir)
+
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
@@ -249,7 +234,7 @@ def startup(cfg):
             pidfile.write("{}\n".format(os.getpid()))
 
     # Set up logging.
-    configureLogging(cfg)
+    beginLogging(cfg, rundir)
 
     # Import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
@@ -319,28 +304,28 @@ def startup(cfg):
 
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
-        logging.info("Caught SIGHUP")
+        log.info("Caught SIGHUP")
         reconfigure(cfg)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
-        logging.info("%d bridges loaded", len(splitter))
+        log.info("%d bridges loaded", len(splitter))
         if emailDistributor:
             emailDistributor.prepopulateRings() # create default rings
-            logging.info("%d for email", len(emailDistributor.splitter))
+            log.info("%d for email", len(emailDistributor.splitter))
         if ipDistributor:
             ipDistributor.prepopulateRings() # create default rings
-            logging.info("%d for web:", len(ipDistributor.splitter))
+            log.info("%d for web:", len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
-                    logging.info(" by filter set %s, %d" % (n, len(r)))
-            #logging.info("  by location set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.rings))
-            #logging.info("  by category set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.categoryRings))
-            #logging.info("Here are all known bridges in the category section:")
+                    log.info(" by filter set %s, %d" % (n, len(r)))
+            #log.info("  by location set: %s",
+            #         " ".join(str(len(r)) for r in ipDistributor.rings))
+            #log.info("  by category set: %s",
+            #         " ".join(str(len(r)) for r in ipDistributor.categoryRings))
+            #log.info("Here are all known bridges in the category section:")
             #for r in ipDistributor.categoryRings:
             #    for name, b in r.bridges.items():
-            #        logging.info("%s" % b.getConfigLine(True))
+            #        log.info("%s" % b.getConfigLine(True))
 
         # Dump bridge pool assignments to disk.
         try:
@@ -350,7 +335,7 @@ def startup(cfg):
             splitter.dumpAssignments(f)
             f.close()
         except IOError:
-            logging.info("I/O error while writing assignments")
+            log.info("I/O error while writing assignments")
 
     global _reloadFn
     _reloadFn = reload
@@ -369,7 +354,7 @@ def startup(cfg):
 
     # Actually run the servers.
     try:
-        logging.info("Starting reactors.")
+        log.info("Starting reactors.")
         reactor.run()
     finally:
         db.close()
