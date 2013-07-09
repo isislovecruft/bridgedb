@@ -4,7 +4,6 @@
 
 import calendar
 import os
-import logging
 import binascii
 import sqlite3
 import time
@@ -13,6 +12,9 @@ from ipaddr import IPAddress, IPv6Address, IPv4Address
 
 import bridgedb.Stability as Stability
 from bridgedb.Stability import BridgeHistory
+
+import bridgedb.log as logging
+
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
@@ -432,7 +434,7 @@ def openDatabase(sqlite_file):
                 logging.info("Adding new table BridgeHistory")
                 cur.executescript(SCHEMA_2TO3_SCRIPT)
             elif val != 3:
-                logging.warn("Unknown schema version %s in database.", val)
+                logging.warn("Unknown schema version %s in database." % val)
         except sqlite3.OperationalError:
             logging.warn("No Config table found in DB; creating tables")
             cur.executescript(SCHEMA3_SCRIPT)
@@ -488,7 +490,7 @@ def openOrConvertDatabase(sqlite_file, db_file):
             elif k.startswith("sp|") or k.startswith("em|"):
                 pass
             else:
-                logging.warn("Unrecognized key %r", k)
+                logging.warn("Unrecognized key %r" % k)
     except:
         conn.rollback()
         conn.close()
