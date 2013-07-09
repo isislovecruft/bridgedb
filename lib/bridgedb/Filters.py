@@ -3,7 +3,9 @@
 # See LICENSE for licensing information 
 
 from ipaddr import IPv6Address, IPv4Address
-import logging
+
+import bridgedb.log as log
+
 
 funcs = {}
 
@@ -115,7 +117,7 @@ def filterBridgesByNotBlockedIn(countryCode, addressClass=None, methodname=None)
                 else: ac = "IPv6"
                 logmsg = "Removing %s from set of results for country"
                 logmsg += " '%s' with address class %s and transport %s"
-                logging.debug(logmsg % ( bridge.fingerprint, countryCode, ac,
+                log.debug(logmsg % ( bridge.fingerprint, countryCode, ac,
                     methodname))
                 return False
             return True # not blocked
