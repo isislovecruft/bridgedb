@@ -10,7 +10,6 @@ from StringIO import StringIO
 
 import gettext
 import gpgme
-import logging
 import re
 import rfc822
 import time
@@ -31,6 +30,9 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 import bridgedb.I18n as I18n
+
+import bridgedb.log as log
+
 
 class MailFile:
     """A file-like object used to hand rfc822.Message a list of lines
@@ -85,7 +87,7 @@ def getMailResponse(lines, ctx):
     elif clientFromAddr and clientFromAddr[1]:
         clientAddr = clientFromAddr[1]
     else:
-        logging.info("No From or Sender header on incoming mail.")
+        log.info("No From or Sender header on incoming mail.")
         return None,None
 
     # Look up the locale part in the 'To:' address, if there is one and get
@@ -96,14 +98,14 @@ def getMailResponse(lines, ctx):
     try:
         _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
     except BadEmail:
-        logging.info("Ignoring bad address on incoming email.")
+        log.info("Ignoring bad address on incoming email.")
         return None,None
     if not addrdomain:
-        logging.info("Couldn't parse domain from %r", clientAddr)
+        log.info("Couldn't parse domain from %r", clientAddr)
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
     if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
-        logging.info("Unrecognized email domain %r", addrdomain)
+        log.info("Unrecognized email domain %r", addrdomain)
         return None,None
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
     if 'dkim' in rules:
@@ -113,7 +115,7 @@ def getMailResponse(lines, ctx):
         dkimHeader = "<no header>"
         if dkimHeaders: dkimHeader = dkimHeaders[0]
         if not dkimHeader.startswith("pass"):
-            logging.info("Got a bad dkim header (%r) on an incoming mail; "
+            log.info("Got a bad dkim header (%r) on an incoming mail; "
                          "rejecting it.", dkimHeader)
             return None, None
 
@@ -122,7 +124,7 @@ def getMailResponse(lines, ctx):
     #    if ln.strip().lower() in ("get bridges", "subject: get bridges"):
     #        break
     #else:
-    #    logging.info("Got a mail from %r with no bridge request; dropping",
+    #    log.info("Got a mail from %r with no bridge request; dropping",
     #                 clientAddr)
     #    return None,None
 
@@ -144,7 +146,7 @@ def getMailResponse(lines, ctx):
                         ln).group(1).strip()
             except (TypeError, AttributeError):
                 transport = None
-            logging.debug("Got request for transport: %s" % transport)
+            log.debug("Got request for transport: %s" % transport)
         if "unblocked" in ln.strip().lower():
             try:
                 unblocked = re.search("unblocked ([a-zA-Z]{2,4})",
@@ -175,7 +177,7 @@ def getMailResponse(lines, ctx):
 
     # Handle rate limited email
     except TooSoonEmail, e:
-        logging.info("Got a mail too frequently; warning %r: %s.",
+        log.info("Got a mail too frequently; warning %r: %s.",
                      clientAddr, e)
 
         # Compose a warning email
@@ -185,12 +187,12 @@ def getMailResponse(lines, ctx):
                 gpgContext=ctx.gpgContext)
 
     except IgnoreEmail, e:
-        logging.info("Got a mail too frequently; ignoring %r: %s.",
+        log.info("Got a mail too frequently; ignoring %r: %s.",
                       clientAddr, e)
         return None, None 
 
     except BadEmail, e:
-        logging.info("Got a mail from a bad email address %r: %s.",
+        log.info("Got a mail from a bad email address %r: %s.",
                      clientAddr, e)
         return None, None 
 
@@ -238,10 +240,10 @@ def replyToMail(lines, ctx):
     """Given a list of lines from an incoming email message, and a
        MailContext object, possibly send a reply.
     """
-    logging.info("Got a completed email; deciding whether to reply.")
+    log.info("Got a completed email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
-        logging.debug("getMailResponse said not to reply, so I won't.")
+        log.debug("getMailResponse said not to reply, so I won't.")
         return
     response.seek(0)
     d = Deferred()
@@ -251,7 +253,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-    logging.info("Sending reply to %r", sendToUser)
+    log.info("Sending reply to %r", sendToUser)
     return d
 
 def getLocaleFromPlusAddr(address):
@@ -323,7 +325,7 @@ class MailMessage:
     def lineReceived(self, line):
         """Called when we get another line of an incoming message."""
         self.nBytes += len(line)
-        logging.debug("> %s", line.rstrip("\r\n"))
+        log.debug("> %s", line.rstrip("\r\n"))
         if self.nBytes > self.ctx.maximumSize:
             self.ignoring = True
         else:
@@ -420,14 +422,14 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         plaintext = StringIO(body)
         sigs = gpgContext.sign(plaintext, signature, gpgme.SIG_MODE_CLEAR)
         if (len(sigs) != 1):
-            logging.warn('Failed to sign message!')
+            log.warn('Failed to sign message!')
         signature.seek(0)
         [mailbody.write(l) for l in signature]
     else:
         mailbody.write(body)
 
     f.seek(0)
-    logging.debug("Email body:\n%s" % f.read())
+    log.debug("Email body:\n%s" % f.read())
     f.seek(0)
     return clientAddr, f
 
@@ -448,14 +450,14 @@ def getGPGContext(cfg):
     try:
         # import the key
         keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
-        logging.debug("Opened GPG Keyfile %s" % cfg.EMAIL_GPG_SIGNING_KEY)
+        log.debug("Opened GPG Keyfile %s" % cfg.EMAIL_GPG_SIGNING_KEY)
         ctx = gpgme.Context()
         result = ctx.import_(keyfile)
 
         assert len(result.imports) == 1
         fingerprint = result.imports[0][0]
         keyfile.close()
-        logging.debug("GPG Key with fingerprint %s imported" % fingerprint)
+        log.debug("GPG Key with fingerprint %s imported" % fingerprint)
 
         ctx.armor = True
         ctx.signers = [ctx.get_key(fingerprint)]
