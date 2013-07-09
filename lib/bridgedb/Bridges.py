@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # See LICENSE for licensing information
 
 """
@@ -8,7 +10,6 @@ them in rings.
 import binascii
 import bisect
 import hmac
-import logging
 import re
 import sha
 import socket
@@ -16,6 +17,7 @@ import time
 import ipaddr
 import random
 
+import bridgedb.log as log
 import bridgedb.Storage
 import bridgedb.Bucket
 
@@ -555,7 +557,7 @@ def parseStatusFile(f):
                     " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
                     )
             except binascii.Error:
-                logging.warn("Unparseable base64 ID %r", line.split()[2])
+                log.warn("Unparseable base64 ID %r", line.split()[2])
             except ValueError: timestamp = None
 
         elif ID and line.startswith("a "):
@@ -567,7 +569,7 @@ def parseStatusFile(f):
                 except KeyError:
                     or_addresses[address] = portlist
             else:
-                logging.warn("Skipping extra or-address line "\
+                log.warn("Skipping extra or-address line "\
                              "from Bridge with ID %r" % ID)
             num_or_address_lines += 1
 
@@ -710,7 +712,7 @@ class BridgeRing(BridgeHolder):
         #XXX: just use bridge.ip
         if isinstance(bridge.ip, ipaddr.IPv6Address): ip = "[%s]" % bridge.ip
         else: ip = bridge.ip
-        logging.debug("Adding %s to %s", ip, self.name)
+        log.debug("Adding %s to %s", ip, self.name)
 
     def _sort(self):
         """Helper: put the keys in sorted order."""
@@ -812,7 +814,7 @@ class UnallocatedHolder(BridgeHolder):
         self.fingerprints = []
 
     def insert(self, bridge):
-        logging.debug("Leaving %s unallocated", bridge.getConfigLine(True))
+        log.debug("Leaving %s unallocated", bridge.getConfigLine(True))
         if not bridge.fingerprint in self.fingerprints:
             self.fingerprints.append(bridge.fingerprint)
 
@@ -949,7 +951,7 @@ class FilteredBridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         if not bridge.running:
-            logging.debug("insert non-running bridge %s" % bridge.getID())
+            log.debug("insert non-running bridge %s" % bridge.getID())
             return
 
         self.bridges.append(bridge)
@@ -958,7 +960,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         for n,(f,r) in self.filterRings.items():
             if f(bridge):
                 r.insert(bridge)
-                logging.debug("insert bridge into %s" % n)
+                log.debug("insert bridge into %s" % n)
 
     def addRing(self, ring, ringname, filterFn, populate_from=None):
         """Add a ring to this splitter.
@@ -970,14 +972,14 @@ class FilteredBridgeSplitter(BridgeHolder):
         """
         assert isinstance(ring, BridgeHolder)
         assert ringname not in self.filterRings.keys()
-        logging.debug("addRing %s" % ringname)
+        log.debug("addRing %s" % ringname)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
         self.filterRings[ringname] = (filterFn,ring)
 
         # populate ring from an iterable
         if populate_from:
-            logging.debug("populating ring %s" % ringname)
+            log.debug("populating ring %s" % ringname)
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     ring.insert(bridge)
