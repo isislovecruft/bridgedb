@@ -504,16 +504,16 @@ def parseExtraInfoFile(f):
             logging.debug("Parsing extra-info line")
             line = line[11:]
             (nickname, ID) = line.split()
-            logging.debug("Parsed Nickname: %s", nickname)
+            logging.debug("  Parsed Nickname: %s", nickname)
             if is_valid_fingerprint(ID):
-                logging.debug("Parsed fingerprint: %s", ID)
+                logging.debug("  Parsed fingerprint: %s", ID)
                 ID = fromHex(ID)
             else:
-                logging.debug("Parsed invalid fingerprint: %s", ID)
+                logging.debug("  Parsed invalid fingerprint: %s", ID)
 
         # get the transport line
         if ID and line.startswith("transport "):
-            logging.debug("Parsing transport line")
+            logging.debug("  Parsing transport line")
             fields = line[10:].split()
             # [ arglist ] field, optional
             if len(fields) >= 3:
@@ -524,7 +524,7 @@ def parseExtraInfoFile(f):
                     try: k,v = arg.split('=')
                     except ValueError: continue
                     argdict[k] = v
-                    logging.debug("Parsing Argument: %s: %s", k, v)
+                    logging.debug("  Parsing Argument: %s: %s", k, v)
 
             # get the required fields, method name and address
             if len(fields) >= 2:
@@ -536,8 +536,8 @@ def parseExtraInfoFile(f):
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
-                        logging.debug("Parsed Transport: %s", method_name)
-                        logging.debug("Parsed Transport Address: %s:%d", address, port)
+                        logging.debug("  Parsed Transport: %s", method_name)
+                        logging.debug("  Parsed Transport Address: %s:%d", address, port)
                         yield ID, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
@@ -553,6 +553,8 @@ def parseStatusFile(f):
     num_or_address_lines = 0
     or_addresses = {}
     for line in f:
+        if not ID:
+            logging.debug("Parsing network status line")
         line = line.strip()
         if line.startswith("opt "):
             line = line[4:]
@@ -563,37 +565,38 @@ def parseStatusFile(f):
                 timestamp = time.mktime(time.strptime(
                     " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
                     )
-                logging.debug("Timestamp: %s", timestamp)
+                logging.debug("  Fingerprint: %s", toHex(ID))
+                logging.debug("  Timestamp: %s", timestamp)
             except binascii.Error:
-                logging.warn("Unparseable base64 ID %r", line.split()[2])
+                logging.warn("  Unparseable base64 ID %r", line.split()[2])
             except ValueError:
                 timestamp = None
-                logging.debug("Timestamp; Invalid")
+                logging.debug("  Timestamp; Invalid")
 
         elif ID and line.startswith("a "):
             if num_or_address_lines < 8:
                 line = line[2:]
                 try:
                     address,portlist = parseORAddressLine(line)
-                    logging.debug("Parsed address: %s", address)
-                    logging.debug("Parsed port(s): %s", portlist)
+                    logging.debug("  Parsed address: %s", address)
+                    logging.debug("  Parsed port(s): %s", portlist)
                 except ParseORAddressError:
-                    logging.debug("Failed to Parsed address: %s", address)
+                    logging.debug("  Failed to Parsed address: %s", address)
                 try:
                     or_addresses[address].add(portlist)
                 except KeyError:
                     or_addresses[address] = portlist
             else:
-                logging.warn("Skipping extra or-address line "\
+                logging.warn("  Skipping extra or-address line "\
                              "from Bridge with ID %r" % ID)
             num_or_address_lines += 1
 
         elif ID and timestamp and line.startswith("s "):
             flags = line.split()
-            logging.debug("Parsed Flags: %s", flags)
+            logging.debug("  Parsed Flags: %s", flags)
             yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
             timestamp = ID = None
-            logging.debug("Total: %d OR address lines", num_or_address_lines)
+            logging.debug("  Total: %d OR address lines", num_or_address_lines)
             num_or_address_lines = 0
             or_addresses = {}
 
@@ -1026,6 +1029,8 @@ class FilteredBridgeSplitter(BridgeHolder):
                         desc.append(g.description)
 
             # add transports
+            logging.debug("%s supports %d transports" % (toHex(b.getID()),
+                                                         len(b.transports)))
             for transport in b.transports:
                 desc.append("transport=%s"%(transport.methodname))
 

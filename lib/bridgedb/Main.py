@@ -232,8 +232,10 @@ def load(cfg, splitter, clear=False):
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
+                logging.debug("  Appending transport to running bridge")
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
+                assert bridges[ID].transports, "We added a transport but it disappeared!"
         logging.debug("Closing extra-info document")
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
@@ -417,6 +419,7 @@ def startup(cfg):
 
         # Dump bridge pool assignments to disk.
         try:
+            logging.debug("Dumping pool assignments file")
             f = open(cfg.ASSIGNMENTS_FILE, 'a')
             f.write("bridge-pool-assignment %s\n" %
                     time.strftime("%Y-%m-%d %H:%M:%S"))
