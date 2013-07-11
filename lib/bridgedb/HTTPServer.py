@@ -8,7 +8,6 @@ This module implements the web (http, https) interfaces to the bridge database.
 
 import base64
 import gettext
-import logging
 import re
 import textwrap
 import time
@@ -30,6 +29,7 @@ from bridgedb.Raptcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb import log as logging
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 from mako.template import Template
@@ -51,7 +51,7 @@ try:
     logging.info("GeoIP database loaded")
 except:
     geoip = None
-    logging.warn("GeoIP database not found") 
+    logging.warn("GeoIP database not found")
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
@@ -98,13 +98,13 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         recaptcha_response = captcha.submit(challenge, response,
                                         self.recaptchaPrivKey, remote_ip)
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r",
-                    Util.logSafely(remote_ip), request.args)
+            logging.info("Valid recaptcha from %s. Parameters were %r"
+                         % Util.logSafely(remote_ip), request.args)
             return self.resource.render(request)
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r",
-                         Util.logSafely(remote_ip), request.args)
-            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
+            logging.info("Invalid recaptcha from %s. Parameters were %r"
+                         % (Util.logSafely(remote_ip), request.args))
+            logging.info("Recaptcha error code: %s" % recaptcha_response.error_code)
         return redirectTo(request.URLPath(), request)
 
 class WebResource(twisted.web.resource.Resource):
@@ -145,7 +145,7 @@ class WebResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    logging.warn("Got weird forwarded-for value %r" % h)
                     ip = None
         else:
             ip = request.getClientIP()
@@ -212,8 +212,8 @@ class WebResource(twisted.web.resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
 
-        logging.info("Replying to web request from %s.  Parameters were %r",
-                     Util.logSafely(ip), request.args)
+        logging.info("Replying to web request from %s. Parameters were %r"
+                     % (Util.logSafely(ip), request.args))
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             return answer
@@ -345,6 +345,6 @@ def setLocaleFromRequestHeader(request):
         # gettext wants _, not -
         map(lambda x: x.replace('-', '_'), langs)
         lang = gettext.translation("bridgedb", localedir=localedir,
-                 languages=langs, fallback=True)
+                languages=langs, fallback=True)
         lang.install(True)
     return langs
