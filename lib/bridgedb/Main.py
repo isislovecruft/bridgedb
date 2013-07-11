@@ -73,6 +73,28 @@ def getKey(fname):
 
     return k
 
+def beginLogging(conf, rundir):
+    """Configure and begin logging.
+
+    1) Get the filename for our main logfile, and if we should log to stdout.
+    2) Expand the directory name to keep logfiles in and set it to
+       ``log.folder``.
+    3) Configure the logging level.
+    4) Start the log publisher, :class:`bridgedb.log.BridgeDBLogPublisher`.
+
+    :param conf: A :class:`bridgedb.config.Conf` configuration object.
+    :param rundir: The absolute path of the RUN_IN_DIR bridgedb.conf setting.
+    """
+    logfile = conf.get('LOGFILE', 'bridgedb.log')
+    lstdout = conf.get('LOG_STDOUT', True)
+    ldirect = os.path.join(rundir, conf.get('LOGDIR', 'log'))
+    logdir  = Util.touch(ldirect, directory=True)
+    conf['LOGDIR'] = logdir
+
+    log.folder = logdir
+    log.setLevel(conf.LOGLEVEL)
+    log.startLogging(logfile, lstdout)
+
 def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
        object.
