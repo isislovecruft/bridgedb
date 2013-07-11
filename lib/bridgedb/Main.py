@@ -81,7 +81,7 @@ def getKey(fname):
     """
     try:
         f = open(fname, 'rb')
-    except IOError:
+    except (IOError, TypeError):
         k = os.urandom(32)
         flags = os.O_WRONLY|os.O_TRUNC|os.O_CREAT|getattr(os, "O_BIN", 0)
         fd = os.open(fname, flags, 0400)
