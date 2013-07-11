@@ -157,7 +157,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                       n)
                 bridgeFilterRules.append(g)
                 logging.info("category<%s>%s", epoch, Util.logSafely(area))
-                pos = self.areaOrderHmac("category<%s>%s", epoch, area)
+                pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                              "Order-Bridges-In-Ring-%d"%n) 
                 break;
