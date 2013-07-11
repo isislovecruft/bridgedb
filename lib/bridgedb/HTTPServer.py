@@ -8,7 +8,6 @@ This module implements the web (http, https) interfaces to the bridge database.
 
 import base64
 import gettext
-import logging
 import re
 import textwrap
 import time
@@ -28,6 +27,7 @@ from bridgedb.Raptcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb import log
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 from mako.template import Template
@@ -38,17 +38,17 @@ template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],
                         output_encoding='utf-8')
 
-logging.debug("Set template root to %s" % template_root)
+log.debug("Set template root to %s" % template_root)
 
 try:
     import GeoIP
     # GeoIP data object: choose database here
     # This is the same geoip implementation that pytorctl uses
     geoip = GeoIP.new(GeoIP.GEOIP_STANDARD)
-    logging.info("GeoIP database loaded")
+    log.info("GeoIP database loaded")
 except:
     geoip = None
-    logging.warn("GeoIP database not found") 
+    log.warn("GeoIP database not found")
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
@@ -66,7 +66,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    log.warn("Got weird forwarded-for value %r",h)
                     ip = None
         else:
             ip = request.getClientIP()
@@ -95,13 +95,13 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         recaptcha_response = captcha.submit(challenge, response,
                                         self.recaptchaPrivKey, remote_ip)
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r",
+            log.info("Valid recaptcha from %s. Parameters were %r",
                     remote_ip, request.args)
             return self.resource.render(request)
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r",
+            log.info("Invalid recaptcha from %s. Parameters were %r",
                          remote_ip, request.args)
-            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
+            log.info("Recaptcha error code: %s", recaptcha_response.error_code)
         return redirectTo(request.URLPath(), request)
 
 class WebResource(twisted.web.resource.Resource):
@@ -142,7 +142,7 @@ class WebResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    log.warn("Got weird forwarded-for value %r",h)
                     ip = None
         else:
             ip = request.getClientIP()
@@ -209,7 +209,7 @@ class WebResource(twisted.web.resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
 
-        logging.info("Replying to web request from %s.  Parameters were %r", ip,
+        log.info("Replying to web request from %s.  Parameters were %r", ip,
                      request.args)
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
@@ -278,12 +278,12 @@ def addWebServer(cfg, dist, sched):
 
 def setLocaleFromRequestHeader(request):
     langs = request.getHeader('accept-language').split(',')
-    logging.debug("Accept-Language: %s" % langs)
+    log.debug("Accept-Language: %s" % langs)
     localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
 
     if langs:
         langs = filter(lambda x: re.match('^[a-z_]{1,5}$', x), langs)
-        logging.debug("Languages: %s" % langs)
+        log.debug("Languages: %s" % langs)
         map(lambda x: x.replace("-","_").lower(),langs)
         lang = gettext.translation("bridgedb", localedir=localedir,
                 languages=langs, fallback=True)
