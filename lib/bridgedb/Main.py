@@ -6,16 +6,16 @@
 This module sets up a bridgedb and starts the servers running.
 """
 
+from __future__ import print_function
 import os
 import signal
 import sys
 import time
-import logging
-import logging.handlers
 import gettext
 
 from twisted.internet import reactor
 
+import bridgedb.log as logging
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
@@ -109,43 +109,6 @@ CONFIG = Conf(
     RECAPTCHA_PRIV_KEY = '', 
   )
 
-def configureLogging(cfg):
-    """Set up Python's logging subsystem based on the configuratino.
-    """
-
-    # Turn on safe logging by default
-    safelogging = getattr(cfg, 'SAFELOGGING', True)
-
-    level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-    level = getattr(logging, level)
-    logfile = getattr(cfg, 'LOGFILE', "")
-    logfile_count = getattr(cfg, 'LOGFILE_COUNT', 5)
-    logfile_rotate_size = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
-    Util.set_safe_logging(safelogging)
-
-    logging.getLogger().setLevel(level)
-    if logfile:
-        handler = logging.handlers.RotatingFileHandler(logfile, 'a',
-                                                       logfile_rotate_size,
-                                                       logfile_count)
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%b %d %H:%M:%S")
-        handler.setFormatter(formatter)
-        logging.getLogger().addHandler(handler)
-
-    logging.info("Logger Started.")
-    logging.info("Level: %s", level)
-    if logfile:
-        logging.info("Log File: %s", os.path.abspath(logfile))
-        logging.info("Log File Count: %d", logfile_count)
-        logging.info("Rotate Logs After Size: %d",  logfile_rotate_size)
-    else:
-        logging.info("Logging to stderr")
-    if safelogging:
-        logging.info("Safe Logging: Enabled")
-    else:
-        logging.warn("Safe Logging: Disabled")
-
-
 def getKey(fname):
     """Load the key stored in fname, or create a new 32-byte key and store
        it in fname.
@@ -175,6 +138,40 @@ def getKey(fname):
         f.close()
 
     return k
+
+def beginLogging(conf, rundir):
+    """Configure and begin logging.
+
+    1) Get the filename for our main logfile, and if we should log to stdout.
+    2) Expand the directory name to keep logfiles in and set it to
+       ``log.folder``.
+    3) Configure the logging level.
+    4) Start the log publisher, :class:`bridgedb.log.BridgeDBLogPublisher`.
+
+    :param conf: A :class:`bridgedb.config.Conf` configuration object.
+    :param rundir: The absolute path of the RUN_IN_DIR bridgedb.conf setting.
+    """
+    # Turn on safe logging by default
+    safelogging = getattr(conf, 'SAFELOGGING', True)
+    Util.set_safe_logging(safelogging)
+
+    logfile = getattr(conf, 'LOGFILE', 'bridgedb.log')
+    lstdout = getattr(conf, 'LOG_STDOUT', True)
+    ldirect = os.path.join(rundir, getattr(conf, 'LOGDIR', 'log'))
+
+    logging.folder = ldirect
+    logging.setLevel(conf.LOGLEVEL)
+    logging.startLogging(logfile, lstdout)
+
+    logging.info("Log Level: %s" % logging.level)
+    if logfile:
+        logging.info("Log File: %s" % os.path.abspath(logfile))
+    else:
+        logging.info("Logging to stderr")
+    if safelogging:
+        logging.info("Safe Logging: Enabled")
+    else:
+        logging.warn("Safe Logging: Disabled")
 
 def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
@@ -232,25 +229,27 @@ def load(cfg, splitter, clear=False):
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
     if hasattr(cfg, "EXTRA_INFO_FILE"):
-        logging.info("Opening Extra Info document %s", os.path.abspath(cfg.EXTRA_INFO_FILE))
+        logging.info("Opening Extra Info document %s"
+                     % os.path.abspath(cfg.EXTRA_INFO_FILE))
         f = open(cfg.EXTRA_INFO_FILE, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
-                logging.debug("  Appending transport to running bridge")
+                logging.debug("Appending transport to running bridge")
                 bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
                     method_name, address, port, argdict))
                 assert bridges[ID].transports, "We added a transport but it disappeared!"
         logging.debug("Closing extra-info document")
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
-        logging.info("Opening Blocking Countries file %s", os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
+        logging.info("Opening Blocking Countries file %s"
+                     % os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
         for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
                 for port in portlist:
-                    logging.debug(":.( Tears! %s blocked %s %s:%s",
-                        countries, bridges[ID].fingerprint, address, port)
+                    logging.debug(":.( Tears! %s blocked %s %s:%s" % (
+                        countries, bridges[ID].fingerprint, address, port))
                     try:
                         bridges[ID].blockingCountries["%s:%s" % \
                                 (address, port)].update(countries)
@@ -273,8 +272,8 @@ def loadProxyList(cfg):
             elif Bridges.is_valid_ip(line):
                 ipset[line] = True
             elif line:
-                logging.info("Skipping line %r in %s: not an IP.",
-                             line, fname)
+                logging.info("Skipping line %r in %s: not an IP."
+                             % (line, fname))
         f.close()
     return ipset
 
@@ -292,8 +291,16 @@ class ProxyCategory:
         self.ipset = ipset
 
 def startup(cfg):
-    """Parse bridges,
+    """Parse config files,
+
+    :ivar rundir: The run directory, taken from ``conf.RUN_IN_DIR``. Defaults
+        to the current working directory if not set.
+    :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
+    rundir = getattr(cfg, 'RUN_IN_DIR', '~/run')
+    os.chdir(rundir)
+    beginLogging(cfg, rundir)
+
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
@@ -315,10 +322,7 @@ def startup(cfg):
         f.write("%s\n"%os.getpid())
         f.close()
 
-    # Set up logging.
-    configureLogging(cfg)
-
-    #XXX import Servers after logging is set up
+    # Import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
     # the console and ignore further basicConfig calls
     from bridgedb import EmailServer
@@ -399,24 +403,23 @@ def startup(cfg):
             cfg = Conf(**configuration)
             # update loglevel on (re)load
             level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-            level = getattr(logging, level)
-            logging.getLogger().setLevel(level)
+            logging.setLevel(level)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
-        logging.info("%d bridges loaded", len(splitter))
+        logging.info("%d bridges loaded" % len(splitter))
         if emailDistributor:
             emailDistributor.prepopulateRings() # create default rings
-            logging.info("%d for email", len(emailDistributor.splitter))
+            logging.info("%d for email" % len(emailDistributor.splitter))
         if ipDistributor:
             ipDistributor.prepopulateRings() # create default rings
-            logging.info("%d for web:", len(ipDistributor.splitter))
+            logging.info("%d for web:" % len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
                     logging.info(" by filter set %s, %d" % (n, len(r)))
-            #logging.info("  by location set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.rings))
-            #logging.info("  by category set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.categoryRings))
+            #logging.info("  by location set: %s"
+            #             % " ".join(str(len(r)) for r in ipDistributor.rings))
+            #logging.info("  by category set: %s"
+            #             % " ".join(str(len(r)) for r in ipDistributor.categoryRings))
             #logging.info("Here are all known bridges in the category section:")
             #for r in ipDistributor.categoryRings:
             #    for name, b in r.bridges.items():
@@ -458,8 +461,10 @@ def startup(cfg):
             os.unlink(cfg.PIDFILE)
 
 def run():
-    """Parse the command line to determine where the configuration is.
-       Parse the configuration, and start the servers.
+    """Start running BridgeDB and all configured servers.
+
+    If the option to dump bridges into bucket files is given, do that. Else,
+    start all the servers.
     """
     options, arguments = Opt.parseOpts()
     configuration = {}
@@ -467,7 +472,7 @@ def run():
     if options.testing:
         configuration = CONFIG
     elif not options.configfile:
-        print "Syntax: %s -c CONFIGFILE" % sys.argv[0]
+        print("Syntax: %s -c CONFIGFILE" % sys.argv[0])
         sys.exit(1)
     else:
         configFile = options.configfile
