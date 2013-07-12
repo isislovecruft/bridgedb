@@ -203,6 +203,34 @@ class ProxyCategory:
     def replaceProxyList(self, ipset):
         self.ipset = ipset
 
+def reconfigure(configuration=None):
+    """Take the options and reconfigure our settings.
+
+    This is used at startup to load our config file, and after handling a
+    SIGHUP, to reload any new settings.
+
+    Parse the command line to determine where the configuration file is, and
+    whether or not we are in testing mode (the '-t' flag). Parse the
+    configuration file, and apply those settings, and then, if extra settings
+    were given in :attr:`bridgedb.config.TESTING_CONFIG`, apply those settings
+    on top of the settings from the configuration file.
+    """
+    options, arguments = Opt.parseOpts()
+    settings = {}
+
+    if options.testing:
+        settings = config.TESTING_CONFIG
+    if not configuration:
+        configuration = config.Conf()
+
+    if options.configfile:
+        configuration.load(options.configfile)
+    elif not (len(settings) > 0):
+        raise SystemExit("Syntax: %s -c CONFIGFILE" % sys.argv[0])
+
+    configuration.update(**settings)
+    return options, configuration
+
 def startup(cfg):
     """Parse bridges,
     """
