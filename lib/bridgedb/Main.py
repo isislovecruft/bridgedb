@@ -200,7 +200,11 @@ def reconfigure(configuration=None):
     return options, configuration
 
 def startup(cfg):
-    """Parse bridges,
+    """Parse config files,
+
+    :ivar rundir: The run directory, taken from ``conf.RUN_IN_DIR``. Defaults
+        to the current working directory if not set.
+    :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
@@ -294,14 +298,7 @@ def startup(cfg):
     # Make the parse-bridges function get re-called on SIGHUP.
     def reload():
         logging.info("Caught SIGHUP")
-
-        # re open config file
-        options, arguments = Opt.parseOpts()
-        configuration = {}
-        if options.configfile:
-            conf = config.Conf()
-            conf.load(options.configfile)
-            conf.update(**configuration)
+        reconfigure(cfg)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
@@ -358,25 +355,12 @@ def startup(cfg):
             os.unlink(cfg.PIDFILE)
 
 def run():
-    """Parse the command line to determine where the configuration is.
-       Parse the configuration, and start the servers.
+    """Start running BridgeDB and all configured servers.
+
+    If the option to dump bridges into bucket files is given, do that. Else,
+    start all the servers.
     """
-    options, arguments = Opt.parseOpts()
-    configuration = {}
-
-    if options.testing:
-        configuration = config.TESTING_CONFIG
-    elif not options.configfile:
-        raise SystemExit("Syntax: %s -c CONFIGFILE" % sys.argv[0])
-    else:
-        conf = config.Conf()
-        conf.load(options.configfile)
-        conf.update(**configuration)
-        configuration = conf
-
-    # Change to the directory where we're supposed to run.
-    if conf.RUN_IN_DIR:
-        os.chdir(os.path.expanduser(conf.RUN_IN_DIR))
+    options, configuration = reconfigure()
 
     if options.dumpbridges:
         bucketManager = Bucket.BucketManager(configuration)
