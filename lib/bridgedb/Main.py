@@ -143,7 +143,7 @@ def load(cfg, splitter, clear=False):
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
-    if hasattr(cfg, "EXTRA_INFO_FILE"):
+    if cfg.EXTRA_INFO_FILE is not None:
         logging.info("Opening Extra Info document %s", os.path.abspath(cfg.EXTRA_INFO_FILE))
         f = open(cfg.EXTRA_INFO_FILE, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
@@ -155,7 +155,7 @@ def load(cfg, splitter, clear=False):
                 assert bridges[ID].transports, "We added a transport but it disappeared!"
         logging.debug("Closing extra-info document")
         f.close()
-    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+    if cfg.COUNTRY_BLOCK_FILE is not None:
         logging.info("Opening Blocking Countries file %s", os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
         for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
@@ -232,7 +232,11 @@ def reconfigure(configuration=None):
     return options, configuration
 
 def startup(cfg):
-    """Parse bridges,
+    """Parse config files,
+
+    :ivar rundir: The run directory, taken from ``conf.RUN_IN_DIR``. Defaults
+        to the current working directory if not set.
+    :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
     # Expand any ~ characters in paths in the configuration.
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
@@ -251,14 +255,13 @@ def startup(cfg):
 
     # Write the pidfile.
     if cfg.PIDFILE:
-        f = open(cfg.PIDFILE, 'w')
-        f.write("%s\n"%os.getpid())
-        f.close()
+        with open(cfg.PIDFILE, 'w') as pidfile:
+            pidfile.write("{}\n".format(os.getpid()))
 
     # Set up logging.
     configureLogging(cfg)
 
-    #XXX import Servers after logging is set up
+    # Import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
     # the console and ignore further basicConfig calls
     from bridgedb import EmailServer
@@ -281,10 +284,8 @@ def startup(cfg):
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
 
     # Create ring parameters.
-    forcePorts = getattr(cfg, "FORCE_PORTS")
-    forceFlags = getattr(cfg, "FORCE_FLAGS")
-    if not forcePorts: forcePorts = []
-    if not forceFlags: forceFlags = []
+    forcePorts = cfg.get("FORCE_PORTS", list())
+    forceFlags = cfg.get("FORCE_FLAGS", list())
     ringParams=Bridges.BridgeRingParameters(needPorts=forcePorts,
                                             needFlags=forceFlags)
 
@@ -310,8 +311,8 @@ def startup(cfg):
             cfg.EMAIL_DOMAIN_MAP[d] = d
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
-            cfg.EMAIL_DOMAIN_MAP.copy(),
-            cfg.EMAIL_DOMAIN_RULES.copy(),
+            cfg['EMAIL_DOMAIN_MAP'].copy(),
+            cfg['EMAIL_DOMAIN_RULES'].copy(),
             answerParameters=ringParams)
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
         #emailSchedule = Time.IntervalSchedule("day", 1)
@@ -335,12 +336,9 @@ def startup(cfg):
         options, arguments = Opt.parseOpts()
         configuration = {}
         if options.configfile:
-            execfile(options.configfile, configuration)
-            cfg = Conf(**configuration)
-            # update loglevel on (re)load
-            level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-            level = getattr(logging, level)
-            logging.getLogger().setLevel(level)
+            conf = config.Conf()
+            conf.load(options.configfile)
+            conf.update(**configuration)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
@@ -398,26 +396,12 @@ def startup(cfg):
             os.unlink(cfg.PIDFILE)
 
 def run():
-    """Parse the command line to determine where the configuration is.
-       Parse the configuration, and start the servers.
+    """Start running BridgeDB and all configured servers.
+
+    If the option to dump bridges into bucket files is given, do that. Else,
+    start all the servers.
     """
-    options, arguments = Opt.parseOpts()
-    configuration = {}
-
-    if options.testing:
-        configuration = CONFIG
-    elif not options.configfile:
-        print "Syntax: %s -c CONFIGFILE" % sys.argv[0]
-        sys.exit(1)
-    else:
-        configFile = options.configfile
-        execfile(configFile, configuration)
-        C = Conf(**configuration)
-        configuration = C
-
-    # Change to the directory where we're supposed to run.
-    if configuration.RUN_IN_DIR:
-        os.chdir(os.path.expanduser(configuration.RUN_IN_DIR))
+    options, configuration = reconfigure()
 
     if options.dumpbridges:
         bucketManager = Bucket.BucketManager(configuration)
