@@ -210,31 +210,33 @@ def startup(cfg):
         to the current working directory if not set.
     :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
-    rundir = util.touch(cfg.RUN_IN_DIR)
+    # Reset the config RUN_IN_DIR setting to rundir, so that we don't make
+    # another directory underneath us if called again:
+    rundir = util.touch(cfg.get('RUN_IN_DIR', ''), directory=True)
+    cfg.RUN_IN_DIR = rundir
+
+    ## Change to the directory we're supposed to run in:
     os.chdir(rundir)
-
-    # Expand any ~ characters in paths in the configuration.
-    cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
-    for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
-                "PIDFILE", "LOGFILE", "STATUS_FILE"):
-
-        v = getattr(cfg, key, None)
-        if v:
-            setattr(cfg, key, os.path.expanduser(v))
-    if hasattr(cfg, "PROXY_LIST_FILES"):
-        cfg.PROXY_LIST_FILES = [
-            os.path.expanduser(v) for v in cfg.PROXY_LIST_FILES ]
-    else:
-        cfg.PROXY_LIST_FILES = [ ]
-
-    # Write the pidfile.
-    if cfg.PIDFILE:
-        with open(cfg.PIDFILE, 'w') as pidfile:
-            pidfile.write("{}\n".format(os.getpid()))
-
-    # Set up logging.
     beginLogging(cfg, rundir)
+
+    ## The lists should be handled separately, so that we never deal with
+    ## trying to iterate over a NoneType.
+    for key in ('BRIDGE_FILES', 'PROXY_LIST_FILES'):
+        filelist = cfg.get(key, list())
+        expanded = Util.expand(filelist)
+        for filename in expanded:
+            Util.touch(filename)
+        cfg[key] = expanded
+
+    for key in ("DB_FILE", "DB_LOG_FILE", "ASSIGNMENTS_FILE", "STATUS_FILE",
+                "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE"):
+        filename = cfg.get(key)
+        if filename: Util.touch(filename)
+
+    pidfile = cfg.PIDFILE
+    if pidfile:
+        with open(pidfile, 'w') as fp:       ## Write the pidfile
+            fp.write("%s\n" % os.getpid())
 
     # Import Servers after logging is set up
     # Otherwise, python will create a default handler that logs to
