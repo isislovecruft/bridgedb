@@ -1,6 +1,7 @@
-BridgeDB is distributed under this license:
+BridgeDB, a Tor bridge relay distribution system, is distributed under the
+3-clause BSD license:
 
-Copyright (c) 2007-2009, The Tor Project, Inc.
+Copyright (c) 2007-2013, The Tor Project, Inc.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
