@@ -9,10 +9,12 @@
 from types import ModuleType
 
 import doctest
-import logging
 import imp
 import sys
 import os
+
+from bridgedb import log
+
 
 #: Testing-specific configuration settings, used for debugging. To apply these
 #: on top of the default settings in bridgedb.conf, run with:
@@ -141,14 +143,14 @@ class Conf(dict):
                 not config_file.file.endswith('c')):
                     self.file = config_file.file
 
-        logging.info("Loading config file: %s" % config_file)
+        log.info("Loading config file: %s" % config_file)
         try:
             if isinstance(config_file, ModuleType):
                 new = config_file.__dict__
             if hasattr(self, 'file') is not None:
                 new = imp.load_source('config', self.file).__dict__
         except (OSError, IOError) as err:
-            logging.err(err, "Loading config file '%s' failed!" % config_file)
+            log.err(err, "Loading config file '%s' failed!" % config_file)
         else: self.update(**new)
 
     def reload(self):
@@ -163,7 +165,7 @@ class Conf(dict):
         ``Conf.file``, are reloaded.
         """
         try:
-            logging.info("Reloading previous config file %s" % self.file)
+            log.info("Reloading previous config file %s" % self.file)
             self.clear()
             self.load(self.file)
-        except AttributeError: logging.warn("No previously loaded config file!")
+        except AttributeError: log.warn("No previously loaded config file!")
