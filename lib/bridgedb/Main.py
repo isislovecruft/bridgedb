@@ -15,7 +15,7 @@ import gettext
 from twisted.internet import reactor
 
 import bridgedb.log as log
-import bridgedb.Util as util
+import bridgedb.util as util
 import bridgedb.config as config
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
@@ -70,7 +70,7 @@ def beginLogging(conf, rundir):
     logfile = conf.get('LOGFILE', 'bridgedb.log')
     lstdout = conf.get('LOG_STDOUT', True)
     ldirect = os.path.join(rundir, conf.get('LOGDIR', 'log'))
-    logdir  = Util.touch(ldirect, directory=True)
+    logdir  = util.touch(ldirect, directory=True)
     conf['LOGDIR'] = logdir
 
     log.folder = logdir
@@ -231,15 +231,15 @@ def startup(cfg):
     ## trying to iterate over a NoneType.
     for key in ('BRIDGE_FILES', 'PROXY_LIST_FILES'):
         filelist = cfg.get(key, list())
-        expanded = Util.expand(filelist)
+        expanded = util.expand(filelist)
         for filename in expanded:
-            Util.touch(filename)
+            util.touch(filename)
         cfg[key] = expanded
 
     for key in ("DB_FILE", "DB_LOG_FILE", "ASSIGNMENTS_FILE", "STATUS_FILE",
                 "HTTPS_CERT_FILE", "HTTPS_KEY_FILE", "PIDFILE", "LOGFILE"):
         filename = cfg.get(key)
-        if filename: Util.touch(filename)
+        if filename: util.touch(filename)
 
     pidfile = cfg.PIDFILE
     if pidfile:
