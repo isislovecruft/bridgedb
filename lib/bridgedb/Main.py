@@ -222,6 +222,11 @@ def reconfigure(configuration=None):
     configuration file, and apply those settings, and then, if extra settings
     were given in :attr:`bridgedb.config.TESTING_CONFIG`, apply those settings
     on top of the settings from the configuration file.
+
+    :type configuration: :class:`bridgedb.config.Conf` or dict
+    :param configuration: A previously created :class:`bridgedb.config.Conf`
+        object, or a Python dictionary containing configuration key/value
+        settings.
     """
     options, arguments = Opt.parseOpts()
     settings = {}
