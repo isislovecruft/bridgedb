@@ -143,6 +143,12 @@ class Conf(dict):
             else:
                 self.file = os.path.abspath(config_file)
         elif isinstance(config_file, (ModuleType, self.__class__)):
+            ## Because the config file is not technically a "flat file", but
+            ## instead is a file containing Python global variables, when it
+            ## is loaded it is treated as a Python source file. This means it
+            ## gets compiled, and Python's idiot interpreter adds a 'c' to the
+            ## extension of any compiled Python binary. We don't want to load
+            ## binary files.
             if ((hasattr(config_file, 'file') is not None) and
                 not config_file.file.endswith('c')):
                     self.file = config_file.file
