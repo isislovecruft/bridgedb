@@ -95,15 +95,24 @@ def chopString(s, size):
         yield s[pos:pos+size]
 
 class Bridge:
-    """Holds information for a single bridge"""
-    ## Fields:
-    ##   nickname -- The bridge's nickname.  Not currently used.
-    ##   ip -- The bridge's IP address, as a dotted quad.
-    ##   orport -- The bridge's OR port.
-    ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
-    ##       no spaces.
-    ##   running,stable -- DOCDOC
-    ##   blockingCountries -- list of country codes blocking this bridge
+    """Holds information for a single bridge.
+
+    :param str nickname: The bridge's nickname. Not currently used.
+    :param str ip: The bridge's IP address, as a dotted quad.
+    :param int orport: The bridge's OR port.
+    :param str fingerprint: The bridge's identity digest, in lowercase hex,
+        with no spaces.
+    :id_digest: The hash digest of the bridge's public OR key.
+    :param dict or_addresses: XXX what is the format of this dict?
+    :param list transports: A list of strings (XXX is this correct?)
+        specifying transport type. (XXX do we grab the whole 'transport' line
+        from the extrainfo descriptor, i.e. 'obfs2 1.2.3.4:1234'?)
+
+    :ivar bool running: True if the bridge possesses the 'Running' descriptor flag.
+    :ivar bool stable: True if the bridge possesses the 'Stable' descriptor flag.
+    :ivar dict blockingCountries: A list of two-character country codes
+        from which this bridge is believed to be unreachable.
+    """
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
                  or_addresses=None, transports=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
