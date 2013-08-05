@@ -231,6 +231,32 @@ class Bridge:
                     assert 1 <= port <= 65535
 
     def setStatus(self, running=None, stable=None):
+        """Set the 'Running' and/or 'Stable' flags on this bridge relay.
+
+        From the Tor Directory Protocol, version 3:
+          | "Running" -- A router is 'Running' if the authority managed to
+          | connect to it successfully within the last 45 minutes.
+          |
+          | "Stable" -- A router is 'Stable' if it is active, and either its
+          | Weighted MTBF is at least the median for known active routers or
+          | its Weighted MTBF corresponds to at least 7 days. Routers are
+          | never called Stable if they are running a version of Tor known to
+          | drop circuits stupidly.  (0.1.1.10-alpha through 0.1.1.16-rc are
+          | stupid this way.)
+          |
+          | To calculate weighted MTBF, compute the weighted mean of the
+          | lengths of all intervals when the router was observed to be up,
+          | weighting intervals by $\alpha^n$, where $n$ is the amount of time
+          | that has passed since the interval ended, and $\alpha$ is chosen
+          | so that measurements over approximately one month old no longer
+          | influence the weighted MTBF much.
+
+        :param bool running: Whether the bridge has recently been contacted by
+            XXX which one? (a Directory Authority | the Bridge Authority)
+
+        :param bool stable: Whether the bridge has met some rather arcane and
+            ill-specified criteria for uptime stability.
+        """
         if running is not None:
             self.running = running
         if stable is not None:
