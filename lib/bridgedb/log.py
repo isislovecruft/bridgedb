@@ -161,17 +161,17 @@ def setLevel(logLevel=None):
         _msg("Configured LOG_LEVEL must be one of: %r" % LOG_LEVEL)
         level = 40
 
-def startLogging(file=None, *args, **kwargs):
+def startLogging(log_file=None, *args, **kwargs):
     """Initialize the publisher and start logging to a specified file.
 
     :type file: str or None
     :param file: The filename to log to. If None, log only to stdout.
     """
-    if isinstance(file, _log.StdioOnnaStick): return
+    if isinstance(log_file, _log.StdioOnnaStick): return
 
     publisher = BridgeDBLogPublisher()
-    if file:
-        fileobserver = BridgeDBFileLogObserver(file, *args, **kwargs).emit
+    if log_file:
+        fileobserver = BridgeDBFileLogObserver(log_file, *args, **kwargs).emit
         publisher.addObserver(fileobserver)
     publisher.start()
 
