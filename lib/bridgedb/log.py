@@ -17,6 +17,7 @@ from types      import NoneType
 import os
 import stat
 import sys
+import traceback
 
 from twisted.python import context
 from twisted.python import log as _log
