@@ -60,6 +60,11 @@ level = LOG_LEVEL['WARN']
 #: The directory to store logfiles in:
 folder = os.getcwd()
 
+#: The instantiated :class:`log.BridgeDBLogPublisher` which should be used for
+#: publishing all incoming log events to log observers. This is automatically
+#: instantiated at the end of :file:log.py.
+publisher = None
+
 #: The stftime(3) format for printing timestamps:
 timeFormat = '[%Y-%m-%d %H:%M:%S]'
 
@@ -169,11 +174,16 @@ def startLogging(log_file=None, *args, **kwargs):
     """
     if isinstance(log_file, _log.StdioOnnaStick): return
 
-    publisher = BridgeDBLogPublisher()
     if log_file:
         fileobserver = BridgeDBFileLogObserver(log_file, *args, **kwargs).emit
-        publisher.addObserver(fileobserver)
-    publisher.start()
+        global publisher
+        try:
+            publisher.addObserver(fileobserver)
+        except NameError:
+            publisher = BridgeDBLogPublisher()
+            publisher.addObserver(fileobserver)
+        finally:
+            publisher.start()
 
 
 class BridgeDBLogObserver(FileLogObserver):
@@ -393,8 +403,8 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
 synchronize(BridgeDBLogPublisher)
 
 try:
-    publisher
-except NameError:
+    assert publisher is not None
+except AssertionError:
     publisher = BridgeDBLogPublisher()
     addObserver = publisher.addObserver
     removeObserver = publisher.removeObserver
