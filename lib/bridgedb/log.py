@@ -246,6 +246,9 @@ class BridgeDBFileLogObserver(FileLogObserver):
     #:
     folder = filepath.FilePath(folder)
 
+    #: The default permissions to use for newly created logfiles.
+    default_mode = stat.S_IREAD | stat.S_IWRITE
+
     def __init__(self, filename='bridgedb.log', daily=False,
                  max_size=None, max_files=None):
         """Log events to a file.
@@ -291,7 +294,9 @@ class BridgeDBFileLogObserver(FileLogObserver):
         if not isinstance(daily, bool): daily = True
         if daily:
             _msg("WARNING: Daily logfiles will not be rotated/deleted!")
-            self.logfile = logfile.DailyLogFile(filename, self.folder.path)
+            self.logfile = logfile.DailyLogFile(filename,
+                                                self.folder.path,
+                                                defaultMode=self.default_mode)
         else:
             self.max_size = max_size if isinstance(max_size, int) else 10**6
             self.max_files = max_files if isinstance(max_files, int) else 5
