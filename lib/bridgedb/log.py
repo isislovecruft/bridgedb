@@ -290,8 +290,6 @@ class BridgeDBFileLogObserver(FileLogObserver):
 
         self.timeFormat = timeFormat
 
-
-        if not isinstance(daily, bool): daily = True
         if daily:
             _msg("WARNING: Daily logfiles will not be rotated/deleted!")
             self.logfile = logfile.DailyLogFile(filename,
