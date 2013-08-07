@@ -149,6 +149,37 @@ def err(_stuff=None, _why=None, **kwargs):
     kwargs.update({'logLevel': LOG_LEVEL['ERROR']})
     deferr(_stuff, _why, **kwargs)
 
+def _exception(error=None, **kwargs):
+    """Log an exception with its traceback.
+
+    This function works regardless of whether or not there is currently an
+    :class:`Exception`, and, if there is an ``Exception``, it doesn't matter
+    if it is wrapped in a :class:`twisted.python.failure.Failure`.
+
+    If ``error`` is a :class:`twisted.python.failure.Failure`, and
+    :attr:`error.captureVars` is True, then a detailed traceback will be
+    logged, which will include global and local variables. Note that this
+    significantly slows down the logging facilities.
+
+    If ``error`` is None, then nothing will happen.
+
+    :type error: A :class:`twisted.python.failure.Failure`, an
+        :exc:`Exception`, or None.
+    :param error: An exception or failure to capture a traceback for.
+    :param str _why: Some sort of explanation or context explaining why the
+        ``error`` occured.
+    """
+    kwargs.update({'logLevel': LOG_LEVEL['CRITICAL']})
+    if isinstance(error, failure.Failure):
+        if error.captureVars:
+            msg_str = error.printDetailedTraceback()
+        else:
+            msg_str = error.printTraceback()
+    else:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        msg_str = traceback.print_exception(exc_type, exc_value, exc_traceback)
+    _log.msg(error, **kwargs)
+
 def setLevel(logLevel=None):
     """Set the level to log message at. Defaults to 'WARNING'.
 
@@ -334,23 +365,7 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         else:
             self.debug("Observer %r not in observers list" % repr(observer))
 
-    def exception(self, error):
-        """Log an exception with its traceback.
-
-        If ``error`` is a ``t.p.failure.Failure``, and
-        :attr:`error.captureVars` is True, then a detailed traceback will be
-        logged, which will include global and local variables. Note that this
-        significantly slows down the logging facilities.
-
-        :type error: A :class:`t.p.failure.Failure` or :exc:`Exception`.
-       :param error: An exception or failure to capture a traceback for.
-        """
-        if isinstance(error, failure.Failure):
-            if error.captureVars: error.printDetailedTraceback()
-            else: error.printTraceback()
-        else:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_traceback)
+    exception = _exception
 
     def err(self, _stuff=None, _why=None, **kwargs):
         """Log a message at the ERROR level.
