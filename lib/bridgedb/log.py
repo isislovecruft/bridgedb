@@ -288,7 +288,7 @@ class BridgeDBFileLogObserver(FileLogObserver):
         ## no super(); t.p.l.FileLogObserver is an old-style class.
         FileLogObserver.__init__(self, fn)
 
-        self.timeFormat = '%Y-%m-%d %H:%M'
+        self.timeFormat = timeFormat
 
 
         if not isinstance(daily, bool): daily = True
