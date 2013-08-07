@@ -12,7 +12,6 @@
 
 from __future__ import print_function
 from datetime   import datetime
-from types      import NoneType
 
 import os
 import stat
