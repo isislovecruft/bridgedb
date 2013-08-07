@@ -188,10 +188,9 @@ class Bridge:
             orport = portlist[pos % len(portlist)]
 
             if includeFingerprint:
-                return "bridge %s:%d %s" % (ip, orport, self.fingerprint)
+                return "%s:%d %s" % (ip, orport, self.fingerprint)
             else:
-                return "bridge %s:%d" % (ip, orport)  
-
+                return "%s:%d" % (ip, orport)
 
     def getAllConfigLines(self,includeFingerprint=False):
         """Generator. Iterate over all valid config lines for this bridge."""
