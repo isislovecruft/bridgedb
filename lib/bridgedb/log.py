@@ -368,7 +368,7 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         if observer in observers:
             self.debug("Observer found in observer list. Suspending observer")
             try: verifyObject(ILogObserver, observer)
-            except BrokenImplementation as bi: pass
+            except BrokenImplementation: pass
             else: self.removeObserver(observer)
         else:
             self.debug("Observer %r not in observers list" % repr(observer))
