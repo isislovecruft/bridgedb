@@ -238,6 +238,14 @@ directlyProvides(BridgeDBLogObserver, ILogObserver)
 class BridgeDBFileLogObserver(FileLogObserver):
     """Writes to a file-like object and emits simple timestamps."""
 
+    #: The folder to store logfiles in. This should be set outside this file
+    #: by doing:
+    #:
+    #: >>> import bridgedb.log as logging
+    #: >>> logging.folder = './putlogshere'
+    #:
+    folder = filepath.FilePath(folder)
+
     def __init__(self, filename='bridgedb.log', daily=False,
                  max_size=None, max_files=None):
         """Log events to a file.
@@ -277,11 +285,6 @@ class BridgeDBFileLogObserver(FileLogObserver):
 
         self.timeFormat = '%Y-%m-%d %H:%M'
 
-        ## this should be set outside this file by doing:
-        ## >>> import bridgedb.log as log
-        ## >>> log.folder = './putlogshere'
-        global folder
-        self.folder = filepath.FilePath(folder)
 
         if not isinstance(daily, bool): daily = True
         if daily:
