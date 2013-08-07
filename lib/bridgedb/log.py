@@ -252,9 +252,8 @@ class BridgeDBFileLogObserver(FileLogObserver):
 
         When capturing to logfiles, by default, they are stored in the current
         working directory where BridgeDB is run from in a ``folder`` named
-        'log'. The logfiles in this directory are prefixed with ``prefix``
-        and, if the ``daily`` setting is enabled, then the date is appended to
-        that ``prefix``.
+        'log'. If the ``daily`` setting is enabled, then the date is appended
+        to that ``prefix``.
 
         By default, logfiles are created daily, are not limited by size, and
         are deleted after five days. To rotate based on size instead, do:
@@ -263,7 +262,7 @@ class BridgeDBFileLogObserver(FileLogObserver):
 
         :param bool daily: If True, store separate logfiles for each day;
             otherwise, save everything in a logfile named ``prefix``.
-            (default: True)
+            (default: False)
 
         :param int max_size: If not using ``daily`` logfiles, this is the
             maximum allowed size for a logfile, in bytes, before rotating. If
@@ -273,6 +272,9 @@ class BridgeDBFileLogObserver(FileLogObserver):
         :param int max_files: If not using ``daily`` logfiles, this is the
             maximum number of logfiles to keep after rotating. If daily
             rotation is not used, and this is not set, it will default to 5.
+
+        :ivar str timeFormat: A strftime(3) string for setting the timestamp
+            format. See ``bridgedb.log.timeFormat``.
         """
         fn = None
         try:
