@@ -328,9 +328,9 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
     synchronized = ['msg']
 
     def __init__(self, log_to_stdout=True):
-        """Created a log publisher.
+        """Create a log publisher.
 
-        :param bool logToStdout: If True, log to stdout.
+        :param bool logToStdout: If True, log to stdout. (default: True)
         """
         self.observers = []
         self.stdout_observer = None
