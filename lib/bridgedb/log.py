@@ -282,7 +282,7 @@ class BridgeDBFileLogObserver(FileLogObserver):
         fn = None
         try:
             fn = open(filename, 'a+')
-        except OSError as ose:
+        except OSError:
             _msg("ERROR: Couldn't open logfile '%s'" % filename)
 
         ## no super(); t.p.l.FileLogObserver is an old-style class.
