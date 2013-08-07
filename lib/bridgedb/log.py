@@ -418,8 +418,6 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         """Log a message at the DEBUG level."""
         this_level = LOG_LEVEL['DEBUG']
         if level >= this_level:
-            #prefixed = "DEBUG: {}".format(message)
-            #_msg(prefixed, *arg, logLevel=LOG_LEVEL['DEBUG'], **kwarg)
             self.msg(message, *arg, logLevel=LOG_LEVEL['DEBUG'], **kwarg)
 
 #: Make sure the locks get created for synchronized methods
