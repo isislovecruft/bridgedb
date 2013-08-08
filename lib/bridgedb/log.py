@@ -31,7 +31,6 @@ from twisted.python.log import ILogObserver
 from twisted.python.log import callWithContext
 from twisted.python.log import defaultObserver
 from twisted.python.log import deferr
-from twisted.python.log import startLoggingWithObserver
 
 from twisted.python.threadable import synchronize
 
