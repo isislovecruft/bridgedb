@@ -368,19 +368,16 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         safe = Util.logSafely(emailaddress)
 
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
+            logging.info("Got a request for bridges from %r..." % safe)
             if wasWarned:
-                msg  = "Got a request for bridges from %r; we already" % safe
-                msg += " sent a warning. Ignoring." % safe
-                logging.info(msg)
-                raise IgnoreEmail("Client was warned" % Util.logSafely(emailaddress))
+                logging.info("We already sent a warning. Ignoring.")
+                raise IgnoreEmail("Client was warned")
             else:
                 db.setWarnedEmail(emailaddress, True, now)
                 db.commit() 
-
-            msg  = "Got a request for bridges from %r; we already" % safe
-            msg += " answered in the last %d seconds. Warning." % MAX_EMAIL_RATE
-            logging.info(msg)
-            raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+            logging.info("We already answered in the last %d seconds. Warning."
+                         % MAX_EMAIL_RATE)
+            raise TooSoonEmail("Too many emails; wait till later")
 
         # warning period is over
         elif wasWarned:
