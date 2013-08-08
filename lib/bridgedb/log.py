@@ -55,19 +55,16 @@ LOG_LEVEL = { 'NOTSET':    0,
 
 #: The current level to log at:
 level = LOG_LEVEL['WARN']
-
 #: The directory to store logfiles in:
 folder = os.getcwd()
-
 #: The instantiated :class:`log.BridgeDBLogPublisher` which should be used for
 #: publishing all incoming log events to log observers. This is automatically
 #: instantiated at the end of :file:log.py.
 publisher = None
-
 #: The stftime(3) format for printing timestamps:
 timeFormat = '[%Y-%m-%d %H:%M:%S]'
 
-#: The default context for the logging eventDict subsystem.
+# The default context for the logging eventDict subsystem.
 context.setDefault(ILogContext, {'isError': 0,
                                  'system': 'bridgedb',
                                  'logLevel': level})
