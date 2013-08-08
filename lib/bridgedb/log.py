@@ -28,9 +28,12 @@ from twisted.python import util as _util
 from twisted.python.log import FileLogObserver
 from twisted.python.log import ILogContext
 from twisted.python.log import ILogObserver
-from twisted.python.log import callWithContext
-from twisted.python.log import defaultObserver
 from twisted.python.log import deferr
+# XXX TODO
+# when/if isis/feature/9317-metrics-contexts is merged,
+# bridgedb.contexts.logAssignment() can be used to log bridge assignments for
+# a specific distributor, similarly to how t.p.log.callWithContext() can be
+# used in the general case.
 
 from twisted.python.threadable import synchronize
 
