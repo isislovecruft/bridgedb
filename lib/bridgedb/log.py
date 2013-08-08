@@ -29,7 +29,6 @@ from twisted.python.log import FileLogObserver
 from twisted.python.log import ILogContext
 from twisted.python.log import ILogObserver
 from twisted.python.log import callWithContext
-from twisted.python.log import defaultObserver
 from twisted.python.log import deferr
 from twisted.python.log import startLoggingWithObserver
 
@@ -43,6 +42,10 @@ from zope.interface.verify     import verifyObject
 _keepErrors = 0
 _keptErrors = []
 _ignoreErrors = []
+
+# The default observer is used to log messages relayed before bridgedb has
+# configured its own logging facilities
+defaultObserver = _log.defaultObserver
 
 #: A dictionary of logging level names and their corresponding priority values
 LOG_LEVEL = { 'NOTSET':    0,
