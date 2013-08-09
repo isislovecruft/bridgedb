@@ -121,7 +121,8 @@ def _levelNumberToStr(number):
 
 def _msg(*arg, **kwargs):
     """Log a message at the INFO level."""
-    kwargs.update({'logLevel': LOG_LEVEL['INFO']})
+    if not 'logLevel' in kwargs:
+        kwargs.update({'logLevel': LOG_LEVEL['INFO']})
     _log.msg(*arg, **kwargs)
 
 def _utcdatetime():
