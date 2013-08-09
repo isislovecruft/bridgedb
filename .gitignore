@@ -15,9 +15,8 @@ bin
 var
 sdist
 develop-eggs
+*.egg-info/*
 .installed.cfg
-lib
-lib64
 MANIFEST
 
 # Installer logs
@@ -27,6 +26,7 @@ installed-files.txt
 # Unit test / coverage reports
 .coverage
 .tox
+*.prof
 nosetests.xml
 
 # Translations
@@ -36,6 +36,10 @@ nosetests.xml
 \#*
 .\#*
 *~
+
+# Git mergetool backups and save files
+*.orig
+*.bak
 
 # Mr Developer
 .mr.developer.cfg
@@ -68,8 +72,9 @@ run/*
 */assignments.log
 */bridgedist.log
 
-*bridge-descriptors
+*bridge-descriptors*
 *cached-descriptors*
+*cached-extrainfo*
 *networkstatus-bridges
 *blocked-bridges
 *extra-infos
