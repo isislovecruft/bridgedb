@@ -26,6 +26,7 @@ installed-files.txt
 # Unit test / coverage reports
 .coverage
 .tox
+*.prof
 nosetests.xml
 
 # Translations
