@@ -74,6 +74,7 @@ run/*
 
 *bridge-descriptors*
 *cached-descriptors*
+*cached-extrainfo*
 *networkstatus-bridges
 *blocked-bridges
 *extra-infos
