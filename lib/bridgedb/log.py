@@ -113,12 +113,6 @@ def _formatTime(when):
         return datetime.fromtimestamp(when).strftime(timeFormat)
     return ''
 
-def _levelNumberToStr(number):
-    """Take an integer representing a LOG_LEVEL and return its name."""
-    for key, value in LOG_LEVEL.items():
-        if int(number) == int(value):
-            return key
-
 def _msg(*arg, **kwargs):
     """Log a message at the INFO level."""
     if not 'logLevel' in kwargs:
@@ -180,22 +174,47 @@ def _exception(error=None, **kwargs):
         msg_str = traceback.print_exception(exc_type, exc_value, exc_traceback)
     _log.msg(error, **kwargs)
 
+def levelIntToStr(number):
+    """Take an integer representing a LOG_LEVEL and return its name.
+
+    :param str string: One of the values from the :attr:`log.LOG_LEVEL` dict.
+    :raises: A :exc:`ValueError` if ``number`` is not in
+        ``LOG_LEVEL.values()``.
+    :rtype: str
+    :returns: The corresponding name of the log level ``number``.
+    """
+    for key, value in LOG_LEVEL.items():
+        if number == value:
+            return key
+    raise ValueError("Numeric log level '%d' doesn't exist." % number)
+
+def levelStrToInt(string):
+    """Take a string representing a LOG_LEVEL and return its numeric value.
+
+    :param str string: One of the keys from the :attr:`log.LOG_LEVEL` dict.
+    :raises: A :exc:`ValueError` if ``string`` is not in ``LOG_LEVEL.keys()``.
+    :rtype: int
+    :returns: The corresponding numeric value of the log level ``string``.
+    """
+    for key, value in LOG_LEVEL.items():
+        if string.upper() == key:
+            return value
+    raise ValueError("String log level '%s' doesn't exist." % string.upper())
+
 def setLevel(logLevel=None):
-    """Set the level to log message at. Defaults to 'WARNING'.
+    """Set the level to log messages at. Defaults to 10, i.e. 'DEBUG' level.
 
     :type logLevel: str or int
     :param logLevel: The level (from log.LOG_LEVEL) to log at.
-    :rtype: int
-    :returns: An integer from :attr:`log.LOG_LEVEL`.
     """
     global level
-    if (isinstance(logLevel, str)) and (logLevel.upper() in LOG_LEVEL.keys()):
-        level = LOG_LEVEL.get(logLevel)
-    elif (isinstance(logLevel, int)) and (logLevel in LOG_LEVEL.values()):
+    if logLevel.upper() in LOG_LEVEL.keys():
+        level = levelStrToInt(logLevel)
+    elif logLevel in LOG_LEVEL.values():
         level = logLevel
     else:
         _msg("Configured LOG_LEVEL must be one of: %r" % LOG_LEVEL)
-        level = 40
+        level = 10
 
 def startLogging(log_file=None, *args, **kwargs):
     """Initialize the publisher and start logging to a specified file.
