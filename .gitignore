@@ -72,7 +72,7 @@ run/*
 */assignments.log
 */bridgedist.log
 
-*bridge-descriptors
+*bridge-descriptors*
 *cached-descriptors*
 *networkstatus-bridges
 *blocked-bridges
