@@ -37,6 +37,10 @@ nosetests.xml
 .\#*
 *~
 
+# Git mergetool backups and save files
+*.orig
+*.bak
+
 # Mr Developer
 .mr.developer.cfg
 .project
