@@ -205,22 +205,27 @@ def load(cfg, splitter, clear=False):
         logging.debug("Parsing document for purpose=%s", cfg.BRIDGE_PURPOSE)
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
-            bridges[bridge.getID()] = bridge
-            s = status.get(bridge.getID())
-            if s is not None:
-                running, stable = s
-                bridge.setStatus(running=running, stable=stable)
-            bridge.or_addresses = addresses.get(bridge.getID())
-            splitter.insert(bridge)
-            # add or update BridgeHistory entries into the database
-            # XXX: what do we do with all these or_addresses?
-            # The bridge stability metrics are only concerned with a single ip:port
-            # So for now, we will only consider the bridges primary IP:port
-            if bridge.getID() in timestamps.keys():
-                ts = timestamps[bridge.getID()][:]
-                ts.sort()
-                for timestamp in ts:
-                    bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+            if bridge.getID() in bridges:
+                logging.warn("Parsed bridge that we've already added. Skipping.")
+                logging.debug("  Bridge: %s" % bridge.getID())
+                continue
+            else:
+                bridges[bridge.getID()] = bridge
+                s = status.get(bridge.getID())
+                if s is not None:
+                    running, stable = s
+                    bridge.setStatus(running=running, stable=stable)
+                bridge.or_addresses = addresses.get(bridge.getID())
+                splitter.insert(bridge)
+                # add or update BridgeHistory entries into the database
+                # XXX: what do we do with all these or_addresses?
+                # The bridge stability metrics are only concerned with a single ip:port
+                # So for now, we will only consider the bridges primary IP:port
+                if bridge.getID() in timestamps.keys():
+                    ts = timestamps[bridge.getID()][:]
+                    ts.sort()
+                    for timestamp in ts:
+                        bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
         logging.debug("Closing descriptor document")
         f.close()
     # read pluggable transports from extra-info document
