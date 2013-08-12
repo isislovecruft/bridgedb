@@ -465,8 +465,7 @@ class PluggableTransport:
             address = "[%s]" % self.address
         else: address = self.address
         host = "%s %s:%d" % (self.methodname, address, self.port)
-        fp = ''
-        if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
+        fp = str(self.bridge.fingerprint) if includeFingerprint else ''
         args = " ".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
         return "%s %s %s" % (host, fp, args)
 
