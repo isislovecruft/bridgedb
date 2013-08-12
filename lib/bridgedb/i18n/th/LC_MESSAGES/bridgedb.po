@@ -1,0 +1,101 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+# AomNicha <vainilla7@gmail.com>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-07-27 08:50+0000\n"
+"Last-Translator: AomNicha <vainilla7@gmail.com>\n"
+"Language-Team: Thai (http://www.transifex.com/projects/p/torproject/language/th/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: th\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "สะพานหมายถึงอะไร"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s สะพานรีเลย์ %s  คือ Tor รีเลย์ ที่ช่วยให้คุณสามารหลีกหนีการตรวจสอบ"
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "ฉันต้องการทางเลือกอื่นเพื่อเข้าถึงสะพาน"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "อีกหนึ่งช่องทาง สำหรับค้นหาที่อยู่ของสะพานสาธารณะ สามารถทำได้ผ่านการส่งอีเมล (จาก %s หรือ ที่อยู่ %s) ไปสู่ %s ด้วยเส้นทาง \"\n\"การเข้าถึงสะพาน\" ภายในเนื้อหาของอีเมล"
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "ต้องการความช่วยเหลือ สะพานไม่ทำงาน"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "ถ้า Tor ไม่ทำงาน ให้คุณส่งอีเมล %s พร้อมแนบข้อมูลเกี่ยวกับสถานการณ์ของคุณ รายชื่อของสะพานที่คุณเคยใช้ บัญชีรายชื่อหรือเวอร์ชั่นที่คุณเคยใช้ ข้อความที่ Tor ส่งถึงคุณ และอื่นๆ ที่จำเป็น"
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr " เพื่อใช้งานตามคำแนะนำด้านบน ไปที่การตั้งค่าเครือข่าย Vidalia จากนั้นคลิกที่ \"ไอเอสพีของฉันถูกปิดกั้นไม่ให้เชื่อมต่อกับเครือข่าย\" Tor  และกดเพิ่มที่อยู่ของสะพานแต่ละอันลงไป"
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "ไม่มีสะพานที่ใช้งานได้ในขณะนี้"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "ช่วยปรับรุ่นเบราว์เซอร์ของคุณเป็นไฟล์ฟ็อก"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "ให้พิมพ์คำสองคำ"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "ขั้นตอนที่ 1"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "ได้ %s Tor Browser Bundle %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "ขั้นตอนที่ 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "ได้ %s สะพาน %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "ขั้นตอนที่ 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "ขณะนี้ %s ได้เพิ่มสะพานไปที่ Tor %s แล้ว"
