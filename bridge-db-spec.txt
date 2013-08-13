@@ -102,8 +102,8 @@
    Extra-info documents may contain zero or more entries per bridge. We expect
    an extra-info entry to contain the following lines in the stated order:
 
-       "extra-info" SP name SP fingerprint NL
-       "transport" SP transport SP IP ":" PORT ARGS NL
+      "extra-info" SP name SP fingerprint NL
+      "transport" SP transport SP IP ":" PORT ARGS NL
 
    BridgeDB parses the fingerprint, transport type, IP address, port and any
    arguments that are specified on these lines. BridgeDB skips the name. If
@@ -336,7 +336,31 @@
 # This should be handled the same as if the file bucket is reduced in size.
 # If X returns, then it should be added to the appropriate distributor. -MF
 
-7. Writing bridge assignments for statistics
+7. Displaying Bridge Information
+
+  After bridges are selected using one of the methods described in
+  Sections 4 - 6, they are output in one of two formats. Bridges are
+  formatted as:
+
+      <address:port> NL
+
+  Pluggable transports are formatted as:
+
+      <transportname> SP <address:port> [SP arglist] NL
+
+  where arglist is an optional space-separated list of key-value pairs in
+  the form of k=v.
+
+  Previously, each line was prepended with the "bridge" keyword, such as
+
+      "bridge" SP <address:port> NL
+
+      "bridge" SP <transportname> SP <address:port> [SP arglist] NL
+
+# We don't do this anymore because Vidalia and TorLauncher don't expect it.
+# See the commit message for b70347a9c5fd769c6d5d0c0eb5171ace2999a736.
+
+8. Writing bridge assignments for statistics
 
    BridgeDB can be configured to write bridge assignments to disk for
    statistical analysis.
