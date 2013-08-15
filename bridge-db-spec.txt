@@ -40,10 +40,13 @@
 
       "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
           SP DirPort NL
+      "a" SP address ":" port NL (no more than 8 instances)
       "s" SP Flags NL
 
-   BridgeDB parses the identity from the "r" line and the assigned flags
-   from the "s" line.
+   BridgeDB parses the identity and the publication timestamp from the "r"
+   line, the OR address(es) and ORPort(s) from the "a" line(s), and the
+   assigned flags from the "s" line, specifically checking the assignment
+   of the "Running" and "Stable" flags.
    BridgeDB memorizes all bridges that have the Running flag as the set of
    running bridges that can be given out to bridge users.
    BridgeDB memorizes assigned flags if it wants to ensure that sets of
