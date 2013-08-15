@@ -171,6 +171,10 @@
 # I found that BridgeDB is not strict in returning only bridges for a
 # given area.  If a ring is empty, it considers the next one.  Is this
 # expected behavior?  -KL
+#
+# This does not appear to be the case, anymore. If a ring is empty, then
+# BridgeDB simply returns an empty set of bridges. -MF
+#
 # I also found that BridgeDB does not make the assignment to areas
 # persistent in the database.  So, if we change the number of rings, it
 # will assign bridges to other rings.  I assume this is okay?  -KL
@@ -253,6 +257,7 @@
    ones that RFC2822 allows.
    BridgeDB may be configured to reject email addresses containing other
    characters it might not process correctly.
+# I don't think we do this, is it worthwhile? -MF
    BridgeDB rejects email addresses coming from other domains than a
    configured set of permitted domains.
    BridgeDB normalizes email addresses by removing "." characters and by
@@ -273,6 +278,18 @@
 # problem exists for the IP distributor). -NM
 # I'm afraid I don't fully understand what you mean here.  Can you
 # elaborate?  -KL
+#
+# Assuming an average churn rate, if we use short time periods, then a
+# requestor will receive new bridges based on rate-limiting and will (likely)
+# eventually work their way around the ring; eventually exhausting all bridges
+# available to them from this distributor. If we use a longer time period,
+# then each time the period expires there will be more bridges in the ring
+# thus reducing the likelihood of all bridges being blocked and increasing
+# the time and effort required to enumerate all bridges. (This is my
+# understanding, not from Nick) -MF
+# Also, we presently need the cache to prevent replays and because if a user
+# sent multiple requests with different criteria in each then we would leak
+# additional bridges otherwise. -MF
    BridgeDB can be configured to include bridge fingerprints in replies
    along with bridge IP addresses and OR ports.
    BridgeDB can be configured to sign all replies using a PGP signing key.
@@ -315,6 +332,9 @@
 # cannot put it back in file bucket A, because it's full.  Are we going to
 # add it to a different file bucket?  Doesn't that mean that most bridges
 # will be contained in most file buckets over time?  -KL
+#
+# This should be handled the same as if the file bucket is reduced in size.
+# If X returns, then it should be added to the appropriate distributor. -MF
 
 7. Writing bridge assignments for statistics
 
