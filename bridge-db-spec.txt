@@ -139,16 +139,19 @@
    Upon receiving a client request, a BridgeDB distributor provides a
    subset of the bridges assigned to it.
    BridgeDB only gives out bridges that are contained in the most recently
-   parsed bridge network status and that have the Running flag set.
+   parsed bridge network status and that have the Running flag set (see
+   Section 1).
    BridgeDB may be configured to give out a different number of bridges
-   (typically 3) depending on the distributor.
-   BridgeDB may define an arbitrary number of rules saying that a certain
-   number of bridges should have a given OR port or a given bridge relay
-   flag.
+   (typically 4) depending on the distributor.
+   BridgeDB may define an arbitrary number of rules. These rules may
+   specify the criteria by which a bridge is selected. Specifically,
+   the available rules restrict the IP address version, OR port number,
+   transport type, bridge relay flag, or country in which the bridge
+   should not be blocked.
 
 4. Selecting bridges to be given out based on IP addresses
 
-   BridgeDB may be configured to support one or more distributors that
+   BridgeDB may be configured to support one or more distributors which
    gives out bridges based on the requestor's IP address.  Currently, this
    is how the HTTPS distributor works.
    The goal is to avoid handing out all the bridges to users in a similar
@@ -158,11 +161,13 @@
 
    BridgeDB fixes the set of bridges to be returned for a defined time
    period.
-   BridgeDB considers all IP addresses coming from the same /24 as the
-   same IP address and returns the same set of bridges.
+   BridgeDB considers all IP addresses coming from the same /24 network
+   as the same IP address and returns the same set of bridges. From here on,
+   this non-unique address will be referred to as the IP address's 'area'.
    BridgeDB divides the IP address space equally into a small number of
-   areas (typically 4) and return different results to requests coming
-   from these areas.
+# Note, changed term from "areas" to "disjoint clusters" -MF
+   disjoint clusters (typically 4) and returns different results for requests
+   coming from addresses that are placed into different clusters.
 # I found that BridgeDB is not strict in returning only bridges for a
 # given area.  If a ring is empty, it considers the next one.  Is this
 # expected behavior?  -KL
@@ -200,8 +205,8 @@
    When giving out bridges based on a position in a ring, BridgeDB first
    looks at flag requirements and port requirements.  For example,
    BridgeDB may be configured to "Give out at least L bridges with port
-   443, and at least M bridges with Stable, and at least N bridges
-   total."  To do this, BridgeDB adds to the results:
+   443, and at least M bridges with Stable, and at most N bridges
+   total."  To do this, BridgeDB combines to the results:
       - The first L bridges in the ring after the position that have the
         port 443, and
       - The first M bridges in the ring after the position that have the
