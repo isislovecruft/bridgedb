@@ -17,10 +17,11 @@
 
 1. Importing bridge network statuses and bridge descriptors
 
-   BridgeDB learns about bridges from parsing bridge network statuses and
-   bridge descriptors as specified in Tor's directory protocol.
-   BridgeDB parses one bridge network status file first and at least one
-   bridge descriptor file afterwards.
+   BridgeDB learns about bridges by parsing bridge network statuses,
+   bridge descriptors, and extra info documents as specified in Tor's
+   directory protocol. BridgeDB parses one bridge network status file
+   first and at least one bridge descriptor file and potentially one extra
+   info file afterwards.
 
    BridgeDB scans its files on sighup.
 
@@ -84,6 +85,30 @@
    If BridgeDB does not find a bridge descriptor for a bridge contained in
    the bridge network status parsed before, it removes that bridge from
    the set of bridges to be given out to bridge users.
+
+1.3. Parsing extra-info documents
+
+   BridgeDB learns if a bridge supports a pluggable transport by parsing
+   extra-info documents.
+   Extra-info documents contain the name of the bridge (but only if it is
+   named), the bridge's fingerprint, the type of pluggable transport(s) it
+   supports, and the IP address and port number on which each transport
+   listens, respectively.
+
+   Extra-info documents may contain zero or more entries per bridge. We expect
+   an extra-info entry to contain the following lines in the stated order:
+
+       "extra-info" SP name SP fingerprint NL
+       "transport" SP transport SP IP ":" PORT ARGS NL
+
+   BridgeDB parses the fingerprint, transport type, IP address, port and any
+   arguments that are specified on these lines. BridgeDB skips the name. If
+   the fingerprint is invalid, BridgeDB skips the entry.
+   BridgeDB memorizes the transport type, IP address, port number, and any
+   arguments that are be provided and then it assigns them to the
+   corresponding bridge based on the fingerprint. Arguments are space
+   separated and are of the form k=v.
+   Bridges that do not have an associated extra-info entry are not invalid.
 
 2. Assigning bridges to distributors
 
@@ -270,9 +295,10 @@
 
    The distributor is one out of "email", "https", or "unallocated".
 
-   Both "email" and "https" distributors support adding keys for "port"
-   and "flag" and the port number and flag name as values to indicate that
-   a bridge matches certain port or flag criteria of requests.
+   Both "email" and "https" distributors support adding keys for "port",
+   "flag" and "transport". Respectively, the port number, flag name, and
+   transport types are the values. These are used to indicate that
+   a bridge matches certain port, flag, transport criteria of requests.
 
    The "https" distributor also allows the key "ring" with a number as
    value to indicate to which IP address area the bridge is returned.
