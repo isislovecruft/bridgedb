@@ -178,8 +178,11 @@
    set of bridges to requests coming from these IP addresses.
    The bridges returned to proxy IP addresses do not come from the same
    set as those for the general IP address space.
+
    BridgeDB can be configured to include bridge fingerprints in replies
    along with bridge IP addresses and OR ports.
+   BridgeDB can be configured to display a CAPTCHA which the user must solve
+   prior to returning the requested bridges.
 
    The current algorithm is as follows.  An IP-based distributor splits
    the bridges uniformly into a set of "rings" based on an HMAC of their
@@ -191,10 +194,15 @@
    maps the IP into an "area" (that is, a /24), and then uses an HMAC to
    map the area to one of the area rings.
 
-   Once the IP-based distributor knows what ring it is handing out bridges
-   from, it maps the current "epoch" (N-hour period) and the IP's area
-   (/24) to a point in the ring based on HMAC, and hands out bridges at
-   that point.
+   When the IP-based distributor determines from which area ring it is handing
+   out bridges, it identifies which rules it will use to choose appropriate
+   bridges. Using this information, it searches its cache of rings for one
+   that already adheres to the criteria specified in this request. If one
+   exists, then BridgeDB maps the current "epoch" (N-hour period) and the
+   IP's area (/24) to a point on the ring based on HMAC, and hands out
+   bridges at that point. If a ring does not already exist which satisfies this
+   request, then a new ring is created and filled with bridges that fulfill
+   the requirements. This ring is then used to select bridges as described.
 
    "Mapping X to Y based on an HMAC" above means one of the following:
       - We keep all of the elements of Y in some order, with a mapping
