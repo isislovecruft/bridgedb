@@ -12,7 +12,7 @@
    requests.
 
    Some of the decisions here may be suboptimal: this document is meant to
-   specify current behavior as of April 2011, not to specify ideal
+   specify current behavior as of August 2013, not to specify ideal
    behavior.
 
 1. Importing bridge network statuses and bridge descriptors
@@ -30,11 +30,12 @@
 
 1.1. Parsing bridge network statuses
 
-   Bridge network status documents contain the information which bridges
+   Bridge network status documents contain the information of which bridges
    are known to the bridge authority and which flags the bridge authority
    assigns to them.
    We expect bridge network statuses to contain at least the following two
-   lines for every bridge in the given order:
+   lines for every bridge in the given order (format fully specified in Tor's
+   directory protocol):
 
       "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
           SP DirPort NL
@@ -59,7 +60,7 @@
    bridge descriptor in the future.
 
    Bridge descriptor files may contain one or more bridge descriptors.
-   We expect bridge descriptor to contain at least the following lines in
+   We expect a bridge descriptor to contain at least the following lines in
    the stated order:
 
       "@purpose" SP purpose NL
@@ -128,8 +129,8 @@
 
    BridgeDB fixes the set of bridges to be returned for a defined time
    period.
-   BridgeDB considers two IP addresses coming from the same /24 as the
-   same IP address and return the same set of bridges.
+   BridgeDB considers all IP addresses coming from the same /24 as the
+   same IP address and returns the same set of bridges.
    BridgeDB divides the IP address space equally into a small number of
    areas (typically 4) and return different results to requests coming
    from these areas.
@@ -201,6 +202,7 @@
    value "pass" in their X-DKIM-Authentication-Result header or does not
    have this header.  The X-DKIM-Authentication-Result header is set by
    the incoming mail stack that needs to check DKIM authentication.
+
    BridgeDB does not return a new set of bridges to the same email address
    until a given time period (typically a few hours) has passed.
 # Why don't we fix the bridges we give out for a global 3-hour time period
