@@ -275,6 +275,7 @@
 # elaborate?  -KL
    BridgeDB can be configured to include bridge fingerprints in replies
    along with bridge IP addresses and OR ports.
+   BridgeDB can be configured to sign all replies using a PGP signing key.
    BridgeDB periodically discards old email-address-to-bridge mappings.
    BridgeDB rejects too frequent email requests coming from the same
    normalized address.
