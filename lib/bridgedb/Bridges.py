@@ -532,8 +532,14 @@ def parseExtraInfoFile(f):
                     try:
                         method_name = re.match('[_a-zA-Z][_a-zA-Z0-9]*',fields[0]).group()
                         m = regex.match(fields[1])
+                        ## XXX why are the IP addresses matched against the
+                        ## re_ipv4 and re_ipv6 regexes, *and* matched in
+                        ## ipaddr.IPAddress?
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
+                        ## XXX profiling of BridgeDB's code shows huge
+                        ## bottlenecks on the regex matching parts. this code
+                        ## is a bit ridiculous.
                         logging.debug("  Parsed Transport: %s", method_name)
                         logging.debug("  Parsed Transport Address: %s:%d", address, port)
                         yield ID, method_name, address, port, argdict
@@ -572,6 +578,8 @@ def parseStatusFile(f):
                 logging.debug("  Timestamp; Invalid")
 
         elif ID and line.startswith("a "):
+            ## XXX i don't think the limiting of or-addresses was ever
+            ## implemented in little-t tor:
             if num_or_address_lines < 8:
                 line = line[2:]
                 try:
