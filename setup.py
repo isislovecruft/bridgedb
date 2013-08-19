@@ -3,6 +3,8 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
+from __future__ import print_function
+
 import subprocess
 from distutils.command.install_data import install_data as _install_data
 import os
@@ -38,6 +40,21 @@ def get_cmdclass():
               'install_data': installData}
     cmdclass.update(versioneer.get_cmdclass())
     return cmdclass
+
+def get_requirements():
+    """Extract the list of requirements from our requirements.txt."""
+    requirements_file = os.path.join(os.getcwd(), 'requirements.txt')
+    requirements = []
+    try:
+        with open(requirements_file) as reqfile:
+            for line in reqfile.readlines():
+                line = line.strip()
+                if not line.startswith('#'):
+                    requirements.append(line)
+    except OSError as oserr:
+        print(oserr)
+
+    return requirements
 
 
 class installData(_install_data):
@@ -92,6 +109,7 @@ setuptools.setup(
     py_modules=['TorBridgeDB'],
     cmdclass=get_cmdclass(),
     include_package_data=True,
+    install_requires=get_requirements(),
     package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
                                'templates/*.html',
                                'templates/assets/*']},
