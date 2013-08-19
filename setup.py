@@ -6,8 +6,8 @@
 import subprocess
 from distutils.command.install_data import install_data as _install_data
 import os
+import setuptools
 import sys
-from setuptools import setup, Command, find_packages
 
 # Fix circular dependency with setup.py install
 try:
@@ -15,6 +15,30 @@ try:
     from babel.messages.frontend import init_catalog, update_catalog
 except ImportError:
     compile_catalog = extract_messages = init_catalog = update_catalog = None
+
+# setup automatic versioning (see top-level versioneer.py file):
+import versioneer
+versioneer.versionfile_source = 'lib/bridgedb/_version.py'
+versioneer.versionfile_build = 'bridgedb/_version.py'
+versioneer.tag_prefix = 'bridgedb-' # tags should be like 'bridgedb-0.1.0'
+versioneer.parentdir_prefix = 'bridgedb-' # tarballs unpack to 'bridgedb-0.1.0'
+
+def get_cmdclass():
+    """Get our cmdclass dictionary for use in setuptool.setup().
+
+    This must be done outside the call to setuptools.setup() because we need
+    to add our own classes to the cmdclass dictionary, and then update that
+    dictionary with the one returned from versioneer.get_cmdclass().
+    """
+    cmdclass={'test' : runTests,
+              'compile_catalog': compile_catalog,
+              'extract_messages': extract_messages,
+              'init_catalog': init_catalog,
+              'update_catalog': update_catalog,
+              'install_data': installData}
+    cmdclass.update(versioneer.get_cmdclass())
+    return cmdclass
+
 
 class installData(_install_data):
     def run(self):
@@ -28,7 +52,7 @@ class installData(_install_data):
             self.data_files.append( (lang_dir, [lang_file]) )
         _install_data.run(self)
 
-class runTests(Command):
+class runTests(setuptools.Command):
     # Based on setup.py from mixminion, which is based on setup.py
     # from Zooko's pyutil package, which is in turn based on
     # http://mail.python.org/pipermail/distutils-sig/2002-January/002714.html
@@ -53,27 +77,26 @@ class runTests(Command):
         finally:
             sys.path = old_path
 
-setup(name='BridgeDB',
-      version='0.1',
-      description='Bridge disbursal tool for use with Tor anonymity network',
-      author='Nick Mathewson',
-      author_email='nickm at torproject dot org',
-      url='https://www.torproject.org',
-      package_dir= {'' : 'lib'},
-      packages=find_packages('lib'),
-      py_modules=['TorBridgeDB'],
-      cmdclass={'test' : runTests,
-                'compile_catalog': compile_catalog,
-                'extract_messages': extract_messages,
-                'init_catalog': init_catalog,
-                'update_catalog': update_catalog,
-                'install_data': installData},
-      include_package_data=True,
-      package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
-                                 'templates/*.html',
-                                 'templates/assets/*']},
-      message_extractors = {'lib/bridgedb': [
-              ('**.py', 'python', None),
-              ('templates/**.html', 'mako', None),
-              ('public/**', 'ignore', None)]},  
+
+setuptools.setup(
+    name='bridgedb',
+    version=versioneer.get_version(),
+    description='Backend systems for distribution of Tor bridge relays',
+    author='Nick Mathewson',
+    author_email='nickm at torproject dot org',
+    maintainer='Isis Agora Lovecruft',
+    maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
+    url='https://www.torproject.org',
+    package_dir= {'' : 'lib'},
+    packages=setuptools.find_packages('lib'),
+    py_modules=['TorBridgeDB'],
+    cmdclass=get_cmdclass(),
+    include_package_data=True,
+    package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
+                               'templates/*.html',
+                               'templates/assets/*']},
+    message_extractors = {'lib/bridgedb': [
+        ('**.py', 'python', None),
+        ('templates/**.html', 'mako', None),
+        ('public/**', 'ignore', None)]},
 )
