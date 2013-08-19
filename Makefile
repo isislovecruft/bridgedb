@@ -9,3 +9,7 @@ test:
 
 install:
 	python setup.py install --record installed-files.txt
+
+uninstall:
+	touch installed-files.txt
+	cat installed-files.txt | xargs rm -rf
