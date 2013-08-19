@@ -1,4 +1,6 @@
 
+.PHONY: install test
+
 all:
 	python setup.py build
 
