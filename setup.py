@@ -3,7 +3,6 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
-import distutils
 import subprocess
 from distutils.command.install_data import install_data as _install_data
 import os
