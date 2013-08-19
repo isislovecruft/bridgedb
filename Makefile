@@ -8,4 +8,4 @@ test:
 	python setup.py test
 
 install:
-	python setup.py install
+	python setup.py install --record installed-files.txt
