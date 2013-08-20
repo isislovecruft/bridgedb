@@ -224,7 +224,7 @@ Enter the following commands at the ```sqlite>``` prompt:
 ## Running BridgeDB
 To run BridgeDB, simply make any necessary changes to bridgedb.conf, and do:
 
-    python -m TorBridgeDB -c bridgedb.conf
+    bridgedb -c bridgedb.conf
 
 When you have new lists of bridges, replace the old files and send the process
 a SIGHUP.
