@@ -1,73 +1,102 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-#   <theoliver@live.co.uk>, 2011.
+# Translators:
+# OliverMller <theoliver@live.co.uk>, 2011
+# torebjornson <tore.bjornson@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2012-02-14 10:04+0000\n"
-"Last-Translator: OliverMller <theoliver@live.co.uk>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-06-30 06:20+0000\n"
+"Last-Translator: torebjornson <tore.bjornson@gmail.com>\n"
+"Language-Team: Danish (http://www.transifex.com/projects/p/torproject/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
 "Language: da\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/bridgedb/I18n.py:21
-msgid "Here are your bridge relays: "
-msgstr "Her er dine relæer:"
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Hvad er broer?"
 
-#: lib/bridgedb/I18n.py:23
+#: lib/bridgedb/templates/base.html:34
+#, python-format
 msgid ""
-"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
-"in the main directory. Since there is no complete public list of them,\n"
-"even if your ISP is filtering connections to all the known Tor relays,\n"
-"they probably won't be able to block all the bridges."
-msgstr "Bridge relæer (eller \"broer\" for korte) er Tor relæer, der ikke er anført i de vigtigste bibliotek. Da der ikke er fuldstændig offentlig liste over dem, selv hvis din internetudbyder filtrerer forbindelser til alle de kendte Tor relæer, Er de sandsynligvis ikke være i stand til at blokere alle broerne."
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Bro relæer %s er Tor relæer der hjælper Dem med at undgå censur."
 
-#: lib/bridgedb/I18n.py:28
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Jeg har brug for en alternativ metode til at få broer på!"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click\n"
-"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "En anden måde at finde offentlige bro adresser på, er at sende en email (fra en %s eller en %s adresse) til %s kun indeholdende  linjen 'få broer' i selve mailen."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Mine broer virker ikke! Jeg har brug for hjælp!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Hvis dine Tor broer ikke virker, så email %s. Inkludér venligst mest mulig information om Deres sag, f.eks. hvilke broer De har brugt, versionsnummereret på den software bundle De bruger og eventuelle beskeder som Tor gav."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "For at bruge ovenstående linjer, skal du gå til Vidalia Network siden med indstillinger, og klik på \"Min internetudbyder blokerer forbindelser til Tor netværket\". Så tilføj hver bro adresse én ad gangen."
+msgstr "For at bruge ovenstående linjer, gå da til Vidalias netværksindstillinger side, og klik på \"Min Internet Udbyder blokerer forbindelse til Tor netværket\". Tilføj efterfølgende hver enkelt bro én ad gangen."
 
-#: lib/bridgedb/I18n.py:32
-msgid ""
-"Configuring more than one bridge address will make your Tor connection\n"
-"more stable, in case some of the bridges become unreachable."
-msgstr "Konfiguration af mere end én bro adresse vil gøre din Tor forbindelse mere stabil, hvis nogle af broerne bliver uopnåelig."
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "Ingen broer er tilgængelige."
 
-#: lib/bridgedb/I18n.py:35
-msgid ""
-"Another way to find public bridge addresses is to send mail to\n"
-"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
-"of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address at\n"
-"one of the following domains:"
-msgstr "En anden måde at finde offentlige bro adresser er at sende mail til bridges@torproject.org med linjen \"get bridges\" i selve mailen. Men, så vi kan gøre det sværere for en hacker at få massere af bro-adresser, skal du sende denne anmodning fra en e-mail-adresse på en af ​​de følgende domæner:"
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Opgrader Deres Firefox browser"
 
-#: lib/bridgedb/I18n.py:41
-msgid "[This is an automated message; please do not reply.]"
-msgstr "[Dette er en automatisk meddelelse; Svar venligst ikke.]"
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "Indtast de to ord"
 
-#: lib/bridgedb/I18n.py:43
-msgid ""
-"Another way to find public bridge addresses is to visit\n"
-"https://bridges.torproject.org/. The answers you get from that page\n"
-"will change every few days, so check back periodically if you need more\n"
-"bridge addresses."
-msgstr "En anden måde at finde offentlige bro adresser er at besøge https://bridges.torproject.org/. Svarene du får fra den side vil ændre sig hver par dag, så kig ind jævnligt, hvis du har brug for flere bro-adresser."
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Første skridt"
 
-#: lib/bridgedb/I18n.py:48
-msgid "(no bridges currently available)"
-msgstr "(Ingen broer er i øjeblikket til rådighed)"
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Få %s Tor Browser Bundlen %s"
 
-#: lib/bridgedb/I18n.py:50
-msgid "(e-mail requests not currently supported)"
-msgstr "(E-mail anmodninger, understøttes ikke i øjeblikket)"
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Andet skridt"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Få %s broer %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Tredje skridt"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Addér nu %s broer til Tor %s"

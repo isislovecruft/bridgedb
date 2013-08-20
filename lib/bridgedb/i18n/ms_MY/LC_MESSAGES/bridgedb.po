@@ -1,73 +1,102 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Weldan Jamili <mweldan@gmail.com>, 2012.
+# Translators:
+# shahril <mohd_shahril_96@yahoo.com>, 2013
+# Weldan Jamili <mweldan@gmail.com>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2011-01-01 07:48-0800\n"
-"PO-Revision-Date: 2012-05-31 12:46+0000\n"
-"Last-Translator: Weldan Jamili <mweldan@gmail.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-08-08 03:30+0000\n"
+"Last-Translator: shahril <mohd_shahril_96@yahoo.com>\n"
+"Language-Team: Malay (Malaysia) (http://www.transifex.com/projects/p/torproject/language/ms_MY/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
 "Language: ms_MY\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/bridgedb/I18n.py:21
-msgid "Here are your bridge relays: "
-msgstr "Berikut adalah geganti jambatan anda:"
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Apakah itu bridges ?"
 
-#: lib/bridgedb/I18n.py:23
+#: lib/bridgedb/templates/base.html:34
+#, python-format
 msgid ""
-"Bridge relays (or \"bridges\" for short) are Tor relays that aren't listed\n"
-"in the main directory. Since there is no complete public list of them,\n"
-"even if your ISP is filtering connections to all the known Tor relays,\n"
-"they probably won't be able to block all the bridges."
-msgstr "Geganti jambatan (atau \"jambatan\" untuk pendek) geganti Tor yang tidak disenaraikan ⏎\ndalam direktori utama. Memandangkan terdapat tiada senarai lengkap awam mereka, ⏎\nwalaupun jika ISP anda penapisan sambungan kepada semua geganti Tor yang diketahui, ⏎\nmereka mungkin tidak akan mampu untuk menyekat semua jambatan."
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Bridge relays %s adalah tor relays yang akan membantu kamu menghindari penyaringan."
 
-#: lib/bridgedb/I18n.py:28
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Saya memerlukan cara alternatif untuk mendapatkan bridges!"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click\n"
-"\"My ISP blocks connections to the Tor network\". Then add each bridge\n"
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "Satu lagi cara untuk mencari alamat bridges awam adalah untuk menghantar email (dari %s atau alamat %s) ke %s dengan bertulis 'get bridges' dalam badan email tersebut."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Bridges saya tidak berfungsi! Saya perlukan bantuan!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Jika Tor kamu tidak berfungsi, kamu patut cuba email kepada %s. Cuba masukkan sebanyak mana info yang boleh terhadap permasalahan kamu, termasuk senarai bridges yang kamu guna, dan fail nama bundle dan versi bundle yang kamu guna, dan mesej yang Tor tunjukkan, dan lain-lain."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Untuk menggunakan talian di atas, pergi ke halaman ini tetapan Rangkaian Vidalia, dan klik ⏎\n\"Blok sambungan ISP Saya rangkaian Tor\". Kemudian tambah jambatan setiap ⏎\nmenyelesaikan satu pada satu-satu masa."
+msgstr "Untuk menggunakan bridges di bawah, pergi ke halaman tetapan Jaringan Vidalia, dan klik \"ISP saya menyekat sambungan saya ke dalam jaringan Tor\". Kemudian tambah setiap alamat bridges satu persatu."
 
-#: lib/bridgedb/I18n.py:32
-msgid ""
-"Configuring more than one bridge address will make your Tor connection\n"
-"more stable, in case some of the bridges become unreachable."
-msgstr "Konfigurasi lebih daripada satu alamat jambatan akan membuat sambungan Tor anda\nlebih stabil, dalam hal jambatan menjadi sukar untuk dicapai."
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "Tiada bridges pada masa sekarang."
 
-#: lib/bridgedb/I18n.py:35
-msgid ""
-"Another way to find public bridge addresses is to send mail to\n"
-"bridges@torproject.org with the line \"get bridges\" by itself in the body\n"
-"of the mail. However, so we can make it harder for an attacker to learn\n"
-"lots of bridge addresses, you must send this request from an email address at\n"
-"one of the following domains:"
-msgstr "Satu lagi cara untuk mencari alamat jambatan awam adalah untuk menghantar mel kepada ⏎\nbridges@torproject.org dengan garisan \"jambatan\" dengan sendirinya dalam badan ⏎\nmel. Walau bagaimanapun, jadi kita boleh membuat lebih sukar bagi penyerang untuk mempelajari ⏎\nbanyak alamat jambatan, anda mesti menghantar permintaan ini dari alamat e-mel pada ⏎\nsalah satu domain berikut:"
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Menaik taraf firefox anda"
 
-#: lib/bridgedb/I18n.py:41
-msgid "[This is an automated message; please do not reply.]"
-msgstr "[Ini adalah mesej automatik; sila tidak menjawab.]"
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "Tulis dua perkataan itu."
 
-#: lib/bridgedb/I18n.py:43
-msgid ""
-"Another way to find public bridge addresses is to visit\n"
-"https://bridges.torproject.org/. The answers you get from that page\n"
-"will change every few days, so check back periodically if you need more\n"
-"bridge addresses."
-msgstr "Satu lagi cara untuk mencari alamat jambatan awam adalah untuk melawat ⏎\nhttps://bridges.torproject.org/. Jawapan yang anda dapat dari laman utama itu ⏎\nakan berubah setiap beberapa hari, jadi periksa kembali secara berkala jika anda memerlukan lebih banyak ⏎\njambatan alamat."
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Langkah 1"
 
-#: lib/bridgedb/I18n.py:48
-msgid "(no bridges currently available)"
-msgstr "(tiada jambatan yang sedia ada)"
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Dapatkan %s Tor Browser Bundle %s."
 
-#: lib/bridgedb/I18n.py:50
-msgid "(e-mail requests not currently supported)"
-msgstr "(e-mel meminta tidak disokong pada masa ini)"
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Langkah 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Dapatkan %s bridges %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Langkah 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Sekarang %s tambah bridges tersebut ke Tor %s"

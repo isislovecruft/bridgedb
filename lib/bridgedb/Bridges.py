@@ -464,7 +464,7 @@ class PluggableTransport:
         if isinstance(self.address,ipaddr.IPv6Address):
             address = "[%s]" % self.address
         else: address = self.address
-        host = "bridge %s %s:%d" % (self.methodname, address, self.port)
+        host = "%s %s:%d" % (self.methodname, address, self.port)
         fp = ''
         if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
         args = " ".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
