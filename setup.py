@@ -56,10 +56,22 @@ def get_requirements():
 
     return requirements
 
+def get_data_files():
+    """Returns our hard-coded data_files which should be distributed.
+
+    This is necessary for the :class:`installData` class to determine which
+    files we should include in the packaged distribution.
+
+    see http://docs.python.org/2/distutils/setupscript.html#installing-additional-files
+    """
+    data_files=[(os.path.join('share', 'doc', 'bridgedb'),
+                 ['README', 'TODO', 'LICENSE', 'requirements.txt'])]
+    return data_files
+
 
 class installData(_install_data):
     def run(self):
-        self.data_files = []
+        self.data_files = get_data_files()
         for lang in os.listdir('build/locale/'):
             if lang.endswith('templates'):
                 continue
