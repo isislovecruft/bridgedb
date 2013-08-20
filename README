@@ -256,3 +256,34 @@ equal to "get bridges" will get answered, assuming the domain is okay.
 
 ### Support
 Send your questions to isis (A) torproject (circle) org.
+
+### Maintainer's Notes
+
+#### Bumping the version number
+
+Bumping the version number at release time (which, for BridgeDB really means
+deploy time, as of right now) means doing the following:
+
+    $ git checkout develop
+    [merge some fix/bug/feature/etc branches]
+    $ git checkout -b release-0.0.2 develop
+    $ git tag -a -s bridgedb-0.0.2
+    [pip maintainance commands *would* go here, if we ever have any]
+    $ git checkout master
+    $ git merge -S --no-ff release-0.0.2
+    $ git checkout develop
+    $ git merge -S --no-ff master
+    $ git push <remote> master develop
+
+And be sure not to forget to do:
+
+    $ git push --tags
+
+If the currently installed version is *not* from one of the signed tags, the
+version number attribute created by versioneer will be the short ID of the git
+commit from which the installation took place, prefixed with the most recent
+tagged release at that point, i.e.:
+
+    >>> import bridgedb
+    >>> bridgedb.__version__
+    0.0.1-git528ff30c
