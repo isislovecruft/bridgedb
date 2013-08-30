@@ -28,3 +28,18 @@ def logSafely(val):
     if safe_logging:
         return "[scrubbed]"
     return val
+
+def logSafelyDigested(val):
+    """Returns a hexidecimal string representing the SHA-1 digest of ``val``.
+
+    This is useful for safely logging bridge fingerprints, using the same
+    method used by the tools for metrics.torproject.org.
+
+    :param str val: The value to digest.
+    :rtype: str
+    :returns: A 40-byte hexidecimal representation of the SHA-1 digest.
+    """
+    if safe_logging:
+        import sha
+        return sha.new(val).hexdigest()
+    return val

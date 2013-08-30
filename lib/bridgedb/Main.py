@@ -204,7 +204,8 @@ def load(cfg, splitter, clear=False):
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             if bridge.getID() in bridges:
                 logging.warn("Parsed bridge that we've already added. Skipping.")
-                logging.debug("  Bridge: %s" % bridge.getID())
+                logging.debug("\tDuplicate bridge fingerprint: %s"
+                              % Util.logSafelyDigested(bridge.fingerprint))
                 continue
             else:
                 bridges[bridge.getID()] = bridge
