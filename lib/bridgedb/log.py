@@ -251,6 +251,25 @@ LEVELS = { 'NOTSET'  :  0, 0  : 'NOTSET',
            'CRITICAL': 50,
            'FATAL'   : 50, 50 : 'FATAL', }
 
+# ----------------
+# Context Settings
+# ----------------
+#: See the module docstring for descriptions of context settings.
+context.setDefault(ILogContext, {'system':   str(__package__),
+                                 'logLevel': LEVELS['DEBUG'],
+                                 'isError':  False})
+
+def updateDefaultContext(oldDefault, newContext):
+    """Update the default context for this module.
+
+    :param class oldDefault: The context class to clone and update.
+    :param dictionary newContext: Settings to update ``defaultContext`` with.
+    """
+    updatedContext = context.get(oldDefault).copy()
+    updatedContext.update(**newContext)
+    context.setDefault(oldDefault, updatedContext)
+    return updatedContext
+
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
