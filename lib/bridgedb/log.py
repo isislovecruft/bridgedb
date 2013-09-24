@@ -223,6 +223,30 @@ from twisted.python.log import deferr
 from twisted.python.log import err
 from twisted.python.log import msg
 from twisted.python.threadable import synchronize
+
+
+#: A dictionary containing logging level names and priority values.
+#:
+#: .. data: Log Levels (enum)
+#: ================== =====
+#: Level name         Value
+#: ================== =====
+#: 'NOTSET'               0
+#: 'DEBUG'               10
+#: 'INFO'                20
+#: 'WARN'/'WARNING'      30
+#: 'ERROR'               40
+#: 'FATAL'/'CRITICAL'    50
+#:
+LEVELS = { 'NOTSET'  :  0, 0  : 'NOTSET',
+           'DEBUG'   : 10, 10 : 'DEBUG',
+           'INFO'    : 20, 20 : 'INFO',
+           'WARN'    : 30, 30 : 'WARN',
+           'WARNING' : 30,
+           'ERROR'   : 40, 40 : 'ERROR',
+           'CRITICAL': 50,
+           'FATAL'   : 50, 50 : 'FATAL', }
+
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
