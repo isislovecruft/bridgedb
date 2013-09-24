@@ -196,37 +196,31 @@ Design Requirements:
 """
 
 from __future__ import print_function
-from datetime   import datetime
 
 __docformat__ = 'reStructuredText'
 
 import os
-import stat
 import sys
 import traceback
 
 from twisted.python import context
-from twisted.python import log as _log
-from twisted.python import logfile
+from twisted.python import log as txlog
 from twisted.python import failure
-from twisted.python import filepath
-from twisted.python import util as _util
-
-from twisted.python.log import FileLogObserver
-from twisted.python.log import ILogContext
-from twisted.python.log import ILogObserver
-from twisted.python.log import deferr
+from twisted.python import util as txutil
 # XXX TODO
 # when/if isis/feature/9317-metrics-contexts is merged,
 # bridgedb.contexts.logAssignment() can be used to log bridge assignments for
 # a specific distributor, similarly to how t.p.log.callWithContext() can be
 # used in the general case.
-
+from twisted.python.log import ILogContext
+from twisted.python.log import ILogObserver
+# We need both deferr() and err() (even though they are the same function)
+# because later on err() will get overriden by LevelledPublisher.err()
+from twisted.python.log import deferr
+from twisted.python.log import err
+from twisted.python.log import msg
 from twisted.python.threadable import synchronize
 
-from zope.interface            import directlyProvides
-from zope.interface.exceptions import BrokenImplementation
-from zope.interface.verify     import verifyObject
 
 
 _keepErrors = 0
