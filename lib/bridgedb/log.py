@@ -221,92 +221,120 @@ from twisted.python.log import ILogObserver
 # because later on err() will get overriden by LevelledPublisher.err()
 from twisted.python.log import deferr
 from twisted.python.log import err
-from twisted.python.filepath import FilePath
-from twisted.python.filepath import InsecurePath
 from twisted.python.threadable import synchronize
 
+txlog.logging.captureWarnings(True)
+txlog.logging.logThreads = True
 
 
+class LogFileExistsException(Exception):
+    """Raised when configured log file is an existing directory, not file."""
 
-#: A dictionary of logging level names and their corresponding priority values
-LOG_LEVEL = { 'NOTSET':    0,
-              'DEBUG':    10,
-              'INFO':     20,
-              'WARN':     30,
-              'WARNING':  30,
-              'ERROR':    40,
-              'CRITICAL': 50,
-              'FATAL':    50, }
-
-#: The current level to log at:
-level = LOG_LEVEL['WARN']
-#: The directory to store logfiles in:
-folder = os.getcwd()
-#: The instantiated :class:`log.BridgeDBLogPublisher` which should be used for
-#: publishing all incoming log events to log observers. This is automatically
-#: instantiated at the end of :file:log.py.
-publisher = None
-#: The stftime(3) format for printing timestamps:
-timeFormat = '[%Y-%m-%d %H:%M:%S]'
-
-# The default context for the logging eventDict subsystem.
-context.setDefault(ILogContext, {'isError': 0,
-                                 'system': 'bridgedb',
-                                 'logLevel': level})
+class LogFolderExistsException(Exception):
+    """Raised when configured log file is an existing directory, not file."""
 
 
-def _emit_with_level(eventDict):
-    """Prepend basic ISO-8601 timestamps to log messages emitted on stdout.
+#: A dictionary containing logging level names and priority values.
+#:
+#: .. data: Log Levels (enum)
+#: ================== =====
+#: Level name         Value
+#: ================== =====
+#: 'NOTSET'               0
+#: 'DEBUG'               10
+#: 'INFO'                20
+#: 'WARN'/'WARNING'      30
+#: 'ERROR'               40
+#: 'FATAL'/'CRITICAL'    50
+#:
+LEVELS = { 'NOTSET'  :  0, 0  : 'NOTSET',
+           'DEBUG'   : 10, 10 : 'DEBUG',
+           'INFO'    : 20, 20 : 'INFO',
+           'WARN'    : 30, 30 : 'WARN',
+           'WARNING' : 30,
+           'ERROR'   : 40, 40 : 'ERROR',
+           'CRITICAL': 50,
+           'FATAL'   : 50, 50 : 'FATAL', }
 
-    By default, the separator used is a single space (instead of a 'T'), and
-    timestamp precision is taken to the seconds. Also, if
-    ``eventDict['logLevel']`` exists, fail to emit the log message if
-    ``log.level`` is greater.
+_level = LEVELS['DEBUG']
+#: A strftime(3) format string for log timestamps.
+_timeFormat = '[%Y-%m-%d %H:%M:%S]'
+_formatPrefix = '%(asctime)-4s'
+_formatSuffix = '[%(levelname)s] %(message)s'
+_verboseFormat = ' '.join((_formatPrefix,
+                           'L%(lineno)-.4d:%(module)s.%(funcName)-.30s',
+                           _formatSuffix))
+_format = ' '.join((_formatPrefix, _formatSuffix))
 
-    :param dict eventDict: see :func:`t.p.log.textFromEventDict`.
+def setVerboseFormat(verbose=bool):
+    """Set the format for log statements.
+
+    :param boolean verbose: If True, include line numbers and module names in
+        log statements.
     """
-    text = _log.textFromEventDict(eventDict)
+    global _format
+    if verbose:
+        _format = _verboseFormat
+    else:
+        _format = ' '.join((_formatPrefix, _formatSuffix))
 
-    ## Setup log level handling:
-    if 'logLevel' in eventDict:
-        emission_level = eventDict['logLevel']
-    elif eventDict['isError']:
-        emission_level = LOG_LEVEL['ERROR']
-        if 'failure' in eventDict:
-            text = ((eventDict.get('why') or 'Unhandled Error')
-                    + '\n' + eventDict['failure'].getTraceback())
-    else: emission_level = LOG_LEVEL['INFO']
+def getVerboseFormat():
+    """Get the format string for a :class:`LevelledPythonObserver.logger`.
 
-    ## Bail if no message string, or if this is at a level we're ignoring
-    if (text is None) or (emission_level < level):
-        return None, None
+    :rtype: string
+    :returns: A format string.
+    """
+    return _format
 
-    lvlName = _levelNumberToStr(emission_level) + ':'
-    fmtDict = {'system': eventDict['system'],
-               'text': text.replace("\n", "\n\t"),
-               'level': lvlName,
-               'time': _formatTime(eventDict['time'])}
-    message = _log._safeFormat("%(time)s %(level)s %(text)s\n", fmtDict)
-    return emission_level, message
+def setSafeLogging(enable=bool):
+    """Enable or disable scrubbing of client IP and email addresses, and bridge
+    relay fingerprints.
 
-def _formatTime(when):
-    """see :meth:`twisted.python.log.FileLogObserver.formatTime`."""
-    if timeFormat:
-        return datetime.fromtimestamp(when).strftime(timeFormat)
-    return ''
+    :param boolean enable: If True, enable scrubbing of logs.
+    """
+    global _safeLogging
+    _safeLogging = enable
+
+def setLevel(level=LEVELS['DEBUG']):
+    """Set the level to log messages at.
+
+    This sets the 'level' key inside :interface:`ILogContext`, which is used
+    as the default setting for new observers. To set the level for a specific
+    observer or handler, do:
+
+    >>> observer = startLogging(name='bridgedb.doctest')
+    >>> observer.setLevel(LEVELS['DEBUG'])
+    >>> assert observer.level == 10
+
+    :type level: str or int
+    :param level: The level, from ``log.LEVELS``, to log at.
+    """
+    try:
+        newlevel = level.upper()
+    except AttributeError:
+        if level in LEVELS:
+            newlevel = level
+    else:
+        newlevel = LEVELS.get(level)
+    if not newlevel:
+        return
+    global _level
+    _level = newlevel
+    updateDefaultContext(ILogContext, {'logLevel': newlevel})
+
+def getLevel():
+    """Get the current global log level setting.
+
+    Note that Observer classes in this module, when instantiated, set their
+    default level to the current level *at the time of their instantiation*.
+    """
+    return _level
 
 def _msg(*arg, **kwargs):
     """Log a message at the INFO level."""
     if not 'logLevel' in kwargs:
         kwargs.update({'logLevel': LOG_LEVEL['INFO']})
     _log.msg(*arg, **kwargs)
-
-def _utcdatetime():
-    """Get the current UTC time, with format: '2013-06-27 06:53:40.929589'.
-
-    :returns: String containing the current time in UTC, with ISO-8601 format.
-    """
-    return datetime.isoformat(datetime.utcnow())
 
 def err(_stuff=None, _why=None, **kwargs):
     """Log a message at the ERROR level.
@@ -355,48 +383,6 @@ def _exception(error=None, **kwargs):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         msg_str = traceback.print_exception(exc_type, exc_value, exc_traceback)
     _log.msg(error, **kwargs)
-
-def levelIntToStr(number):
-    """Take an integer representing a LOG_LEVEL and return its name.
-
-    :param str string: One of the values from the :attr:`log.LOG_LEVEL` dict.
-    :raises: A :exc:`ValueError` if ``number`` is not in
-        ``LOG_LEVEL.values()``.
-    :rtype: str
-    :returns: The corresponding name of the log level ``number``.
-    """
-    for key, value in LOG_LEVEL.items():
-        if number == value:
-            return key
-    raise ValueError("Numeric log level '%d' doesn't exist." % number)
-
-def levelStrToInt(string):
-    """Take a string representing a LOG_LEVEL and return its numeric value.
-
-    :param str string: One of the keys from the :attr:`log.LOG_LEVEL` dict.
-    :raises: A :exc:`ValueError` if ``string`` is not in ``LOG_LEVEL.keys()``.
-    :rtype: int
-    :returns: The corresponding numeric value of the log level ``string``.
-    """
-    for key, value in LOG_LEVEL.items():
-        if string.upper() == key:
-            return value
-    raise ValueError("String log level '%s' doesn't exist." % string.upper())
-
-def setLevel(logLevel=None):
-    """Set the level to log messages at. Defaults to 10, i.e. 'DEBUG' level.
-
-    :type logLevel: str or int
-    :param logLevel: The level (from log.LOG_LEVEL) to log at.
-    """
-    global level
-    if logLevel.upper() in LOG_LEVEL.keys():
-        level = levelStrToInt(logLevel)
-    elif logLevel in LOG_LEVEL.values():
-        level = logLevel
-    else:
-        _msg("Configured LOG_LEVEL must be one of: %r" % LOG_LEVEL)
-        level = 10
 
 def startLogging(log_file=None, *args, **kwargs):
     """Initialize the publisher and start logging to a specified file.
