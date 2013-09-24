@@ -207,8 +207,8 @@ from twisted.python import context
 from twisted.python import log as txlog
 from twisted.python import failure
 from twisted.python import util as txutil
-# XXX TODO
-# when/if isis/feature/9317-metrics-contexts is merged,
+from twisted.internet.interfaces import ILoggingContext
+# TODO when/if isis/feature/9317-metrics-contexts is merged,
 # bridgedb.contexts.logAssignment() can be used to log bridge assignments for
 # a specific distributor, similarly to how t.p.log.callWithContext() can be
 # used in the general case.
