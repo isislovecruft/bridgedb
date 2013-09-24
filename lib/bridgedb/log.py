@@ -6,12 +6,199 @@
 #           please also see AUTHORS file
 # :copyright: (c) 2007-2013, The Tor Project, Inc.
 #             (c) 2007-2013, all entities within the AUTHORS file
-# :license: 3-Clause BSD, see LICENSE for licensing information
+# :license: 3-clause BSD, see included LICENSE for information
 
-"""log.py - logging facilities for BridgeDB and related utilities"""
+"""BridgeDB logging facilities, including filters, observers, and publishers.
+
+** Module Overview: **
+::
+
+   LevelledPublisher - Default :interface:`ILogPublisher` for an
+    |                  :interface:`ILogObserver`. Ensures that writes to the
+    |                  logger go to all enabled log mechanisms.
+    |
+    |- XXX DOCDOC see stem's documentation for module docstrings.
+
+** Logging System Structure: **
+
+There should only ever be one instance of :class:`LevelledPublisher`. The
+publisher takes care of various lower-level things like gathering tracebacks
+and log context settings in the ``eventDict`` like the ``logLevel`` for each
+message, and then sending the processed log message to the appropriate
+:interface:`ILogObserver`s (e.g. :meth:`LevelledObserver.emit`).
+
+The publisher can have multiple observers. Log observers watch the messages
+passing though the system, and decide via their :meth:`LevelledObserver.emit`
+method whether or not to record the message.
+
+Similarly, an observer can also have multiple loggers and handlers underneath
+it. A logger is responsible for gathering messages from a certain domain,
+perhaps a certain component of an application, and sending them to any/all
+appropriate log handlers.
+
+Lastly, a log handler is what actually does something with the logged
+messages. It simply takes everything it recieves and writes it to a file or a
+stream, writes it to a socket, whatever.
+
+An example layout of this structure when configured might look something like
+this:
+
+::
+    publisher
+       |_ observer (name='bridgedb')
+       |    |_ logger (name='bridgedb')
+       |         | |_ filehandler (bridgedb.log)
+       |         | |_ filehandler (debug.log)
+       |         | |_ streamhandler (sys.stdout)
+       |         |
+       |         |_ logger (name='bridgedb.storage') ← getChild('storage')
+       |               |_ filehandler (sqlite.log)
+       |
+       |_ observer (name='assignments')
+       |      |_ filehandler (assignments.log)
+       |
+       |_ observer (name='buckets')
+              |_ filehandler (buckets1.log)
+              |_ filehandler (buckets2.log)
+
+** Module Settings: **
+Logging settings can be easily set by using the :func:`configureLogging`
+function, which takes optionally a filename to use as the default application
+log file, a folder to store log file in, the level of the lowest level
+messages to record, whether or not to enable filtering of sensitive
+information (IP addresses, email addresses, and relay fingerprints) from logs,
+and the verbosity level, as arguments. A stream can optionally be given
+instead of a filename; in that case the default will be to direct all log
+messages to that stream (i.e. stdout) rather than to a file. The simplest way
+to begin logging to both stdout and a file, both at level WARN or higher,
+would be to use :func:`startLogging` which automatically calls
+:func:`configureLogging` with the extra kwargs and starts the log observer:
+
+>>> from bridgedb import log as logging
+>>> my_logfile = 'doctest.log'
+>>> observer = logging.startLogging(filename=my_logfile,
+...                                 name="bridgedb",
+...                                 folder='./log',
+...                                 level=logging.LEVELS['WARN'])
+>>> observer.startLoggingToStdout()
+
+Now that logging is configured and started, to log messages simply do:
+
+>>> log = observer.logger
+>>> log.warn("Logging to both stdout and file %s" % my_logfile)
+UserWarning: Logging to both stdout and file test.log
+
+Any messages below the configured level will be ignored:
+
+>>> log.debug("That technical thing is doing *all of the technical things*.")
+
+and the level of the observer and its underlying loggers/handlers can be
+changed with :meth:`LevelledObserver.setLevel`.
+
+** Log Filters: **
+Filters for modifying or withholding log messages from records can be created
+by subclassing :class:`twisted.python.log.LoggerAdapter`, see
+:class:`SafeLoggerAdapter` for an example of such a class which, when given a
+logger, creates an adapted logger that scrubs IP and email addresses from
+logs.
+
+** How levels are handled: **
+The context dictionary :interface:`twisted.python.log.ILogContext` is
+essentially a dictionary of settings, whose default values are changed for
+each logged message which goes though the ``defaultPublisher``. This context
+controls the functionality for the logging eventDict subsystem. These settings
+are internal to the :class:`LevelledPublisher` log emission methods
+(i.e. :meth:`~LevelledPublisher.msg`, :meth:`~LevelledPublisher.debug`,
+:meth:`~LevelledPublisher.err`, etc.), and they are handled automatically, so
+you probably shouldn't ever touch them.
+
+ .. data: Publisher Settings (enum)
+
+    =========== =============================================================
+    Setting     Description
+    =========== =============================================================
+    logLevel    Set internally by the :meth:`LevelledPublisher.msg()` methods
+    system      See logging.Logger.name and t.p.log.Logger.logPrefix()
+    isError     Tells :meth:`LevelledObserver.emit()` to extract a traceback
+
+For example, when calling :meth:`LevelledPublisher.err`, the message's
+``eventDict['logLevel']`` is changed to ``LEVELS['ERROR']``,
+``eventDict['isError']`` is set to True (telling the system that when
+:meth:`~LevelledObserver.emit` is called, a traceback should be extracted from
+the frame at which the message was created). ``eventDict['system']`` is merely
+the named domain of the logger, which is printed in the output and is
+stackable (i.e. if logger with ``name='bridgedb'`` is created, and then a
+second logger with ``name='bridgedb.dist'`` then the latter will record all
+messages logged to it, and the former will record messages sent to both -- as
+well as the ``'bridgedb.foo'`` logger, etc.).
+
+** Note: **
+Even though though this file isn't fully PEP8 conformant, please, do *not*
+reorder the classes and functions within this file. Various things, like the
+block:
+
+    try:
+        defaultPublisher
+    except NameError:
+        defaultPublisher = LevelledPublisher()
+    [...]
+
+mean that the class LevelledPublisher must come beforehand, and that any
+functions or classes which require the use of ``defaultPublisher`` or
+:meth:`addObserver` *must* come afterwards, even though the normal Python
+convention is to declare functions before classes in a module.
+
+** TODO **
+The logger should *perhaps* be made better/easier to work with at some
+point. Unfortunately, there is a lot of (in my opinion) poorly written code in
+the stdlib logging module, and twisted's :mod:`~twisted.python.log` is
+essentially a confused and half-assed attempt to make stdlib's :mod:`logging`
+behave nicely in an async framework. Unfortunately, the redefining of basic,
+but essentially the same structures (for example, that a
+:class:`twisted.python.log.LogPublisher` is essentially the same as a
+:class:`logging.Manager`, and that a :class:`~twisted.python.log.Observer` is
+essentially the same a :class:`~logging.Logger`...), between both modules
+causes a bit of chaos and confusing in the code, plus we're faced with the
+choice of adding more hacks in to get the two things to play nicely, or else
+inheriting the downsides of both.
+
+I would propose that, at some point, when a more structured/parseable, more
+*actually* threadsafe_, faster, logger is needed for BridgeDB that we use
+something else. I have considered using Foolscap_ for ooni, and now
+BridgeDB. Foolscap is used by Tahoe-LAFS, and I've spoken with them about
+their opinion on it. The response was, "Well, I can't think of any
+frustrations I've ever had with it...other than maybe the steep learning
+curve, on top of learning Twisted." Which doesn't sound all too bad to me.
+
+Other alternatives might be:
+  - Twiggy_: not sure how nicely it plays with Twisted, plus it seems a tiny
+    bit too beta for me to feel comfortable using it in production code.
+  - Structlog_: I haven't really looked at it. It's also super new.
+
+.. _threadsafe:
+ http://emptysqua.re/blog/another-thing-about-pythons-threadlocals/
+.. _Foolscap: http://foolscap.lothar.com/docs/logging.html
+.. _Twiggy: http://i.wearpants.org/blog/meet-twiggy/
+            https://twiggy.readthedocs.org/en/latest/
+.. _Structlog:
+ https://twistedmatrix.com/pipermail/twisted-python/2013-September/027427.html
+
+Design Requirements:
+    [x] way to log different part of application to different loggers
+        [x] some should go to files
+        [x] some should go to stdout/stderr
+        [ ] way to use contexts or other mechanism to gather
+            (metrics/statistical) information
+        [x] each should have its own level
+            [x] level should be changeable
+    [x] way to filter log messages
+    [x] must be threadsafe
+"""
 
 from __future__ import print_function
 from datetime   import datetime
+
+__docformat__ = 'reStructuredText'
 
 import os
 import stat
