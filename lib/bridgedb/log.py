@@ -224,6 +224,10 @@ from twisted.python.log import err
 from twisted.python.log import msg
 from twisted.python.threadable import synchronize
 
+txlog.logging.captureWarnings(True)
+txlog.logging.logThreads = True
+
+
 
 #: A dictionary containing logging level names and priority values.
 #:
