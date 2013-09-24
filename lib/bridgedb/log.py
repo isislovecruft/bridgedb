@@ -252,20 +252,6 @@ def getVerboseFormat():
     """
     return _format
 
-_keepErrors = 0
-_keptErrors = []
-_ignoreErrors = []
-
-# The default observer is used to log messages relayed before bridgedb has
-# configured its own logging facilities
-defaultObserver = _log.defaultObserver
-
-# The default context for the logging eventDict subsystem.
-context.setDefault(ILogContext, {'isError': 0,
-                                 'system': 'bridgedb',
-                                 'logLevel': level})
-
-
 def _emit_with_level(eventDict):
     """Prepend basic ISO-8601 timestamps to log messages emitted on stdout.
 
