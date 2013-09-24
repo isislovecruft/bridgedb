@@ -280,39 +280,8 @@ def getVerboseFormat():
     """
     return _format
 
-def _emit_with_level(eventDict):
-    """Prepend basic ISO-8601 timestamps to log messages emitted on stdout.
 
-    By default, the separator used is a single space (instead of a 'T'), and
-    timestamp precision is taken to the seconds. Also, if
-    ``eventDict['logLevel']`` exists, fail to emit the log message if
-    ``log.level`` is greater.
-
-    :param dict eventDict: see :func:`t.p.log.textFromEventDict`.
     """
-    text = _log.textFromEventDict(eventDict)
-
-    ## Setup log level handling:
-    if 'logLevel' in eventDict:
-        emission_level = eventDict['logLevel']
-    elif eventDict['isError']:
-        emission_level = LOG_LEVEL['ERROR']
-        if 'failure' in eventDict:
-            text = ((eventDict.get('why') or 'Unhandled Error')
-                    + '\n' + eventDict['failure'].getTraceback())
-    else: emission_level = LOG_LEVEL['INFO']
-
-    ## Bail if no message string, or if this is at a level we're ignoring
-    if (text is None) or (emission_level < level):
-        return None, None
-
-    lvlName = _levelNumberToStr(emission_level) + ':'
-    fmtDict = {'system': eventDict['system'],
-               'text': text.replace("\n", "\n\t"),
-               'level': lvlName,
-               'time': _formatTime(eventDict['time'])}
-    message = _log._safeFormat("%(time)s %(level)s %(text)s\n", fmtDict)
-    return emission_level, message
 
 def _formatTime(when):
     """see :meth:`twisted.python.log.FileLogObserver.formatTime`."""
