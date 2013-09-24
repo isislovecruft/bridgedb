@@ -223,8 +223,34 @@ from twisted.python.log import deferr
 from twisted.python.log import err
 from twisted.python.log import msg
 from twisted.python.threadable import synchronize
+#: A strftime(3) format string for log timestamps.
+_timeFormat = '[%Y-%m-%d %H:%M:%S]'
+_formatPrefix = '%(asctime)-4s'
+_formatSuffix = '%[(levelname)s] %(message)s'
+_verboseFormat = ' '.join((_formatPrefix,
+                           'L%(lineno)-.4d %(module)s.%(funcName)-.14s',
+                           _formatSuffix))
+_format = ' '.join((_formatPrefix, _formatSuffix))
 
+def setVerboseFormat(verbose=bool):
+    """Set the format for log statements.
 
+    :param boolean verbose: If True, include line numbers and module names in
+        log statements.
+    """
+    global _format
+    if verbose:
+        _format = _verboseFormat
+    else:
+        _format = ' '.join((_formatPrefix, _formatSuffix))
+
+def getVerboseFormat():
+    """Get the format string for a :class:`LevelledPythonObserver.logger`.
+
+    :rtype: string
+    :returns: A format string.
+    """
+    return _format
 
 _keepErrors = 0
 _keptErrors = []
