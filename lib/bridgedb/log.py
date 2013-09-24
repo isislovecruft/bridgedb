@@ -302,11 +302,6 @@ def getVerboseFormat():
 
     """
 
-def _formatTime(when):
-    """see :meth:`twisted.python.log.FileLogObserver.formatTime`."""
-    if timeFormat:
-        return datetime.fromtimestamp(when).strftime(timeFormat)
-    return ''
 
 def _msg(*arg, **kwargs):
     """Log a message at the INFO level."""
@@ -314,12 +309,7 @@ def _msg(*arg, **kwargs):
         kwargs.update({'logLevel': LOG_LEVEL['INFO']})
     _log.msg(*arg, **kwargs)
 
-def _utcdatetime():
-    """Get the current UTC time, with format: '2013-06-27 06:53:40.929589'.
-
-    :returns: String containing the current time in UTC, with ISO-8601 format.
     """
-    return datetime.isoformat(datetime.utcnow())
 
 def err(_stuff=None, _why=None, **kwargs):
     """Log a message at the ERROR level.
