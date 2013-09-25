@@ -275,7 +275,10 @@ def updateDefaultContext(oldDefault, newContext):
     context.setDefault(oldDefault, updatedContext)
     return updatedContext
 
+_safeLogging = True
 _level = LEVELS['DEBUG']
+#: Algorithm to hash bridge fingerprints with, for sanitised logging.
+_fingerprintHashAlgo = 'sha1'
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
@@ -313,6 +316,14 @@ def setSafeLogging(enable=bool):
     """
     global _safeLogging
     _safeLogging = enable
+
+def getSafeLogging():
+    """Get the current setting for whether safe logging is enabled or disabled.
+
+    :rtype: boolean
+    :returns: True if safe logging is enabled.
+    """
+    return _safeLogging
 
 def setLevel(level=LEVELS['DEBUG']):
     """Set the level to log messages at.
@@ -422,6 +433,102 @@ def startLogging(log_file=None, *args, **kwargs):
         finally:
             publisher.start()
 
+# ----------------------
+# Log Filters & Adapters
+# ----------------------
+
+def redigested(fingerprint):
+    """Returns a hexidecimal string representing the SHA-1 digest of ``val``.
+
+    This is useful for safely logging bridge fingerprints, using the same
+    method used by the tools for metrics.torproject.org.
+
+    :param string fingerprint: The value to digest.
+    :rtype: str
+    :returns: A 40-byte hexidecimal representation of the SHA-1 digest.
+    """
+    if _safeLogging:
+        return hashlib.new(_fingerprintHashAlgo, fingerprint).hexdigest()
+    return fingerprint
+
+def scrubEmailAddress(token):
+    """Replace ``token`` if it is an email address.
+
+    Parsing and validating the actual email address is quite slow, so avoid
+    putting non-email addresses though ``valid_email_address()``.  The more we
+    can turn parsers into generators, and the more we avoid using the
+    :mod:`re` module, the faster the parsing will go.
+
+    :param string token: A chunk of text to parse. It MUST be split on
+        whitespace, i.e. 'fu' is a token, while 'fu bar' is not. It should be
+        ``strip()``ed, but it isn't strictly necessary.
+    :returns: The string '[scrubbed]' if the ``token`` was an email address,
+        otherwise it returns the unmodified ``token``.
+    """
+    if token.find('@'):
+        if parsers.isEmailAddress(token):
+            return '[scrubbed]'
+    return token
+
+def scrubIPAddress(token):
+    """Replace any IPv4 or IPv6 addresses found with '[scrubbed]'.
+
+    :param string token: A chunk of text to parse. It MUST be split on
+        whitespace, i.e. 'fu' is a token, while 'fu bar' is not. It should be
+        ``strip()``ed, but it isn't strictly necessary.
+    :returns: The string '[scrubbed]' if the ``token`` was an email address,
+        otherwise it returns the unmodified ``token``.
+    """
+    try:
+        ipaddr.IPAddress(token)
+    except ValueError:
+        return token
+    else:
+        return '[scrubbed]'
+
+def filterEmailAddress(message):
+    """Replace any email addresses in the ``message`` with '[scrubbed]'.
+
+    A generator with string.join() is supposed to be the fastest way to do
+    this: http://www.skymind.com/~ocrow/python_string/
+
+    :param string message: The log message to filter email addressses out of.
+    :rtype: string
+    :returns: The ``message`` with any email addresses scrubbed away.
+    """
+    return ' '.join([scrubEmailAddress(w) for w in message.split()])
+
+def filterIPAddress(message):
+    """Replace any IP addresses in ``message`` with '[scrubbed]'.
+
+    :param string message: The log message to filter IP addressses out of.
+    :rtype: string
+    :returns: The ``message`` with any IP addresses scrubbed away.
+    """
+    return ' '.join([scrubIPAddress(w) for w in message.split()])
+
+class SafeLoggerAdapter(txlog.logging.LoggerAdapter):
+    """Logger adapter for scrubbing IP and email addresses."""
+
+    # TODO the adapter should possibly be compartmentalised so that filtering
+    # of IPs, email addresses, and fingerprints are each configurable.
+
+    def process(self, message, kwargs):
+        """Process a log message and scrub sensitive information if necessary.
+
+        :param message: A message string.
+        :returns: The scrubbed message and the kwargs.
+        """
+        if message.find('@') > 0:
+            message = filterEmailAddress(message)
+        # Try to avoid doing intense parsing for IP addresses if there aren't
+        # any numbers in the message (XXX what are the odds of an IPv6 address
+        # coming up without any digits?):
+        for number in xrange(0, 10):
+            if message.find(str(number)):
+                message = filterIPAddress(message)
+                break
+        return message, kwargs
 
 class BridgeDBLogObserver(FileLogObserver):
     """A logger for writing to sys.stdout."""
