@@ -203,6 +203,7 @@ import hashlib
 import ipaddr
 import os
 import sys
+import time
 import traceback
 
 from twisted.python import context
@@ -588,91 +589,140 @@ class SafeLoggerAdapter(txlog.logging.LoggerAdapter):
                 break
         return message, kwargs
 
+# --------------
+# Log Publishers
+# --------------
 
-
-
-
-## we put object as a second parent to workaround that t.p.log.LogPublisher
-## is a Python  old-style class. :(
-class BridgeDBLogPublisher(_log.LogPublisher, object):
+class LevelledPublisher(txlog.LogPublisher):
     """Publishes logged events to all registered log observers.
 
-    Currently, all log observers in the ``observers`` list will all be set to
-    the same verbosity level.
-
-    :ivar list observers: Any log observers which have been added to which
-        logged events should be published.
     :ivar list synchronized: If running inside a thread, every call to these
-        methods will be wrapped with a lock.
+        methods will be wrapped with a lock. See
+        :func:`twisted.python.threadable.synchronize`.
+    :ivar list observers: Any log observers which have been added with
+        :meth:`addObserver`, and to which logged events should be published.
+    :ivar string verboseErrors: A string indicating how much information to
+         include in the tracebacks gathered from :meth:`exception`. Must be
+         one of ``'brief'``, ``'default'``, or ``'verbose'``.
     """
-    synchronized = ['msg']
+    synchronized = ['_msg']
 
-    def __init__(self, log_to_stdout=True):
-        """Create a log publisher.
-
-        :param bool logToStdout: If True, log to stdout. (default: True)
-        """
+    def __init__(self):
+        """Create a log publisher."""
+        txlog.LogPublisher.__init__(self)
         self.observers = []
-        self.stdout_observer = None
-        self.log_to_stdout = log_to_stdout
-        self.start()
+        self.verboseErrors = 'default'
 
-    def mute(self):
-        """Stop logging on stdout. Logging to files will still occur."""
-        self.msg("Muting log events on stdout.")
-        if self.stdout_observer:
-            self.removeObserver(self.stdout_observer)
+    def stopLogging(self):
+        """Shutdown the logger.
 
-    def start(self):
-        """Start logging on stdout, if :attr:`log_to_stdout` is True.
-
-        Later, extra observers can be added via :meth:`addObserver`.
+        Calling this will cause all logging, to files or otherwise, to stop.
         """
-        self.msg("Starting BridgeDB logging on %s" % _utcdatetime())
-        if self.log_to_stdout:
-            self.stdout_observer = BridgeDBLogObserver(sys.stdout).emit
-            self.addObserver(self.stdout_observer)
-
-    def stop(self):
-        """Shutdown the logger."""
-        self.msg("Stopping BridgeDB logging at %s" % _utcdatetime())
+        self._msg("Stopping %s logging at %s" % (__package__, time.time()))
+        [observer.stop() for observer in self.observers]
         self.observers = []
 
-    def suspend(self, observer):
-        """Suspend a log observer.
+    def exception(self, error=None, message=None, **kwargs):
+        """Log an exception or failure with its traceback.
 
-        :type observer: :interface:`t.p.log.ILogObserver`
-        :param observer: The file-like object to cease writing log events to.
+        This function works regardless of whether or not there is currently an
+        :class:`Exception`, and, if there is an ``Exception``, it doesn't
+        matter if it is wrapped in a :class:`twisted.python.failure.Failure`.
+
+        If ``error`` is a :class:`twisted.python.failure.Failure`, and
+        :attr:`error.captureVars` is True, then a detailed traceback will be
+        logged, which will include global and local variables. Note that this
+        significantly slows down the logging facilities.
+
+        If ``error`` is None, then nothing will happen.
+
+        When wrapping an Exception in a
+        :class:`~twisted.python.failure.Failure`, we can set the
+        ``Failure.captureVars`` attribute to get an extremely detailed
+        traceback which includes global and local variables at the time of the
+        exception. To get these, set :attr:`defaultPublisher.debug` to
+        'verbose' or 'brief', like this:
+
+        >>> import exceptions
+        >>> defaultPublisher.debug = 'verbose'
+        >>> def getfail():
+        ...     numberFlyingSaucers = 13
+        ...     try:
+        ...         raise FutureWarning("Alien alert!!", numberFlyingSaucers)
+        ...     except Exception as error:
+        ...         fail = failure.Failure(error, captureVars=True)
+        ...         return fail
+        >>> try: getfail()
+        ... except: _log.exception(fail)
+        *--- Failure #1 ---
+        Failure: exceptions.FutureWarning: ('Alien alert!!', 13)
+        *--- End of Failure #1 ---
+
+        which obviously gives you the 'numberFlyingSaucers' variable as well.
+
+        :type error: A :class:`twisted.python.failure.Failure`, or an
+            :exc:`Exception`, or None.
+        :param error: An exception, or a failure, to capture a traceback
+            for. If None, then an attempt will be made to extract the most
+            recent exception from the stack.
+        :param string message: Some sort of explanation or context explaining why
+            the ``error`` occured.
+        :keyword: All other kwargs are passed to :meth:`msg`, and are used
+            there to update the ``eventDict`` context dict.
         """
-        self.debug("Suspend called for log observer %r" % repr(observer))
-        if observer in observers:
-            self.debug("Observer found in observer list. Suspending observer")
-            try: verifyObject(ILogObserver, observer)
-            except BrokenImplementation: pass
-            else: self.removeObserver(observer)
+        kwargs.update({'logLevel': LEVELS['FATAL'],
+                       'isError': True,
+                       'exc_info': False})
+
+        # We do not want to store the actual Failure instance in the
+        # eventDict, because then _emitWithLevel() would grab a duplicate
+        # traceback from the Failure when it calls txlog.textFromEventDict
+        if isinstance(error, failure.Failure):
+            detail = 'verbose' if error.captureVars else self.verboseErrors
+            text = '\n'.join(((error.getErrorMessage() or 'Unhandled Error'),
+                              error.getTraceback(detail=detail)))
         else:
-            self.debug("Observer %r not in observers list" % repr(observer))
+            exctype, excval, exctb = sys.exc_info()
+            text = '\n'.join(
+                (message, traceback.print_exception(exctype, excval, exctb)))
+        self._msg(text, **kwargs)
 
-    exception = _exception
-
-    def err(self, _stuff=None, _why=None, **kwargs):
+    # We need to override t.p.log.LogPublisher._err() because it is called in
+    # t.p.log.LogPublisher.msg without passing kwargs (and we would need to be
+    # able to pass it a logLevel kwarg).
+    def _err(self, error=None, why=None, **kwargs):
         """Log a message at the ERROR level.
 
-        :type _stuff: A :type:None, :class:`t.p.failure.Failure`, or
-            :exc:Exception.
-
-        :param _stuff: A failure to log. If ``_stuff`` is a :exc:Exception, it
-            will get wrapped in a :class:`t.p.failure.Failure`. If it is None,
-            then a :class:`t.p.failure.Failure` will be created from the
-            current exception state.
-
-        :param str _why: A message which should describe the context in which
-            ``_stuff`` occurred.
+        :type error: A :class:`twisted.python.failure.Failure`, or an
+            :exc:Exception, or None.
+        :param error: A failure to log. If ``error`` is a :exc:`Exception`, it
+            will get wrapped in a :class:`~twisted.python.failure.Failure`. If
+            it is None, then a :class:`t.p.failure.Failure` will be created
+            from the current exception state.
+        :param str why: A message which should describe the context in which
+            ``error`` occurred.
+        :keyword: Other kwargs are passed to :meth:`LevelledPublisher.msg`,
+            and are used there to update the ``eventDict`` context dict.
         """
-        self.msg(failure=_stuff, why=_why, isError=1)
+        kwargs.update({'logLevel': LEVELS['ERROR'],
+                       'isError': True,
+                       'exc_info': True})
+        if error is None:
+            error = failure.Failure()
+        if isinstance(error, failure.Failure):
+            self._msg(failure=error, why=why, **kwargs)
+        elif isinstance(error, Exception):
+            self._msg(failure=failure.Failure(error), why=why, **kwargs)
+        else:
+            self._msg(repr(error), why=why, **kwargs)
 
-    def warn(self, message, *args, **kwargs):
+    def warn(self, *message, **kwargs):
         """Log a message at the WARN level.
+
+        It is not necessary to use a :class:`warnings.WarningMessage`, though
+        if ``kwargs`` contains the keys ``category``, ``filename``, and
+        ``lineno``, then a :class:`warnings.WarningMessage` will be created
+        automatically.
 
         :param str message: The warning message to log.
         :param class category: The class which generated the message, its full
@@ -681,27 +731,31 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         :param str filename: The name of the current file where the warning
             occurred.
         :param str lineno: The line number where the warning occurred.
+        :keyword: All other kwargs are passed to :meth:`msg`, and are used
+            there to update the ``eventDict`` context dict.
         """
-        if level >= LOG_LEVEL['WARN']:
-            return       ## The warnings modules won't take extra parameters
-        kwargs.update({'logLevel': LOG_LEVEL['WARN']})
-        self.msg(message, *args, **kwargs)
+        kwargs.update({'logLevel': LEVELS['WARN']})
+        txlog.warnings.warn(*message)
+        self._msg(*message, **kwargs)
 
-    def msg(self, *args, **kwargs):
-        """Log a message. If no logLevel in kwargs, the level is INFO."""
+    def _msg(self, *message, **kwargs):
+        """Log a message. If no logLevel in kwargs, the level is INFO.
+
+        :keyword: These update the ``eventDict`` context dictionary.
+        """
         if not 'logLevel' in kwargs.keys():
-            kwargs.update({'logLevel': LOG_LEVEL['INFO']})
-        super(BridgeDBLogPublisher, self).msg(*args, **kwargs)
-    info = msg
+            kwargs.update({'logLevel': LEVELS['INFO']})
+        self.msg(*message, **kwargs)
 
-    def debug(self, message, *arg, **kwarg):
-        """Log a message at the DEBUG level."""
-        this_level = LOG_LEVEL['DEBUG']
-        if level >= this_level:
-            self.msg(message, *arg, logLevel=LOG_LEVEL['DEBUG'], **kwarg)
+    def debug(self, message, *arg, **kwargs):
+        """Log a message at the DEBUG level.
 
-#: Make sure the locks get created for synchronized methods
-synchronize(BridgeDBLogPublisher)
+        :keyword: All other kwargs are passed to :meth:`msg`, and are used
+            there to update the ``eventDict`` context dict.
+        """
+        self._msg(message, *arg, logLevel=LEVELS['DEBUG'], **kwargs)
+# Make sure the locks get created for I/O handling methods
+synchronize(LevelledPublisher)
 
 try:
     assert publisher is not None
