@@ -528,81 +528,22 @@ class SafeLoggerAdapter(txlog.logging.LoggerAdapter):
 
 
 
-class BridgeDBFileLogObserver(FileLogObserver):
-    """Writes to a file-like object and emits simple timestamps."""
 
-    #: The folder to store logfiles in. This should be set outside this file
-    #: by doing:
-    #:
-    #: >>> import bridgedb.log as logging
-    #: >>> logging.folder = './putlogshere'
-    #:
-    folder = filepath.FilePath(folder)
 
-    #: The default permissions to use for newly created logfiles.
-    default_mode = stat.S_IREAD | stat.S_IWRITE
 
-    def __init__(self, filename='bridgedb.log', daily=False,
-                 max_size=None, max_files=None):
-        """Log events to a file.
 
-        When capturing to logfiles, by default, they are stored in the current
-        working directory where BridgeDB is run from in a ``folder`` named
-        'log'. If the ``daily`` setting is enabled, then the date is appended
-        to that ``prefix``.
 
-        By default, logfiles are created daily, are not limited by size, and
-        are deleted after five days. To rotate based on size instead, do:
 
-        :param str filename: The filename to write to.
 
-        :param bool daily: If True, store separate logfiles for each day;
-            otherwise, save everything in a logfile named ``prefix``.
-            (default: False)
 
-        :param int max_size: If not using ``daily`` logfiles, this is the
-            maximum allowed size for a logfile, in bytes, before rotating. If
-            daily rotation is not being used, and ``max_size`` is not set, it
-            will default to 1000000 bytes.
 
-        :param int max_files: If not using ``daily`` logfiles, this is the
-            maximum number of logfiles to keep after rotating. If daily
-            rotation is not used, and this is not set, it will default to 5.
 
-        :ivar str timeFormat: A strftime(3) string for setting the timestamp
-            format. See ``bridgedb.log.timeFormat``.
         """
-        fn = None
-        try:
-            fn = open(filename, 'a+')
-        except OSError:
-            _msg("ERROR: Couldn't open logfile '%s'" % filename)
 
-        ## no super(); t.p.l.FileLogObserver is an old-style class.
-        FileLogObserver.__init__(self, fn)
 
-        self.timeFormat = timeFormat
 
-        if daily:
-            _msg("WARNING: Daily logfiles will not be rotated/deleted!")
-            self.logfile = logfile.DailyLogFile(filename,
-                                                self.folder.path,
-                                                defaultMode=self.default_mode)
-        else:
-            self.max_size = max_size if isinstance(max_size, int) else 10**6
-            self.max_files = max_files if isinstance(max_files, int) else 5
-            self.logfile = logfile.LogFile(name=filename,
-                                           directory=self.folder.path,
-                                           rotateLength=self.max_size,
-                                           maxRotatedFiles=self.max_files)
 
-    def emit(self, eventDict):
-        emission_level, message = _emit_with_level(eventDict)
-        if message:
-            _util.untilConcludes(self.write, message)
-            _util.untilConcludes(self.flush)
 
-directlyProvides(BridgeDBFileLogObserver, ILogObserver)
 
 
 ## we put object as a second parent to workaround that t.p.log.LogPublisher
