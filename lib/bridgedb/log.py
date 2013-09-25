@@ -324,10 +324,40 @@ def getSafeLogging():
     """
     return _safeLogging
 
+def setLevel(level=LEVELS['DEBUG']):
+    """Set the level to log messages at.
 
+    This sets the 'level' key inside :interface:`ILogContext`, which is used
+    as the default setting for new observers. To set the level for a specific
+    observer or handler, do:
 
+    >>> observer = startLogging(name='bridgedb.doctest')
+    >>> observer.setLevel(LEVELS['DEBUG'])
+    >>> assert observer.level == 10
 
+    :type level: str or int
+    :param level: The level, from ``log.LEVELS``, to log at.
     """
+    try:
+        newlevel = level.upper()
+    except AttributeError:
+        if level in LEVELS:
+            newlevel = level
+    else:
+        newlevel = LEVELS.get(level)
+    if not newlevel:
+        return
+    global _level
+    _level = newlevel
+    updateDefaultContext(ILogContext, {'logLevel': newlevel})
+
+def getLevel():
+    """Get the current global log level setting.
+
+    Note that Observer classes in this module, when instantiated, set their
+    default level to the current level *at the time of their instantiation*.
+    """
+    return _level
 
 
 
