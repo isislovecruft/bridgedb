@@ -426,24 +426,6 @@ def _setPaths(folder=None, filename=None):
         dirname = lf.dirname()
         return dirname, filename
 
-def startLogging(log_file=None, *args, **kwargs):
-    """Initialize the publisher and start logging to a specified file.
-
-    :type file: str or None
-    :param file: The filename to log to. If None, log only to stdout.
-    """
-    if isinstance(log_file, _log.StdioOnnaStick): return
-
-    if log_file:
-        fileobserver = BridgeDBFileLogObserver(log_file, *args, **kwargs).emit
-        global publisher
-        try:
-            publisher.addObserver(fileobserver)
-        except NameError:
-            publisher = BridgeDBLogPublisher()
-            publisher.addObserver(fileobserver)
-        finally:
-            publisher.start()
 
 # ----------------------
 # Log Filters & Adapters
@@ -668,19 +650,13 @@ class BridgeDBLogPublisher(_log.LogPublisher, object):
         if self.stdout_observer:
             self.removeObserver(self.stdout_observer)
 
-    def start(self):
-        """Start logging on stdout, if :attr:`log_to_stdout` is True.
+    def stopLogging(self):
+        """Shutdown the logger.
 
-        Later, extra observers can be added via :meth:`addObserver`.
+        Calling this will cause all logging, to files or otherwise, to stop.
         """
-        self.msg("Starting BridgeDB logging on %s" % _utcdatetime())
-        if self.log_to_stdout:
-            self.stdout_observer = BridgeDBLogObserver(sys.stdout).emit
-            self.addObserver(self.stdout_observer)
-
-    def stop(self):
-        """Shutdown the logger."""
-        self.msg("Stopping BridgeDB logging at %s" % _utcdatetime())
+        self._msg("Stopping %s logging at %s" % (__package__, time.time()))
+        [observer.stop() for observer in self.observers]
         self.observers = []
 
     def suspend(self, observer):
@@ -765,3 +741,30 @@ except AssertionError:
     msg = publisher.msg
     info = publisher.info
     debug = publisher.debug
+
+# ---------------------------------------
+# Main Functions for use in other modules
+# ---------------------------------------
+
+def startLogging(filename=None, name=None, **kwargs):
+    """Configure and start logging.
+
+    :type filename: string or None
+    :param filename: The filename to log to; it should be relative to the
+        output of :func:`getDirectory`. If None, log only to stdout.
+    :param string name: The name to associate with this observer.
+    :keyword: These are passed to the :func:`configureLogging`
+    :rtype: :class:`LevelledPythonObserver`
+    :returns: A log observer.
+    """
+    if isinstance(filename, txlog.StdioOnnaStick):
+        return
+
+    if not filename:
+        configureLogging(stream=sys.stdout, **kwargs)
+    else:
+        configureLogging(filename=filename, **kwargs)
+
+    observer = LevelledPythonObserver(name)
+    observer.start()
+    return observer
