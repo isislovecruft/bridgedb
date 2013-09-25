@@ -228,6 +228,12 @@ txlog.logging.captureWarnings(True)
 txlog.logging.logThreads = True
 
 
+class LogFileExistsException(Exception):
+    """Raised when configured log file is an existing directory, not file."""
+
+class LogFolderExistsException(Exception):
+    """Raised when configured log file is an existing directory, not file."""
+
 
 #: A dictionary containing logging level names and priority values.
 #:
