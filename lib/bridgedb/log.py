@@ -276,6 +276,7 @@ def updateDefaultContext(oldDefault, newContext):
     context.setDefault(oldDefault, updatedContext)
     return updatedContext
 
+_safeLogging = True
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
@@ -305,8 +306,14 @@ def getVerboseFormat():
     """
     return _format
 
+def setSafeLogging(enable=bool):
+    """Enable or disable scrubbing of client IP and email addresses, and bridge
+    relay fingerprints.
 
+    :param boolean enable: If True, enable scrubbing of logs.
     """
+    global _safeLogging
+    _safeLogging = enable
 
 
 def _msg(*arg, **kwargs):
