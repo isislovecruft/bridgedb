@@ -276,6 +276,7 @@ def updateDefaultContext(oldDefault, newContext):
     return updatedContext
 
 _safeLogging = True
+_logDirectory = os.path.join(os.getcwdu(), u'log')
 _level = LEVELS['DEBUG']
 #: Algorithm to hash bridge fingerprints with, for sanitised logging.
 _fingerprintHashAlgo = 'sha1'
@@ -359,6 +360,71 @@ def getLevel():
     default level to the current level *at the time of their instantiation*.
     """
     return _level
+
+def setDirectory(path=None):
+    """Set the folder to store log files in.
+
+    :param string path: The directory. Tildes and non-absolute paths will be
+         expanded.
+    """
+    if path:
+        if path.find('~') > 0:
+            path = os.path.expanduser(path)
+        if not os.path.isabs(path):
+            path = os.path.abspath(path)
+
+        global _logDirectory
+        _logDirectory = path
+
+def getDirectory():
+    """Get the current setting for which directory log files are stored in.
+
+    :rtype: string
+    :returns: The absolute path of the directory to store log files in.
+    """
+    return _logDirectory
+
+def _setPaths(folder=None, filename=None):
+    """Ensure that paths are valid and exist.
+
+    :param string folder: If given, use :func:`setDirectory` to sent the log
+         folder to this directory. Otherwise, if not given, this value is
+         obtained from :func:`getDirectory`.
+    :param string filename: The filename to create, relative to ``folder``.
+    :returns: Two strings, the first is the fullpath of the directory to store
+        log files in, the second is the base filename of the log file
+        specified by ``filename``. The second will be None if ``filename is
+        not specified.
+    """
+    if folder:    # Set the folder first if we need to
+        setDirectory(folder)
+    folder = FilePath(getDirectory())
+
+    if folder.exists():
+        msg("Log folder '%s' already exists." % folder.path)
+        if not folder.isdir():
+            raise LogFolderExistsException(
+                "Log folder exists and isn't a directory: %s" % folder.path)
+    if not folder.exists():
+        msg("Creating log folder '%s'..." % folder.path)
+        folder.createDirectory()
+    assert folder.exists()
+
+    if not filename:
+        return folder.path, ''
+
+    try:
+        lf = folder.child(filename)
+    except InsecurePath as iperr:
+        deferr(iperr)
+        raise iperr
+    else:
+        if lf.exists() and not lf.isfile():
+            raise LogFileExistsException(
+                "Log file exists and isn't a file: %s" % lf.path)
+        filename = lf.basename()
+        dirname = lf.dirname()
+        return dirname, filename
 
 def startLogging(log_file=None, *args, **kwargs):
     """Initialize the publisher and start logging to a specified file.
