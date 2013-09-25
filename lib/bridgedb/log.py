@@ -277,6 +277,7 @@ def updateDefaultContext(oldDefault, newContext):
     return updatedContext
 
 _safeLogging = True
+_level = LEVELS['DEBUG']
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
