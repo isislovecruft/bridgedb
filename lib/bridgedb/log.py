@@ -281,6 +281,7 @@ def updateDefaultContext(oldDefault, newContext):
 _safeLogging = True
 _logDirectory = os.path.join(os.getcwdu(), u'log')
 _level = LEVELS['DEBUG']
+_encoding = sys.getfilesystemencoding()
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
@@ -427,12 +428,65 @@ def _setPaths(folder=None, filename=None):
         dirname = lf.dirname()
         return dirname, filename
 
+def configureLogging(filename=None, folder=None,  stream=None, level=None,
+                     safe=True, verbose=True):
+    """Configure log settings for all :class:`LevelledPythonObserver`s created.
 
+    This function will create default settings so that all call to
+    :class:`LevelledPythonObserver` will use these set defaults, unless kwargs
+    given to ``LevelledPythonObserver`` direct it to do otherwise.
 
+    Note that ``stream`` and ``file`` cannot be used simultaneously. To log to
+    both, do:
 
+    >>> configureLogging(filename='doctest.log')
+    >>> logger = startLogging()
+    >>> logger.startLoggingToStdout()
 
+    Logging of spawned threads is turned on by default, and warnings are
+    configured to be captured.
+
+    :param string filename: A file to write logs to. It will be joined
+         relative to the returned value of :func:`getDirectory`.
+    :param string folder: If given, use :func:`setDirectory` to sent the log
+         folder to this directory. Otherwise, if not given, this value is
+         obtained from :func:`getDirectory`.
+    :type stream: A stream-like object.
+    :param stream: A stream to write logs to, i.e. ``sys.stdout``.
+    :type level: integer or string
+    :param level: The default level for all ``LevelledPythonObserver``s. This
+        may be any of the keys in ``LEVELS``.
+    :param boolean verbose: If False, log statements will be formatted to give
+        the timestamp, log level, and message for the call to the logger. If
+        True, log statements will also include the module name, and the
+        calling function plus its line number.
+    :param boolean safe: If True, scrub IP and email addresses from logs, and
+        cause all fingerprints given to :meth:`redigested` to return a
+        rehashed version.
+    :ivar string enc: This is set to the default file system encoding, in
+        order to set the encoding for streams and files, otherwise it would
+        get set to ``ascii``, an encoding which is to be avoided like the
+        plague (unless used for the creation of an art).
     """
+    if level is not None:
+        setLevel(level)
+    setVerboseFormat(verbose)
+    setSafeLogging(safe)
+
+    lvl = getLevel()
+    log_conf = functools.partial(txlog.logging.basicConfig, level=lvl,
+                                 format=_format, datefmt=_timeFormat,
+                                  encoding=_encoding, filemode='a')
+    if filename or folder:
+        # We only actually need the filename relative to the log directory
+        _, filename = _setPaths(folder, filename)
+        if filename:
+            log_conf(filename=filename)
+    elif stream:
+        log_conf(stream=stream)
     else:
+        # log to stdout if nothing was specified
+        log_conf(stream=sys.stdout)
 
 def startLogging(log_file=None, *args, **kwargs):
     """Initialize the publisher and start logging to a specified file.
