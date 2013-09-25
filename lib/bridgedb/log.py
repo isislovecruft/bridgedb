@@ -488,24 +488,9 @@ def configureLogging(filename=None, folder=None,  stream=None, level=None,
         # log to stdout if nothing was specified
         log_conf(stream=sys.stdout)
 
-def startLogging(log_file=None, *args, **kwargs):
-    """Initialize the publisher and start logging to a specified file.
 
-    :type file: str or None
-    :param file: The filename to log to. If None, log only to stdout.
     """
-    if isinstance(log_file, _log.StdioOnnaStick): return
 
-    if log_file:
-        fileobserver = BridgeDBFileLogObserver(log_file, *args, **kwargs).emit
-        global publisher
-        try:
-            publisher.addObserver(fileobserver)
-        except NameError:
-            publisher = BridgeDBLogPublisher()
-            publisher.addObserver(fileobserver)
-        finally:
-            publisher.start()
 
 
 class BridgeDBLogObserver(FileLogObserver):
