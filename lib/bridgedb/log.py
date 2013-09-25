@@ -316,8 +316,13 @@ def setSafeLogging(enable=bool):
     global _safeLogging
     _safeLogging = enable
 
+def getSafeLogging():
+    """Get the current setting for whether safe logging is enabled or disabled.
 
+    :rtype: boolean
+    :returns: True if safe logging is enabled.
     """
+    return _safeLogging
 
 
 
