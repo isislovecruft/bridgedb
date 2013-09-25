@@ -524,23 +524,9 @@ class SafeLoggerAdapter(txlog.logging.LoggerAdapter):
                 break
         return message, kwargs
 
-class BridgeDBLogObserver(FileLogObserver):
-    """A logger for writing to sys.stdout."""
 
-    def emit(self, eventDict):
-        """Emit a log message."""
-        emission_level, message = _emit_with_level(eventDict)
-        if message:
-            _util.untilConcludes(self.write, message)
-            _util.untilConcludes(self.flush)
 
-    def logPrefix(self):
-        """Get the name of this logger instance."""
-        try: lp = self.prefix
-        except AttributeError: lp = 'bridgedb'
-        return lp
 
-directlyProvides(BridgeDBLogObserver, ILogObserver)
 
 class BridgeDBFileLogObserver(FileLogObserver):
     """Writes to a file-like object and emits simple timestamps."""
