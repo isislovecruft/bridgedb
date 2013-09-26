@@ -757,20 +757,18 @@ class LevelledPublisher(txlog.LogPublisher):
 # Make sure the locks get created for I/O handling methods
 synchronize(LevelledPublisher)
 
+# This ensures that the instance of :class:`LevelledPublisher` isn't
+# reinstantiated if the module is reloaded:
 try:
-    assert publisher is not None
-except AssertionError:
-    publisher = BridgeDBLogPublisher()
-    addObserver = publisher.addObserver
-    removeObserver = publisher.removeObserver
-    start = publisher.start
-    stop = publisher.stop
-    suspend = publisher.suspend
-    mute = publisher.mute
-    exception = publisher.exception
-    err = publisher.err
-    warn = publisher.warn
-    showwarning = publisher.showwarning
-    msg = publisher.msg
-    info = publisher.info
-    debug = publisher.debug
+    defaultPublisher
+except NameError:
+    defaultPublisher = LevelledPublisher()
+    addObserver = defaultPublisher.addObserver
+    removeObserver = defaultPublisher.addObserver
+    stopLogging = defaultPublisher.stopLogging
+    # msg = info = defaultPublisher._msg
+    # debug = defaultPublisher.debug
+    # exception = fatal = critical = defaultPublisher.exception
+    # error = err = defaultPublisher._err
+    # warn = defaultPublisher.warn
+
