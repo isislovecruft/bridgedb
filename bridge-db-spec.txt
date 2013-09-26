@@ -222,6 +222,23 @@
       - The first N-L-M bridges in the ring after the position that it
         has not already decided to give out.
 
+    After BridgeDB selects appropriate bridges to return to the requestor, it
+    then prioritises the ordering of them in a list so that as many criteria
+    are fulfilled as possible within the first few bridges. This list is then
+    truncated to N bridges, if possible. N is currently defined as a
+    piecewise function of the number of bridges in the ring such that:
+              
+             /
+            |  1,   if len(ring) < 20
+            |
+        N = |  2,   if 20 <= len(ring) <= 100 
+            |
+            |  3,   if 100 <= len(ring)
+             \
+
+    The bridges in this sublist, containing no more than N bridges, are the
+    bridges returned to the requestor.
+
 5. Selecting bridges to be given out based on email addresses
 
    BridgeDB can be configured to support one or more distributors that are
@@ -272,6 +289,9 @@
        of bridges.
      - It hands out bridges starting at that position, based on the
        port/flag requirements, as specified at the end of section 4.
+
+    See section 4 for the details of how bridges are selected from the ring
+    and returned to the requestor.
 
 6. Selecting unallocated bridges to be stored in file buckets
 
