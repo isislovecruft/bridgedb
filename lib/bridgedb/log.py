@@ -1146,3 +1146,33 @@ def getLogger(name=None, **kwargs):
 
     observer.start()
     return observer.logger
+
+def getSafeLogger(logger=None):
+    """Convenience function to enable scrubbing of sensitive data in the logs.
+
+    The ``logger`` used as input is not saved anywhere, and currently the
+    adapter class, :class:`SafeLoggerAdapter`, has no easy way to un-adapt a
+    logger, so if it is likely that at some point it will be desired to undo
+    safe logging, then some sort of reference to the original input ``logger``
+    should be kept, for example:
+
+    >>> configureLogging(stream=sys.stdout, level=LEVELS['DEBUG'])
+    >>> observer = startLogging(name='doctest')
+    >>> logger = observer.logger
+    >>> slogger = getSafeLogger(logger)
+    >>> headers = ["X-Originating-IP: 127.0.0.1",
+    ...            "Sender: blackhole@torproject.org"]
+    >>> logger.debug('\n',join([h for h in headers]))
+    >>> slogger.debug('\n',join([h for h in headers]))
+
+    :type logger: A :class:`LevelledPythonObserver.logger`.
+    :param logger: The logger to convert into a safe logger which filters out
+        IP addresses, email addresses, and fingerprints. A reference to this
+        orginal ``logger`` should probably be saved if it might be desirable
+        at some point to switch to non-safe logging, as there is not currently
+        a way to unadapt it.
+    """
+    if logger:
+        adapter = SafeLoggerAdapter(logger, {})
+        return adapter.logger
+    return defaultAdapter.logger
