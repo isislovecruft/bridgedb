@@ -765,9 +765,10 @@ except NameError:
     addObserver = defaultPublisher.addObserver
     removeObserver = defaultPublisher.addObserver
     stopLogging = defaultPublisher.stopLogging
-    # msg = info = defaultPublisher._msg
-    # debug = defaultPublisher.debug
-    # exception = fatal = critical = defaultPublisher.exception
-    # error = err = defaultPublisher._err
-    # warn = defaultPublisher.warn
+
+    msg = info = defaultPublisher._msg
+    debug = defaultPublisher.debug
+    exception = fatal = critical = defaultPublisher.exception
+    error = err = defaultPublisher._err
+    warn = warning = defaultPublisher.warn
 
