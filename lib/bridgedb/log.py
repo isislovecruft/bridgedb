@@ -734,7 +734,7 @@ class LevelledPublisher(txlog.LogPublisher):
             there to update the ``eventDict`` context dict.
         """
         kwargs.update({'logLevel': LEVELS['WARN']})
-        txlog.warnings.warn(*message)
+        #txlog.warnings.warn(*message)
         self._msg(*message, **kwargs)
 
     def _msg(self, *message, **kwargs):
@@ -744,7 +744,7 @@ class LevelledPublisher(txlog.LogPublisher):
         """
         if not 'logLevel' in kwargs.keys():
             kwargs.update({'logLevel': LEVELS['INFO']})
-        self.msg(*message, **kwargs)
+        txlog.LogPublisher.msg(self, *message, **kwargs)
 
     def debug(self, message, *arg, **kwargs):
         """Log a message at the DEBUG level.
