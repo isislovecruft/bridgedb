@@ -1075,3 +1075,18 @@ class LevelledPythonObserver(LevelledObserver, txlog.PythonLoggingObserver):
         """
         message, msg_lvl = _emitWithLevel(self, eventDict)
         self.logger.log(message, msg_lvl)
+
+try:
+    defaultObserver
+except:
+    # Begin logging to stdout by default when this module is imported:
+    configureLogging()
+    defaultObserver = LevelledPythonObserver()
+    defaultObserver.start()
+
+    # Create a default safelogger, so that :func:`getSafeLogger` can return it
+    # if not given a :class:`twisted.python.log.logging.Logger` instance as an
+    # argument (the empty dict argument to :class:`SafeLoggerAdapter` ends up
+    # being :attr:`SafeLoggerAdapter.extras`, which we don't use in our
+    # adapter):
+    defaultAdapter = SafeLoggerAdapter(defaultObserver.logger, {})
