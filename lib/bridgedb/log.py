@@ -860,7 +860,7 @@ def _emitWithLevel(observerCls, eventDict):
         message = txlog._safeFormat("%(time)s %(level)s %(text)s\n", fmtDict)
 
         if isinstance(observerCls, LevelledObserver):
-            return message, msg_lvl, eventDict
+            return message, msg_lvl
         elif msg_lvl >= observerCls.level:
             txutil.untilConcludes(observerCls.write, message)
             txutil.untilConcludes(observerCls.flush)
