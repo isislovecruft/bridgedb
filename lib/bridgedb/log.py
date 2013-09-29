@@ -1090,3 +1090,30 @@ except:
     # being :attr:`SafeLoggerAdapter.extras`, which we don't use in our
     # adapter):
     defaultAdapter = SafeLoggerAdapter(defaultObserver.logger, {})
+
+# ---------------------------------------
+# Main Functions for use in other modules
+# ---------------------------------------
+
+def startLogging(filename=None, name=None, **kwargs):
+    """Configure and start logging.
+
+    :type filename: string or None
+    :param filename: The filename to log to; it should be relative to the
+        output of :func:`getDirectory`. If None, log only to stdout.
+    :param string name: The name to associate with this observer.
+    :keyword: These are passed to the :func:`configureLogging`
+    :rtype: :class:`LevelledPythonObserver`
+    :returns: A log observer.
+    """
+    if isinstance(filename, txlog.StdioOnnaStick):
+        return
+
+    if not filename:
+        configureLogging(stream=sys.stdout, **kwargs)
+    else:
+        configureLogging(filename=filename, **kwargs)
+
+    observer = LevelledPythonObserver(name)
+    observer.start()
+    return observer
