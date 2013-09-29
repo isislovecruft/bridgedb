@@ -200,6 +200,7 @@ from __future__ import print_function
 __docformat__ = 'reStructuredText'
 
 from itertools import dropwhile
+from logging   import handlers
 
 import functools
 import hashlib
@@ -961,6 +962,119 @@ class LevelledObserver(txlog.FileLogObserver, object):
         removeObserver(self.emit)
         self._unmapObserver()
         msg("Removed observer: %r" % repr(self))
+
+class LevelledPythonObserver(LevelledObserver, txlog.PythonLoggingObserver):
+    """A logger for writing log messages with levels.
+
+    This class is suitable for writing to sys.stdout.
+
+    This log observer writes messages whose ``eventDict['logLevel']`` is
+    greater than or equal to the configured log level, ``level``, to a file
+    with timestamps formatted with :attr:`~LevelledObserver.timeFormat`.
+    """
+    def __init__(self, name=None):
+        """Create a log observer which emits log messages logged at or above the
+        currently set level.
+
+        :param string name: A prefix for emitted log messages. This also
+            functions as the name of this log observer. If not set, it will
+            try to automatically set itself to the current __package__, then
+            the current __module__, then __name__, whichever is found
+            first. If none of these exist, then ``prefix`` is set to the
+            string 'root', for backwards compatibility with the Python stdlib
+            logging module.
+        :ivar string timeFormat: A strftime(3) string for setting the
+            timestamp format. See the global :attr:`_timeFormat`.
+        """
+        # We can't use super(); t.p.l.FileLogObserver is an old-style class,
+        # and half of Twisted's logging infrastructure seems to break if we
+        # try to give t.p.log.FileLogObserver multiple parents.
+        LevelledObserver.__init__(self, name=name)
+        txlog.PythonLoggingObserver.__init__(self, self.name)
+        self.logger.msg = self.logger.info
+        self.logger.setLevel(self.level)
+
+    def startLoggingToStdout(self, stream=sys.stdout, level=None, verbose=True):
+        """Write messages above ``level`` to sent to this logger to a stream.
+
+        :param stream: The strean to open and write to. It will be not be
+            automatically closed.
+        """
+        setVerboseFormat(verbose)
+        fmt = getVerboseFormat()
+        formatter = txlog.logging.Formatter(fmt, self.timeFormat)
+        handler = txlog.logging.StreamHandler(stream=stream)
+        if level:
+            setLevel(level)
+        level = getLevel()
+        handler.setLevel(level)
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+    def startLoggingToFile(self, filename, level=None, daily=True,
+                           max_size=10**6, max_files=5, verbose=True):
+        """Write messages above ``level`` to sent to this logger to a file.
+
+        When capturing to logfiles, by default, they are stored in the
+        directory referred to by the returned value from
+        :func:`getDirectory`. If the ``daily`` setting is enabled, then the
+        logs are rotated daily, otherwise they are rotated by size.
+
+        :param string filename: The file to open and write to. It will be
+            automatically closed afterwards, and it is taken relatve to
+            return value of :func:`getDirectory`.
+        :param boolean daily: If True, store separate logfiles for each day;
+            otherwise, save everything in a logfile named ``filename``.
+            (default: False)
+        :param integer max_size: If not using ``daily`` logfiles, this is the
+            maximum allowed size for a logfile, in bytes, before rotating. If
+            daily rotation is not being used, and ``max_size`` is not set, it
+            will default to 1000000 bytes.
+        :param integer max_files: If not using ``daily`` logfiles, this is the
+            maximum number of logfiles to keep after rotating. If daily
+            rotation is not used, and this is not set, it will default to 5.
+        :param boolean verbose: If False, log statements will be formatted to
+            give the timestamp, log level, and message for the call to the
+            logger. If True, log statements will also include the module name,
+            and the calling function plus its line number.
+        :type folder: A :class:`twisted.python.filepath.FilePath` created with
+            the directory referred to by the returned value from
+            :func:`getDirectory`.
+        :ivar folder: The directory to store logfiles in.
+        """
+        setVerboseFormat(verbose)
+        fmt = getVerboseFormat()
+        formatter = txlog.logging.Formatter(fmt, self.timeFormat)
+        kwargs = {'encoding': sys.getfilesystemencoding(),
+                  'backupCount': max_files}
+        filepath, filename = _setPaths(filename=filename)
+        logfile = os.path.join(filepath, filename)
+
+        if daily:
+            handler = handlers.TimedRotatingFileHandler(
+                logfile, when='midnight', **kwargs)
+        else:
+            handler = handlers.RotatingFileHandler(
+                logfile, maxBytes=max_size, **kwargs)
+        if level:
+            setLevel(level)
+
+        level = getLevel()
+        handler.setLevel(level)
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+    def emit(self, eventDict):
+        """Emit a log message if it's at (or above) our level.
+
+        See :func:`_emitWithLevel`.
+
+        :param dictionary eventDict: see
+            :func:`twisted.python.log.textFromEventDict` for an explanation of
+            the default ``eventDict`` keys and their uses.
+        """
+        message, msg_lvl = _emitWithLevel(self, eventDict)
+        self.logger.log(message, msg_lvl)
 
 # ---------------------------------------
 # Main Functions for use in other modules
