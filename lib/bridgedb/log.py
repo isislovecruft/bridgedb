@@ -199,6 +199,7 @@ from __future__ import print_function
 
 __docformat__ = 'reStructuredText'
 
+import functools
 import hashlib
 import ipaddr
 import os
