@@ -217,14 +217,10 @@ from twisted.internet.interfaces import ILoggingContext
 # used in the general case.
 from twisted.python.log import ILogContext
 from twisted.python.log import ILogObserver
-# The default observer is used to log messages relayed before bridgedb has
-# configured its own logging facilities
-from twisted.python.log import defaultObserver
 # We need both deferr() and err() (even though they are the same function)
 # because later on err() will get overriden by LevelledPublisher.err()
 from twisted.python.log import deferr
 from twisted.python.log import err
-from twisted.python.log import msg
 from twisted.python.filepath import FilePath
 from twisted.python.filepath import InsecurePath
 from twisted.python.threadable import synchronize
