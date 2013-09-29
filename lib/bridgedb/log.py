@@ -772,3 +772,87 @@ except NameError:
     error = err = defaultPublisher._err
     warn = warning = defaultPublisher.warn
 
+# -------------
+# Log Observers
+# -------------
+
+def _emitWithLevel(observerCls, eventDict):
+    """General-use function for overriding an observer's ``emit()`` method.
+
+    This function is meant as a generalised method override for the ``emit``
+    method of classes which implement
+    :interface:`twisted.python.log.ILogObserver`. It understands log levels,
+    similar to the Python stdlib logging module, and will refuse to emit
+    messages whose ``eventDict['logLevel']`` is lower than the
+    ``observerCls.level``.
+
+    It also prepends the log level of the message, as well as basic ISO-8601
+    timestamps, to log messages. By default, the timestamp separator used is a
+    single space (instead of a 'T'), and timestamp precision is taken to the
+    seconds.
+
+    If ``observerCls`` is a :class:`LevelledPythonObserver` it returns the
+    message level and the extracted text/traceback/errormessage.
+
+    For other observer classes:
+      - If the extracted message is at a level that ``observerCls`` is
+        ignoring, it returns without doing anything.
+      - Otherwise, it calls :meth:`observerCls.write(message)` where
+        ``message`` is a formatted string contained the full message,
+        including timestamp, level, and the ``name`` attribute of the
+        observer.
+
+    :param observerCls: An instance of a log observer class that implements
+        then :interface:`twisted.python.log.ILogObserver` interface.
+    :param dict eventDict: see :func:`twisted.python.log.textFromEventDict`.
+    """
+    # Get the original message
+    text = txlog.textFromEventDict(eventDict)
+
+    # Get the level that the message was logged at:
+    if 'logLevel' in eventDict:
+        msg_lvl = eventDict['logLevel']
+    elif eventDict['isError']:
+        msg_lvl = LEVELS['ERROR']
+        if isinstance(observerCls, LevelledObserver):
+            if observerCls.level in range(40, 60, 10):
+                # This lets txlog.logging know that we expect a traceback:
+                eventDict['exc_info'] = True
+        # If we used the LevelledPublisher.exception() method, then the
+        # traceback should already be in eventDict['message'], and
+        # eventDict['failure'] will still be None.
+        #
+        # :meth:`txlog.textFromEventDict` will extract into the above ``text``
+        # variable the tracebacks from failures/exceptions which are logged
+        # with LevelledPublisher.err() (these have an eventDict['failure'])
+        if 'failure' in eventDict:
+            msg_lvl = LEVELS['FATAL']
+    else:
+        # If the log message somehow doesn't have a level, pretend it has
+        # whatever level we're logging at.
+        msg_lvl = observerCls.level
+
+    if not text and 'message' in eventDict:
+        text = eventDict['message']
+        # join them if we got a list of lines
+        if isinstance(text, (list, tuple, set)):
+            text = ' '.join([str(m) for m in eventDict['message']])+'\n'
+    if not text:
+        return
+    else:
+        obsName = getattr(observerCls, 'name', None)
+        lvlName = LEVELS.get(msg_lvl) + ':'
+        fmtDict = {'system': obsName or eventDict['system'],
+                   'text': text.replace("\n", "\n\t"),
+                   'level': lvlName,
+                   'time': observerCls.formatTime(eventDict['time'])}
+        message = txlog._safeFormat("%(time)s %(level)s %(text)s\n", fmtDict)
+
+        if isinstance(observerCls, LevelledObserver):
+            return message, msg_lvl, eventDict
+        elif msg_lvl >= observerCls.level:
+            txutil.untilConcludes(observerCls.write, message)
+            txutil.untilConcludes(observerCls.flush)
+
+# Declare the observer interface implementation
+ILogObserver.implementedBy(_emitWithLevel)
