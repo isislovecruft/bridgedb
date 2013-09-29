@@ -568,6 +568,9 @@ def filterIPAddress(message):
 class SafeLoggerAdapter(txlog.logging.LoggerAdapter):
     """Logger adapter for scrubbing IP and email addresses."""
 
+    # TODO the adapter should possibly be compartmentalised so that filtering
+    # of IPs, email addresses, and fingerprints are each configurable.
+
     def process(self, message, kwargs):
         """Process a log message and scrub sensitive information if necessary.
 
