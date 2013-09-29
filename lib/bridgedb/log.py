@@ -1117,3 +1117,32 @@ def startLogging(filename=None, name=None, **kwargs):
     observer = LevelledPythonObserver(name)
     observer.start()
     return observer
+
+def getLogger(name=None, **kwargs):
+    """Get or create a logger by ``name``.
+
+    Be sure to call :func:`configureLogging` at some point beforehand. The
+    logger and its twisted :interface:`ILogObserver` will be created if they
+    do not exist. If they are created, the observer is added to the registered
+    observers for the ``defaultPublisher``, and the logger is started. Lastly,
+    ``observer.logger``, the observer's
+    :class:`~twisted.python.log.logging.Logger` is returned.
+
+    :param string name: If there is already an observer with this name, return
+        that observer. Otherwise this gets passed to stdlib's
+        :func:`logging.getLogger()`.
+    :keyword: All other ``kwargs`` are passed to :func:`startLogging`.
+    :rtype: :class:`twisted.python.log.logging.Logger`
+    :returns: A logger.
+    """
+    observer = None
+
+    for logname in _observerMapping.keys():
+        if logname == name:
+            observer = _observerMapping[name]
+            break
+    if not observer:
+        observer = startLogging(name=name, **kwargs)
+
+    observer.start()
+    return observer.logger
