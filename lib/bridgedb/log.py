@@ -199,6 +199,8 @@ from __future__ import print_function
 
 __docformat__ = 'reStructuredText'
 
+from itertools import dropwhile
+
 import functools
 import hashlib
 import ipaddr
@@ -206,6 +208,7 @@ import os
 import sys
 import time
 import traceback
+import weakref
 
 from twisted.python import context
 from twisted.python import log as txlog
@@ -225,6 +228,7 @@ from twisted.python.log import err
 from twisted.python.filepath import FilePath
 from twisted.python.filepath import InsecurePath
 from twisted.python.threadable import synchronize
+from zope.interface import implements
 
 from bridgedb.utils import parsers
 
@@ -280,6 +284,12 @@ def updateDefaultContext(oldDefault, newContext):
     context.setDefault(oldDefault, updatedContext)
     return updatedContext
 
+# -----------------
+# Observer Settings
+# -----------------
+
+#: A mapping from log observer names to instances.
+_observerMapping = weakref.WeakValueDictionary()
 _safeLogging = True
 _logDirectory = os.path.join(os.getcwdu(), u'log')
 _level = LEVELS['DEBUG']
@@ -857,6 +867,100 @@ def _emitWithLevel(observerCls, eventDict):
 
 # Declare the observer interface implementation
 ILogObserver.implementedBy(_emitWithLevel)
+
+class LevelledObserver(txlog.FileLogObserver, object):
+    """Base class for the other observers; should not be used directly.
+
+    This class is also used to monkeypatch :class:`t.p.log.FileLogObserver`,
+    which is unfortunately an old-style class and breaks inheritance and the
+    new MRO model added in Python 2.7.4ish.
+
+    :ivar string timeFormat: The stftime(3) format for printing timestamps.
+    """
+    implements(ILoggingContext)
+
+    timeFormat = _timeFormat
+
+    def __init__(self, log_file=None, name=None):
+        """Create an observer which emit()s logLevels.
+
+        This class is a suitable visitor pattern to both the standard library
+        :mod:`logging` module as well as Twisted logging infrastructure.
+
+        :param file log_file: A sufficiently file-like object. (In Python this
+            is inadequately and variably defined, but is often taken to mean
+            that the "file-like object" has a write() method.)
+        :param string name: The name of this observer. This is passed to
+            :meth:`logging.getLogger <twisted.python.log.logging.getLogger>`.
+        :ivar integer level: The level which this observer should log at. It
+            gets set to the current ``level`` within the
+            ``context.defaultContext``.
+        """
+        self.verboseFormat = getVerboseFormat()
+        self.level = getLevel()
+        self.name = self.logPrefix(name)
+
+        if not log_file:
+            log_file = txlog.NullFile()
+
+        super(LevelledObserver, self).__init__(log_file)
+
+    def _mapObserver(self):
+        """Add a mapping between an observer's name and it's instance.
+
+        The mapping, :attr:`_observerMapping`, is weakly referenced to save
+        memory, and it stores a table of observer names (keys) to instances
+        (values). This method is wrapped in binary semaphore locks.
+        """
+        _observerMapping[self.name] = self
+
+    def _unmapObserver(self):
+        """Delete the mapping between observer and its name, if it exists."""
+        del _observerMapping[self.name]
+
+    def emit(self, eventDict):
+        """Emit a log message if it's at (or above) our level.
+
+        See :func:`_emitWithLevel`.
+
+        :param dictionary eventDict: see
+            :func:`twisted.python.log.textFromEventDict` for an explanation of
+            the default ``eventDict`` keys and their uses.
+        """
+        _, message = _emitWithLevel(self, eventDict)
+        if message:
+            txutil.untilConcludes(self.write, message)
+            txutil.untilConcludes(self.flush)
+
+    def logPrefix(self, name=None):
+        """Get the name of a logger instance.
+
+        It may seem silly, but this method is necessary for using functions
+        such as :func:`twisted.python.log.callWithLogger` in a way that is
+        compatible with stdlib logging module's :func:`logging.getLogger`. See
+        also the stub :class:`twisted.python.log.Logger`.
+
+        :rtype: str
+        :returns: The name of this logger.
+        """
+        def first(*args):
+            """Returns the first arg which is not None."""
+            return dropwhile(lambda x: x is None, args).next()
+        return first(name, __package__, self.__module__, __name__, "root")
+
+    def start(self):
+        """Start observing log events."""
+        if self.emit in defaultPublisher.observers:
+            msg("Observer %r already started!" % repr(self))
+        else:
+            addObserver(self.emit)
+            self._mapObserver()
+
+    def stop(self):
+        """Stop observing log events."""
+        removeObserver(self.emit)
+        self._unmapObserver()
+        msg("Removed observer: %r" % repr(self))
 
 # ---------------------------------------
 # Main Functions for use in other modules
