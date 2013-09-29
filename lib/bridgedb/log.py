@@ -288,9 +288,9 @@ _fingerprintHashAlgo = 'sha1'
 #: A strftime(3) format string for log timestamps.
 _timeFormat = '[%Y-%m-%d %H:%M:%S]'
 _formatPrefix = '%(asctime)-4s'
-_formatSuffix = '%[(levelname)s] %(message)s'
+_formatSuffix = '[%(levelname)s] %(message)s'
 _verboseFormat = ' '.join((_formatPrefix,
-                           'L%(lineno)-.4d %(module)s.%(funcName)-.14s',
+                           'L%(lineno)-.4d:%(module)s.%(funcName)-.30s',
                            _formatSuffix))
 _format = ' '.join((_formatPrefix, _formatSuffix))
 
