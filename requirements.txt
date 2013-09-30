@@ -8,6 +8,7 @@ coverage==3.6
 ipaddr>=2.1.10
 pyOpenSSL>=0.13
 pygeoip==0.2.7
+py-email-validation==1.0.0.3
 pygpgme==0.3
 recaptcha>=1.0rc1
 recaptcha-client>=1.0.6
