@@ -15,13 +15,27 @@ import gettext
 
 from twisted.internet import reactor
 
-import bridgedb.log as logging
+from bridgedb import log as log
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
+
+
+class StubbedLogger(object):
+    """A stub logger which simply prints.
+
+    This is used to fill in for logging calls until the actual logger is
+    configured.
+    """
+    def log(self, *message, **kwargs):
+        print(*message, **kwargs)
+    debug = msg = info = warn = warning = err = error = fatal = log
+
+logging = safelog = StubbedLogger()
+
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
