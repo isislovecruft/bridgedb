@@ -22,7 +22,6 @@ from twisted.python import filepath
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
-import bridgedb.Util as Util
 
 from recaptcha.client import captcha 
 from bridgedb.Raptcha import Raptcha
@@ -102,13 +101,14 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         recaptcha_response = captcha.submit(challenge, response,
                                         self.recaptchaPrivKey, remote_ip)
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r"
-                         % Util.logSafely(remote_ip), request.args)
+            safelog.debug("Valid recaptcha from %s. Parameters were %r"
+                         % remote_ip, request.args)
             return self.resource.render(request)
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r"
-                         % (Util.logSafely(remote_ip), request.args))
-            logging.info("Recaptcha error code: %s" % recaptcha_response.error_code)
+            safelog.debug("Invalid recaptcha from %s. Parameters were %r"
+                          % (remote_ip, request.args))
+            logging.info("Recaptcha error code: %s"
+                         % recaptcha_response.error_code)
         return redirectTo(request.URLPath(), request)
 
 class WebResource(twisted.web.resource.Resource):
@@ -216,8 +216,8 @@ class WebResource(twisted.web.resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
 
-        logging.info("Replying to web request from %s. Parameters were %r"
-                     % (Util.logSafely(ip), request.args))
+        safelog.info("Replying to web request from %s. Parameters were %r"
+                     % (ip, request.args))
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             return answer

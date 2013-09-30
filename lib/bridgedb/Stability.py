@@ -172,9 +172,9 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
         secondsSinceLastStatusPublication = \
                 (statusPublicationMillis - bhe.lastSeenWithThisAddressAndPort)/1000
     if secondsSinceLastStatusPublication <= 0 and bhe.weightedTime > 0:
-        # old descriptor, bail
-        logging.warn("Received old descriptor for bridge %s with timestamp %d"
-                     % (bhe.fingerprint, statusPublicationMillis/1000))
+        safelog.warn("Received stale descriptor:\n\tBridge: %s\n\tTimestamp: %d"
+                     % (log.redigested(bhe.fingerprint),
+                        statusPublicationMillis/1000))
         return bhe
     
     # iterate over all known bridges and apply weighting factor

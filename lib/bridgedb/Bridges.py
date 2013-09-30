@@ -1035,8 +1035,9 @@ class FilteredBridgeSplitter(BridgeHolder):
                         desc.append(g.description)
 
             # add transports
-            logging.debug("%s supports %d transports" % (toHex(b.getID()),
-                                                         len(b.transports)))
+            logging.debug("%s supports %d transports"
+                          % (log.redigested(toHex(b.getID())),
+                             len(b.transports)))
             for transport in b.transports:
                 desc.append("transport=%s"%(transport.methodname))
 

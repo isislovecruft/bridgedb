@@ -25,7 +25,6 @@ import twisted.mail.smtp
 from zope.interface import implements
 
 import bridgedb.Dist
-import bridgedb.Util as Util
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -105,11 +104,11 @@ def getMailResponse(lines, ctx):
         logging.info("Ignoring bad address on incoming email.")
         return None,None
     if not addrdomain:
-        logging.info("Couldn't parse domain from %r" % Util.logSafely(clientAddr))
+        safelog.info("Couldn't parse domain from %r" % clientAddr)
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
     if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
-        logging.info("Unrecognized email domain %r" % Util.logSafely(addrdomain))
+        safelog.info("Unrecognized email domain %r" % addrdomain)
         return None,None
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
     if 'dkim' in rules:
@@ -182,8 +181,8 @@ def getMailResponse(lines, ctx):
 
     # Handle rate limited email
     except TooSoonEmail, e:
-        logging.info("Got a mail too frequently; warning %r: %s."
-                     % (Util.logSafely(clientAddr), e))
+        safelog.info("Got a mail too frequently; warning %r: %s."
+                     % (clientAddr, e))
 
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
@@ -192,13 +191,13 @@ def getMailResponse(lines, ctx):
                 gpgContext=ctx.gpgContext)
 
     except IgnoreEmail, e:
-        logging.info("Got a mail too frequently; ignoring %r: %s."
-                     % (Util.logSafely(clientAddr), e))
+        safelog.info("Got a mail too frequently; ignoring %r: %s."
+                     % (clientAddr, e))
         return None, None 
 
     except BadEmail, e:
-        logging.info("Got a mail from a bad email address %r: %s."
-                     % (Util.logSafely(clientAddr), e))
+        safelog.info("Got a mail from a bad email address %r: %s."
+                     % (clientAddr, e))
         return None, None 
 
     if bridges:
@@ -245,7 +244,7 @@ def replyToMail(lines, ctx):
     """Given a list of lines from an incoming email message, and a
        MailContext object, possibly send a reply.
     """
-    logging.info("Got a completed email; deciding whether to reply.")
+    logging.debug("Got a completed email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
         logging.debug("getMailResponse said not to reply, so I won't.")
@@ -258,7 +257,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-    logging.info("Sending reply to %r" % Util.logSafely(sendToUser))
+    safelog.info("Sending reply to %r" % sendToUser)
     return d
 
 def getLocaleFromPlusAddr(address):

@@ -8,7 +8,6 @@ This module has functions to decide which bridges to hand out to whom.
 
 import bridgedb.Bridges
 import bridgedb.Storage
-import bridgedb.Util as Util
 
 import re
 import time
@@ -136,16 +135,14 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
            N -- the number of bridges to try to give back.
         """
         if not bridgeFilterRules: bridgeFilterRules=[]
-        logging.debug("getBridgesForIP(%s, %s, %s, %s"
-                      % (Util.logSafely(ip), epoch, N, bridgeFilterRules))
+        safelog.debug("calling getBridgesForIP()")
+        safelog.debug("IP: %s\nTimestamp: %s\nN Bridges: %s\nFilter: %s"
+                      % (ip, epoch, N, bridgeFilterRules))
         if not len(self.splitter):
             logging.debug("bailing without splitter")
             return []
 
         area = self.areaMapper(ip)
-
-        logging.info("area is %s" % Util.logSafely(area))
-        
         key1 = ''
         pos = 0
         n = self.nClusters
@@ -365,12 +362,10 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         db = bridgedb.Storage.getDB()
         wasWarned = db.getWarnedEmail(emailaddress)
-
         lastSaw = db.getEmailTime(emailaddress)
-        safe = Util.logSafely(emailaddress)
 
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
-            logging.info("Got a request for bridges from %r..." % safe)
+            safelog.info("Got a request for bridges from %s..." % emailaddress)
             if wasWarned:
                 logging.info("We already sent a warning. Ignoring.")
                 raise IgnoreEmail("Client was warned")

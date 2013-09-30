@@ -22,7 +22,6 @@ import bridgedb.Time as Time
 import bridgedb.Storage
 import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
-import bridgedb.Util as Util
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -151,9 +150,7 @@ def beginLogging(conf, rundir):
     :param conf: A :class:`bridgedb.config.Conf` configuration object.
     :param rundir: The absolute path of the RUN_IN_DIR bridgedb.conf setting.
     """
-    # Turn on safe logging by default
-    safelogging = getattr(conf, 'SAFELOGGING', True)
-    Util.set_safe_logging(safelogging)
+    import bridgedb.log as log
 
     logfile = getattr(conf, 'LOGFILE', 'bridgedb.log')
     lstdout = getattr(conf, 'LOG_STDOUT', True)
@@ -205,7 +202,7 @@ def load(cfg, splitter, clear=False):
             if bridge.getID() in bridges:
                 logging.warn("Parsed bridge that we've already added. Skipping.")
                 logging.debug("\tDuplicate bridge fingerprint: %s"
-                              % Util.logSafelyDigested(bridge.fingerprint))
+                              % log.redigested(bridge.fingerprint))
                 continue
             else:
                 bridges[bridge.getID()] = bridge
