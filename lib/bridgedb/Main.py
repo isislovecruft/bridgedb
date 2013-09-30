@@ -315,7 +315,7 @@ def startup(cfg):
         to the current working directory if not set.
     :ivar logdir: The directory to store logfiles in. Defaults to rundir/log/.
     """
-    rundir = getattr(cfg, 'RUN_IN_DIR', '~/run')
+    rundir = getattr(cfg, 'RUN_IN_DIR', os.path.expanduser('~/run'))
     os.chdir(rundir)
     beginLogging(cfg, rundir)
 
@@ -323,7 +323,7 @@ def startup(cfg):
     cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
     for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
                 "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
-                "PIDFILE", "LOGFILE", "STATUS_FILE"):
+                "PIDFILE", "STATUS_FILE"):
 
         v = getattr(cfg, key, None)
         if v:
@@ -421,19 +421,30 @@ def startup(cfg):
             cfg = Conf(**configuration)
             # update loglevel on (re)load
             level = getattr(cfg, 'LOGLEVEL', 'WARNING')
+            logging.warn("Log level changed to %s" % level)
             logging.setLevel(level)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
-        logging.info("%d bridges loaded" % len(splitter))
+        logging.info("Bridges loaded: %d" % len(splitter))
+
+        logging.info("Populating rings with bridge locations...")
         if emailDistributor:
             emailDistributor.prepopulateRings() # create default rings
-            logging.info("%d for email" % len(emailDistributor.splitter))
+            logging.info("Bridges loaded for email distribution: %d"
+                         % len(emailDistributor.splitter))
+        else:
+            logging.warn("Email Distribution disabled.")
+
         if ipDistributor:
             ipDistributor.prepopulateRings() # create default rings
-            logging.info("%d for web:" % len(ipDistributor.splitter))
-            for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
-                    logging.info(" by filter set %s, %d" % (n, len(r)))
+            logging.info("Bridges loaded for web distribution: %d"
+                         % len(ipDistributor.splitter))
+
+            for filtr, (_, bridges) in ipDistributor.splitter.filterRings.items():
+                filterName = set(filtr).pop().func_name
+                logging.info("Loaded %d bridges for %s"
+                             % (len(bridges), filterName))
             #logging.info("  by location set: %s"
             #             % " ".join(str(len(r)) for r in ipDistributor.rings))
             #logging.info("  by category set: %s"
