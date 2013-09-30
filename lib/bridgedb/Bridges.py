@@ -993,7 +993,7 @@ class FilteredBridgeSplitter(BridgeHolder):
                 r.insert(bridge)
                 logging.debug("insert bridge into %s" % n)
 
-    def addRing(self, ring, ringname, filterFn, populate_from=None):
+    def addRing(self, ring, ringFunc, filterFn, populate_from=None):
         """Add a ring to this splitter.
         ring -- the ring to add
         ringname -- a unique string identifying the ring
@@ -1002,15 +1002,16 @@ class FilteredBridgeSplitter(BridgeHolder):
         populate_from -- an iterable of Bridges
         """
         assert isinstance(ring, BridgeHolder)
-        assert ringname not in self.filterRings.keys()
-        logging.debug("addRing %s" % ringname)
+        assert ringFunc not in self.filterRings.keys()
+        ringName = set(ringFunc).pop().func_name
+        logging.debug("Adding ring %s" % ringName)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
-        self.filterRings[ringname] = (filterFn,ring)
+        self.filterRings[ringFunc] = (filterFn, ring)
 
         # populate ring from an iterable
         if populate_from:
-            logging.debug("populating ring %s" % ringname)
+            logging.debug("Populating ring %s" % ringName)
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     ring.insert(bridge)
