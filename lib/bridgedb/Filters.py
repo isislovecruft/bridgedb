@@ -4,7 +4,9 @@
 
 from ipaddr import IPv6Address, IPv4Address
 
-import bridgedb.log as logging
+from bridgedb import log
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
 
 
 funcs = {}

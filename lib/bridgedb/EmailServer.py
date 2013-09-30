@@ -33,7 +33,9 @@ from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 import bridgedb.I18n as I18n
 
-import bridgedb.log as logging
+from bridgedb import log
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
 
 
 class MailFile:

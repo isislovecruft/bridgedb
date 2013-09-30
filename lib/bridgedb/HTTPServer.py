@@ -29,12 +29,16 @@ from bridgedb.Raptcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
-from bridgedb import log as logging
+from bridgedb import log
+
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
+
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 lookup = TemplateLookup(directories=[template_root],

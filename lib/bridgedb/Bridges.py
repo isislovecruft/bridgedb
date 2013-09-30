@@ -17,9 +17,13 @@ import time
 import ipaddr
 import random
 
-import bridgedb.log as logging
 import bridgedb.Storage
 import bridgedb.Bucket
+
+from bridgedb import log
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
+
 
 HEX_FP_LEN = 40
 ID_LEN = 20

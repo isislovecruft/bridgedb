@@ -19,7 +19,9 @@ from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
 
-import bridgedb.log as logging
+from bridgedb import log
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
 
 
 def uniformMap(ip):

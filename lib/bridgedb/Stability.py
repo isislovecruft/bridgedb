@@ -9,12 +9,16 @@ https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf
 [2] https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java
 """
 
-import bridgedb.log as logging
 import bridgedb.Storage
+from bridgedb import log
+
+logging = log.getLogger(__name__)
+safelog = log.getSafeLogger(logging)
 
 # tunables 
 weighting_factor = float(19)/float(20)
 discountIntervalMillis = long(60*60*12*1000)
+
 
 class BridgeHistory(object):
     """ Record Class that tracks a single Bridge
