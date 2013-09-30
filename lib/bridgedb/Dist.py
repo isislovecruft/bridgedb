@@ -77,10 +77,10 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         # add splitter and cache the default rings
         # plus leave room for dynamic filters
         ring_cache_size  = self.nClusters + len(ipCategories) + 5
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
-                                               max_cached_rings=ring_cache_size)
+        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
+            key2, max_cached_rings=ring_cache_size)
 
-        logging.debug("added splitter %s" % self.splitter)
+        logging.debug("Added splitter %s" % self.splitter.__class__)
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
@@ -152,12 +152,13 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         for category in self.categories:
             # IP Categories
             if category.contains(ip):
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                                                      self.nClusters +
-                                                      len(self.categories),
-                                                      n)
+                g = filterAssignBridgesToRing(
+                    self.splitter.hmac,
+                    self.nClusters + len(self.categories),
+                    n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s" % (epoch, Util.logSafely(area)))
+                logging.info("Client IP Address mapped...")
+                logging.debug("\nIP Category: %s\nArea: %s" % (epoch, area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                              "Order-Bridges-In-Ring-%d"%n) 
