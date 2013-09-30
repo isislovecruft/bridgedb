@@ -167,18 +167,24 @@ def beginLogging(conf, rundir):
     import bridgedb.log as log
 
     logfile = getattr(conf, 'LOGFILE', 'bridgedb.log')
-    lstdout = getattr(conf, 'LOG_STDOUT', True)
-    ldirect = os.path.join(rundir, getattr(conf, 'LOGDIR', 'log'))
+    logstdout = getattr(conf, 'LOG_STDOUT', True)
+    logdirect = os.path.join(rundir, getattr(conf, 'LOGDIR', 'log'))
 
-    logging.folder = ldirect
-    logging.setLevel(conf.LOGLEVEL)
-    logging.startLogging(logfile, lstdout)
+    log.configureLogging(filename=logfile,
+                         folder=logdirect,
+                         level=conf.LOGLEVEL)
+    observer = log.startLogging(logfile, 'bridgedb')
+    if conf.LOG_STDOUT and conf.LOG_STDOUT_LEVEL:
+        observer.startLoggingToStdout(level=conf.LOG_STDOUT_LEVEL)
 
-    logging.info("Log Level: %s" % logging.level)
-    if logfile:
-        logging.info("Log File: %s" % os.path.abspath(logfile))
-    else:
-        logging.info("Logging to stderr")
+    global logging
+    logging = observer.logger
+    logging.msg("Log Level: %s" % log.getLevel())
+
+    # Turn on safe logging by default
+    safelogging = getattr(conf, 'SAFELOGGING', True)
+    log.setSafeLogging(safelogging)
+
     if safelogging:
         logging.info("Safe Logging: Enabled")
     else:
