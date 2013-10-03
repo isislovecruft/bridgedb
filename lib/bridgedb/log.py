@@ -444,7 +444,7 @@ def _setPaths(folder=None, filename=None):
         return dirname, filename
 
 def configureLogging(filename=None, folder=None,  stream=None, level=None,
-                     safe=True, verbose=True):
+                     safe=True, verbose=None):
     """Configure log settings for all :class:`LevelledPythonObserver`s created.
 
     This function will create default settings so that all call to
@@ -485,13 +485,17 @@ def configureLogging(filename=None, folder=None,  stream=None, level=None,
     """
     if level is not None:
         setLevel(level)
-    setVerboseFormat(verbose)
+    lvl = getLevel()
+
+    if verbose is not None:
+        setVerboseFormat(verbose)
+    fmt = getVerboseFormat()
+
     setSafeLogging(safe)
 
-    lvl = getLevel()
     log_conf = functools.partial(txlog.logging.basicConfig, level=lvl,
-                                 format=_format, datefmt=_timeFormat,
-                                  encoding=_encoding, filemode='a')
+                                 format=fmt, datefmt=_timeFormat,
+                                 encoding=_encoding, filemode='a')
     if filename or folder:
         # We only actually need the filename relative to the log directory
         _, filename = _setPaths(folder, filename)
