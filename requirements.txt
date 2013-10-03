@@ -2,7 +2,7 @@ Babel==0.9.6
 BeautifulSoup==3.2.1
 Mako==0.8.1
 MarkupSafe==0.18
-Twisted>=13.0.0
+Twisted==13.1.0
 argparse>=1.2.1
 distribute>=0.6.46
 ipaddr>=2.1.10
