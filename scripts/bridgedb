@@ -1,4 +1,31 @@
 #!/usr/bin/env python
 
-import bridgedb.Main
-bridgedb.Main.run()
+import bridgedb
+import sys
+
+if len(sys.argv) == 1:
+    from bridgedb import Main
+    Main.run()
+else:
+    if sys.argv[1] in ('test', 'coverage'):
+        import os
+        from twisted.scripts import trial
+
+        if sys.argv[1] == 'coverage':
+            run_python_coverage = True
+
+        # Hack to set the PYTHONPATH:
+        sys.path[:] = map(os.path.abspath, sys.path)
+        sys.path.insert(0, os.path.abspath(os.getcwd()))
+
+        if run_python_coverage:
+            from coverage import coverage
+            cov = coverage()
+            cov.start()
+
+        sys.argv = ['trial', 'bridgedb']
+        trial.run()
+
+        if run_python_coverage:
+            cov.stop()
+            cov.html_report('.coverage-results')
