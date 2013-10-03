@@ -1190,5 +1190,12 @@ def getSafeLogger(logger=None):
     """
     if logger:
         adapter = SafeLoggerAdapter(logger, {})
-        return adapter.logger
-    return defaultAdapter.logger
+    else:
+        adapter = defaultAdapter
+
+    adapter.fatal = adapter.critical
+    adapter.err = adapter.error
+    adapter.msg = adapter.info
+    adapter.warn = adapter.warning
+
+    return adapter
