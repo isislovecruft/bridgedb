@@ -1099,24 +1099,36 @@ except:
 # Main Functions for use in other modules
 # ---------------------------------------
 
-def startLogging(filename=None, name=None, **kwargs):
+def startLogging(filename=None, stream=None, name=None, **kwargs):
     """Configure and start logging.
 
-    :type filename: string or None
+    If neither a ``filename`` nor a ``stream`` are given, then the default is
+    to set the ``stream`` to sys.stdout.
+
+    The ``name`` can be used with :func:`getLogger` later (even in different
+    modules), to retrieve the same :class:`twisted.python.log.logging.Logger`.
+
+    :type filename: string
     :param filename: The filename to log to; it should be relative to the
         output of :func:`getDirectory`. If None, log only to stdout.
+    :type stream: A file-like thing, which has already been opened.
+    :param stream: This can be anything which is has already been opened for
+        writing, such as an :class:`io.FileIO`, or a file opened with
+        ``open(file, mode)``.
     :param string name: The name to associate with this observer.
-    :keyword: These are passed to the :func:`configureLogging`
+    :keyword: These are passed to :func:`configureLogging`
     :rtype: :class:`LevelledPythonObserver`
     :returns: A log observer.
     """
     if isinstance(filename, txlog.StdioOnnaStick):
         return
 
-    if not filename:
-        configureLogging(stream=sys.stdout, **kwargs)
-    else:
+    if filename:
         configureLogging(filename=filename, **kwargs)
+    elif stream:
+        configureLogging(stream=stream, **kwargs)
+    else:
+        configureLogging(stream=sys.stdout, **kwargs)
 
     observer = LevelledPythonObserver(name)
     observer.start()
