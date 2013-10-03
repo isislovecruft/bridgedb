@@ -634,7 +634,7 @@ class LevelledPublisher(txlog.LogPublisher):
         Calling this will cause all logging, to files or otherwise, to stop.
         """
         self._msg("Stopping %s logging at %s" % (__package__, time.time()))
-        [observer.stop() for observer in self.observers]
+        [observer.stop() for observer in _observerMapping.values()]
         self.observers = []
 
     def exception(self, error=None, message=None, **kwargs):
