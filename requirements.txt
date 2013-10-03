@@ -6,7 +6,7 @@ Twisted==13.1.0
 argparse>=1.2.1
 ipaddr>=2.1.10
 pyOpenSSL>=0.13
-pygeoip>=0.2.6
+pygeoip==0.2.7
 pygpgme==0.3
 recaptcha>=1.0rc1
 recaptcha-client>=1.0.6
