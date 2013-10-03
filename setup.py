@@ -22,8 +22,22 @@ except ImportError:
 import versioneer
 versioneer.versionfile_source = 'lib/bridgedb/_version.py'
 versioneer.versionfile_build = 'bridgedb/_version.py'
-versioneer.tag_prefix = 'bridgedb-' # tags should be like 'bridgedb-0.1.0'
-versioneer.parentdir_prefix = 'bridgedb-' # tarballs unpack to 'bridgedb-0.1.0'
+
+# when creating a release, tags should be prefixed with 'bridgedb-', like so:
+#
+#     git checkout -b release-6.6.6 develop
+#     [do some stuff, merge whatever, test things]
+#     git tag -S bridgedb-6.6.6
+#     git push tpo-common --tags
+#     git checkout master
+#     git merge -S --no-ff release-6.6.6
+#     git checkout develop
+#     git merge -S --no-ff master
+#     git branch -d release-6.6.6
+#
+versioneer.tag_prefix = 'bridgedb-'
+# source tarballs should unpack to a directory like 'bridgedb-6.6.6'
+versioneer.parentdir_prefix = 'bridgedb-'
 
 def get_cmdclass():
     """Get our cmdclass dictionary for use in setuptool.setup().
