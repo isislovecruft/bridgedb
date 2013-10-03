@@ -135,6 +135,7 @@ setuptools.setup(
     scripts=['scripts/bridgedb',],
     extras_require={'test': ["sure>=0.4.5",
                              "trialcoverage>=0.3.12"]},
+    zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,
     install_requires=get_requirements(),
