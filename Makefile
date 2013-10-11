@@ -1,5 +1,6 @@
 
 .PHONY: install test
+.DEFAULT: install test
 
 all:
 	python setup.py build
