@@ -1,0 +1,102 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+# msj2, 2013
+# msj2, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-07-31 03:40+0000\n"
+"Last-Translator: msj2\n"
+"Language-Team: Kannada (http://www.transifex.com/projects/p/torproject/language/kn/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: kn\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "ಬ್ರಿಡ್ಜ್ ಗಳು ಅಂದರೆ ಏನು?"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%sಬ್ರಿಡ್ಜ್‌ನ ರಿಲೇಗಳು%s ಅಂದರೆ ಸೆನ್ಸಾರ್‌ಗಳಿಂದ ನಿಮ್ಮನ್ನು ದೂರವಿಡುವ ಟಾರ್ ರಿಲೇಗಳು, "
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "ನನಗೆ ಬ್ರಿಡ್ಜ್‌ಗಳು ಸಿಗುವ ಬದಲಿ ಮಾರ್ಗ ಬೇಕು"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "ಪಬ್ಲಿಕ್ ಬ್ರಿಡ್ಜ್‌ಗಳ ಅಡ್ರೆಸ್ ಪಡೆಯುವ ದಾರಿಯಂದ್ರೆ, %s ಈ ವಿಳಾಸಕ್ಕೆ ಈಮೇಲ್ ಕಳಿಸಿ (ಇಂದ a %s ಅಥವಾ a %s ಅಡ್ರೆಸ್ ) ಇವರಿಗೆ. ಈ 'get bridges' ಅಂತ ಈಮೇಲ್ ಒಳಗೆ ಬರೆಯಿರಿ."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "ನನ್ನ ಬ್ರಿಡ್ಜ್‌ಗಳು ಕೆಲಸ ಮಾಡ್ತಿಲ್ಲ. ಸಹಾಯ ಮಾಡಿ"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "ನಿಮ್ಮ ಟಾರ್ ಕೆಲಸ ಮಾಡದೇ ಇದ್ರೆ, %s ಗೆ ಈಮೇಲ್ ಕಳಿಸಿ. ಬ್ರಿಡ್ಜ್‌ಗಳ ಪಟ್ಟಿ, ಬಂಡಲ್‌ನ ಫ಼ೈಲ್‌ ಹೆಸರು/ವರ್ಷನ್, ಟಾರ್ ಕೊಟ್ಟ  ಮೆಸೇಜ್‌ಗಳು, ಎರರ್ ಮೆಸೇಜ್‌ಗಳು, ಈ ರೀತಿ ಸಾಧ್ಯವಿದ್ದಷ್ಟೂ ಮಾಹಿತಿಯನ್ನು ಈಮೇಲ್‌ನಲ್ಲಿ ಕಳಿಸಿ."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "ಮೇಲ್ಕಂಡ ಲೈನ್‌ಗಳನ್ನ ಬಳಸಲು, ವಿಡಲಿಯಾದ ಜಾಲಬಂಧ ಸೆಟ್ಟಿಂಗ್‌ ಪುಟಕ್ಕ ಹೋಗಿ, ಅಲ್ಲಿ   \"My ISP blocks connections to the Tor network\" ಎನ್ನುವುದರ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ. ನಂತರ, ಒಂದೊಂದೇ ಬ್ರಿಡ್ಜ್‌ ಅಡ್ರೆಸ್‌ನ ಕೂಡುತ್ತಾ ಹೋಗಿ."
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "ಯಾವ ಬ್ರಿಡ್ಜ್‌ಗಳು ಸದ್ಯಕ್ಕೆ ಲಭ್ಯವಿಲ್ಲ"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನ ಫ಼ೈರ್‌ಫ಼ಾಕ್ಸ್‌ಗೆ ಬದಲಿಸಿಕೊಳ್ಳಿ"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "ಎರಡು ಪದಗಳನ್ನು ಟೈಪ್ ಮಾಡಿ"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "ಹೆಜ್ಜೆ ೧"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "ಪಡೆಯಿರಿ %s ಟಾರ್ ಬ್ರೌಸರ್ ಬಂಡಲ್ %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "ಹೆಜ್ಜೆ ೨"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "ಪಡೆಯಿರಿ %s ಬ್ರಿಡ್ಜ್‌ಗಳು %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "ಹೆಜ್ಜೆ ೩"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "ಇದೀಗ, %s ಈ ಬ್ರಿಡ್ಜ್‌ಗಳನ್ನ %s ಟಾರ್‌ಗೆ ಕೂಡಿಸಿಕೊಳ್ಳಿ."
