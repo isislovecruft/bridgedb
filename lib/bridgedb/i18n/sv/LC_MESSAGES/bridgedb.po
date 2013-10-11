@@ -1,8 +1,7 @@
-# Translations template for BridgeDB.
+# Swedish translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
-# Translators:
+#
 # Translators:
 # Petomatick <petomatick@hotmail.com>, 2011
 # WinterFairy <winterfairy@riseup.net>, 2013
@@ -13,13 +12,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-06-25 14:00+0000\n"
 "Last-Translator: WinterFairy <winterfairy@riseup.net>\n"
-"Language-Team: Swedish (http://www.transifex.com/projects/p/torproject/language/sv/)\n"
+"Language-Team: Swedish "
+"(http://www.transifex.com/projects/p/torproject/language/sv/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: sv\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -27,8 +26,7 @@ msgstr "Vad är bryggor?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s Bryggreläer %s är Tor reläer som hjälper dig kringå censurering."
 
 #: lib/bridgedb/templates/base.html:39
@@ -38,10 +36,13 @@ msgstr "Jag behöver ett alternativt sätt att skaffa bryggor på!"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Ett annat sätt att hitta publika bryggadresser är genom att skicka ett mail (från en %s eller en %s adress) till %s med raden 'get bridges' ensamt i meddelandetexten."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Ett annat sätt att hitta publika bryggadresser är genom att skicka ett "
+"mail (från en %s eller en %s adress) till %s med raden 'get bridges' "
+"ensamt i meddelandetexten."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -50,17 +51,25 @@ msgstr "Mina bryggor fungerar inte! Jag behöver hjälp!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Om Tor inte fungerar för dig, maila på engelska till %s. Försök att inkludera så mycket information om ditt fall som möjligt, inklusive listan över bryggor du använde, Tor-paketets filnamn/version, meddelandet Tor gav dig, osv."
+msgstr ""
+"Om Tor inte fungerar för dig, maila på engelska till %s. Försök att "
+"inkludera så mycket information om ditt fall som möjligt, inklusive "
+"listan över bryggor du använde, Tor-paketets filnamn/version, meddelandet"
+" Tor gav dig, osv."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "För att använda ovanstående rader, gå in i Vidalias nätverksinställningar, och välj \"Min internetleverantör blockerar anslutningar till Tor-nätverket\". Lägg sedan till varje bryggadress en åt gången."
+msgstr ""
+"För att använda ovanstående rader, gå in i Vidalias "
+"nätverksinställningar, och välj \"Min internetleverantör blockerar "
+"anslutningar till Tor-nätverket\". Lägg sedan till varje bryggadress en "
+"åt gången."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -100,3 +109,4 @@ msgstr "Steg 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Lägg nu till %s bryggorna till Tor %s"
+

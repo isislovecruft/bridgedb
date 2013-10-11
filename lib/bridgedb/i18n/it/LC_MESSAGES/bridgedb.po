@@ -1,7 +1,7 @@
-# Translations template for BridgeDB.
+# Italian translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # ironbishop <ironbishop@fsfe.org>, 2011
 # Random_R <rand@yopmail.com>, 2013
@@ -13,13 +13,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-05-05 13:00+0000\n"
 "Last-Translator: Random_R <rand@yopmail.com>\n"
-"Language-Team: Italian (http://www.transifex.com/projects/p/torproject/language/it/)\n"
+"Language-Team: Italian "
+"(http://www.transifex.com/projects/p/torproject/language/it/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -27,8 +27,7 @@ msgstr "Cosa sono i bridge?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s I relay bridge %s sono relay Tor che ti aiutano ad eludere le censure."
 
 #: lib/bridgedb/templates/base.html:39
@@ -38,10 +37,13 @@ msgstr "Mi serve un altro modo per avere dei bridge!"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Un altro metodo per trovare bridge pubblici è di inviare un'email (da un %s o un indirizzo %s) a %s con la sola frase 'get bridges' nel corpo dell'email."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Un altro metodo per trovare bridge pubblici è di inviare un'email (da un "
+"%s o un indirizzo %s) a %s con la sola frase 'get bridges' nel corpo "
+"dell'email."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -50,17 +52,24 @@ msgstr "I miei bridge non funzionano! Mi serve aiuto!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Se il tuo Tor non funziona, manda un'email a %s. Cerca di fornire più informazioni possibili sul tuo problema, inclusa la lista dei bridge che hai usato, nome e versione del bundle in uso, i messaggi ricevuti da Tor, ecc."
+msgstr ""
+"Se il tuo Tor non funziona, manda un'email a %s. Cerca di fornire più "
+"informazioni possibili sul tuo problema, inclusa la lista dei bridge che "
+"hai usato, nome e versione del bundle in uso, i messaggi ricevuti da Tor,"
+" ecc."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Per utilizzare le righe precedenti, vai alla pagina Impostazioni di rete di Vidalia e fai click su \"Il mio ISP blocca le connessioni alla rete Tor\". Quindi aggiungi l'indirizzo di ciascun bridge, uno alla volta."
+msgstr ""
+"Per utilizzare le righe precedenti, vai alla pagina Impostazioni di rete "
+"di Vidalia e fai click su \"Il mio ISP blocca le connessioni alla rete "
+"Tor\". Quindi aggiungi l'indirizzo di ciascun bridge, uno alla volta."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -100,3 +109,4 @@ msgstr "Passo 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Ora %s aggiungi i bridge a Tor %s"
+

@@ -1,7 +1,7 @@
-# Translations template for BridgeDB.
+# Turkish translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # Tosbaa <conan@operamail.com>, 2013
 # erg26 <ergungorler@gmail.com>, 2012
@@ -14,13 +14,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-06-07 22:00+0000\n"
 "Last-Translator: Tosbaa <conan@operamail.com>\n"
-"Language-Team: Turkish (http://www.transifex.com/projects/p/torproject/language/tr/)\n"
+"Language-Team: Turkish "
+"(http://www.transifex.com/projects/p/torproject/language/tr/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: tr\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -28,8 +28,7 @@ msgstr "Köprüler nedir?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s Köprü aktarıcıları, sansürü aşmanızı sağlayan %s Tor aktarıcılarıdır."
 
 #: lib/bridgedb/templates/base.html:39
@@ -39,10 +38,13 @@ msgstr "Köprüleri edinmek için alternatif yola ihtiyacım var'"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Halka açık köprü adreslerini edinmenin bir yolu da, mesaj gövdesinin bir satırında \"get bridges\" yazılı bir e-postayı (Bir %s ya da %s adresinden) %s'e göndermektir."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Halka açık köprü adreslerini edinmenin bir yolu da, mesaj gövdesinin bir "
+"satırında \"get bridges\" yazılı bir e-postayı (Bir %s ya da %s "
+"adresinden) %s'e göndermektir."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -51,17 +53,24 @@ msgstr "Köprülerim çalışmıyor! Yardıma ihtiyacım var!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Eğer Tor çalışmıyorsa, %s 'e e-posta gönderin. Durumunuz hakkında, kullandığınız köprülerin listesi, kullandığınız paket sürümü/dosya ismi, Tor'un hata mesajları dahil olmak üzere mümkün olduğunca fazla bilgiyi ekleyin."
+msgstr ""
+"Eğer Tor çalışmıyorsa, %s 'e e-posta gönderin. Durumunuz hakkında, "
+"kullandığınız köprülerin listesi, kullandığınız paket sürümü/dosya ismi, "
+"Tor'un hata mesajları dahil olmak üzere mümkün olduğunca fazla bilgiyi "
+"ekleyin."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Yukarıdaki satırları kullanmak için, Vidalia'nınağ ayarları sayfasına gidip \"Servis sağlayıcım Tor ağına erişimlerini engelliyor\"a tıklayın. Bundan sonra tüm köprüleri birer birer ekleyin. "
+msgstr ""
+"Yukarıdaki satırları kullanmak için, Vidalia'nınağ ayarları sayfasına "
+"gidip \"Servis sağlayıcım Tor ağına erişimlerini engelliyor\"a tıklayın. "
+"Bundan sonra tüm köprüleri birer birer ekleyin. "
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -101,3 +110,4 @@ msgstr "Adım 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Şimdi %s köprüleri Tor'a ekleyin %s"
+

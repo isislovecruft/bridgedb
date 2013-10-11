@@ -1,8 +1,7 @@
-# Translations template for BridgeDB.
+# Hebrew translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
-# Translators:
+#
 # Translators:
 # aharonoosh <aharonoosh1@gmail.com>, 2012
 # GenghisKhan <genghiskhan@gmx.ca>, 2013
@@ -14,13 +13,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-07-21 06:40+0000\n"
 "Last-Translator: GenghisKhan <genghiskhan@gmx.ca>\n"
-"Language-Team: Hebrew (http://www.transifex.com/projects/p/torproject/language/he/)\n"
+"Language-Team: Hebrew "
+"(http://www.transifex.com/projects/p/torproject/language/he/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: he\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -28,8 +27,7 @@ msgstr "מהם גשרים?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s ממסרי גשר %s הינם ממסרי Tor אשר מסייעים לך להערים על צנזורה."
 
 #: lib/bridgedb/templates/base.html:39
@@ -39,10 +37,12 @@ msgstr "אני זקוק לדרך חלופית לקבלת גשרים!"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "דרך אחרת למציאת כתובת של גשר פומבי הינה שליחת דוא״ל (מתוך כתובת %s או %s) אל %s עם השורה 'get bridges' כשלעצמו בתוך גוף ההודעה."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"דרך אחרת למציאת כתובת של גשר פומבי הינה שליחת דוא״ל (מתוך כתובת %s או %s)"
+" אל %s עם השורה 'get bridges' כשלעצמו בתוך גוף ההודעה."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -51,17 +51,23 @@ msgstr "הגשרים שלי לא עובדים! אני זקוק לעזרה!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "אם Tor לא עובד אצלך, עליך לשלוח דוא״ל אל %s. נסה לכלול כמה שיותר מידע אודות המקרה שלך כלל שביכולתך לעשות כן, כולל את רשימת הגשרים אשר השתמשת בה, שם הקובץ/גרסא של האגודה (bundle) שהשתמשת, ההודעות אשר Tor מסר וכו׳."
+msgstr ""
+"אם Tor לא עובד אצלך, עליך לשלוח דוא״ל אל %s. נסה לכלול כמה שיותר מידע "
+"אודות המקרה שלך כלל שביכולתך לעשות כן, כולל את רשימת הגשרים אשר השתמשת "
+"בה, שם הקובץ/גרסא של האגודה (bundle) שהשתמשת, ההודעות אשר Tor מסר וכו׳."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "כדי להשתמש בשורות לעיל, המשך אל עמוד הגדרות רשת בתוך Vidalia, והקלק \"ספק האינטרנט שלי חוסם חיבורים לרשת Tor\". אחרי כן הוסף כל כתובת גשר אחת בכל פעם."
+msgstr ""
+"כדי להשתמש בשורות לעיל, המשך אל עמוד הגדרות רשת בתוך Vidalia, והקלק \"ספק"
+" האינטרנט שלי חוסם חיבורים לרשת Tor\". אחרי כן הוסף כל כתובת גשר אחת בכל "
+"פעם."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -101,3 +107,4 @@ msgstr "צעד 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "כעת %s הוסף את הגשרים אל Tor %s"
+

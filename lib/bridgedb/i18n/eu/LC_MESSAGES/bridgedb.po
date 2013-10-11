@@ -1,7 +1,7 @@
-# Translations template for BridgeDB.
+# Basque translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # Antxon Baldarra <baldarra@lavabit.com>, 2013
 # Antxon Baldarra <baldarra@lavabit.com>, 2011, 2012
@@ -12,13 +12,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-05-09 15:19+0000\n"
 "Last-Translator: Antxon Baldarra <baldarra@lavabit.com>\n"
-"Language-Team: Basque (http://www.transifex.com/projects/p/torproject/language/eu/)\n"
+"Language-Team: Basque "
+"(http://www.transifex.com/projects/p/torproject/language/eu/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: eu\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -26,9 +26,10 @@ msgstr "Zer dira zubiak?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s zubi erreleak zentsura sahiesten laguntzen zaituzten %s Tor erreleak dira."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr ""
+"%s zubi erreleak zentsura sahiesten laguntzen zaituzten %s Tor erreleak "
+"dira."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
@@ -37,10 +38,13 @@ msgstr "Zubiak eskuratzeko modu alternatibo bat behar dut!"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Zubi publikoen helbideak aurkitzeko beste modu bat eposta (%s edo %s helbide batetik) bat bidaltzea da %sera 'get bridges' lerroarekin mezuaren gorputzean bertan."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Zubi publikoen helbideak aurkitzeko beste modu bat eposta (%s edo %s "
+"helbide batetik) bat bidaltzea da %sera 'get bridges' lerroarekin "
+"mezuaren gorputzean bertan."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -49,17 +53,25 @@ msgstr "Nire zubiak ez dute funtzionatzen! Laguntza behar dut!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Zure Torek funtzionatzen ez badu, %sera email bat idatzi beharko zenuke. Saiatu zure kasuaren inguruan ahalik eta informazio gehien sartzen, erabili dituzun zubien zerrenda, erabili duzun bundlearen fitxategi izena/bertsioa, Torek eman dizkizun mezuak, eta abar barne."
+msgstr ""
+"Zure Torek funtzionatzen ez badu, %sera email bat idatzi beharko zenuke. "
+"Saiatu zure kasuaren inguruan ahalik eta informazio gehien sartzen, "
+"erabili dituzun zubien zerrenda, erabili duzun bundlearen fitxategi "
+"izena/bertsioa, Torek eman dizkizun mezuak, eta abar barne."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Gaineko lerroak erabiltzeko, joan zaitez Vidaliaren sare ezarpenenak orrira, eta sakatu \"Nire Internet Zerbitzu Hornitzaileak Tor sarera konektatzea blokeatzen dit\". Ondoren gehitu ezazu zubi helbide bakoitza banan banan."
+msgstr ""
+"Gaineko lerroak erabiltzeko, joan zaitez Vidaliaren sare ezarpenenak "
+"orrira, eta sakatu \"Nire Internet Zerbitzu Hornitzaileak Tor sarera "
+"konektatzea blokeatzen dit\". Ondoren gehitu ezazu zubi helbide bakoitza "
+"banan banan."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -99,3 +111,4 @@ msgstr "3. pausua"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Orain %s gehitu zubiak Torera %s"
+

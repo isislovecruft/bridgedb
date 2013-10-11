@@ -1,8 +1,7 @@
-# Translations template for BridgeDB.
+# Portuguese (Brazil) translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
-# Translators:
+#
 # Translators:
 # Communia <ameaneantie@riseup.net>, 2013
 # Augustine <evandro@geocities.com>, 2013
@@ -14,13 +13,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-08-20 22:20+0000\n"
 "Last-Translator: Communia <ameaneantie@riseup.net>\n"
-"Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/torproject/language/pt_BR/)\n"
+"Language-Team: Portuguese (Brazil) "
+"(http://www.transifex.com/projects/p/torproject/language/pt_BR/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: pt_BR\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -28,9 +27,10 @@ msgstr "O que são pontes?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Retransmissores de ponte %s são retransmissores Tor que ajudam a driblar a censura."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr ""
+"%s Retransmissores de ponte %s são retransmissores Tor que ajudam a "
+"driblar a censura."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
@@ -39,10 +39,13 @@ msgstr "Preciso de um outro modo de obter pontes!"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Outra maneira de encontrar endereços de pontes públicas, é enviando um e-mail (de um endereço %s ou %s) para %s apenas com o texto 'get bridges' no corpo da mensagem."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Outra maneira de encontrar endereços de pontes públicas, é enviando um "
+"e-mail (de um endereço %s ou %s) para %s apenas com o texto 'get bridges'"
+" no corpo da mensagem."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -51,17 +54,26 @@ msgstr "Minhas pontes não funcionam!  Preciso de ajuda!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Se seu Tor não funcionar, envie um e-mail para %s.  Inclua tantas informações sobre seu caso quanto puder, por exemplo, a lista de pontes utilizadas, a versão ou o nome do arquivo do pacote Tor, as mensagens que o Tor tiver mostrado, etc."
+msgstr ""
+"Se seu Tor não funcionar, envie um e-mail para %s.  Inclua tantas "
+"informações sobre seu caso quanto puder, por exemplo, a lista de pontes "
+"utilizadas, a versão ou o nome do arquivo do pacote Tor, as mensagens que"
+" o Tor tiver mostrado, etc."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Para utilizar as informações acima, abra a página de configurações de rede do\nVidalia, e clique em \"Meu ISP bloqueia as conexões para a rede Tor\". Depois,\nadicione cada ponte, uma a uma."
+msgstr ""
+"Para utilizar as informações acima, abra a página de configurações de "
+"rede do\n"
+"Vidalia, e clique em \"Meu ISP bloqueia as conexões para a rede Tor\". "
+"Depois,\n"
+"adicione cada ponte, uma a uma."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -101,3 +113,4 @@ msgstr "3º Passo"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Agora, %s adicione as pontes ao Tor %s"
+
