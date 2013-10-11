@@ -3,15 +3,16 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
+# Translators:
 # Communia <ameaneantie@riseup.net>, 2013
 # Augustine <evandro@geocities.com>, 2013
-# m4lqu1570 <>, 2012
+# Snake Plissken <>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
-"PO-Revision-Date: 2013-05-26 16:20+0000\n"
+"PO-Revision-Date: 2013-08-20 22:20+0000\n"
 "Last-Translator: Communia <ameaneantie@riseup.net>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/torproject/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
@@ -29,7 +30,7 @@ msgstr "O que são pontes?"
 #, python-format
 msgid ""
 "%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Retransmissores de ponte %s são retransmissores Tor que ajudam a contornar a censura."
+msgstr "%s Retransmissores de ponte %s são retransmissores Tor que ajudam a driblar a censura."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
@@ -41,7 +42,7 @@ msgid ""
 "Another way to find public bridge addresses is to send an email (from a %s "
 "or a %s address) to %s with the line 'get bridges' by itself in the body of "
 "the mail."
-msgstr "Outra maneira de se achar endereços de pontes públicas é se enviando um email (de um endereço %s ou %s) para %s com apenas 'get bridges' no corpo do email."
+msgstr "Outra maneira de encontrar endereços de pontes públicas, é enviando um e-mail (de um endereço %s ou %s) para %s apenas com o texto 'get bridges' no corpo da mensagem."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -53,14 +54,14 @@ msgid ""
 "If your Tor doesn't work, you should email %s. Try including as much info "
 "about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Se seu Tor nao funciona, envie um email para %s.  Inclua tantas informações sobre seu caso quanto puder, tais como a lista de pontes utilizadas, a versão ou o nome do arquivo do pacote Tor, as mensagens que o Tor mostrou, etc."
+msgstr "Se seu Tor não funcionar, envie um e-mail para %s.  Inclua tantas informações sobre seu caso quanto puder, por exemplo, a lista de pontes utilizadas, a versão ou o nome do arquivo do pacote Tor, as mensagens que o Tor tiver mostrado, etc."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Para se usar a informação acima, vá para a pagina de configuração da rede do Vidalia e selecione \"Meu provedor bloqueia conexões à rede Tor\".  Então adicione um endereço de ponte por vez."
+msgstr "Para utilizar as informações acima, abra a página de configurações de rede do\nVidalia, e clique em \"Meu ISP bloqueia as conexões para a rede Tor\". Depois,\nadicione cada ponte, uma a uma."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -72,7 +73,7 @@ msgstr "Atualize seu navegador para Firefox"
 
 #: lib/bridgedb/templates/captcha.html:8
 msgid "Type the two words"
-msgstr "Entre ambas palavras"
+msgstr "Digite as duas palavras"
 
 #: lib/bridgedb/templates/index.html:6
 msgid "Step 1"
@@ -81,7 +82,7 @@ msgstr "1º Passo"
 #: lib/bridgedb/templates/index.html:8
 #, python-format
 msgid "Get %s Tor Browser Bundle %s"
-msgstr "Obtenha %s o pacote de navegador Tor %s"
+msgstr "Obtenha %s o Pacote de Navegação Tor %s"
 
 #: lib/bridgedb/templates/index.html:13
 msgid "Step 2"
@@ -90,7 +91,7 @@ msgstr "2º Passo"
 #: lib/bridgedb/templates/index.html:15
 #, python-format
 msgid "Get %s bridges %s"
-msgstr "Obter %s as pontes %s"
+msgstr "Obter %s pontes %s"
 
 #: lib/bridgedb/templates/index.html:19
 msgid "Step 3"
