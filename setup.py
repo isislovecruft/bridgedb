@@ -1,7 +1,16 @@
-#!/usr/bin/python
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2009, The Tor Project, Inc.
-# See LICENSE for licensing information
+#!/usr/bin/env python
+#_____________________________________________________________________________
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           Aaron Gibson   0x2C4B239DD876C9F6 <aagbsn@torproject.org>
+#           Nick Mathewson 0x21194EBB165733EA <nickm@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2013, The Tor Project, Inc.
+#             (c) 2007-2013, all entities within the AUTHORS file
+# :license: see LICENSE for licensing information
+#_____________________________________________________________________________
 
 from __future__ import print_function
 
@@ -143,6 +152,7 @@ setuptools.setup(
     package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
                                'templates/*.html',
                                'templates/assets/*']},
+    exclude_package_data={'': ['*.po']},
     message_extractors = {'lib/bridgedb': [
         ('**.py', 'python', None),
         ('templates/**.html', 'mako', None),
