@@ -38,29 +38,14 @@ as instructions for getting extra Bridges.
 ### Dependencies and installation
 BridgeDB requires the following OS-level dependencies:
 
- - Python>=2.6
+ - python>=2.7
+ - python-dev
  - OpenSSL>=1.0.1e
  - [SQLite3](http://www.maxmind.com/app/python)
  - [MaxMind GeoIP](https://www.maxmind.com/en/geolocation_landing)
  - [python-setuptools](https://pypi.python.org/pypi/setuptools)
 
-As well as the following Python dependencies (from ./requirements.txt):
-
-    Babel==0.9.6
-    BeautifulSoup==3.2.1
-    Mako==0.8.1
-    MarkupSafe==0.18
-    Twisted>=13.0.0
-    argparse>=1.2.1
-    distribute>=0.6.46
-    ipaddr>=2.1.10
-    pyOpenSSL>=0.13
-    pygeoip>=0.2.6
-    pygpgme==0.3
-    recaptcha>=1.0rc1
-    recaptcha-client>=1.0.6
-    wsgiref>=0.1.2
-    zope.interface>=4.0.5
+As well as any Python dependencies in requirements.txt.
 
 ### Deploying BridgeDB in a Python virtualenv
 
