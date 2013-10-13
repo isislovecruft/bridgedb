@@ -1,7 +1,7 @@
-# Translations template for BridgeDB.
+# Dutch translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # Adriaan Callaerts <adriaan.callaerts@gmail.com>, 2013
 # WMRKameleon <info@wmrkameleon.nl>, 2013
@@ -15,13 +15,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-06-21 14:30+0000\n"
 "Last-Translator: math1985 <transifex@matthijsmelissen.nl>\n"
-"Language-Team: Dutch (http://www.transifex.com/projects/p/torproject/language/nl/)\n"
+"Language-Team: Dutch "
+"(http://www.transifex.com/projects/p/torproject/language/nl/)\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: nl\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -29,9 +29,10 @@ msgstr "Wat zijn bridges?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Bridge relays %s zijn Tor relays die je in staat stellen censuur te omzeilen."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr ""
+"%s Bridge relays %s zijn Tor relays die je in staat stellen censuur te "
+"omzeilen."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
@@ -40,10 +41,13 @@ msgstr "Ik heb een alternatieve manier nodig om bridges te verkrijgen."
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Een andere manier om publieke bridges te vinden is om een e-mail te sturen (van een %s of een %s-adres) naar %s met enkel de regel 'get bridges' in de inhoud van de e-mail."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Een andere manier om publieke bridges te vinden is om een e-mail te "
+"sturen (van een %s of een %s-adres) naar %s met enkel de regel 'get "
+"bridges' in de inhoud van de e-mail."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -52,17 +56,24 @@ msgstr "Mijn bridges werken niet! Ik heb hulp nodig!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Als je Tor niet werkt, zou je %s moeten e-mailen. Probeer zo veel mogelijk informatie over uw geval te verzamelen, inclusief de lijst van bridges die u heeft gebruikt, de bestandsnaam en -versie van de bundel die u gebruikt, de berichten die Tor uitgaf, etc."
+msgstr ""
+"Als je Tor niet werkt, zou je %s moeten e-mailen. Probeer zo veel "
+"mogelijk informatie over uw geval te verzamelen, inclusief de lijst van "
+"bridges die u heeft gebruikt, de bestandsnaam en -versie van de bundel "
+"die u gebruikt, de berichten die Tor uitgaf, etc."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Om de bovenstaande regels te gebruiken, ga naar Vidalia's Netwerk instellingen pagina en klik op \"Mijn ISP blokkeert verbindingen naar het Tor netwerk\". Voeg daarna elke bridge toe, één regel per keer."
+msgstr ""
+"Om de bovenstaande regels te gebruiken, ga naar Vidalia's Netwerk "
+"instellingen pagina en klik op \"Mijn ISP blokkeert verbindingen naar het"
+" Tor netwerk\". Voeg daarna elke bridge toe, één regel per keer."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -102,3 +113,4 @@ msgstr "Stap 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "%s Voeg nu de bridges aan Tor toe %s"
+

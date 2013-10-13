@@ -19,3 +19,6 @@ uninstall:
 	cat installed-files.txt | xargs rm -rf
 
 reinstall: uninstall force-install
+
+translations:
+	./maint/get-completed-translations

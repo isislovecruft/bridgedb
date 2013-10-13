@@ -1,0 +1,163 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+#_____________________________________________________________________________
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2013, The Tor Project, Inc.
+#             (c) 2007-2013, all entities within the AUTHORS file
+# :license: 3-clause BSD, see included LICENSE for information
+#_____________________________________________________________________________
+#
+# get-completed-translations
+# --------------------------
+# This should be used when newly completed translations are available in the
+# Tor Project's translations repository. [0]
+# 
+# The first time this script is run, it will create a directory, next to the
+# BridgeDB repository directory, named 'bridgedb-translations':
+#
+# …/parentdir/
+#   |-- bridgedb/
+#   |   |-- lib/
+#   |   |   `-- bridgedb/
+#   |   |       `-- i18n/
+#   |   |           |-- ar/
+#   |   |           |     `-- LC_MESSAGES
+#   |   |           |         |-- bridgedb.mo
+#   |   |           |         `-- bridgedb.po
+#   |   |           |-- …
+#   |   |           |-- zh_CN/
+#   |   |           |     `-- LC_MESSAGES
+#   |   |           |         |-- bridgedb.mo
+#   |   |           |         `-- bridgedb.po
+#   |   |           `-- templates/
+#   |   |-- scripts/
+#   |   `-- …
+#   `-- bridgedb-translations/
+#       |-- ar/
+#       |   `-- LC_MESSAGES
+#       |       `-- bridgedb.po
+#       |-- …
+#       `-- zh_CN/
+#           `-- LC_MESSAGES
+#               `-- bridgedb.po
+# 
+# The new directory, 'bridgedb-translations', will only contain the contents
+# of the upstream branch 'bridgedb_completed'. The updated .po files will be
+# rsync'd into the lib/bridgedb/i18n/ directory in the BridgeDB repository
+# directory.
+#
+# You shouldn't need to change anything in this script, nor run it from any
+# specific location. Just run it from anywhere and it'll update the
+# translations.
+#
+# [0]: https://gitweb.torproject.org/translation.git
+#_____________________________________________________________________________
+
+
+# The name of the directory to store completed translations for BridgeDB
+# in. This will be created, and made to fetch *only* the
+# $TRANS_COMPLETE_BRANCH branch from the TPO translations.git repo:
+TRANS_DIR='bridgedb-translations'
+
+# The remote location of the translations repo:
+TRANS_REMOTE='git@git-rw.torproject.org:translation.git'
+
+# The branch from the remote translations repo to check out:
+TRANS_COMPLETED_BRANCH='bridgedb_completed'
+
+
+#-----------------------------------------------------------------------------
+# Don't touch anything below here unless you're fixing a bug.
+#_____________________________________________________________________________
+
+# Check for dependencies:
+which rsync 2>&1 >/dev/null || \
+    { printf "You must have rsync installed.\nExiting.\n"; exit 1 ;}
+
+# Figure out where we are so that we can get to the parent directory of the
+# BridgeDB repository directory:
+THIS_FILE="${BASH_SOURCE[0]}"
+NAME=$(basename $0)
+
+while [ -h "$THIS_FILE" ]; do
+    # resolve $THIS_FILE until the file is no longer a symlink:
+    THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
+    THIS_FILE="$(readlink "$THIS_FILE")"
+    # if $THIS_FILE was a relative symlink, we need to resolve it relative to
+    # the path where the symlink file was located:
+    [[ $THIS_FILE != /* ]] && THIS_FILE="$THIS_PATH/$THIS_FILE" 
+done
+
+THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
+PARENT_PATH=${THIS_PATH%%/bridgedb/maint}
+
+function usage () {
+    printf "Usage: %s\n\n" $NAME
+    printf "That's it. Just run it from anywhere. There are no options.\n"
+    printf "\n"
+    printf "This should be used when newly completed translations are available in the\n"
+    printf "Tor Project's translations repository.\n"
+    printf "\n"
+    printf "The first time this script is run, it will create a directory, next to the\n"
+    printf "BridgeDB repository directory, named 'bridgedb-translations'.\n"
+    printf "The new directory, 'bridgedb-translations', will only contain the contents\n"
+    printf "of the upstream branch 'bridgedb_completed'. The updated .po files will be\n"
+    printf "rsync'd into the lib/bridgedb/i18n/ directory in the BridgeDB repository\n"
+    printf "directory.\n"
+    printf "\n"
+}
+
+if test "$#" -gt "1" ; then usage ; fi
+
+# Go to the parent directory of the BridgeDB repo:
+cd $PARENT_PATH
+#printf "%s: Current working directory:\n\t%s\n" $NAME $PWD
+# Create a directory for completed translations if it doesn't already exist:
+if ! test -d "$TRANS_DIR" ; then
+    printf "%s: Creating directory for translations repo:\n\t%s\n" \
+        $NAME $TRANS_DIR
+    mkdir $TRANS_DIR
+    # Go into the completed translations repo:
+    cd $TRANS_DIR
+    # Create the git repo if it doesn't exist:
+    git init
+    git remote add -t $TRANS_COMPLETED_BRANCH -f origin $TRANS_REMOTE
+    git checkout $TRANS_COMPLETED_BRANCH
+else
+    printf "%s: Found directory for translations repo:\n\t%s\n" \
+        $NAME $TRANS_DIR
+    # Go into the completed translations repo
+    cd $TRANS_DIR
+    git pull
+fi
+
+cd $PARENT_PATH
+rsync -PCAXrq \
+    --filter 'include ./translation/*/LC_MESSAGES/bridgedb.po' \
+    --filter 'exclude .gitignore' \
+    ./translation/ ./bridgedb/lib/bridgedb/i18n/
+status=$?
+
+printf "\n"
+read -N1 -t15 -p"Should we recompile the new translations now? (Y/n) " choice
+printf "\n"
+
+case $choice in
+    n ) 
+        printf "Skipping translations recompilation...\n\n"
+        status=$?
+        ;;
+    * )
+        printf "Recompiling files from *.po → *.mo ...\n\n"
+        cd ${PARENT_PATH}'/bridgedb'
+        python setup.py compile_catalog
+        status=$?
+        printf "\n"
+        printf "Don't forget to reinstall BridgeDB to update the templates!\n\n"
+        ;;
+esac
+
+exit $status

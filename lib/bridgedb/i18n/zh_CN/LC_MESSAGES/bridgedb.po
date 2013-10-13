@@ -1,11 +1,8 @@
-# Translations template for BridgeDB.
+# Chinese (China) translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
-# Translators:
-# simabull tsai, 2013
-# simabull tsai, 2013
 # simabull tsai, 2013
 # Christopher Meng <cickumqt@gmail.com>, 2012
 # hanl <iamh4n@gmail.com>, 2011
@@ -16,13 +13,13 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-06-28 00:10+0000\n"
 "Last-Translator: simabull tsai\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/projects/p/torproject/language/zh_CN/)\n"
+"Language-Team: Chinese (China) "
+"(http://www.transifex.com/projects/p/torproject/language/zh_CN/)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: zh_CN\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -30,8 +27,7 @@ msgstr "什么是网桥中继？"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s 网桥中继 %s 是一种 Tor 中继，用于帮助用户规避审查。"
 
 #: lib/bridgedb/templates/base.html:39
@@ -41,9 +37,9 @@ msgstr "需要使用其他获取方式获取网桥！"
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
 msgstr "获取公开的网桥地址还有一种方式：使用 %s 或 %s 邮箱发送电子邮件至 %s，并在邮件正文中包含文字“get bridges”。 "
 
 #: lib/bridgedb/templates/base.html:48
@@ -53,10 +49,12 @@ msgstr "网桥无法正常运行，我需要帮助！"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "如果 Tor 无法正常运行，请发送电子邮件至 %s。请在邮件中提供尽可能详细的信息，例如：使用的网桥列表，所用的软件包文件名/版本，Tor 所显示的信息等等。"
+msgstr ""
+"如果 Tor 无法正常运行，请发送电子邮件至 %s。请在邮件中提供尽可能详细的信息，例如：使用的网桥列表，所用的软件包文件名/版本，Tor "
+"所显示的信息等等。"
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
@@ -103,3 +101,4 @@ msgstr "第 3 步"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "现在 %s 将网桥添加到 Tor %s"
+

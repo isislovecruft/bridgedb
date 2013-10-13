@@ -1,13 +1,11 @@
-# Translations template for BridgeDB.
+# Arabic translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # allamiro <allamiro@gmail.com>, 2011
 # محمد الحرقان <malham1@gmail.com>, 2011
 # Sherief Alaa <sheriefalaa.w@gmail.com>, 2013
-# Sherief Alaa <sheriefalaa.w@gmail.com>, 2013
-# محمد الحرقان <malham1@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
@@ -15,13 +13,14 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-04-29 09:24+0000\n"
 "Last-Translator: runasand <runa.sandvik@gmail.com>\n"
-"Language-Team: Arabic (http://www.transifex.com/projects/p/torproject/language/ar/)\n"
+"Language-Team: Arabic "
+"(http://www.transifex.com/projects/p/torproject/language/ar/)\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
+"n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: ar\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -29,8 +28,7 @@ msgstr "ما هي الجسور؟"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s مرحلات الجسر %s عبارة عن مرحلات لتور تساعدك في التحايل على الرقابة."
 
 #: lib/bridgedb/templates/base.html:39
@@ -40,10 +38,13 @@ msgstr "انا بحاجة إلى وسيلة بديلة للحصول على ال�
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "طريقة اخري للعثور علي عنوين الجسور العامة هي إرسال بريد إلكتروني (من عنوان %s أو %s ) إلي %s مع إضافة سطر 'get bridges' في موضوع البريد الإلكتروني."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"طريقة اخري للعثور علي عنوين الجسور العامة هي إرسال بريد إلكتروني (من "
+"عنوان %s أو %s ) إلي %s مع إضافة سطر 'get bridges' في موضوع البريد "
+"الإلكتروني."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -52,17 +53,23 @@ msgstr "الجسور لا تعمل! انا بحاجة إلي المساعدة!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي %s. وحاول قدر المستطاع اضافة معلومات عن حالتك، واضف ايضا الجسور التي استخدمتها، و اسم أو نسخة الحزمة التي استخدمتها، و الرسالة التي اظهرها تور, الخ..."
+msgstr ""
+"إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي %s. وحاول قدر"
+" المستطاع اضافة معلومات عن حالتك، واضف ايضا الجسور التي استخدمتها، و اسم "
+"أو نسخة الحزمة التي استخدمتها، و الرسالة التي اظهرها تور, الخ..."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "لاستخدام الأسطر أعلاه، اذهب إلي إعدادات الشبكة الخاصة بڤيداليا، ثم انقر \"مزود خدمة الانترنت الخاص بي يحجب اتصالات تور\". وبعد ذلك ابدأ بإضافة الجسور واحد تلو الاخر."
+msgstr ""
+"لاستخدام الأسطر أعلاه، اذهب إلي إعدادات الشبكة الخاصة بڤيداليا، ثم انقر "
+"\"مزود خدمة الانترنت الخاص بي يحجب اتصالات تور\". وبعد ذلك ابدأ بإضافة "
+"الجسور واحد تلو الاخر."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -102,3 +109,4 @@ msgstr "خطوة 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "الان %s اضف الجسور إلي تور %s "
+
