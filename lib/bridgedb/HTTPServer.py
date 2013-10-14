@@ -246,7 +246,10 @@ def addWebServer(cfg, dist, sched):
     site = None
     httpdist = twisted.web.resource.Resource()
     httpdist.putChild('', WebRoot())
-    httpdist.putChild('assets', static.File(os.path.join(template_root, 'assets/')))
+    httpdist.putChild('robots.txt',
+                      static.File(os.path.join(template_root, 'robots.txt')))
+    httpdist.putChild('assets',
+                      static.File(os.path.join(template_root, 'assets/')))
 
     resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                    cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
