@@ -106,6 +106,59 @@ def get_requirements():
 
     return requirements
 
+def get_supported_langs():
+    """Get the paths for all compiled translation files.
+
+    The two-letter country code of each language which is going to be
+    installed will be added to a list, and this list will be written to
+    :attr:`repo_langs`, so that lib/bridgedb/__init__.py can store a
+    package-level attribute ``bridgedb.__langs__``, which will be a list of
+    any languages which were installed.
+
+    Then, the paths of the compiled translations files are added to
+    :ivar:`data_files`. These should be included in the ``data_files``
+    parameter in :func:`~setuptools.setup` in order for setuptools to be able
+    to tell the underlying distutils ``install_data`` command to include these
+    files.
+
+    See http://docs.python.org/2/distutils/setupscript.html#installing-additional-files
+    for more information.
+
+    :ivar list supported: A list of two-letter country codes, one for each
+        language we currently provide translations support for.
+    :ivar list lang_dirs: The directories (relative or absolute) to install
+        the compiled translation file to.
+    :ivar list lang_files: The paths to compiled translations files, relative
+        to this setup.py script.
+    :rtype: list
+    :returns: Two lists, ``lang_dirs`` and ``lang_files``.
+    """
+    supported = []
+    lang_dirs = []
+    lang_files = []
+
+    for lang in os.listdir(repo_i18n):
+        if lang.endswith('templates'):
+            continue
+        supported.append(lang)
+        lang_dirs.append(os.path.join(install_i18n, lang))
+        lang_files.append(os.path.join(repo_i18n, lang,
+                                       'LC_MESSAGES', 'bridgedb.mo'))
+
+    # Write our list of supported languages to 'lib/bridgedb/_langs.py':
+    new_langs_lines = []
+    with open(repo_langs, 'r') as langsfile:
+        for line in langsfile.readlines():
+            if line.startswith('supported'):
+                line = "supported = {}\n".format(supported)
+                print("REWROTE supported langs: %s" % line)
+            new_langs_lines.append(line)
+    with open(repo_langs, 'w') as newlangsfile:
+        for line in new_langs_lines:
+            newlangsfile.write(line)
+
+    return lang_dirs, lang_files
+
 def get_data_files():
     """Returns our hard-coded data_files which should be distributed.
 
