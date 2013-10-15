@@ -12,7 +12,7 @@ notifications:
     on_failure: change
 before_install:
   - sudo apt-get update
-  - sudo apt-get install tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
+  - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
 python:
   - "2.6"
   - "2.7"
@@ -21,6 +21,7 @@ install:
   - make install
 # command to run tests, e.g. python setup.py test
 script:
+  - python setup.py test
   - test -d run || mkdir run
   - openssl genrsa -des3 -passout pass:bridgedb -out privkey 4096
   - openssl req -batch -passin pass:bridgedb -new -key privkey -out server.csr
@@ -35,8 +36,8 @@ script:
   - cp ./bridgedb.conf ./run/
   - chmod +x .travis.test.sh
   - cd run
-  - gen_bridge_descriptors 2000
-  - ../.travis.test.sh 30 bridgedb -c bridgedb.conf
-  - python setup.py test
-  - bridgedb trial
-  - echo "Build successful."
+  - ../scripts/make-ssl-cert
+  - ../scripts/executioner 60 bridgedb -c bridgedb.conf
+# add this when #9199's (or some other trial-based) tests are merged:
+#  - bridgedb test -n 2000
+#  - echo "Build successful."
