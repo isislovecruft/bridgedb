@@ -14,11 +14,11 @@
 
 from __future__ import print_function
 
-import subprocess
-from distutils.command.install_data import install_data as _install_data
 import os
 import setuptools
 import sys
+
+from glob import glob
 
 # Fix circular dependency with setup.py install
 try:
@@ -48,6 +48,33 @@ versioneer.tag_prefix = 'bridgedb-'
 # source tarballs should unpack to a directory like 'bridgedb-6.6.6'
 versioneer.parentdir_prefix = 'bridgedb-'
 
+pkgpath = os.path.join('lib', 'bridgedb')
+
+# Repo directory that contains translations; this directory should contain
+# both uncompiled translations (.po files) as well as compiled ones (.mo
+# files). We only want to install the .mo files.
+repo_i18n = os.path.join(pkgpath, 'i18n')
+
+# The list of country codes for supported languages will be stored as a list
+# variable, ``_supported``, in this file, so that the bridgedb packages
+# __init__.py can access it:
+repo_langs = os.path.join(pkgpath, '_langs.py')
+
+# The directory containing template files and other resources to serve on the
+# web server:
+repo_templates = os.path.join(pkgpath, 'templates')
+
+# The directories to install non-sourcecode resources into should always be
+# given as relative paths, in order to force distutils to install relative to
+# the rest of the codebase.
+#
+# Directory to installed compiled translations (.mo files) into:
+install_i18n = os.path.join('bridgedb', 'i18n')
+
+# Directory to install docs, license, and other text resources into:
+install_docs = os.path.join('share', 'doc', 'bridgedb')
+
+
 def get_cmdclass():
     """Get our cmdclass dictionary for use in setuptool.setup().
 
@@ -55,12 +82,11 @@ def get_cmdclass():
     to add our own classes to the cmdclass dictionary, and then update that
     dictionary with the one returned from versioneer.get_cmdclass().
     """
-    cmdclass={'test' : runTests,
-              'compile_catalog': compile_catalog,
-              'extract_messages': extract_messages,
-              'init_catalog': init_catalog,
-              'update_catalog': update_catalog,
-              'install_data': installData}
+    cmdclass = {'test': runTests,
+                'compile_catalog': compile_catalog,
+                'extract_messages': extract_messages,
+                'init_catalog': init_catalog,
+                'update_catalog': update_catalog}
     cmdclass.update(versioneer.get_cmdclass())
     return cmdclass
 
@@ -79,30 +105,118 @@ def get_requirements():
 
     return requirements
 
-def get_data_files():
-    """Returns our hard-coded data_files which should be distributed.
+def get_supported_langs():
+    """Get the paths for all compiled translation files.
 
-    This is necessary for the :class:`installData` class to determine which
-    files we should include in the packaged distribution.
+    The two-letter country code of each language which is going to be
+    installed will be added to a list, and this list will be written to
+    :attr:`repo_langs`, so that lib/bridgedb/__init__.py can store a
+    package-level attribute ``bridgedb.__langs__``, which will be a list of
+    any languages which were installed.
 
-    see http://docs.python.org/2/distutils/setupscript.html#installing-additional-files
+    Then, the paths of the compiled translations files are added to
+    :ivar:`data_files`. These should be included in the ``data_files``
+    parameter in :func:`~setuptools.setup` in order for setuptools to be able
+    to tell the underlying distutils ``install_data`` command to include these
+    files.
+
+    See http://docs.python.org/2/distutils/setupscript.html#installing-additional-files
+    for more information.
+
+    :ivar list supported: A list of two-letter country codes, one for each
+        language we currently provide translations support for.
+    :ivar list lang_dirs: The directories (relative or absolute) to install
+        the compiled translation file to.
+    :ivar list lang_files: The paths to compiled translations files, relative
+        to this setup.py script.
+    :rtype: list
+    :returns: Two lists, ``lang_dirs`` and ``lang_files``.
     """
-    data_files=[(os.path.join('share', 'doc', 'bridgedb'),
-                 ['README', 'TODO', 'LICENSE', 'requirements.txt'])]
+    supported = []
+    lang_dirs = []
+    lang_files = []
+
+    for lang in os.listdir(repo_i18n):
+        if lang.endswith('templates'):
+            continue
+        supported.append(lang)
+        lang_dirs.append(os.path.join(install_i18n, lang))
+        lang_files.append(os.path.join(repo_i18n, lang,
+                                       'LC_MESSAGES', 'bridgedb.mo'))
+
+    # Write our list of supported languages to 'lib/bridgedb/_langs.py':
+    new_langs_lines = []
+    with open(repo_langs, 'r') as langsfile:
+        for line in langsfile.readlines():
+            if line.startswith('supported'):
+                line = "supported = {}\n".format(supported)
+                print("REWROTE supported langs: %s" % line)
+            new_langs_lines.append(line)
+    with open(repo_langs, 'w') as newlangsfile:
+        for line in new_langs_lines:
+            newlangsfile.write(line)
+
+    return lang_dirs, lang_files
+
+def get_template_files():
+    """Return the paths to any web resource files to include in the package.
+
+    :rtype: list
+    :returns: Any files in :attr:`repo_templates` which match one of the glob
+        patterns in :ivar:`include_patterns`.
+    """
+    include_patterns = ['*.html',
+                        '*.txt',
+                        '*.asc',
+                        'assets/*']
+    template_files = []
+
+    for include_pattern in include_patterns:
+        pattern = os.path.join(repo_templates, include_pattern)
+        matches = glob(pattern)
+        template_files.extend(matches)
+
+    return template_files
+
+def get_data_files(filesonly=False):
+    """Return any hard-coded data_files which should be distributed.
+
+    This is necessary so that both the distutils-derived :class:`installData`
+    class and the setuptools ``data_files`` parameter include the same files.
+    Call this function with ``filesonly=True`` to get a list of files suitable
+    for giving to the ``package_data`` parameter in ``setuptools.setup()``.
+    Or, call it with ``filesonly=False`` (the default) to get a list which is
+    suitable for using as ``distutils.command.install_data.data_files``.
+
+    :param bool filesonly: If true, only return the locations of the files to
+        install, not the directories to install them into.
+    :rtype: list
+    :returns: If ``filesonly``, returns a list of file paths. Otherwise,
+        returns a list of 2-tuples containing: one, the directory to install
+        to, and two, the files to install to that directory.
+    """
+    data_files = []
+    doc_files = ['README', 'TODO', 'LICENSE', 'requirements.txt']
+    lang_dirs, lang_files = get_supported_langs()
+    template_files = get_template_files()
+
+    if filesonly:
+        data_files.extend(doc_files)
+        for lst in lang_files, template_files:
+            for filename in lst:
+                if filename.startswith(pkgpath):
+                    # The +1 gets rid of the '/' at the beginning:
+                    filename = filename[len(pkgpath) + 1:]
+                    data_files.append(filename)
+    else:
+        data_files.append((install_docs, doc_files))
+        for ldir, lfile in zip(lang_dirs, lang_files):
+            data_files.append((ldir, [lfile,]))
+
+    [sys.stdout.write("Added data_file '%s'\n" % x) for x in data_files]
+
     return data_files
 
-
-class installData(_install_data):
-    def run(self):
-        self.data_files = get_data_files()
-        for lang in os.listdir('build/locale/'):
-            if lang.endswith('templates'):
-                continue
-            lang_dir = os.path.join('share', 'locale', lang, 'LC_MESSAGES')
-            lang_file = os.path.join('build', 'locale', lang, 'LC_MESSAGES', 
-                                     'bridgedb.mo')
-            self.data_files.append( (lang_dir, [lang_file]) )
-        _install_data.run(self)
 
 class runTests(setuptools.Command):
     # Based on setup.py from mixminion, which is based on setup.py
@@ -122,7 +236,7 @@ class runTests(setuptools.Command):
     def run(self):
         self.run_command('build')
         old_path = sys.path[:]
-        sys.path[0:0] = [ self.build_purelib, self.build_platlib ]
+        sys.path[0:0] = [self.build_purelib, self.build_platlib]
         try:
             testmod = __import__("bridgedb.Tests", globals(), "", [])
             testmod.Tests.main()
@@ -139,7 +253,8 @@ setuptools.setup(
     maintainer='Isis Agora Lovecruft',
     maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
     url='https://www.torproject.org',
-    package_dir= {'' : 'lib'},
+    download_url='https://gitweb.torproject.org/bridgedb.git',
+    package_dir={'': 'lib'},
     packages=['bridgedb'],
     scripts=['scripts/bridgedb',
              'scripts/gen_bridge_descriptors'],
@@ -149,12 +264,12 @@ setuptools.setup(
     cmdclass=get_cmdclass(),
     include_package_data=True,
     install_requires=get_requirements(),
-    package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
-                               'templates/*.html',
-                               'templates/assets/*']},
-    exclude_package_data={'': ['*.po']},
-    message_extractors = {'lib/bridgedb': [
+    package_data={'bridgedb': get_data_files(filesonly=True)},
+    exclude_package_data={'bridgedb': ['*.po', '*.pot']},
+    message_extractors={pkgpath: [
         ('**.py', 'python', None),
         ('templates/**.html', 'mako', None),
         ('public/**', 'ignore', None)]},
 )
+# XXX I think we don't need the 'public/**' babel.messages.frontend.method_map
+# anymore... 2013-10-15 --isis

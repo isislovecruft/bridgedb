@@ -78,3 +78,7 @@ run/*
 *networkstatus-bridges
 *blocked-bridges
 *extra-infos
+
+# do not recommit lib/bridgedb/_langs.py:
+# (the "supported" variable is supposed to be rewritten at install time)
+lib/bridgedb/_langs.py
