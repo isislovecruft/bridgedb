@@ -10,6 +10,7 @@ notifications:
       - isis@torproject.org
     on_success: change
     on_failure: change
+  flowdock: a6d2cde20d97197a381000453c36019f
 before_install:
   - sudo apt-get update
   - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
