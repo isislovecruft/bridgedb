@@ -1,0 +1,47 @@
+language: python
+notifications:
+  irc:
+    channels:
+      - "irc.oftc.net#tor-bots"
+    on_success: always
+    on_failure: always
+  email:
+    recipients:
+      - isis@torproject.org
+    on_success: change
+    on_failure: change
+before_install:
+  - echo "deb http://deb.torproject.org/torproject.org wheezy main" | sudo tee -a /etc/apt/sources.list
+  - gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+  - gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install deb.torproject.org-keyring tor tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3
+python:
+  - "2.6"
+  - "2.7"
+install:
+  - pip install -r requirements.txt --use-mirrors
+  - python setyp.py build
+  - python setup.py compile_catalog
+  - python setup.py install
+# command to run tests, e.g. python setup.py test
+script:
+  - test -d run || mkdir run
+  - openssl genrsa -des3 -passout pass:bridgedb -out privkey 4096
+  - openssl req -batch -passin pass:bridgedb -new -key privkey -out server.csr
+  - cp privkey privkey.nopasswd
+  - openssl rsa -passin pass:bridgedb -in privkey.nopasswd -out privkey.pem
+  - openssl x509 -req -days 365 -in server.csr -signkey privkey.pem -out cert
+  - test -f "privkey.nopasswd" && rm -f privkey.nopasswd
+  - test -f "server.csr" && rm -f server.csr
+  - test -f "privkey" && rm -f privkey
+  - mv privkey.pem ./run/
+  - mv cert ./run/
+  - cp ./bridgedb.conf ./run/
+  - chmod +x .travis.test.sh
+  - cd run
+  - gen_bridge_descriptors 2000
+  - ../.travis.test.sh 30 bridgedb -c bridgedb.conf
+  - python setup.py test
+  - bridgedb trial
+  - echo "Build successful."
