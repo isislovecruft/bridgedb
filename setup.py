@@ -278,9 +278,7 @@ setuptools.setup(
     cmdclass=get_cmdclass(),
     include_package_data=True,
     install_requires=get_requirements(),
-    package_data={'bridgedb': ['i18n/*/LC_MESSAGES/*.mo',
-                               'templates/*.html',
-                               'templates/assets/*']},
+    package_data={'bridgedb': get_data_files(filesonly=True)},
     exclude_package_data={'': ['*.po']},
     message_extractors = {'lib/bridgedb': [
         ('**.py', 'python', None),
