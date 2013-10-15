@@ -14,7 +14,6 @@
 
 from __future__ import print_function
 
-import subprocess
 from distutils.command.install_data import install_data as _install_data
 import os
 import setuptools
