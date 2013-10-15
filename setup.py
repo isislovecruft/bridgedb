@@ -48,6 +48,33 @@ versioneer.tag_prefix = 'bridgedb-'
 # source tarballs should unpack to a directory like 'bridgedb-6.6.6'
 versioneer.parentdir_prefix = 'bridgedb-'
 
+pkgpath = os.path.join('lib', 'bridgedb')
+
+# Repo directory that contains translations; this directory should contain
+# both uncompiled translations (.po files) as well as compiled ones (.mo
+# files). We only want to install the .mo files.
+repo_i18n = os.path.join(pkgpath, 'i18n')
+
+# The list of country codes for supported languages will be stored as a list
+# variable, ``_supported``, in this file, so that the bridgedb packages
+# __init__.py can access it:
+repo_langs = os.path.join(pkgpath, '_langs.py')
+
+# The directory containing template files and other resources to serve on the
+# web server:
+repo_templates = os.path.join(pkgpath, 'templates')
+
+# The directories to install non-sourcecode resources into should always be
+# given as relative paths, in order to force distutils to install relative to
+# the rest of the codebase.
+#
+# Directory to installed compiled translations (.mo files) into:
+install_i18n = os.path.join('bridgedb', 'i18n')
+
+# Directory to install docs, license, and other text resources into:
+install_docs = os.path.join('share', 'doc', 'bridgedb')
+
+
 def get_cmdclass():
     """Get our cmdclass dictionary for use in setuptool.setup().
 
