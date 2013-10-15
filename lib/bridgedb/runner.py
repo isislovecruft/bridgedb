@@ -19,7 +19,8 @@ from __future__ import print_function
 import sys
 
 
-def generateDescriptors(options):
+
+def generateDescriptors(howmany):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
     This will run scripts/gen_bridge_descriptors to create a bridge router
@@ -32,22 +33,23 @@ def generateDescriptors(options):
     """
     import subprocess
 
-    proc = None
-    rundir = options['rundir']
-    script = 'gen_bridge_descriptors'
-    count = options.subOptions['descriptors']
     try:
-        proc = subprocess.Popen([script, '-n', str(count)],
-                                close_fds=True, cwd=rundir)
+        print("Generating %d bridge descriptors..." % howmany)
+        proc = subprocess.Popen(['gen_bridge_descriptors', str(howmany)],
+                                stdout=sys.stdout, stderr=sys.stderr)
+    except Exception as exc:
+        print(exc)
+        print("There was an error generating bridge descriptors.")
+    else:
+        proc.wait()
+        if proc.returncode:
+            print("There was an error generating bridge descriptors. (%s: %d)"
+                  % ("Returncode", proc.returncode))
+        else:
+            print("Sucessfully bridge generated descriptors.")
     finally:
-        if proc is not None:
-            proc.wait()
-            if proc.returncode:
-                print("There was an error generating bridge descriptors.",
-                      "(Returncode: %d)" % proc.returncode)
-            else:
-                print("Sucessfully bridge generated descriptors.")
-    del subprocess
+        del subprocess
+    return
 
 def runTrial(options):
     """Run Twisted trial based unittests, optionally with coverage.
