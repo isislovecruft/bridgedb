@@ -8,6 +8,15 @@ all:
 test:
 	python setup.py test
 
+pep8:
+	find lib/bridgedb/*.py | xargs pep8
+
+pylint:
+	pylint --rcfile=./.pylintrc ./lib/bridgedb/
+
+pyflakes:
+	pyflakes lib/bridgedb/
+
 install:
 	-python setup.py compile_catalog
 	python setup.py install --record installed-files.txt
