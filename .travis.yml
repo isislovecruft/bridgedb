@@ -1,45 +1,34 @@
 language: python
-
 notifications:
   irc:
     channels:
       - "irc.oftc.net#tor-bots"
     on_success: always
     on_failure: always
-    use_notice: true
   email:
     recipients:
       - isis@torproject.org
     on_success: change
     on_failure: change
-
 before_install:
   - sudo apt-get update
   - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
-
 python:
   - "2.6"
   - "2.7"
-
-#services:
-#  - couchdb
-
 install:
   - pip install -r requirements.txt --use-mirrors
   - make install
-
-#before_script:
-#  # For testing with CouchDB
-#  - curl -X PUT localhost:5984/myapp_test
-
 # command to run tests, e.g. python setup.py test
 script:
+  - test -d run || mkdir run
+  - cp bridgedb.conf run/
   - chmod u+x scripts/make-ssl-cert
-  - chmod u+x scripts/executioner
-  - ./scripts/make-ssl-cert
-  - bridgedb mock -n 250
+  - chmod u+x .travis.test.sh
+  - cd run
+  - gen_bridge_descriptors 2000
+  - ../scripts/make-ssl-cert
+  - ../scripts/executioner 60 bridgedb -c bridgedb.conf
+  - python setup.py test
   - bridgedb test
-  - ./scripts/executioner 180 bridgedb -c bridgedb.conf
-  # add this when #9199's (or some other trial-based) tests are merged:
-  #- bridgedb test
   - echo "Build successful."
