@@ -279,7 +279,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=get_requirements(),
     package_data={'bridgedb': get_data_files(filesonly=True)},
-    exclude_package_data={'': ['*.po']},
+    exclude_package_data={'bridgedb': ['*.po', '*.pot']},
     message_extractors = {'lib/bridgedb': [
         ('**.py', 'python', None),
         ('templates/**.html', 'mako', None),
