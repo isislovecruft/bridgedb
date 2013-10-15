@@ -24,7 +24,7 @@ script:
   - test -d run || mkdir run
   - cp bridgedb.conf run/
   - chmod u+x scripts/make-ssl-cert
-  - chmod u+x .travis.test.sh
+  - chmod u+x scripts/executioner
   - cd run
   - gen_bridge_descriptors 2000
   - ../scripts/make-ssl-cert
