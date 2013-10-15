@@ -253,6 +253,7 @@ setuptools.setup(
     maintainer='Isis Agora Lovecruft',
     maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
     url='https://www.torproject.org',
+    download_url='https://gitweb.torproject.org/bridgedb.git',
     package_dir={'': 'lib'},
     packages=['bridgedb'],
     scripts=['scripts/bridgedb',
