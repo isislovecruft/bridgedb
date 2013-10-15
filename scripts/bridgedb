@@ -1,31 +1,43 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2013, The Tor Project, Inc.
+#             (c) 2007-2013, all entities within the AUTHORS file
+# :license: 3-clause BSD, see included LICENSE for information
+
+from __future__ import print_function
 
 import bridgedb
+import os
 import sys
 
-if len(sys.argv) == 1:
-    from bridgedb import Main
-    Main.run()
+from bridgedb import runner
+from bridgedb import opt
+
+
+options = opt.parseOptions()
+
+if options.subCommand is not None:
+    # Hack to set the PYTHONPATH:
+    sys.path[:] = map(os.path.abspath, sys.path)
+    sys.path.insert(0, os.path.abspath(os.getcwd()))
+    sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '../lib')))
+
+    if 'descriptors' in options.subOptions:
+        runner.generateDescriptors(options.subOptions['descriptors'])
+
+    if options.subCommand == 'test':
+        if options.subOptions['trial']:
+            runner.runTrial(options.subOptions)
+        if options.subOptions['unittests']:
+            runner.runTests(options.subOptions)
+    sys.exit()
+
+# If no suboption was given, just run bridgedb:
 else:
-    if sys.argv[1] in ('test', 'coverage'):
-        import os
-        from twisted.scripts import trial
-
-        if sys.argv[1] == 'coverage':
-            run_python_coverage = True
-
-        # Hack to set the PYTHONPATH:
-        sys.path[:] = map(os.path.abspath, sys.path)
-        sys.path.insert(0, os.path.abspath(os.getcwd()))
-
-        if run_python_coverage:
-            from coverage import coverage
-            cov = coverage()
-            cov.start()
-
-        sys.argv = ['trial', 'bridgedb']
-        trial.run()
-
-        if run_python_coverage:
-            cov.stop()
-            cov.html_report('.coverage-results')
+    from bridgedb import Main
+    Main.run(options)
