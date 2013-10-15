@@ -181,16 +181,43 @@ def get_template_files():
 
     return template_files
 
-def get_data_files():
-    """Returns our hard-coded data_files which should be distributed.
+def get_data_files(filesonly=False):
+    """Return any hard-coded data_files which should be distributed.
 
-    This is necessary for the :class:`installData` class to determine which
-    files we should include in the packaged distribution.
+    This is necessary so that both the distutils-derived :class:`installData`
+    class and the setuptools ``data_files`` parameter include the same files.
+    Call this function with ``filesonly=True`` to get a list of files suitable
+    for giving to the ``package_data`` parameter in ``setuptools.setup()``.
+    Or, call it with ``filesonly=False`` (the default) to get a list which is
+    suitable for using as ``distutils.command.install_data.data_files``.
 
-    see http://docs.python.org/2/distutils/setupscript.html#installing-additional-files
+    :param bool filesonly: If true, only return the locations of the files to
+        install, not the directories to install them into.
+    :rtype: list
+    :returns: If ``filesonly``, returns a list of file paths. Otherwise,
+        returns a list of 2-tuples containing: one, the directory to install
+        to, and two, the files to install to that directory.
     """
-    data_files=[(os.path.join('share', 'doc', 'bridgedb'),
-                 ['README', 'TODO', 'LICENSE', 'requirements.txt'])]
+    data_files = []
+    doc_files = ['README', 'TODO', 'LICENSE', 'requirements.txt']
+    lang_dirs, lang_files = get_supported_langs()
+    template_files = get_template_files()
+
+    if filesonly:
+        data_files.extend(doc_files)
+        for lst in lang_files, template_files:
+            for filename in lst:
+                if filename.startswith(pkgpath):
+                    # The +1 gets rid of the '/' at the beginning:
+                    filename = filename[len(pkgpath) + 1:]
+                    data_files.append(filename)
+    else:
+        data_files.append((install_docs, doc_files))
+        for ldir, lfile in zip(lang_dirs, lang_files):
+            data_files.append((ldir, [lfile,]))
+
+    [sys.stdout.write("Added data_file '%s'\n" % x) for x in data_files]
+
     return data_files
 
 
