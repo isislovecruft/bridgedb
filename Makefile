@@ -9,12 +9,12 @@ test:
 	python setup.py test
 
 install:
-	-python setup.py compile_catalog 2>&1 >/dev/null
+	-python setup.py compile_catalog
 	python setup.py install --record installed-files.txt
 
 force-install:
-	-python setup.py compile_catalog 2>&1 >/dev/null
-	python setup.py install --force --record installed-files.txt 2>&1 >/dev/null
+	-python setup.py compile_catalog
+	python setup.py install --force --record installed-files.txt
 
 uninstall:
 	touch installed-files.txt
