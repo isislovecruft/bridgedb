@@ -20,6 +20,8 @@ import os
 import setuptools
 import sys
 
+from glob import glob
+
 # Fix circular dependency with setup.py install
 try:
     from babel.messages.frontend import compile_catalog, extract_messages
@@ -158,6 +160,26 @@ def get_supported_langs():
             newlangsfile.write(line)
 
     return lang_dirs, lang_files
+
+def get_template_files():
+    """Return the paths to any web resource files to include in the package.
+
+    :rtype: list
+    :returns: Any files in :attr:`repo_templates` which match one of the glob
+        patterns in :ivar:`include_patterns`.
+    """
+    include_patterns = ['*.html',
+                        '*.txt',
+                        '*.asc',
+                        'assets/*']
+    template_files = []
+
+    for include_pattern in include_patterns:
+        pattern = os.path.join(repo_templates, include_pattern)
+        matches = glob(pattern)
+        template_files.extend(matches)
+
+    return template_files
 
 def get_data_files():
     """Returns our hard-coded data_files which should be distributed.
