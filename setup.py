@@ -14,7 +14,6 @@
 
 from __future__ import print_function
 
-from distutils.command.install_data import install_data as _install_data
 import os
 import setuptools
 import sys
@@ -88,7 +87,7 @@ def get_cmdclass():
               'extract_messages': extract_messages,
               'init_catalog': init_catalog,
               'update_catalog': update_catalog,
-              'install_data': installData}
+             }
     cmdclass.update(versioneer.get_cmdclass())
     return cmdclass
 
@@ -219,18 +218,6 @@ def get_data_files(filesonly=False):
 
     return data_files
 
-
-class installData(_install_data):
-    def run(self):
-        self.data_files = get_data_files()
-        for lang in os.listdir('build/locale/'):
-            if lang.endswith('templates'):
-                continue
-            lang_dir = os.path.join('share', 'locale', lang, 'LC_MESSAGES')
-            lang_file = os.path.join('build', 'locale', lang, 'LC_MESSAGES', 
-                                     'bridgedb.mo')
-            self.data_files.append( (lang_dir, [lang_file]) )
-        _install_data.run(self)
 
 class runTests(setuptools.Command):
     # Based on setup.py from mixminion, which is based on setup.py
