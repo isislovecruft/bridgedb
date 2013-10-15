@@ -40,24 +40,28 @@ BridgeDB requires the following OS-level dependencies:
 
  - python>=2.7
  - python-dev
+ - build-essential
+ - libgpgme11-dev
  - OpenSSL>=1.0.1e
  - [SQLite3](http://www.maxmind.com/app/python)
- - [MaxMind GeoIP](https://www.maxmind.com/en/geolocation_landing)
+ - [MaxMind GeoIP](https://www.maxmind.com/en/geolocation_landing) (packaged
+   in Debian as tor-geoipdb)
  - [python-setuptools](https://pypi.python.org/pypi/setuptools)
 
 As well as any Python dependencies in requirements.txt.
 
 ### Deploying BridgeDB in a Python virtualenv
 
- - Install Python 2.6 or later, and other OS-level dependencies. On Debian,
+ - Install Python 2.7 or later, and other OS-level dependencies. On Debian,
    you can do:
 
-       sudo apt-get install python openssl sqlite3 tor-geoip
+       sudo apt-get install build-essential python python-dev \
+           python-setuptools openssl sqlite3 tor-geoip libgpgme11-dev
 
- - Install Pip 1.3.1 or later. Debian sid has this version, but if you're
-   tracking a different release, the easiest way to install a newer Pip is to
-   use the Pip development teams's
-   [getpip script](https://raw.github.com/pypa/pip/master/contrib/get-pip.py):
+ - Install Pip 1.3.1 or later. Debian has this version, but if for some reason
+   that or a newer version isn't available, the easiest way to install a newer
+   Pip is to use the Pip development teams's [getpip
+   script](https://raw.github.com/pypa/pip/master/contrib/get-pip.py):
 
        wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
        sudo python get-pip.py
@@ -207,12 +211,16 @@ Enter the following commands at the ```sqlite>``` prompt:
  
 
 ## Running BridgeDB
-To run BridgeDB, simply make any necessary changes to bridgedb.conf, and do:
+
+To run BridgeDB, simply make any necessary changes to bridgedb.conf, navigate
+to the runtime directory (the ```RUN_IN_DIR``` option in bridgedb.conf), and
+do:
 
     bridgedb -c bridgedb.conf
 
-When you have new lists of bridges, replace the old files and send the process
-a SIGHUP.
+When you have new lists of bridges, replace the old files and do:
+
+    bridgedb --reload
 
 Make sure that the files and directories referred to in bridgedb.conf
 exist. However, many of them, if not found, will be touched on disk so that
@@ -230,7 +238,7 @@ foobar-2010-07-17.brdgs. The first file would contain 10 bridges from
 BridgeDB's 'unallocated' pool. The second file would contain 15 bridges from
 the same pool and the third one similarly 3 bridges. These files can then be
 handed out to trusted parties via mail or fed to other distribution mechanisms
-such as twitter.
+such as Twitter.
 
 #### To use with HTTPS:
 Just connect to the appropriate port.

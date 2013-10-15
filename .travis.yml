@@ -11,19 +11,14 @@ notifications:
     on_success: change
     on_failure: change
 before_install:
-  - echo "deb http://deb.torproject.org/torproject.org wheezy main" | sudo tee -a /etc/apt/sources.list
-  - gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-  - gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
   - sudo apt-get update
-  - sudo apt-get install deb.torproject.org-keyring tor tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3
+  - sudo apt-get install tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
 python:
   - "2.6"
   - "2.7"
 install:
   - pip install -r requirements.txt --use-mirrors
-  - python setyp.py build
-  - python setup.py compile_catalog
-  - python setup.py install
+  - make install
 # command to run tests, e.g. python setup.py test
 script:
   - test -d run || mkdir run
