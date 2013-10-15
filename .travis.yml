@@ -23,19 +23,11 @@ install:
 script:
   - python setup.py test
   - test -d run || mkdir run
-  - openssl genrsa -des3 -passout pass:bridgedb -out privkey 4096
-  - openssl req -batch -passin pass:bridgedb -new -key privkey -out server.csr
-  - cp privkey privkey.nopasswd
-  - openssl rsa -passin pass:bridgedb -in privkey.nopasswd -out privkey.pem
-  - openssl x509 -req -days 365 -in server.csr -signkey privkey.pem -out cert
-  - test -f "privkey.nopasswd" && rm -f privkey.nopasswd
-  - test -f "server.csr" && rm -f server.csr
-  - test -f "privkey" && rm -f privkey
-  - mv privkey.pem ./run/
-  - mv cert ./run/
-  - cp ./bridgedb.conf ./run/
-  - chmod +x .travis.test.sh
+  - cp bridgedb.conf run/
+  - chmod u+x scripts/make-ssl-cert
+  - chmod u+x scripts/executioner
   - cd run
+  - gen_bridge_descriptors 2000
   - ../scripts/make-ssl-cert
   - ../scripts/executioner 60 bridgedb -c bridgedb.conf
 # add this when #9199's (or some other trial-based) tests are merged:

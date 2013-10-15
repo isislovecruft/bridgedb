@@ -1,0 +1,56 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2013, The Tor Project, Inc.
+#             (c) 2007-2013, all entities within the AUTHORS file
+# :license: 3-clause BSD, see included LICENSE for information
+
+#-----------------------------------------------------------------------------
+# Don't touch anything below here unless you're fixing a bug.
+#_____________________________________________________________________________
+
+# Check for dependencies:
+which openssl 2>&1 >/dev/null || \
+    { printf "You must have openssl installed.\nExiting.\n"; exit 1 ;}
+
+# Find out where we are so that we can get to the run/ directory for testing:
+THIS_FILE="${BASH_SOURCE[0]}"
+NAME=$(basename $0)
+
+while [ -h "$THIS_FILE" ]; do
+    # resolve $THIS_FILE until the file is no longer a symlink:
+    THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
+    THIS_FILE="$(readlink "$THIS_FILE")"
+    # if $THIS_FILE was a relative symlink, we need to resolve it relative to
+    # the path where the symlink file was located:
+    [[ $THIS_FILE != /* ]] && THIS_FILE="$THIS_PATH/$THIS_FILE" 
+done
+
+THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
+REPO_PATH=${THIS_PATH%%/maint}
+
+function usage () {
+    printf "Usage: %s\n\n" $NAME
+    printf "This script will create an SSL key and certificate ('privkey.pem' and 'cert'\n"
+    printf "respectively). The key has had it's password removed, and thus is suitable\n"
+    printf "for automation and CI tests."
+    printf "\n"
+}
+if test "$#" -gt "1" ; then usage ; fi
+
+# Go to the toplevel directory of the BridgeDB repo:
+cd $REPO_PATH
+#printf "%s: Current working directory:\n\t%s\n" $NAME $PWD
+
+openssl genrsa -des3 -passout pass:bridgedb -out privkey 4096
+openssl req -batch -passin pass:bridgedb -new -key privkey -out server.csr
+cp privkey privkey.nopasswd
+openssl rsa -passin pass:bridgedb -in privkey.nopasswd -out privkey.pem
+openssl x509 -req -days 365 -in server.csr -signkey privkey.pem -out cert
+test -f "privkey.nopasswd" && rm -f privkey.nopasswd
+test -f "privkey" && rm -f privkey
+test -f "server.csr" && rm -f server.csr
