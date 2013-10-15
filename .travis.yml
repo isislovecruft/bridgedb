@@ -21,14 +21,13 @@ install:
   - make install
 # command to run tests, e.g. python setup.py test
 script:
+  - python setup.py test
   - test -d run || mkdir run
   - cp bridgedb.conf run/
   - chmod u+x scripts/make-ssl-cert
   - chmod u+x scripts/executioner
   - cd run
-  - gen_bridge_descriptors 2000
   - ../scripts/make-ssl-cert
   - ../scripts/executioner 60 bridgedb -c bridgedb.conf
-  - python setup.py test
-  - bridgedb test
+  - bridgedb test -n 2000
   - echo "Build successful."
