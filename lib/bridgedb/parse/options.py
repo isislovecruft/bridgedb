@@ -15,14 +15,15 @@
 """
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import sys
 import textwrap
-import os
 
 from twisted.python import usage
 
+# from ._version import get_versions
+# __version__ = get_versions()['version']
+# del get_versions
 from bridgedb import __version__
 
 
@@ -50,45 +51,19 @@ class BaseOptions(usage.Options):
     """Base options included in all main and sub options menus."""
 
     longdesc = textwrap.dedent("""BridgeDB is a proxy distribution system for
-    private relays acting as bridges into the Tor network. See `bridgedb
-    <command> --help` for addition help.""")
+    private relays acting as bridges into the Tor network.""")
 
-    def opt_rundir(self, rundir):
-        """Change to this directory"""
-        if not rundir:
-            rundir = os.getcwdu()
-        else:
-            try:
-                rundir = os.path.abspath(os.path.expanduser(rundir))
-            except Exception as error:
-                raise usage.UsageError(error.message)
-        if rundir and os.path.isdir(rundir):
-            self['rundir'] = rundir
-    opt_r = opt_rundir
+    optFlags = [['verbose', 'v', 'Log to stdout']]
 
     def __init__(self):
         """Create an options parser. All flags, parameters, and attributes of
         this base options parser are inherited by all child classes.
         """
         usage.Options.__init__(self)
-        self['rundir'] = os.getcwdu()
         self['version'] = self.opt_version
-        self['verbosity'] = 30
-
-    def opt_quiet(self):
-        """Decrease verbosity"""
-        # We use '10' because then it corresponds to the log levels
-        self['verbosity'] -= 10
-
-    def opt_verbose(self):
-        """Increase verbosity"""
-        self['verbosity'] += 10
-
-    opt_q = opt_quiet
-    opt_v = opt_verbose
 
     def opt_version(self):
-        """Display BridgeDB's version and exit."""
+        """Display BridgeDB version and exit."""
         print("%s-%s" % (__package__, __version__))
         sys.exit()
 
@@ -96,11 +71,9 @@ class BaseOptions(usage.Options):
 class TestOptions(BaseOptions):
     """Suboptions for running twisted.trial and unittest based tests."""
 
-    longdesc = textwrap.dedent("""BridgeDB testing commands.
-    See the `bridgedb mock` command for generating testing environments.""")
-
     optFlags = [['coverage', 'c', 'Generate coverage statistics']]
     optParameters = [
+        ['descriptors', 'n', 1000, 'Generate <N> fake bridge descriptors'],
         ['file', 'f', None, 'Run tests in specific file(s) (trial only)'],
         ['unittests', 'u', False, 'Run unittests in bridgedb.Tests'],
         ['trial', 't', True, 'Run twisted.trial tests in bridgedb.test']]
@@ -118,23 +91,17 @@ class TestOptions(BaseOptions):
         """Parse any additional arguments after the options and flags."""
         self['test_args'] = args
 
-class MockOptions(BaseOptions):
-    """Suboptions for creating necessary conditions for testing purposes."""
-
-    optParameters = [
-        ['descriptors', 'n', 1000,
-         '''Generate <n> mock bridge descriptor sets
-          (types: netstatus, extrainfo, server)''']]
-
 
 class MainOptions(BaseOptions):
     """Main commandline options parser for BridgeDB."""
 
     optFlags = [
-        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
-        ['reload', 'R', 'Reload bridge descriptors into running servers']]
+        ['reload', 'r',
+         'Reload bridge descriptors by sending a SIGHUP to BridgeDB'],
+        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files']]
     optParameters = [
-        ['config', 'c', 'bridgedb.conf', 'Configuration file']]
+        ['config', 'c', './bridgedb.conf', 'Configuration file']]
+
     subCommands = [
-        ['test', None, TestOptions, "Run twisted.trial tests or unittests"],
-        ['mock', None, MockOptions, "Generate a testing environment"]]
+        ['test', None, TestOptions,
+         "Run twisted.trial tests or unittests (see 'bridgedb test --help')")]]
