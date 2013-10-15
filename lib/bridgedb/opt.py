@@ -104,5 +104,4 @@ class MainOptions(BaseOptions):
 
     subCommands = [
         ['test', None, TestOptions,
-         'Run twisted.trial tests or unittests {}'.format(
-             '(see `bridgedb test --help`)')]]
+         "Run twisted.trial tests or unittests (see `bridgedb test --help`)"]]
