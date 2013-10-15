@@ -82,12 +82,11 @@ def get_cmdclass():
     to add our own classes to the cmdclass dictionary, and then update that
     dictionary with the one returned from versioneer.get_cmdclass().
     """
-    cmdclass={'test' : runTests,
-              'compile_catalog': compile_catalog,
-              'extract_messages': extract_messages,
-              'init_catalog': init_catalog,
-              'update_catalog': update_catalog,
-             }
+    cmdclass = {'test': runTests,
+                'compile_catalog': compile_catalog,
+                'extract_messages': extract_messages,
+                'init_catalog': init_catalog,
+                'update_catalog': update_catalog}
     cmdclass.update(versioneer.get_cmdclass())
     return cmdclass
 
@@ -237,7 +236,7 @@ class runTests(setuptools.Command):
     def run(self):
         self.run_command('build')
         old_path = sys.path[:]
-        sys.path[0:0] = [ self.build_purelib, self.build_platlib ]
+        sys.path[0:0] = [self.build_purelib, self.build_platlib]
         try:
             testmod = __import__("bridgedb.Tests", globals(), "", [])
             testmod.Tests.main()
@@ -254,7 +253,7 @@ setuptools.setup(
     maintainer='Isis Agora Lovecruft',
     maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
     url='https://www.torproject.org',
-    package_dir= {'' : 'lib'},
+    package_dir={'': 'lib'},
     packages=['bridgedb'],
     scripts=['scripts/bridgedb',
              'scripts/gen_bridge_descriptors'],
