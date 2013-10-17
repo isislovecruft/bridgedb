@@ -2,6 +2,8 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
+from __future__ import print_function
+
 import doctest
 import os
 import random
@@ -279,11 +281,14 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[filterBridgesByIP6])
-            address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    random.choice(b).getConfigLine(addressClass=ipaddr.IPv6Address)[7:])
+            bridges = d.getBridgesForIP(randomIP4String(),
+                                        "faketimestamp",
+                                        bridgeFilterRules=[filterBridgesByIP6])
+            bridge = random.choice(bridges)
+            bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv6Address)
+            address, portlist = bridgedb.Bridges.parseORAddressLine(bridge_line)
             assert type(address) is ipaddr.IPv6Address
-            assert filterBridgesByIP6(random.choice(b))
+            assert filterBridgesByIP6(random.choice(bridges))
 
     def testDistWithFilterIP4(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
@@ -292,12 +297,14 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[filterBridgesByIP4])
-            address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    random.choice(b).getConfigLine(addressClass=ipaddr.IPv4Address)[7:])
+            bridges = d.getBridgesForIP(randomIP4String(),
+                                        "faketimestamp",
+                                        bridgeFilterRules=[filterBridgesByIP4])
+            bridge = random.choice(bridges)
+            bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
+            address, portlist = bridgedb.Bridges.parseORAddressLine(bridge_line)
             assert type(address) is ipaddr.IPv4Address
-
-            assert filterBridgesByIP4(random.choice(b))
+            assert filterBridgesByIP4(random.choice(bridges))
 
     def testDistWithFilterBoth(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
@@ -306,17 +313,20 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(50):
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[
-                filterBridgesByIP4, filterBridgesByIP6])
-            if b:
-                t = b.pop()
+            bridges = d.getBridgesForIP(randomIP4String(),
+                                        "faketimestamp", 1,
+                                        bridgeFilterRules=[
+                                            filterBridgesByIP4,
+                                            filterBridgesByIP6])
+            if bridges:
+                t = bridges.pop()
                 assert filterBridgesByIP4(t)
                 assert filterBridgesByIP6(t)
                 address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    t.getConfigLine(addressClass=ipaddr.IPv4Address)[7:])
+                    t.getConfigLine(addressClass=ipaddr.IPv4Address))
                 assert type(address) is ipaddr.IPv4Address
                 address, portlist = bridgedb.Bridges.parseORAddressLine(
-                    t.getConfigLine(addressClass=ipaddr.IPv6Address)[7:])
+                    t.getConfigLine(addressClass=ipaddr.IPv6Address))
                 assert type(address) is ipaddr.IPv6Address
 
 
