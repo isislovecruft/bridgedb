@@ -33,7 +33,7 @@ def generateDescriptors(howmany):
     import subprocess
 
     try:
-        print("Generating %d bridge descriptors..." % howmany)
+        print("Generating %s bridge descriptors..." % str(howmany))
         proc = subprocess.Popen(['gen_bridge_descriptors', str(howmany)],
                                 stdout=sys.stdout, stderr=sys.stderr)
     except Exception as exc:
