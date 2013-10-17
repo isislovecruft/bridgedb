@@ -29,5 +29,6 @@ script:
   - cd run
   - ../scripts/make-ssl-cert
   - ../scripts/executioner 60 bridgedb -c bridgedb.conf
-  - bridgedb test -n 2000
-  - echo "Build successful."
+# add this when #9199's (or some other trial-based) tests are merged:
+#  - bridgedb test -n 2000
+#  - echo "Build successful."
