@@ -398,7 +398,7 @@ class IPBridgeDistTests(unittest.TestCase):
                         ])
             try: assert len(b) > 0
             except AssertionError:
-                print "epic fail"
+                print("epic fail")
             b = d.getBridgesForIP(randomIPString(), "x", 1, bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("us")])
             assert len(b) > 0
