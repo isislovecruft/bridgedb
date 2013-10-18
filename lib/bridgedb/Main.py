@@ -16,13 +16,15 @@ import gettext
 
 from twisted.internet import reactor
 
+from bridgedb import options
+
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
-import bridgedb.Opt as Opt
 import bridgedb.Bucket as Bucket
 import bridgedb.Util as Util
+
 
 class Conf:
     """A configuration object.  Holds unvalidated attributes.
@@ -278,10 +280,11 @@ def loadProxyList(cfg):
         f.close()
     return ipset
 
-_reloadFn = lambda: True
+_reloadFn = lambda x: True
 def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
-    reactor.callLater(0, _reloadFn)
+    reactor.callLater(0, _reloadFn, *args)
+
 
 class ProxyCategory:
     def __init__(self):
@@ -291,7 +294,8 @@ class ProxyCategory:
     def replaceProxyList(self, ipset):
         self.ipset = ipset
 
-def startup(cfg):
+
+def startup(cfg, options):
     """Parse bridges,
     """
     # Expand any ~ characters in paths in the configuration.
@@ -388,14 +392,13 @@ def startup(cfg):
         splitter.addPseudoRing(p)
 
     # Make the parse-bridges function get re-called on SIGHUP.
-    def reload():
+    def reload(*args):
         logging.info("Caught SIGHUP")
 
-        # re open config file
-        options, arguments = Opt.parseOpts()
+        # reparse the config file
         configuration = {}
-        if options.configfile:
-            execfile(options.configfile, configuration)
+        if options['config']:
+            execfile(options['config'], configuration)
             cfg = Conf(**configuration)
             # update loglevel on (re)load
             level = getattr(cfg, 'LOGLEVEL', 'WARNING')
@@ -438,7 +441,7 @@ def startup(cfg):
     signal.signal(signal.SIGHUP, _handleSIGHUP)
 
     # And actually load it to start.
-    reload()
+    reload(options)
 
     # Configure HTTP and/or HTTPS servers.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
@@ -457,34 +460,33 @@ def startup(cfg):
         if cfg.PIDFILE:
             os.unlink(cfg.PIDFILE)
 
-def run():
-    """Parse the command line to determine where the configuration is.
-       Parse the configuration, and start the servers.
+def run(options):
+    """This is the main entry point into BridgeDB.
+
+    Given the parsed commandline options, this function handles locating the
+    configuration file, loading and parsing it, and then either
+    starting/reloading the servers or dumping bridge assignments to files.
+
+    :type options: :class:`bridgedb.opt.MainOptions`
+    :param options: A pre-parsed options class.
     """
-    options, arguments = Opt.parseOpts()
     configuration = {}
 
-    if options.testing:
-        configuration = CONFIG
-    elif not options.configfile:
-        print "Syntax: %s -c CONFIGFILE" % sys.argv[0]
+    if not options['config']:
+        options.getUsage()
         sys.exit(1)
-    else:
-        configFile = options.configfile
-        execfile(configFile, configuration)
-        C = Conf(**configuration)
-        configuration = C
+
+    configFile = options['config']
+    execfile(configFile, configuration)
+    C = Conf(**configuration)
+    configuration = C
 
     # Change to the directory where we're supposed to run.
     if configuration.RUN_IN_DIR:
         os.chdir(os.path.expanduser(configuration.RUN_IN_DIR))
-
-    if options.dumpbridges:
+    if options['dump-bridges']:
         bucketManager = Bucket.BucketManager(configuration)
         bucketManager.assignBridgesToBuckets()
         bucketManager.dumpBridges()
     else:
-        startup(configuration)
-
-if __name__ == '__main__':
-    run()
+        startup(configuration, options)
