@@ -1,0 +1,292 @@
+# -*- coding: utf-8 ; mode: org -*-
+
+Filename: XXX-social-bridge-distribution.txt
+Title: Social Bridge Distribution
+Author: Isis Agora Lovecruft
+Created: 18 July 2013
+Status: Open
+
+*  I. Overview
+
+   This proposal specifies a system for social distribution of the
+   centrally-stored bridges within BridgeDB. It is primarily based upon Part
+   IV of the rBridge paper, [0] utilising a coin-based incentivisation scheme
+   to ensure that malicious users and/or censoring entities are deterred from
+   blocking bridges, as well as socially-distributed invite tickets to prevent
+   such malicious users and/or censoring entities from joining the pool of
+   Tor clients who are able to receive distributed bridges.
+
+*  II. Motivation and Problem Scope
+
+   As it currently stands, Tor bridges which are stored within BridgeDB may be
+   freely requested by any entity at nearly any time. While the openness, that
+   is to say public accessibility, of any anonymity system certainly
+   provisions its users with the protections of a more greatly diversified
+   anonymity set, the damages to usability, and the efficacy of such an
+   anonymity system for censorship circumvention, are devastatingly impacted
+   due to the equal capabilities of both a censoring/malicious entity and an
+   honest user to request new Tor bridges.
+
+   Thus far, very little has been done to protect the volunteered bridges from
+   eventually being blocked in various regions. This severely restricts the
+   overall usability of Tor for clients within these regions, who, arguably,
+   can be even more in need of the identity protections and free speech
+   enablement which Tor can provide, given their political contexts.
+
+** II.A. Current Tor bridge distribution mechanisms and known pitfalls:
+
+*** 1. HTTP(S) Distributor
+
+    At https://bridges.torproject.org, users may request new bridges, provided
+    that they are able to pass a CAPTCHA test. Requests through the HTTP(S)
+    Distributor are not allowed to be made from any current Tor exit relay,
+    and a hash of the user's actual IP address is used to place them within a
+    hash ring so that only a subset of the bridges allotted to the HTTP(S)
+    Distributor's pool may become known to a(n) adversary/user at that IP
+    address.
+
+**** 1.a. Known attacks/pitfalls:
+
+    1) An adversary with a diverse and large IP address space can easily
+       retrieve some significant portion of the bridges in the HTTPS
+       Distributor pool.
+
+    2) The relatively low cost of employing humans to solve CAPTCHAs is not
+       sufficient to deter adversaries with requisite economic resources from
+       doing so to obtain bridges. [XXX cost of employment]
+
+*** 2. Email Distributor
+
+    Clients may send email to bridges@bridges.torproject.org with the line
+    "get bridges" in the body of the email to obtain new bridges. Such emails
+    must be sent from a Gmail or Yahoo! account, which is required under the
+    assumption that such accounts are non-trivial to obtain.
+
+**** 2.a. Known attacks/pitfalls:
+
+    1) Mechanisms for purchasing pre-registered Gmail accounts en masse
+       exists, charging between USD$0.25 and USD$0.70 per account. With
+       roughly 1000 bridges in the Email Distributor's pool, distributing 3
+       bridges per email response,
+
+*  III. Design
+
+** III.A. Overview
+
+   As mentioned, most of this proposal is based upon §IV of the rBridge
+   paper, which is the non-privacy preserving portion of the paper. [0] The
+   reasons for deferring implementation of §V include:
+
+   - Adding a simpler out-of-band distribution of bridges. Requiring users to
+     copy+paste Bridge lines into their torrc is ridiculous.
+
+   - XXX
+
+   Modifications:
+
+   - Remove OT, keep blind signatures and Pedersen's Commitments.
+
+   XXX finishme
+
+** III.B. Threat Model
+
+   Modification: allow BridgeDB to be a malicious actor (protecting against it
+   at this point is too costly, instead we want to eliminate BridgeDB's
+   ability to obtain a social graph for Tor bridge users.)
+
+   XXX finishme
+
+** III.C. Data Formats
+
+*** 1. User Credential 
+
+   A Credential is a signed document obtained from BridgeDB. It contains all
+   of the state required to verify honest client behavior, and is formatted
+   as a JSON object with the following format:
+
+   { "Bridges" : [
+         { "BridgeLine" : BridgeLine,
+           "LearnedTS" : TimeStamp,
+           "CreditsEarned" : INT
+         },
+         ...
+       ],
+     "CrenditialTS" : TimeStamp,
+     "TotalUnspentCredits" : INT
+    } NL
+
+  BridgeLine := <Bridge line from BridgeDB>
+  TimeStamp := INT
+  NumCredits := INT
+
+  The Timestamp in this case is the time which a user first learned the
+  existence of that bridge.
+
+  Example:
+
+  {'Bridges': [
+    {'BridgeLine': '1.2.3.4:6666 obfs3 adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+     'CreditsEarned': 5,
+     'Timestamp': 1382078292.864117},
+    {'BridgeLine': '6.6.6.6:1234 d929c82d2ee727ccbea9c50c669a71075249899f',
+     'CreditsEarned': 5,
+     'LearnedTS': 1382078292.864117}],
+   'CredentialTS': 982398423,
+   'TotalUnspentCredits': 10}
+ 
+*** XXX other formats
+
+*  IV. Databases
+
+** IV.A. Scalability Requirements
+
+   Databases SHOULD be implemented in a manner which is ammenable to using a
+   distributed storage system; this is necessary because certain types of data
+   MUST be stored permanently, such as the list of hashes of spent tokens, or
+   the list of hashes of used invite tickets.
+
+   Additionally, doing so promotes modularisation the components of BridgeDB,
+   such that the BridgeDistributor XXX can be separated from the backend
+   storage system, BridgeDB.
+
+*** 1. Distributed Database System
+
+    A distributed database system SHOULD be used for BridgeDB, in order to
+    scale resources as the number of Tor bridge users grows. This database
+    system, hereafter referred to as DDBS.
+
+    The DDBS MUST be capable of working within Twisted's asynchronous
+    framework. If possible, a Object-Relational Mapper (ORM) SHOULD be used to
+    abstract the database backend's structure and query syntax from the
+    Twisted Python classes which interact with it, so that the type of
+    database may be swapped out for another with less code refactoring.
+
+    The DDBM SHALL be used for persistent storage of complex data structures
+    such as the bridges, which MAY include additional information from both
+    the XXX @type-bridge-relay descriptors and the @type-bridge-extra-info
+    descriptors.
+
+    [#]: https://github.com/couchbase/couchbase-python-client#twisted-api
+
+**** 1.a. Data Structures which should be stored in a DDBS:
+
+     - RedactedDB - The Database of Blocked Bridges
+
+       The RedactedDB will hold entries of bridges which have been discovered
+       to be unreachable from BridgeDB network vantage point, or have been
+       reported unreachable by clients.
+
+     - 
+
+*** 2. Relational Database Mapping Server
+
+    For simpler data structures which must be persistently stored, such as the
+    list of hashes of previously seen Invite Tickets, or the list of
+    previously spent Tokens, a Relational Database Mapping Server (RDBMS)
+    SHALL be used for optimisation of queries.
+
+    Redis and Memcached are two examples of RDBMS which are well tested and
+    are known to work well with Twisted. The major difference between the two
+    is that Memcached is volatile, while Redis supports command for
+    transferring objects into persistent on-disk storage. There are several
+    (see Twisted's MemCacheProtocol class [1] [2] or txyam [3] for Memcached,
+    and txredis [4] or txredisapi [5] for Redis). For non-Twisted Python Redis
+    APIs, there is redis-py, which provides a connection pool that could
+    likely be interfaced with from Twisted Python without too much
+    difficultly. [6]
+
+    In order to further decrease the need for lookups in the backend
+    databases, Bloom Filters can used to eliminate extraneous
+    queries. However, this optimization would only be beneficial for string
+    lookups, i.e. querying for a user's credential, and SHOULD NOT be used for
+    queries within any of the hash lists, i.e. the list of hashes of
+    previously seen invite tickets. [7] It might be possible to use Redis'
+    GETBIT and SETBIT commands to store a Bloom Filter within a Redis cache
+    system; [8] doing so would offload the severe memory requirements of
+    loading the Bloom Filter into memory in Python when inserting new entries,
+    reducing the time complexity to order O(1) from some (polynomial) time
+    complexity that is proportional to the integral of the number of bridge
+    users over the rate of change of bridge users over time.
+
+    XXX expire credentials [#] redis key datatype
+    [#]: http://redis.io/commands/pexpireat
+
+    XXX evaluation on data by calling the sha1 for a serverside Lua script [#]
+    [#]: http://redis.io/commands/evalsha
+
+**** 2.a. Data Structures which should be stored in a RDBMS
+
+    - User Credentials
+
+    - Invite Tickets
+
+    - Spent Credits
+
+*  IV. Open Questions
+
+** IV.A. In which component of the Tor ecosystem should the client application code go?
+
+*** 1. Should this be done as a Pluggable Transport?
+
+    Considerations:
+
+**** a. It doesn't need to modify the user's application-level traffic
+
+         The clientside will eventually need to be able to build a circuit to the
+         BridgeDB backend, but it is not necessary that the clientside handle
+         any of the user's application level traffic. However, the clientside
+         system of rBridge must start when TBB (or tor) is started.
+
+**** b. It needs to be able to start tor. 
+
+         This is necessary because the lines:
+         {{{
+             UseBridges 1
+             Bridge [...]
+         }}}
+         must be present before tor is started; tor will not reload these
+         settings via SIGHUP.
+
+**** c. TorLaucher is not the correct place for this functionality.
+   
+         I am *not* adding this to TorLauncher. The clientside of rBridge will
+         eventually need to handle a lot of complicated new cryptographic
+         primitives, including commitments and zero-knowledge proofs. This is
+         dangerous enough, period, because there aren't really any libraries
+         for Pairing-Based Cryptography yet (though Tanya Lange has mentioned
+         to me that a student of theirs should have a good one finished some
+         time this year -- but I'm still going to count that as existing like
+         a unicorn). If I am to write this, I am doing it in
+         C/Python/Python-extensions. Not JS.
+
+***** c.i It could possibly launch TorLauncher
+
+         In other words, this thing edits the torrc according to it's state,
+         and then either launches tor (if the user wants to use an installed
+         tor binary) or launches TorLauncher if we're running TBB.
+
+**** d. Little-t tor is not the correct place for this either.
+
+         It might be possible, instead of (b) or (c), to add this to little-t
+         tor. However, I feel like the bridge distribution problem is a
+         separate to tor, which should be (more or less) strictly an
+         implementation of the onion-routing design. Additionally, I do not
+         wish to pile more code or maintenance upon eith Nick or Andrea, nor
+         do I wish to make little-t tor more monolithic.
+
+         I talked with Nick briefly about this at the Summer 2013 Tor Dev
+         meeting in München, and he agreed that little-t tor isn't where this
+         code should go.
+
+
+* References
+
+[0]: http://www-users.cs.umn.edu/~hopper/rbridge_ndss13.pdf
+[1]: https://twistedmatrix.com/documents/current/api/twisted.protocols.memcache.MemCacheProtocol.html
+[2]: http://stackoverflow.com/a/5162203
+[3]: http://findingscience.com/twisted/python/memcache/2012/06/09/txyam:-yet-another-memcached-twisted-client.html
+[4]: https://pypi.python.org/pypi/txredis
+[5]: https://github.com/fiorix/txredisapi
+[6]: https://github.com/andymccurdy/redis-py/
+[7]: http://www.dr-josiah.com/2012/03/why-we-didnt-use-bloom-filter.html
+[8]: http://redis.io/topics/data-types §"Strings"
