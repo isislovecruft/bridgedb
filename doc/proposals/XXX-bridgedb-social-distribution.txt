@@ -4,7 +4,9 @@ Filename: XXX-social-bridge-distribution.txt
 Title: Social Bridge Distribution
 Author: Isis Agora Lovecruft
 Created: 18 July 2013
-Status: Open
+Related Proposals: 199-bridgefinder-integration.txt
+                   XXX-bridgedb-database-improvements.txt
+Status: Draft
 
 *  I. Overview
 
