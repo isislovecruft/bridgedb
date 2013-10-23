@@ -8,7 +8,7 @@ Related Proposals: 199-bridgefinder-integration.txt
                    XXX-bridgedb-database-improvements.txt
 Status: Draft
 
-*  I. Overview
+*  I.    Overview
 
    This proposal specifies a system for social distribution of the
    centrally-stored bridges within BridgeDB. It is primarily based upon Part
@@ -18,7 +18,7 @@ Status: Draft
    such malicious users and/or censoring entities from joining the pool of
    Tor clients who are able to receive distributed bridges.
 
-*  II. Motivation & Problem Scope
+*  II.   Motivation & Problem Scope
 
    As it currently stands, Tor bridges which are stored within BridgeDB may be
    freely requested by any entity at nearly any time. While the openness, that
@@ -35,7 +35,7 @@ Status: Draft
    can be even more in need of the identity protections and free speech
    enablement which Tor can provide, given their political contexts.
 
-** II.A. Current Tor bridge distribution mechanisms and known pitfalls:
+** II.A.  Current Tor bridge distribution mechanisms and known pitfalls:
 
 *** 1. HTTP(S) Distributor
 
@@ -71,7 +71,7 @@ Status: Draft
        roughly 1000 bridges in the Email Distributor's pool, distributing 3
        bridges per email response,
 
-*  III. Terminology & Notations
+*  III.   Terminology & Notations
 ** III.A. Terminology Definitions
 
    User := A client connecting to BridgeDB in order to obtain bridges.
@@ -103,9 +103,7 @@ Status: Draft
 | ω                  | The last time that U requested and Invite Ticket from D                                     |
 |--------------------+---------------------------------------------------------------------------------------------|
 
-** III.C. Unicode characters
-
-*  III. Threat Model
+*  IV.    Threat Model
 
    In the original rBridge scheme, there are two separate proposals: the first
    does not make any attempt to hide information such as the user's (U)
@@ -294,7 +292,7 @@ Status: Draft
 
     Considerations:
 
-**** a. It doesn't need to modify the user's application-level traffic
+****  1a. It doesn't need to modify the user's application-level traffic
 
          The clientside will eventually need to be able to build a circuit to the
          BridgeDB backend, but it is not necessary that the clientside handle
@@ -311,7 +309,7 @@ Status: Draft
          must be present before tor is started; tor will not reload these
          settings via SIGHUP.
 
-**** c. TorLaucher is not the correct place for this functionality.
+****  1c. TorLaucher is not the correct place for this functionality.
    
          I am *not* adding this to TorLauncher. The clientside of rBridge will
          eventually need to handle a lot of complicated new cryptographic
@@ -329,7 +327,7 @@ Status: Draft
          and then either launches tor (if the user wants to use an installed
          tor binary) or launches TorLauncher if we're running TBB.
 
-**** d. Little-t tor is not the correct place for this either.
+****  1d. Little-t tor is not the correct place for this either.
 
          It might be possible, instead of (b) or (c), to add this to little-t
          tor. However, I feel like the bridge distribution problem is a
