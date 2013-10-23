@@ -78,29 +78,30 @@ Status: Draft
 
 ** III.B. Notations
 
-|----------------+---------------------------------------------------------------------------------------------+---------|
-| Symbol         | Definition                                                                                  | Unicode |
-|----------------+---------------------------------------------------------------------------------------------+---------|
-| U              | A user connecting to BridgeDB in order to obtain bridges                                    |         |
-| D              | The bridge distributor, i.e. BridgeDB                                                       |         |
-| G_max           | Upper limit (maximum) number of bridge users for a bridge B_i                                |         |
-| G_0             | Number of starting users                                                                    |         |
-| G_avg           | Average number of users per bridge                                                          |         |
-| M              | Fraction of users which are malicious                                                       |         |
-| B              | A bridge                                                                                    |         |
-| {B_1,…,B_i,…,B_k} | The set of bridges assigned and given to user U                                             |         |
-| k              | The number of bridges which have been given to user U                                       |         |
-| T_min           | The minimum time which a bridge must remain reachable                                       |         |
-| T_cur           | The current time, given in Unix Era (UE) seconds notation (an integer, seconds since epoch) |         |
-| T_max           | Tn upper bound on the time for which a user U can earn coins from B_i                        |         |
-| τ_i (tau __i)    | The time when bridge B_i was first given to user U                                           | U+03C4  |
-| t_i             | The time from when U was first given B_i to either T_cur or ß_i, whichever is greater          |         |
-| ß_i (eszett __i) | The time when bridge B_i was first considered blocked; if not blocked, ß_i = 0                | U+00DF  |
-| ϕ              | Total coins owned by user U                                                                 | U+03A6  |
-| φ_i (phi __i)    | The coins which user U has earned thus far from bridge B_i                                   | U+03C6  |
-| ϱ_i (rho __i)    | Rate of earning coins from bridge B_i                                                        | U+03F1  |
-| λi (lambda __i) | The probability that bridge Bi has been blocked                                             | U+03BB  |
-|                |                                                                                             |         |
+|--------------------+---------------------------------------------------------------------------------------------|
+| Symbol             | Definition                                                                                  |
+|--------------------+---------------------------------------------------------------------------------------------|
+| U                  | A user connecting to BridgeDB in order to obtain bridges, identified by a User Credential   |
+| D                  | The bridge distributor, i.e. BridgeDB                                                       |
+| Gᵐᵃˣ               | Upper limit (maximum) number of bridge users for a bridge Bᵢ                                |
+| Gˢᵗᵃʳᵗ             | Number of starting users                                                                    |
+| Gᵃᵛᵍ               | Average number of users per bridge                                                          |
+| M                  | Fraction of users which are malicious                                                       |
+| B                  | A bridge                                                                                    |
+| {B₁, …, Bᵢ, …, Bₖ} | The set of bridges assigned and given to user U                                             |
+| k                  | The number of bridges which have been given to user U                                       |
+| Tᵐⁱⁿ               | The minimum time which a bridge must remain reachable                                       |
+| Tᶜᵘʳ               | The current time, given in Unix Era (UE) seconds notation (an integer, seconds since epoch) |
+| Tᵐᵃˣ               | The upper bound on the time for which a user U can earn coins from Bᵢ                       |
+| τᵢ                 | The time when bridge Bᵢ was first given to user U                                           |
+| tᵢ                 | The time from when U was first given Bᵢ to either Tᶜᵘʳ or ßᵢ, whichever is greater          |
+| ßᵢ                 | The time when bridge Bᵢ was first considered blocked; if not blocked, ßᵢ = 0                |
+| ϕ                  | Total coins owned by user U                                                                 |
+| φᵢ                 | The coins which user U has earned thus far from bridge Bᵢ                                   |
+| ϱᵢ                 | Rate of earning coins from bridge Bᵢ                                                        |
+| λᵢ                 | The probability that bridge Bᵢ has been blocked                                             |
+| ω                  | The last time that U requested and Invite Ticket from D                                     |
+|--------------------+---------------------------------------------------------------------------------------------|
 
 *  IV.    Threat Model
 
