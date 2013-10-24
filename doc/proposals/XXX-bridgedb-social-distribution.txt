@@ -12,7 +12,7 @@ Status: Draft
 
    This proposal specifies a system for social distribution of the
    centrally-stored bridges within BridgeDB. It is primarily based upon Part
-   IV of the rBridge paper, [0] utilising a coin-based incentivisation scheme
+   IV of the rBridge paper, [1] utilising a coin-based incentivisation scheme
    to ensure that malicious users and/or censoring entities are deterred from
    blocking bridges, as well as socially-distributed invite tickets to prevent
    such malicious users and/or censoring entities from joining the pool of
@@ -114,23 +114,72 @@ Status: Draft
    assumed to be honest in all protocols, and no protections are taken to
    protect clients from malicious behaviour from BridgeDB.
 
-** III.A. Modifications
+****      Why we should still hide the Credential from BridgeDB:
 
-   
+   Lemma 1:
+
+      A User Credential contains that User's list of Bridges, and thus, in all
+      probability, it uniquely identifies the User.
+
+   Proof 1:
+
+      For simplicity's sake, if we falsely assume ☥ that the Bridges in a
+      User's Credential is a constant and static number, then an estimate for
+      the number of possible Credentials is given by:
+
+                   Γ(n+1)
+        nCₖ =  ⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽
+               Γ(m+1)Γ(-m+n+1)
+                                   ⎛n⎞
+      for the binomial coefficient ⎝m⎠, where n is the number of Bridges, m is
+      the number of Bridges in a User Credential, and Γ is the gamma function.
+           ⎛5000⎞
+      With ⎝  3 ⎠ there are 2.0820835 x 10¹⁰ possible Credentials, or, roughly
+      three unique Credentials for every one of the seven billion people alive
+      on Earth today. The binomial coefficient grows tetrationally for
+      increasing n and increasing m, [0] and so as the number of Bridge relays
+      grows over time, and with Users perpetually appending newer Bridges to
+      their Creditials, the probability of colliding Credentials decreases
+      tetrationally. Therefore, Credentials are taken to be unique.
+
+   Because the Credentials are uniquely identifying, care should be taken so
+   that two User Credentials cannot be linked by BridgeDB, as this would allow
+   BridgeDB to obtain a social graph of the network of Bridge Users.
+   Therefore, it is necessary to hide the Credential from BridgeDB; otherwise,
+   when requesting an Invite Ticket, the User openly sending their Credential
+   to BridgeDB to prove possession of the minimum number of Credits would be
+   linkable to the created Invite Ticket.
+
+ ----------
+ ☥ It would actually be some complicated series of binomial coefficients with
+   respect to the individual q-binomial coefficients with q being a
+   differential of the Bridge turnover w.r.t. time.
+
+***   1.  BridgeDB is permitted to know the following information:
+
+   XXX finishme
 
    Modification: allow BridgeDB to be a malicious actor (protecting against it
    at this point is too costly, instead we want to eliminate BridgeDB's
    ability to obtain a social graph for Tor bridge users.)
 
+   As mentioned, most of this proposal is based upon §IV of the rBridge
+   paper, which is the non-privacy preserving portion of the paper. [1] The
+   reasons for deferring implementation of §V include:
 
-*** 1. BridgeDB is permitted to know the following information:
+   - Adding a simpler out-of-band distribution of bridges. Requiring users to
+     copy+paste Bridge lines into their torrc is ridiculous.
 
-    
-   
+   - XXX
 
-   XXX finishme
+   Modifications to the original rBridge scheme:
 
+   - Remove Oblivious Transfer, keep blind signatures and Pedersen's Commitments.
 
+     rBridge uses 1-out-of-m Oblivious Transfer (OT) in order to allow each
+     client to choose their own Bridges. Simply put, if a User is to be given
+     three Bridges, then 1-out-of-m OT is run three times: for each time, the
+     following steps are taken:
 
 *  IV. Design
 
@@ -188,107 +237,12 @@ Status: Draft
      'LearnedTS': 1382078292.864117}],
    'CredentialTS': 982398423,
    'TotalUnspentCredits': 10}
- 
-*** XXX other formats
 
-*  V. Databases
+*** XXX   other formats
 
-** V.A. Scalability Requirements
-
-   Databases SHOULD be implemented in a manner which is ammenable to using a
-   distributed storage system; this is necessary because certain types of data
-   MUST be stored permanently, such as the list of hashes of spent tokens, or
-   the list of hashes of used invite tickets.
-
-   Additionally, doing so promotes modularisation the components of BridgeDB,
-   such that the BridgeDistributor XXX can be separated from the backend
-   storage system, BridgeDB.
-
-*** 1. Distributed Database System
-
-    A distributed database system SHOULD be used for BridgeDB, in order to
-    scale resources as the number of Tor bridge users grows. This database
-    system, hereafter referred to as DDBS.
-
-    The DDBS MUST be capable of working within Twisted's asynchronous
-    framework. If possible, a Object-Relational Mapper (ORM) SHOULD be used to
-    abstract the database backend's structure and query syntax from the
-    Twisted Python classes which interact with it, so that the type of
-    database may be swapped out for another with less code refactoring.
-
-    The DDBM SHALL be used for persistent storage of complex data structures
-    such as the bridges, which MAY include additional information from both
-    the XXX @type-bridge-relay descriptors and the @type-bridge-extra-info
-    descriptors.
-
-    [#]: https://github.com/couchbase/couchbase-python-client#twisted-api
-
-**** 1.a. Data Structures which should be stored in a DDBS:
-
-     - RedactedDB - The Database of Blocked Bridges
-
-       The RedactedDB will hold entries of bridges which have been discovered
-       to be unreachable from BridgeDB network vantage point, or have been
-       reported unreachable by clients.
-
-     - 
-
-*** 2. Relational Database Mapping Server
-
-    For simpler data structures which must be persistently stored, such as the
-    list of hashes of previously seen Invite Tickets, or the list of
-    previously spent Tokens, a Relational Database Mapping Server (RDBMS)
-    SHALL be used for optimisation of queries.
-
-    Redis and Memcached are two examples of RDBMS which are well tested and
-    are known to work well with Twisted. The major difference between the two
-    is that Memcached is volatile, while Redis supports command for
-    transferring objects into persistent on-disk storage. There are several
-    (see Twisted's MemCacheProtocol class [1] [2] or txyam [3] for Memcached,
-    and txredis [4] or txredisapi [5] for Redis). For non-Twisted Python Redis
-    APIs, there is redis-py, which provides a connection pool that could
-    likely be interfaced with from Twisted Python without too much
-    difficultly. [6]
-
-    In order to further decrease the need for lookups in the backend
-    databases, Bloom Filters can used to eliminate extraneous
-    queries. However, this optimization would only be beneficial for string
-    lookups, i.e. querying for a user's credential, and SHOULD NOT be used for
-    queries within any of the hash lists, i.e. the list of hashes of
-    previously seen invite tickets. [7] It might be possible to use Redis'
-    GETBIT and SETBIT commands to store a Bloom Filter within a Redis cache
-    system; [8] doing so would offload the severe memory requirements of
-    loading the Bloom Filter into memory in Python when inserting new entries,
-    reducing the time complexity to order O(1) from some (polynomial) time
-    complexity that is proportional to the integral of the number of bridge
-    users over the rate of change of bridge users over time.
-
-    XXX expire credentials [#] redis key datatype
-    [#]: http://redis.io/commands/pexpireat
-
-    XXX evaluation on data by calling the sha1 for a serverside Lua script [#]
-    [#]: http://redis.io/commands/evalsha
-
-    XXX mediawiki notes and references on switching to redis
-    [#]: https://www.mediawiki.org/wiki/Redis
-
-    XXX using redis as a message queue for job scheduling
-    [#]: http://www.restmq.com/
-
-
-**** 2.a. Data Structures which should be stored in a RDBMS
-
-    - User Credentials
-
-    - Invite Tickets
-
-    - Spent Credits
-
-*  VI. Open Questions
-
-** VI.A. In which component of the Tor ecosystem should the client application code go?
-
-*** 1. Should this be done as a Pluggable Transport?
+*  VI.    Open Questions
+** VI.A.  In which component of the Tor ecosystem should the client application code go?
+***   1.  Should this be done as a Pluggable Transport?
 
     Considerations:
 
@@ -299,7 +253,7 @@ Status: Draft
          any of the user's application level traffic. However, the clientside
          system of rBridge must start when TBB (or tor) is started.
 
-**** b. It needs to be able to start tor. 
+****  1b. It needs to be able to start tor.
 
          This is necessary because the lines:
          {{{
@@ -310,7 +264,7 @@ Status: Draft
          settings via SIGHUP.
 
 ****  1c. TorLaucher is not the correct place for this functionality.
-   
+
          I am *not* adding this to TorLauncher. The clientside of rBridge will
          eventually need to handle a lot of complicated new cryptographic
          primitives, including commitments and zero-knowledge proofs. This is
