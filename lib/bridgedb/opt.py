@@ -56,7 +56,7 @@ class BaseOptions(usage.Options):
     def opt_rundir(self, rundir):
         """Change to this directory"""
         if not rundir:
-            rundir = os.path.join(os.getcwdu(), 'run')
+            rundir = os.getcwdu()
         else:
             try:
                 rundir = os.path.abspath(os.path.expanduser(rundir))
@@ -71,7 +71,7 @@ class BaseOptions(usage.Options):
         this base options parser are inherited by all child classes.
         """
         usage.Options.__init__(self)
-        self['rundir'] = os.path.join(os.getcwdu(), 'run')
+        self['rundir'] = os.getcwdu()
         self['version'] = self.opt_version
         self['verbosity'] = 30
 
