@@ -5,6 +5,7 @@ notifications:
       - "irc.oftc.net#tor-bots"
     on_success: always
     on_failure: always
+    use_notice: true
   email:
     recipients:
       - isis@torproject.org
