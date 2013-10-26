@@ -16,7 +16,7 @@ import gettext
 
 from twisted.internet import reactor
 
-from bridgedb import options
+from bridgedb.parse import options
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
