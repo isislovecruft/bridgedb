@@ -40,9 +40,9 @@ script:
   - chmod u+x scripts/make-ssl-cert
   - chmod u+x scripts/executioner
   - cd run
-  - gen_bridge_descriptors 2000
   - ../scripts/make-ssl-cert
   - ../scripts/executioner 60 bridgedb -r . -c bridgedb.conf
+  - bridgedb mock
   # add this when #9199's (or some other trial-based) tests are merged:
-  #- bridgedb test -n 2000
+  #- bridgedb test
   - echo "Build successful."
