@@ -50,48 +50,60 @@ BridgeDB requires the following OS-level dependencies:
 
 As well as any Python dependencies in requirements.txt.
 
-### Deploying BridgeDB in a Python virtualenv
+### Deploying BridgeDB
 
- - Install Python 2.7 or later, and other OS-level dependencies. On Debian,
-   you can do:
+BridgeDB should work with or without a Python virtualenv.
 
-       sudo apt-get install build-essential python python-dev \
-           python-setuptools openssl sqlite3 tor-geoip libgpgme11-dev
+ - Install Python 2.7, and other OS-level dependencies. On Debian, you can do:
+
+        sudo apt-get install build-essential python python-dev \
+            python-setuptools openssl sqlite3 tor-geoip libgpgme11-dev
 
  - Install Pip 1.3.1 or later. Debian has this version, but if for some reason
    that or a newer version isn't available, the easiest way to install a newer
    Pip is to use the Pip development teams's [getpip
    script](https://raw.github.com/pypa/pip/master/contrib/get-pip.py):
 
-       wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-       sudo python get-pip.py
+        wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+        sudo python get-pip.py
 
- - Use Pip to install virtualenv and [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org):
+ - (virtualenv installs only) Use Pip to install virtualenv and
+   [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org):
 
-       sudo pip install --upgrade virtualenv virtualenvwrapper
+        sudo pip install --upgrade virtualenv virtualenvwrapper
 
- - Configure virtualenvwrapper and create a virtualenv for Bridgedb:
+ - (virtualenv installs only) Configure virtualenvwrapper and create a
+   virtualenv for Bridgedb:
 
-       WORKON_HOME=${HOME}/.virtualenvs
-       export WORKON_HOME
-       mkdir -p $WORKON_HOME
-       source $(which virtualenvwrapper.sh)
-       git clone https://git.torproject.org/bridgedb.git && cd bridgedb
-       mkvirtualenv -a $PWD -r requirements.txt --unzip-setuptools \
+        WORKON_HOME=${HOME}/.virtualenvs
+        export WORKON_HOME
+        mkdir -p $WORKON_HOME
+        source $(which virtualenvwrapper.sh)
+        git clone https://git.torproject.org/bridgedb.git && cd bridgedb
+        mkvirtualenv -a $PWD -r requirements.txt --unzip-setuptools \
            --setuptools bridgedb
  
    From now on, to use BridgeDB's virtualenv, just do ```$ workon bridgedb```
    (after sourcing virtualenvwrapper.sh, as before). To exit the virtualenv
    without exiting the shell, do ```$ deactivate```.
 
- - To run unit tests:
+ - (virtualenv installs only) To install, set PYTHONPATH to include the root
+   directory of the virtualenv:
 
-       python setup.py test
+        export PYTHONPATH=$PYTHONPATH:${VIRTUAL_ENV}/lib/python2.7/site-packages
 
- - To install BridgeDB:
+ - Then proceed as usual:
 
-       python setup.py install
+        python setup.py install --record installed-files.txt
 
+### Testing BridgeDB
+
+To create a bunch of fake bridge descriptors to test BridgeDB, do:
+
+        bridgedb mock [-n NUMBER_OF_DESCRIPTORS]
+
+Then to run unittests, see the ```bridgedb test``` and ```bridgedb trial```
+commands.
 
 ### Enabling additional features:
 
@@ -100,33 +112,10 @@ As well as any Python dependencies in requirements.txt.
 **Using New Translations**: This should be done when newly completed
   translations are available in Transifex.
 
-Clone/Update the
-[translations repository](https://gitweb.torproject.org/translation.git),
-checkout the ```bridgedb_completed``` branch, and copy the .po files into
-```lib/bridgedb/i18n/```.
-
-Assuming a side-by-side repo layout (if you're in the parent directory of the
-bridgedb repo):
-
-     git clone https://gitweb.torproject.org/translation.git
-     git fetch --all
-     cd translation && git checkout bridgedb_completed
-     cd .. && rsync -PCAXrv \
-         --filter 'include ./translation/*/LC_MESSAGES/bridgedb.po' \
-         --filter 'exclude .gitignore' \
-         ./translation/ ./bridgedb/lib/bridgedb/i18n/
-
-and then convert them to binary (.mo) format so that they can be installed:
-
-     cd bridgedb && python setup.py compile_catalog
-
-Don't forget to reinstall BridgeDB to update the templates!
-
-     python setup.py install
-
-[xxx outdated, these commands seem to not exist...]
-
-     python setup.py trans && python setup.py install_data
+Piece of cake. Running ```maint/get-completed-translations``` will take care
+of cloning *only* the ```bridgedb_completed``` branch of Tor's
+[translations repo](https://gitweb.torproject.org/translation.git) and placing
+all the updated files in their correct locations.
 
 **Requesting Translations for Altered/Added Source Code**: This should be done
   whenever any of the strings requiring translation -- _("they are formatted
@@ -161,7 +150,7 @@ complete, the finished .po files should be placed into the
 #### Enabling HTTPS
 Create a self-signed certificate with:
 
-     openssl req -x509 -new -nodes > cert
+     maint/make-ssl-cert
 
 Or, place an existing certificate in the path specified in bridgedb.conf by
 the ```HTTPS_CERT_FILE``` option, and a private key where ```HTTPS_KEY_FILE```
@@ -212,11 +201,8 @@ Enter the following commands at the ```sqlite>``` prompt:
 
 ## Running BridgeDB
 
-To run BridgeDB, simply make any necessary changes to bridgedb.conf, navigate
-to the runtime directory (the ```RUN_IN_DIR``` option in bridgedb.conf), and
-do:
-
-    bridgedb -c bridgedb.conf
+To run BridgeDB, simply make any necessary changes to bridgedb.conf, and
+do: ```bridgedb```.
 
 When you have new lists of bridges, replace the old files and do:
 
