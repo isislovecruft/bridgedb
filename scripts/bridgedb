@@ -28,7 +28,7 @@ if options.subCommand is not None:
     sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '../lib')))
 
     if 'descriptors' in options.subOptions:
-        runner.generateDescriptors(options.subOptions['descriptors'])
+        runner.generateDescriptors(options)
 
     if options.subCommand == 'test':
         if options.subOptions['trial']:

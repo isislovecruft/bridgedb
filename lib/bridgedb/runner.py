@@ -19,7 +19,7 @@ from __future__ import print_function
 import sys
 
 
-def generateDescriptors(howmany):
+def generateDescriptors(options):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
     This will run scripts/gen_bridge_descriptors to create a bridge router
@@ -32,10 +32,11 @@ def generateDescriptors(howmany):
     """
     import subprocess
 
+    script = 'gen_bridge_descriptors'
+    count = options.subOptions['descriptors']
     try:
         print("Generating %s bridge descriptors..." % str(howmany))
-        proc = subprocess.Popen(['gen_bridge_descriptors', str(howmany)],
-                                stdout=sys.stdout, stderr=sys.stderr)
+        proc = subprocess.Popen([script, str(count)])
     except Exception as exc:
         print(exc)
         print("There was an error generating bridge descriptors.")
