@@ -243,6 +243,10 @@ class runTests(setuptools.Command):
             sys.path = old_path
 
 
+# Needed to install PyNaCl in virtualenvs:
+if hasattr(sys, 'real_prefix'):
+    os.environ['SODIUM_INSTALL'] = 'bundle'
+
 setuptools.setup(
     name='bridgedb',
     version=versioneer.get_version(),
@@ -260,7 +264,8 @@ setuptools.setup(
     scripts=['scripts/bridgedb',
              'scripts/gen_bridge_descriptors'],
     extras_require={'test': ["sure==0.4.5",
-                             "trialcoverage==0.3.12"]},
+                             "trialcoverage==0.3.12"],
+                    'nacl': ["PyNaCl==0.1.0"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,

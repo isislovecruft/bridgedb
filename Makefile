@@ -3,10 +3,10 @@
 .DEFAULT: install test
 
 all:
-	python setup.py build
+	SODIUM_INSTALL=bundle python setup.py build
 
 test:
-	python setup.py test
+	SODIUM_INSTALL=bundle python setup.py test
 
 pep8:
 	find lib/bridgedb/*.py | xargs pep8
@@ -19,11 +19,11 @@ pyflakes:
 
 install:
 	-python setup.py compile_catalog
-	python setup.py install --record installed-files.txt
+	SODIUM_INSTALL=bundle python setup.py install --record installed-files.txt
 
 force-install:
 	-python setup.py compile_catalog
-	python setup.py install --force --record installed-files.txt
+	SODIUM_INSTALL=bundle python setup.py install --force --record installed-files.txt
 
 uninstall:
 	touch installed-files.txt
@@ -33,3 +33,7 @@ reinstall: uninstall force-install
 
 translations:
 	./maint/get-completed-translations
+
+# look at python-tox
+coverage:
+	-cd run && coverage run --source ../lib/bridgedb --branch ../scripts/bridgedb test
