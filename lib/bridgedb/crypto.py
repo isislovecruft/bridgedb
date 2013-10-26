@@ -44,9 +44,10 @@ def getKey(filename):
     except IOError:
         key = OpenSSL.rand.bytes(32)
         flags = os.O_WRONLY | os.O_TRUNC | os.O_CREAT | getattr(os, "O_BIN", 0)
-        with os.open(filename, flags, 0400) as fd:
-            os.write(fd, key)
-            os.fsync(fd)
+        fd = os.open(filename, flags, 0400)
+        os.write(fd, key)
+        os.fsync(fd)
+        fd.close()
     else:
         key = fh.read()
         fh.close()
