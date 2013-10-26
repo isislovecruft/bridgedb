@@ -1,4 +1,5 @@
 language: python
+
 notifications:
   irc:
     channels:
@@ -11,15 +12,26 @@ notifications:
       - isis@torproject.org
     on_success: change
     on_failure: change
+
 before_install:
   - sudo apt-get update
   - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
+
 python:
   - "2.6"
   - "2.7"
+
+#services:
+#  - couchdb
+
 install:
   - pip install -r requirements.txt --use-mirrors
   - make install
+
+#before_script:
+#  # For testing with CouchDB
+#  - curl -X PUT localhost:5984/myapp_test
+
 # command to run tests, e.g. python setup.py test
 script:
   - python setup.py test
