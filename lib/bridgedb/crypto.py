@@ -12,6 +12,9 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import logging
+log = logging.getLogger(__name__)
+
 import os
 
 import OpenSSL.rand
@@ -42,6 +45,7 @@ def getKey(filename):
     try:
         fh = open(filename, 'rb')
     except IOError:
+        log.debug("getKey(): Creating new secret key.")
         key = OpenSSL.rand.bytes(32)
         flags = os.O_WRONLY | os.O_TRUNC | os.O_CREAT | getattr(os, "O_BIN", 0)
         fd = os.open(filename, flags, 0400)
@@ -49,6 +53,7 @@ def getKey(filename):
         os.fsync(fd)
         fd.close()
     else:
+        log.debug("getKey(): Secret key file found. Loading...")
         key = fh.read()
         fh.close()
     return key
