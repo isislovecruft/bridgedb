@@ -18,6 +18,7 @@ from twisted.internet import reactor
 
 from bridgedb.parse import options
 
+import bridgedb.crypto
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
@@ -147,36 +148,6 @@ def configureLogging(cfg):
     else:
         logging.warn("Safe Logging: Disabled")
 
-
-def getKey(fname):
-    """Load the key stored in fname, or create a new 32-byte key and store
-       it in fname.
-
-    >>> name = os.tmpnam()
-    >>> os.path.exists(name)
-    False
-    >>> k1 = getKey(name)
-    >>> os.path.exists(name)
-    True
-    >>> open(name).read() == k1
-    True
-    >>> k2 = getKey(name)
-    >>> k1 == k2
-    True
-    """
-    try:
-        f = open(fname, 'rb')
-    except IOError:
-        k = os.urandom(32)
-        flags = os.O_WRONLY|os.O_TRUNC|os.O_CREAT|getattr(os, "O_BIN", 0)
-        fd = os.open(fname, flags, 0400)
-        os.write(fd, k)
-        os.close(fd)
-    else:
-        k = f.read()
-        f.close()
-
-    return k
 
 def load(cfg, splitter, clear=False):
     """Read all the bridge files from cfg, and pass them into a splitter
@@ -329,7 +300,7 @@ def startup(cfg, options):
     from bridgedb import HTTPServer
 
     # Load the master key, or create a new one.
-    key = getKey(cfg.MASTER_KEY_FILE)
+    key = bridgedb.crypto.getKey(cfg.MASTER_KEY_FILE)
 
     # Initialize our DB file.
     db = bridgedb.Storage.Database(cfg.DB_FILE+".sqlite",
