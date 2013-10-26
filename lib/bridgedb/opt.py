@@ -15,15 +15,14 @@
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
 import textwrap
+import os
 
 from twisted.python import usage
 
-# from ._version import get_versions
-# __version__ = get_versions()['version']
-# del get_versions
 from bridgedb import __version__
 
 
@@ -51,25 +50,43 @@ class BaseOptions(usage.Options):
     """Base options included in all main and sub options menus."""
 
     longdesc = textwrap.dedent("""BridgeDB is a proxy distribution system for
-    private relays acting as bridges into the Tor network.""")
+    private relays acting as bridges into the Tor network. See `bridgedb
+    <command> --help` for addition help.""")
 
     optFlags = [['verbose', 'v', 'Log to stdout']]
+
+    def opt_rundir(self, rundir):
+        """Change to this directory"""
+        if not rundir:
+            rundir = os.path.join(os.getcwdu(), 'run')
+        else:
+            try:
+                rundir = os.path.abspath(os.path.expanduser(rundir))
+            except Exception as error:
+                raise usage.UsageError(error.message)
+        if rundir and os.path.isdir(rundir):
+            self['rundir'] = rundir
+    opt_r = opt_rundir
 
     def __init__(self):
         """Create an options parser. All flags, parameters, and attributes of
         this base options parser are inherited by all child classes.
         """
         usage.Options.__init__(self)
+        self['rundir'] = os.path.join(os.getcwdu(), 'run')
         self['version'] = self.opt_version
 
     def opt_version(self):
-        """Display BridgeDB version and exit."""
+        """Display BridgeDB's version and exit."""
         print("%s-%s" % (__package__, __version__))
         sys.exit()
 
 
 class TestOptions(BaseOptions):
     """Suboptions for running twisted.trial and unittest based tests."""
+
+    longdesc = textwrap.dedent("""BridgeDB testing commands.
+    See the `bridgedb mock` command for generating testing environments.""")
 
     optFlags = [['coverage', 'c', 'Generate coverage statistics']]
     optParameters = [
@@ -96,12 +113,9 @@ class MainOptions(BaseOptions):
     """Main commandline options parser for BridgeDB."""
 
     optFlags = [
-        ['reload', 'r',
-         'Reload bridge descriptors by sending a SIGHUP to BridgeDB'],
-        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files']]
+        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
+        ['reload', 'R', 'Reload bridge descriptors into running servers']]
     optParameters = [
-        ['config', 'c', './bridgedb.conf', 'Configuration file']]
-
+        ['config', 'c', 'bridgedb.conf', 'Configuration file']]
     subCommands = [
-        ['test', None, TestOptions,
-         "Run twisted.trial tests or unittests (see `bridgedb test --help`)"]]
+        ['test', None, TestOptions, "Run twisted.trial tests or unittests"]]

@@ -459,6 +459,7 @@ def startup(cfg, options):
         db.close()
         if cfg.PIDFILE:
             os.unlink(cfg.PIDFILE)
+        sys.exit()
 
 def run(options):
     """This is the main entry point into BridgeDB.
@@ -476,17 +477,16 @@ def run(options):
         options.getUsage()
         sys.exit(1)
 
-    configFile = options['config']
-    execfile(configFile, configuration)
-    C = Conf(**configuration)
-    configuration = C
-
     # Change to the directory where we're supposed to run.
-    if configuration.RUN_IN_DIR:
-        os.chdir(os.path.expanduser(configuration.RUN_IN_DIR))
+    if options['rundir']:
+        os.chdir(options['rundir'])
+
+    execfile(options['config'], configuration)
+    config = Conf(**configuration)
+
     if options['dump-bridges']:
-        bucketManager = Bucket.BucketManager(configuration)
+        bucketManager = Bucket.BucketManager(config)
         bucketManager.assignBridgesToBuckets()
         bucketManager.dumpBridges()
     else:
-        startup(configuration, options)
+        startup(config, options)
