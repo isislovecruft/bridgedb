@@ -34,11 +34,11 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - python setup.py test
   - chmod u+x scripts/make-ssl-cert
   - chmod u+x scripts/executioner
-  - bridgedb mock
   - ./scripts/make-ssl-cert
+  - bridgedb mock -n 250
+  - bridgedb test
   - ./scripts/executioner 180 bridgedb -c bridgedb.conf
   # add this when #9199's (or some other trial-based) tests are merged:
   #- bridgedb test
