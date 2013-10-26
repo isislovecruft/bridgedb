@@ -53,8 +53,6 @@ class BaseOptions(usage.Options):
     private relays acting as bridges into the Tor network. See `bridgedb
     <command> --help` for addition help.""")
 
-    optFlags = [['verbose', 'v', 'Log to stdout']]
-
     def opt_rundir(self, rundir):
         """Change to this directory"""
         if not rundir:
@@ -75,6 +73,19 @@ class BaseOptions(usage.Options):
         usage.Options.__init__(self)
         self['rundir'] = os.path.join(os.getcwdu(), 'run')
         self['version'] = self.opt_version
+        self['verbosity'] = 30
+
+    def opt_quiet(self):
+        """Decrease verbosity"""
+        # We use '10' because then it corresponds to the log levels
+        self['verbosity'] -= 10
+
+    def opt_verbose(self):
+        """Increase verbosity"""
+        self['verbosity'] += 10
+
+    opt_q = opt_quiet
+    opt_v = opt_verbose
 
     def opt_version(self):
         """Display BridgeDB's version and exit."""
@@ -90,7 +101,6 @@ class TestOptions(BaseOptions):
 
     optFlags = [['coverage', 'c', 'Generate coverage statistics']]
     optParameters = [
-        ['descriptors', 'n', 1000, 'Generate <N> fake bridge descriptors'],
         ['file', 'f', None, 'Run tests in specific file(s) (trial only)'],
         ['unittests', 'u', False, 'Run unittests in bridgedb.Tests'],
         ['trial', 't', True, 'Run twisted.trial tests in bridgedb.test']]
@@ -108,6 +118,14 @@ class TestOptions(BaseOptions):
         """Parse any additional arguments after the options and flags."""
         self['test_args'] = args
 
+class MockOptions(BaseOptions):
+    """Suboptions for creating necessary conditions for testing purposes."""
+
+    optParameters = [
+        ['descriptors', 'n', 1000,
+         '''Generate <n> mock bridge descriptor sets
+          (types: netstatus, extrainfo, server)''']]
+
 
 class MainOptions(BaseOptions):
     """Main commandline options parser for BridgeDB."""
@@ -118,4 +136,5 @@ class MainOptions(BaseOptions):
     optParameters = [
         ['config', 'c', 'bridgedb.conf', 'Configuration file']]
     subCommands = [
-        ['test', None, TestOptions, "Run twisted.trial tests or unittests"]]
+        ['test', None, TestOptions, "Run twisted.trial tests or unittests"],
+        ['mock', None, MockOptions, "Generate a testing environment"]]

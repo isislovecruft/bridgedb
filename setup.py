@@ -74,7 +74,6 @@ install_i18n = os.path.join('bridgedb', 'i18n')
 # Directory to install docs, license, and other text resources into:
 install_docs = os.path.join('share', 'doc', 'bridgedb')
 
-
 def get_cmdclass():
     """Get our cmdclass dictionary for use in setuptool.setup().
 
@@ -255,11 +254,13 @@ setuptools.setup(
     url='https://www.torproject.org',
     download_url='https://gitweb.torproject.org/bridgedb.git',
     package_dir={'': 'lib'},
-    packages=['bridgedb'],
+    packages=['bridgedb',
+              'bridgedb.parse',
+              'bridgedb.test'],
     scripts=['scripts/bridgedb',
              'scripts/gen_bridge_descriptors'],
-    extras_require={'test': ["sure>=0.4.5",
-                             "trialcoverage>=0.3.12"]},
+    extras_require={'test': ["sure==0.4.5",
+                             "trialcoverage==0.3.12"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,

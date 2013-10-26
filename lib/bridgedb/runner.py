@@ -32,24 +32,22 @@ def generateDescriptors(options):
     """
     import subprocess
 
+    proc = None
+    rundir = options['rundir']
     script = 'gen_bridge_descriptors'
     count = options.subOptions['descriptors']
     try:
-        print("Generating %s bridge descriptors..." % str(howmany))
-        proc = subprocess.Popen([script, str(count)])
-    except Exception as exc:
-        print(exc)
-        print("There was an error generating bridge descriptors.")
-    else:
-        proc.wait()
-        if proc.returncode:
-            print("There was an error generating bridge descriptors. (%s: %d)"
-                  % ("Returncode", proc.returncode))
-        else:
-            print("Sucessfully bridge generated descriptors.")
+        proc = subprocess.Popen([script, '-n', str(count)],
+                                close_fds=True, cwd=rundir)
     finally:
-        del subprocess
-    return
+        if proc is not None:
+            proc.wait()
+            if proc.returncode:
+                print("There was an error generating bridge descriptors.",
+                      "(Returncode: %d)" % proc.returncode)
+            else:
+                print("Sucessfully bridge generated descriptors.")
+    del subprocess
 
 def runTrial(options):
     """Run Twisted trial based unittests, optionally with coverage.
