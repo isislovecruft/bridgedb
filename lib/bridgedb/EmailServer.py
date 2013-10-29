@@ -465,8 +465,13 @@ def getGPGContext(cfg):
         # make sure we can sign
         message = StringIO('Test')
         signature = StringIO()
-        new_sigs = ctx.sign(message, signature, gpgme.SIG_MODE_CLEAR)
-        assert len(new_sigs) == 1
+        try:
+            new_sigs = ctx.sign(message, signature, gpgme.SIG_MODE_CLEAR)
+        except gpgme.GpgmeError as error:
+            logging.error(error.message)
+            return None
+
+        assert len(new_sigs) == 1, "Testing signature creation failed"
 
         # return the ctx
         return ctx
@@ -474,6 +479,7 @@ def getGPGContext(cfg):
     except IOError, e:
         # exit noisily if keyfile not found
         exit(e)
-    except AssertionError:
+    except AssertionError as error:
+        logging.error(error.message)
         # exit noisily if key does not pass tests
         exit('Invalid GPG Signing Key')
