@@ -30,6 +30,7 @@ from bridgedb.Raptcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.parse import headers
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 from mako.template import Template
@@ -328,29 +329,42 @@ def getAssumedChosenLang(langs):
     return lang
 
 def setLocaleFromRequestHeader(request):
+    """Retrieve the languages from the accept-language header and install them.
+
+    Parse the languages in the header, and attempt to install the first one in
+    the list. If that fails, we receive a :class:`gettext.NullTranslation`
+    object, if it worked then we have a :class:`gettext.GNUTranslation`
+    object. Whichever one we end up with, add the other get the other
+    languages and add them as fallbacks to the first. Lastly, install this
+    chain of translations.
+
+    :type request: :class:`twisted.web.server.Request`
+    :param request: An incoming request from a client.
+    :rtype: list
+    :returns: All requested languages.
     """
-    Retrieve the languages from the accept-language header and insall
+    logging.debug("Getting client 'Accept-Language' header...")
+    header = request.getHeader('accept-language')
 
-    Parse the languages in the header, if any of them contain locales then
-    add their languages to the list, also. Then install all of them using
-    gettext, it will choose the best one.
+    if header is None:
+        logging.debug("Client sent no 'Accept-Language' header. Using fallback.")
+        header = 'en,en-US'
 
-    :param request twisted.web.server.Request: Incoming request
-    :returns list: All requested languages
-    """
-    langs = request.getHeader('accept-language').split(',')
-    logging.debug("Accept-Language: %s" % langs)
-    localedir=os.path.join(os.path.dirname(__file__), 'i18n/')
+    localedir = os.path.join(os.path.dirname(__file__), 'i18n/')
+    langs = headers.parseAcceptLanguage(header)
+    ## XXX the 'Accept-Language' header is potentially identifying
+    logging.debug("Client Accept-Language (top 5): %s" % langs[:4])
 
-    if langs:
-        langs = filter(lambda x: re.match('^[a-z\-]{1,5}', x), langs)
-        logging.debug("Languages: %s" % langs)
-        # add fallback languages
-        langs_only = filter(lambda x: '-' in x, langs)
-        langs.extend(map(lambda x: x.split('-')[0], langs_only))
-        # gettext wants _, not -
-        map(lambda x: x.replace('-', '_'), langs)
-        lang = gettext.translation("bridgedb", localedir=localedir,
-                 languages=langs, fallback=True)
-        lang.install(True)
+    try:
+        language = gettext.translation("bridgedb", localedir=localedir,
+                                       languages=langs, fallback=True)
+        for lang in langs:
+            language.add_fallback(gettext.translation("bridgedb",
+                                                      localedir=localedir,
+                                                      languages=langs,
+                                                      fallback=True))
+    except IOError as error:
+        logging.error(error.message)
+
+    language.install(unicode=True)
     return langs
