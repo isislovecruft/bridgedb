@@ -55,65 +55,85 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     ##    areaOrderHmac -- an hmac function used to order areas within rings.
     ##    areaClusterHmac -- an hmac function used to assign areas to rings.
     def __init__(self, areaMapper, nClusters, key, ipCategories=(), answerParameters=None):
+        logging.debug("Initialising IPBasedDistributor...")
         self.areaMapper = areaMapper
+        logging.debug("IPDistributor: areaMapper is %r" % areaMapper)
         self.nClusters = nClusters
+        logging.debug("IPDistributor: nClusters is %r" % nClusters)
         self.answerParameters = answerParameters
+        logging.debug("IPDistributor: answerParameters is %r"
+                      % answerParameters)
 
         self.rings = []
 
         self.categories = [] #DOCDOC 
         for c in ipCategories:
             self.categories.append(c)
+        logging.debug("IPDistributor: ipCategories is %r" % ipCategories)
 
         key2 = bridgedb.Bridges.get_hmac(key, "Assign-Bridges-To-Rings")
         key3 = bridgedb.Bridges.get_hmac(key, "Order-Areas-In-Rings")
         self.areaOrderHmac = bridgedb.Bridges.get_hmac_fn(key3, hex=False)
         key4 = bridgedb.Bridges.get_hmac(key, "Assign-Areas-To-Rings")
         self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
+        logging.debug("key2 is %s" % str(key2))
+        logging.debug("key3 is %s" % str(key3))
+        logging.debug("key4 is %s" % str(key4))
+        logging.debug("IPDistributor: areaOrderHmac is %r"
+                      % self.areaOrderHmac)
+        logging.debug("IPDistributor: areaClusterHmac is %r"
+                      % self.areaClusterHmac)
 
         # add splitter and cache the default rings
         # plus leave room for dynamic filters
         ring_cache_size  = self.nClusters + len(ipCategories) + 5
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
-                                               max_cached_rings=ring_cache_size)
-
-        logging.debug("added splitter %s" % self.splitter)
+        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
+            key2, max_cached_rings=ring_cache_size)
+        logging.debug("IPDistributor: added splitter %s" % self.splitter)
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
+        logging.debug("IPDistributor: Prepopulating all hashrings...")
         for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
-            n = self.nClusters
+            cluster = self.nClusters
             for category in self.categories:
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                        self.nClusters +
-                        len(self.categories),
-                        n)
-                bridgeFilterRules = [g]
+                assigned = filterAssignBridgesToRing(
+                    self.splitter.hmac,
+                    self.nClusters + len(self.categories),
+                    cluster)
+                bridgeFilterRules = [assigned]
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                        "Order-Bridges-In-Ring-%d"%n) 
-                n += 1
+                key1 = bridgedb.Bridges.get_hmac(
+                    self.splitter.key, "Order-Bridges-In-Ring-%d" % n) 
+                logging.debug("IPDistributor: key1 is %s" % str(key1))
+                cluster += 1
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                logging.debug(
+                    "IPDistributor: created bridge ring (pass #1): %r" % ring)
+                self.splitter.addRing(ring, ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
                                       populate_from=self.splitter.bridges)
-
 
             # populate all ip clusters
             for clusterNum in xrange(self.nClusters):
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                                              self.nClusters +
-                                              len(self.categories),
-                                              clusterNum) 
-                bridgeFilterRules = [g]
+                assigned = filterAssignBridgesToRing(
+                    self.splitter.hmac,
+                    self.nClusters + len(self.categories),
+                    clusterNum) 
+                bridgeFilterRules = [assigned]
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 "Order-Bridges-In-Ring-%d"%clusterNum) 
+                key1 = bridgedb.Bridges.get_hmac(
+                    self.splitter.key, "Order-Bridges-In-Ring-%d" % clusterNum) 
+                logging.debug("IPDistributor: key1 is %s" % str(key1))
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                logging.debug(
+                    "IPDistributor: created bridge ring (pass #2): %r" % ring)
+                self.splitter.addRing(ring, ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
                                       populate_from=self.splitter.bridges)
 
     def clear(self):
@@ -132,15 +152,17 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
            N -- the number of bridges to try to give back.
         """
         if not bridgeFilterRules: bridgeFilterRules=[]
-        logging.debug("getBridgesForIP(%s, %s, %s, %s",
-                Util.logSafely(ip), epoch, N, bridgeFilterRules)
+        logging.debug("getBridgesForIP(%s, %s, %s, %s"
+                      % (Util.logSafely(ip), epoch, N, bridgeFilterRules))
         if not len(self.splitter):
-            logging.debug("bailing without splitter")
+            logging.debug("IPDistributor: Bailing without splitter.")
+            logging.debug("IPDistributor: Splitter is %r" % self.splitter)
+            logging.debug("IPDistributor: Splitter length is %d"
+                          % len(self.splitter))
             return []
 
         area = self.areaMapper(ip)
-
-        logging.info("area is %s", Util.logSafely(area))
+        logging.debug("area is %s", Util.logSafely(area))
         
         key1 = ''
         pos = 0

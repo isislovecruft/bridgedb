@@ -33,3 +33,9 @@ reinstall: uninstall force-install
 
 translations:
 	./maint/get-completed-translations
+
+clean:
+	-rm -rf build
+	-rm -rf dist
+	-rm -rf lib/bridgedb.egg-info
+	-rm -rf _trial_temp

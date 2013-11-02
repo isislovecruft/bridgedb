@@ -19,6 +19,8 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
+from bridgedb.parse import isIPAddress
+
 HEX_FP_LEN = 40
 ID_LEN = 20
 
@@ -128,7 +130,9 @@ class Bridge:
             if not is_valid_fingerprint(fingerprint):
                 raise TypeError("Bridge with invalid fingerprint (%r)"%
                                 fingerprint)
+            # XXX why was this done?
             self.fingerprint = fingerprint.lower()
+            #self.fingerprint = fingerprint
         else:
             raise TypeError("Bridge with no ID")
 
@@ -334,8 +338,21 @@ def parseDescFile(f, bridge_purpose='bridge'):
        PORTSPEC = PORT
        PORT = a number between 1 and 65535 inclusive.
     """
-   
-    nickname = ip = orport = fingerprint = purpose = None
+    nickname = None
+    ipv4 = None
+    ipv6 = None
+    fingerprint = None
+    platform = None
+    purpose = None
+    published = None
+    extrainfo_digest = None
+    ipv4port = 0
+    ipv6port = 0
+    dirport = 0
+    socksport = 0
+    bwreported = 0
+    bwburst = 0
+    bwobserved = 0
     num_or_address_lines = 0
     or_addresses = {}
 
@@ -343,24 +360,115 @@ def parseDescFile(f, bridge_purpose='bridge'):
         line = line.strip()
         if line.startswith("opt "):
             line = line[4:]
+
         if line.startswith("@purpose "):
             items = line.split()
             purpose = items[1]
+
         elif line.startswith("router "):
+            line = line[7:]
             items = line.split()
-            if len(items) >= 4:
-                nickname = items[1]
-                ip = items[2].strip('[]')
-                orport = int(items[3])
+            items.reverse()
+            try:
+                nickname = items.pop()
+                ipv4 = items.pop()
+                ipv4port = items.pop()
+                dirport = items.pop()
+                socksport = items.pop()
+            except IndexError:
+                pass
+            # Currently, a server's main OR address must be IPv4, though
+            # this could change soon.
+            ipv4 = ipv4.strip('[]')
+            ipv4 = isIPAddress(ipv4)
+            ipv4port = int(ipv4port)
+            dirport = int(dirport)
+            socksport = int(socksport)
+            logging.debug("Parsed nickname=%s ipv4=%s ipv4port=%d "
+                          "dirport=%d socksport=%d from router line"
+                          % (nickname, ipv4, ipv4port, dirport, socksport))
+
+        elif line.startswith("or-address "):
+            line = line[11:]
+            # Currently, there may be only one extra OR address line, and it
+            # will always be IPv6:
+            ipv6, ipv6port = line.rsplit(']', 1)
+            ipv6 = ipv6.strip('[]')
+            ipv6 = isIPAddress(ipv6)
+            if ipv6port:
+                ipv6port = ipv6port.strip(':')
+            else:
+                ipv6port = 0
+
+            if ipv6 in or_addresses.keys():
+                logging.debug("Received an IPv6 address we already have...")
+                if isinstance(or_addresses[ipv6], list):
+                    or_addresses[ipv6].append(int(ipv6port))
+                else:
+                    logging.debug(
+                        "Expected ipv6 portlist in OR addresses; got: %r"
+                        % or_addresses[ipv6])
+            else:
+                or_addresses[ipv6] = [int(ipv6port),]
+            logging.debug("Parsed or_address: %s %s"
+                          % (ipv6, or_addresses[ipv6]))
+
+        elif line.startswith("platform "):
+            line = line[9:]
+            platform = line
+
+        elif line.startswith("protocols "):
+            continue
+
+        elif line.startswith("published "):
+            line = line[10:]
+            published = line
+
+        elif line.startswith("bandwidth "):
+            line = line[10:]
+            bwreported, bwburst, bwobserved = line.split()
+            bwreported = int(bwreported)
+            bwburst = int(bwburst)
+            bwobserved = int(bwobserved)
+
+        elif line.startswith("extra-info-digest "):
+            line = line[18:]
+            extrainfo_digest = line
+            logging.debug("Parsed extrainfo digest %s" % extrainfo_digest)
+
         elif line.startswith("fingerprint "):
-            fingerprint = line[12:].replace(" ", "")
+            line = line[12:]
+            fingerprint = line.replace(" ", "")
+            logging.debug("Parsed fingerprint=%s" % fingerprint)
+
         elif line.startswith("router-signature"):
-            purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
-            if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
-                b.assertOK()
-                yield b
-            nickname = ip = orport = fingerprint = purpose = None 
+            purposeMatches = (purpose == bridge_purpose)
+            if (purposeMatches and nickname and ipv4 and ipv4port
+                and fingerprint and or_addresses):
+                bridge = Bridge(nickname, ipv4, ipv4port,
+                                fingerprint=fingerprint,
+                                or_addresses=or_addresses)
+                logging.debug("Created Bridge instance: %r" % repr(bridge))
+                bridge.assertOK()
+                yield bridge
+            nickname = None
+            ipv4 = None
+            ipv6 = None
+            fingerprint = None
+            platform = None
+            purpose = None
+            published = None
+            extrainfo_digest = None
+            ipv4port = 0
+            ipv6port = 0
+            dirport = 0
+            socksport = 0
+            bwreported = 0
+            bwburst = 0
+            bwobserved = 0
+            num_or_address_lines = 0
+            or_addresses = {}
+
 
 class PortList:
     """ container class for port ranges
@@ -489,32 +597,25 @@ def parseExtraInfoFile(f):
             transport SP <methodname> SP <address:port> [SP arglist] NL
     """
 
-    ID = None
+    fingerprint = None
     for line in f:
         line = line.strip()
-
         argdict = {}
 
-        # do we need to skip 'opt' here?
-        # if line.startswith("opt "):
-        #     line = line[4:]
-
         # get the bridge ID ?
-        if line.startswith("extra-info "): #XXX: get the router ID
-            logging.debug("Parsing extra-info line")
+        if line.startswith("extra-info "):
             line = line[11:]
-            (nickname, ID) = line.split()
-            logging.debug("  Parsed Nickname: %s", nickname)
-            if is_valid_fingerprint(ID):
-                logging.debug("  Parsed fingerprint: %s", ID)
-                ID = fromHex(ID)
+            (nickname, fingerprint) = line.split()
+            fingerprint = fingerprint.lower()
+            if is_valid_fingerprint(fingerprint):
+                logging.debug("  Parsed fingerprint: %s" % fingerprint)
             else:
-                logging.debug("  Parsed invalid fingerprint: %s", ID)
+                logging.debug("  Parsed invalid fingerprint: %s" % fingerprint)
 
         # get the transport line
-        if ID and line.startswith("transport "):
-            logging.debug("  Parsing transport line")
-            fields = line[10:].split()
+        if fingerprint and line.startswith("transport "):
+            line = line[10:]
+            fields = line.split()
             # [ arglist ] field, optional
             if len(fields) >= 3:
                 arglist = fields[2:]
@@ -532,34 +633,34 @@ def parseExtraInfoFile(f):
                 # Method names must be C identifiers
                 for regex in [re_ipv4, re_ipv6]:
                     try:
-                        method_name = re.match('[_a-zA-Z][_a-zA-Z0-9]*',fields[0]).group()
+                        method_name = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
+                                               fields[0]).group()
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
-                        logging.debug("  Parsed Transport: %s", method_name)
-                        logging.debug("  Parsed Transport Address: %s:%d", address, port)
-                        yield ID, method_name, address, port, argdict
+                        logging.debug("  Parsed Transport: %s %s:%d"
+                                      % (method_name, address, port))
+                        yield fingerprint, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
                         continue
 
-        # end of descriptor is defined how? 
-        if ID and line.startswith("router-signature"):
-            ID = None
+        if fingerprint and line.startswith("-----END SIGNATURE-----"):
+            fingerprint = None
 
 def parseStatusFile(f):
     """DOCDOC"""
     timestamp = ID = None
     num_or_address_lines = 0
     or_addresses = {}
+
+    logging.debug("Parsing network-status file")
+
     for line in f:
-        if not ID:
-            logging.debug("Parsing network status line")
         line = line.strip()
-        if line.startswith("opt "):
-            line = line[4:]
 
         if line.startswith("r "):
+            logging.debug("Parsing bridge network-status document:")
             try:
                 ID = binascii.a2b_base64(line.split()[2]+"=")
                 timestamp = time.mktime(time.strptime(

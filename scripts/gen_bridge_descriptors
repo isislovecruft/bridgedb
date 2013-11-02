@@ -551,11 +551,28 @@ def makeOnionKeys(bridge=True, digest='sha1'):
     # descriptor (but not the one that other ORs see when they connect to us)
     fingerprint = CIDPCert.digest(digest)
 
+    # "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
+    #     SP DirPort NL
+    # 
+    #     [At start, exactly once.]
+    # 
+    #     "Nickname" is the OR's nickname.  "Identity" is a hash of its
+    #     identity key, encoded in base64, with trailing equals sign(s)
+    #     removed.  "Digest" is a hash of its most recent descriptor as
+    #     signed (that is, not including the signature), encoded in base64.
+    #     "Publication" is the
+    #     publication time of its most recent descriptor, in the form
+    #     YYYY-MM-DD HH:MM:SS, in UTC.  "IP" is its current IP address;
+    #     ORPort is its current OR port, "DirPort" is its current directory
+    #     port, or "0" for "none".
+
+    idKey = getPEMPrivateKey(SIDSKey)
+    idPubKey = getPEMPubicKey(CIDPCert)
     onionKeyString   = 'onion-key\n%s' % getPEMPublicKey(onionPCert)
     signingKeyString = 'signing-key\n%s' % getPEMPublicKey(signPCert)
 
     # XXX we don't need anything else… right?
-    return SIDSKey, (fingerprint, onionKeyString, signingKeyString)
+    return SIDSKey, CIDPCert, (fingerprint, onionKeyString, signingKeyString)
 
 def generateExtraInfo(fingerprint, ts, ipv4, port):
     """Create an OR extra-info document.
@@ -571,7 +588,7 @@ def generateExtraInfo(fingerprint, ts, ipv4, port):
     :returns: An extra-info document (unsigned).
     """
     extra = []
-    extra.append("extra-info Unnamed %s" % fingerprint)
+    extra.append("extra-info Unnamed %s" % fingerprint.replace(' ', ''))
     extra.append("published %s" % ts)
     extra.append("write-history %s (900 s)\n3188736,2226176,2866176" % ts)
     extra.append("read-history %s (900 s)\n3891200,2483200,2698240" % ts)
@@ -589,7 +606,7 @@ def generateExtraInfo(fingerprint, ts, ipv4, port):
     extra.append("transport obfs2 %s:%d" % (ipv4, port + 2))
     extra.append("bridge-stats-end %s (86400 s)\nbridge-ips ca=8" % ts)
     extra.append("bridge-ip-versions v4=8,v6=0\nbridge-ip-transports <OR>=8")
-    extra.append("router-signature")
+    extra.append("router-signature\n")
 
     return '\n'.join(extra)
 
@@ -719,11 +736,19 @@ def generateDescriptors():
     timestamp = makeTimeStamp(variation=True, period=36)
     protocols = makeProtocolsLine(vers)
 
-    idkey, (fingerprint, onionkey, signingkey) = makeOnionKeys()
-    idkey_private = getPEMPrivateKey(idkey)
+    SIDSKey, CIDPCert, (fingerprint, onionkey, signingkey) = makeOnionKeys()
+    idkey_private = getPEMPrivateKey(SIDSKey)
     idkey_digest = hashlib.sha1(idkey_private).digest()
 
     fpr = convertToSpaceyFingerprint(fingerprint)
+
+    idkey_public = OpenSSL.crypto.dump_privatekey(PEM,
+                                                 CIDPCert.get_pubkey())
+    idkey_public = re.sub(OPENSSL_BEGIN_KEY, '', idkey_public)
+    idkey_public = re.sub(OPENSSL_END_KEY, '', idkey_public)
+    idkey_public = idkey_public.strip()
+    identity = binascii.b2a_base64(
+        hashlib.sha1(idkey_public).digest()).strip().strip('=======')
 
     extrainfo_document = generateExtraInfo(fpr, timestamp, ipv4, port)
     extrainfo_digest = hashlib.sha1(extrainfo_document).digest()

@@ -19,12 +19,6 @@
 
 """
 
-import logging
-log = logging.getLogger()
-
-import re
-import os
-
 def parseAcceptLanguage(header):
     """Parse the contents of a client 'Accept-Language' header.
 
@@ -63,7 +57,7 @@ def parseAcceptLanguage(header):
 
     # Add a fallback language of the same type if it is missing.
     langsWithLocales = filter(lambda x: '-' in x, langs)
-    langsOnly = map(lambda x: x.split('-')[0], langsWithLocales)
+    langsOnly = [x.split('-')[0] for x in langsWithLocales]
     for only in langsOnly:
         if only not in langs:
             # Add the fallback after the other languages like it:
@@ -78,5 +72,5 @@ def parseAcceptLanguage(header):
 
     # Gettext wants underderscores, because that is how it creates the
     # directories under i18n/, not hyphens:
-    langs = map(lambda x: x.replace('-', '_'), [x for x in langs])
+    langs = [x.replace('-', '_') for x in langs]
     return langs

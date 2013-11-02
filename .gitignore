@@ -85,3 +85,6 @@ lib/bridgedb/_langs.py
 
 # ignore any changes to our GnuPG directory:
 gnupghome/*
+
+# ignore any downloaded exit-list files:
+*exit-list*
