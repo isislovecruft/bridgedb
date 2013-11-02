@@ -1,0 +1,152 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2013 Isis Lovecruft
+#             (c) 2007-2013, The Tor Project, Inc.
+#             (c) 2007-2013, all entities within the AUTHORS file
+# :license: 3-clause BSD, see included LICENSE for information
+
+"""get-tor-exits -- Download the current list of Tor exit relays."""
+
+from __future__ import print_function
+
+import os.path
+import socket
+import sys
+
+from ipaddr import IPAddress
+
+from twisted.python import log
+from twisted.python import usage
+from twisted.names import client as dnsclient
+from twisted.names import error as dnserror
+from twisted.web import client
+from twisted.internet import defer
+from twisted.internet import protocol
+from twisted.internet import reactor
+from twisted.internet import ssl
+
+
+def backupFile(filename):
+    """Move our old exit list file so that we don't append to it."""
+    if os.path.isfile(filename):
+        backup = filename + '.bak'
+        log.msg("get-tor-exits: Moving old exit list file to %s"
+                      % backup)
+        os.renames(filename, backup)
+
+def getSelfIPAddress():
+    """Get external IP address, to ask check which relays can exit to here.
+
+    TODO: This is blocking. Make it use Twisted.
+    """
+    ip = s = None
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('bridges.torproject.org', 443))
+        name = s.getsockname()[0]
+        ip = IPAddress(name)
+        if ip.is_link_local or ip.is_private or ip.is_reserved:
+            name = s.getpeername()[0]
+            ip = IPAddress(name)
+    except ValueError as error:
+        log.err("A socket gave us something that wasn't an IP: %s" % error)
+    except Exception as error:
+        log.err("Unhandled Exception: %s\n%s\n" % (error.message, error))
+    finally:
+        if s is not None:
+            s.close()
+    return ip.compressed
+
+def writeToFile(response, filename):
+    log.msg("get-tor-exits: Downloading list of Tor exit relays.")
+    finished = defer.Deferred()
+    response.deliverBody(FileWriter(finished, filename))
+    return finished
+
+class GetTorExitsOptions(usage.Options):
+    """Options for this script"""
+    optFlags = [['stdout', 's', "Write results to stdout instead of file"]]
+    optParameters = [['file', 'f', 'exit-list', "File to write results to"],
+                     ['port', 'p', 443, "Only exits which can reach this port"]]
+
+class FileWriter(protocol.Protocol):
+    """Read a downloaded file incrementally and write to file."""
+    def __init__(self, finished, file):
+        """Create a FileWriter.
+
+        :param finished: A :class:`~twisted.internet.defer.Deferred` which
+            will fire when another portion of the download is complete.
+        """
+        self.finished = finished
+        self.remaining = 1024 * 10
+        self.fh = file
+
+    def dataReceived(self, bytes):
+        """Write a portion of the download with ``bytes`` size to disk."""
+        if self.remaining:
+            display = bytes[:self.remaining]
+            self.fh.write(display)
+            self.fh.flush()
+            self.remaining -= len(display)
+
+    def connectionLost(self, reason):
+        """Called when the download is complete."""
+        log.msg('get-tor-exits: Finished receiving exit list: %s'
+                 % reason.getErrorMessage())
+        self.finished.callback(None)
+
+class WebClientContextFactory(ssl.ClientContextFactory):
+    """An HTTPS client."""
+    def getContext(self, hostname, port):
+        return ssl.ClientContextFactory.getContext(self)
+
+def main(filename=None, port=None):
+    fh = filename
+    if filename and not (filename == sys.stdout):
+        fh = open(filename, 'a')
+
+    check  = "https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip="
+    check += getSelfIPAddress()
+    if port is not None:
+        check += "&port=%d".format(port)
+    log.msg("get-tor-exits: Requesting %s..." % check)
+
+    ctx = WebClientContextFactory()
+    agent = client.Agent(reactor, ctx)
+    d = agent.request("GET", check)
+    d.addCallback(writeToFile, fh)
+    d.addErrback(log.err)
+    d.addCallbacks(log.msg, log.err)
+
+    if not reactor.running:
+        d.addCallback(lambda ignored: reactor.stop())
+        reactor.run()
+
+    if filename and fh and not (filename == sys.stdout):
+        fh.flush()
+        fh.close()
+
+if __name__ == "__main__":
+    try:
+        options = GetTorExitsOptions()
+        options.parseOptions()
+    except usage.UsageError as error:
+        log.err(error)
+        raise SystemExit(options.getUsage())
+
+    if options['stdout']:
+        filename = sys.stdout
+    elif options['file']:
+        filename = options['file']
+        log.msg("Saving Tor exit relay list to file: '%s'" % filename)
+        backupFile(filename)
+
+    if options['port']:
+        main(filename, options['port'])
+    else:
+        main(filename, options['port'])
