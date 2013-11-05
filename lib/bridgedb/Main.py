@@ -223,14 +223,14 @@ def startup(cfg, options):
     else:
         cfg.PROXY_LIST_FILES = []
 
+    # Set up logging.
+    configureLogging(cfg)
+
     # Write the pidfile.
     if cfg.PIDFILE:
         f = open(cfg.PIDFILE, 'w')
         f.write("%s\n" % os.getpid())
         f.close()
-
-    # Set up logging.
-    configureLogging(cfg)
 
     # Import Servers after logging is set up. Otherwise, python will create a
     # default handler that logs to the console and ignore further basicConfig
