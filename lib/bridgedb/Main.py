@@ -409,14 +409,8 @@ def startup(cfg, options):
                          % len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
                 logging.info("\tby filter set %s, %d" % (n, len(r)))
-            #logging.info("  by location set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.rings))
-            #logging.info("  by category set: %s",
-            #             " ".join(str(len(r)) for r in ipDistributor.categoryRings))
-            #logging.info("Here are all known bridges in the category section:")
-            #for r in ipDistributor.categoryRings:
-            #    for name, b in r.bridges.items():
-            #        logging.info("%s" % b.getConfigLine(True))
+        else:
+            logging.warn("No HTTP(S) distributor created!")
 
         # Dump bridge pool assignments to disk.
         try:
