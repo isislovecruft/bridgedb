@@ -54,7 +54,8 @@ def configureLogging(cfg):
         handler = logging.handlers.RotatingFileHandler(logfile, 'a',
                                                        logfile_rotate_size,
                                                        logfile_count)
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', "%b %d %H:%M:%S")
+        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s',
+                                      "%b %d %H:%M:%S")
         handler.setFormatter(formatter)
         logging.getLogger().addHandler(handler)
 
@@ -96,13 +97,15 @@ def load(cfg, splitter, clear=False):
         f.close()
     bridges = {} 
     db = bridgedb.Storage.getDB()
+
     for fname in cfg.BRIDGE_FILES:
         logging.info("Opening cached Descriptor document %s", fname)
         logging.debug("Parsing document for purpose=%s", cfg.BRIDGE_PURPOSE)
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             if bridge.getID() in bridges:
-                logging.warn("Parsed bridge that we've already added. Skipping.")
+                logging.warn(
+                    "Parsed bridge that we've already added. Skipping.")
                 logging.debug("  Bridge: %s" % bridge.getID())
                 continue
             else:
@@ -121,32 +124,36 @@ def load(cfg, splitter, clear=False):
                     ts = timestamps[bridge.getID()][:]
                     ts.sort()
                     for timestamp in ts:
-                        bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+                        bridgedb.Stability.addOrUpdateBridgeHistory(
+                            bridge, timestamp)
         logging.debug("Closing descriptor document")
         f.close()
+
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
-    if hasattr(cfg, "EXTRA_INFO_FILE"):
-        logging.info("Opening Extra Info document %s", os.path.abspath(cfg.EXTRA_INFO_FILE))
+        logging.info("Opening extra-info document: '%s'" % cfg.EXTRA_INFO_FILE)
         f = open(cfg.EXTRA_INFO_FILE, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
                 logging.debug("  Appending transport to running bridge")
-                bridges[ID].transports.append(Bridges.PluggableTransport(bridges[ID],
-                    method_name, address, port, argdict))
+                bridgePT = Bridges.PluggableTransport(
+                    bridges[ID], method_name, address, port, argdict)
+                bridges[ID].transports.append(bridgePT)
                 assert bridges[ID].transports, "We added a transport but it disappeared!"
         logging.debug("Closing extra-info document")
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
-        logging.info("Opening Blocking Countries file %s", os.path.abspath(cfg.COUNTRY_BLOCK_FILE))
+        logging.info("Opening Blocking Countries file %s"
+                     % cfg.COUNTRY_BLOCK_FILE)
         f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
-        for ID,address,portlist,countries in Bridges.parseCountryBlockFile(f):
+        for ID, address, portlist, countries in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
                 for port in portlist:
-                    logging.debug(":.( Tears! %s blocked %s %s:%s",
-                        countries, bridges[ID].fingerprint, address, port)
+                    logging.debug(":.( Tears! %s blocked %s %s:%s"
+                                  % (countries, bridges[ID].fingerprint,
+                                     address, port))
                     try:
                         bridges[ID].blockingCountries["%s:%s" % \
                                 (address, port)].update(countries)
@@ -154,7 +161,7 @@ def load(cfg, splitter, clear=False):
                         bridges[ID].blockingCountries["%s:%s" % \
                                 (address, port)] = set(countries)
         logging.debug("Closing blocking-countries document")
-        f.close() 
+        f.close()
 
     bridges = None
 
@@ -205,20 +212,20 @@ def startup(cfg, options):
         cfg.PROXY_LIST_FILES = [
             os.path.expanduser(v) for v in cfg.PROXY_LIST_FILES ]
     else:
-        cfg.PROXY_LIST_FILES = [ ]
+        cfg.PROXY_LIST_FILES = []
 
     # Write the pidfile.
     if cfg.PIDFILE:
         f = open(cfg.PIDFILE, 'w')
-        f.write("%s\n"%os.getpid())
+        f.write("%s\n" % os.getpid())
         f.close()
 
     # Set up logging.
     configureLogging(cfg)
 
-    #XXX import Servers after logging is set up
-    # Otherwise, python will create a default handler that logs to
-    # the console and ignore further basicConfig calls
+    # Import Servers after logging is set up. Otherwise, python will create a
+    # default handler that logs to the console and ignore further basicConfig
+    # calls.
     from bridgedb import EmailServer
     from bridgedb import HTTPServer
 
@@ -309,7 +316,7 @@ def startup(cfg, options):
             ipDistributor.prepopulateRings() # create default rings
             logging.info("%d for web:", len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
-                    logging.info(" by filter set %s, %d" % (n, len(r)))
+                logging.info("\tby filter set %s, %d" % (n, len(r)))
             #logging.info("  by location set: %s",
             #             " ".join(str(len(r)) for r in ipDistributor.rings))
             #logging.info("  by category set: %s",
