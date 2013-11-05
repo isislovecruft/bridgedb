@@ -131,8 +131,9 @@ def load(cfg, splitter, clear=False):
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
-        logging.info("Opening extra-info document: '%s'" % cfg.EXTRA_INFO_FILE)
-        f = open(cfg.EXTRA_INFO_FILE, 'r')
+    for filename in cfg.EXTRA_INFO_FILES:
+        logging.info("Opening extra-info document: '%s'" % filename)
+        f = open(filename, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             if bridges[ID].running:
