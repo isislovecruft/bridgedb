@@ -101,8 +101,8 @@ def load(cfg, splitter, clear=False):
     db = bridgedb.Storage.getDB()
 
     for fname in cfg.BRIDGE_FILES:
-        logging.info("Opening cached Descriptor document %s", fname)
-        logging.debug("Parsing document for purpose=%s", cfg.BRIDGE_PURPOSE)
+        logging.info("Opening cached server-descriptor document: '%s'" % fname)
+        logging.debug("Parsing document for purpose=%s" % cfg.BRIDGE_PURPOSE)
         f = open(fname, 'r')
         for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
             if bridge.getID() in bridges:
