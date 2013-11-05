@@ -281,8 +281,7 @@ def startup(cfg, options):
     key = bridgedb.crypto.getKey(cfg.MASTER_KEY_FILE)
 
     # Initialize our DB file.
-    db = bridgedb.Storage.Database(cfg.DB_FILE+".sqlite",
-                                   cfg.DB_FILE)
+    db = bridgedb.Storage.Database(cfg.DB_FILE + ".sqlite", cfg.DB_FILE)
     bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
