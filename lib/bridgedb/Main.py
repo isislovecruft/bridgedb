@@ -142,8 +142,9 @@ def load(cfg, splitter, clear=False):
                     bridgePT = Bridges.PluggableTransport(
                         bridges[ID], method_name, address, port, argdict)
                     bridges[ID].transports.append(bridgePT)
-                    assert bridges[ID].transports, \
-                        "We added a transport but it disappeared!"
+                    if not bridgePT in bridges[ID].transports:
+                        logging.critical("""Added transport...it disappeared!
+                        Transport: %r""" % bridgePT)
             except KeyError as error:
                 logging.error("Could not find bridge with fingerprint '%s'."
                               % Bridges.toHex(ID))
