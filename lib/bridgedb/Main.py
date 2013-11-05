@@ -136,12 +136,17 @@ def load(cfg, splitter, clear=False):
         f = open(filename, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
-            if bridges[ID].running:
-                logging.debug("  Appending transport to running bridge")
-                bridgePT = Bridges.PluggableTransport(
-                    bridges[ID], method_name, address, port, argdict)
-                bridges[ID].transports.append(bridgePT)
-                assert bridges[ID].transports, "We added a transport but it disappeared!"
+            try:
+                if bridges[ID].running:
+                    logging.debug("  Appending transport to running bridge")
+                    bridgePT = Bridges.PluggableTransport(
+                        bridges[ID], method_name, address, port, argdict)
+                    bridges[ID].transports.append(bridgePT)
+                    assert bridges[ID].transports, \
+                        "We added a transport but it disappeared!"
+            except KeyError as error:
+                logging.error("Could not find bridge with fingerprint '%s'."
+                              % Bridges.toHex(ID))
         logging.debug("Closing extra-info document")
         f.close()
     if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
