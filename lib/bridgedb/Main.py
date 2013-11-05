@@ -15,7 +15,9 @@ import logging.handlers
 import gettext
 
 from twisted.internet import reactor
+from twisted.internet import task
 
+from bridgedb import proxy
 from bridgedb.parse import options
 
 import bridgedb.crypto
@@ -308,8 +310,13 @@ def startup(cfg, options):
     bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
-    proxyList = ProxyCategory()
-    proxyList.replaceProxyList(loadProxyList(cfg))
+    proxyList = proxy.ProxySet()
+    proxyList.replaceProxyList(proxy.loadProxiesFromFiles(cfg.PROXY_LIST_FILES,
+                                                          proxyList))
+    tasks = {}
+    if cfg.GET_TOR_EXIT_LIST:
+        exittask = task.LoopingCall(proxy.downloadTorExits, proxyList)
+        tasks['exittask'] = exittask
 
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -327,7 +334,8 @@ def startup(cfg, options):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         categories = []
-        if proxyList.ipset:
+        if proxyList:
+            logging.debug("Adding proxyList to HTTPS Distributor categories.")
             categories.append(proxyList)
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
@@ -377,7 +385,13 @@ def startup(cfg, options):
             logging.getLogger().setLevel(level)
 
         load(cfg, splitter, clear=True)
-        proxyList.replaceProxyList(loadProxyList(cfg))
+        splitter = load(cfg, splitter, clear=True)
+
+        if 'exittask' in tasks:
+            tasks['exittask'].start(3 * 60 * 60) # Run once every three hours
+        proxyList.replaceProxyList(proxy.loadProxiesFromFiles(
+            cfg.PROXY_LIST_FILES, proxyList))
+
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
             emailDistributor.prepopulateRings() # create default rings
