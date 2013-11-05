@@ -265,7 +265,13 @@ def startup(cfg, options):
     # Set up logging.
     configureLogging(cfg)
 
-    # Write the pidfile.
+    if options['dump-bridges'] or (options.subCommand is not None):
+        runSubcommand(options, cfg)
+
+    # Write the pidfile only after any options.subCommands are run (because
+    # these exit when they are finished). Otherwise, if there is a subcommand,
+    # the real PIDFILE would get overwritten with the PID of the temporary
+    # bridgedb process running the subcommand.
     if cfg.PIDFILE:
         f = open(cfg.PIDFILE, 'w')
         f.write("%s\n" % os.getpid())
@@ -450,6 +456,40 @@ def startup(cfg, options):
             os.unlink(cfg.PIDFILE)
         sys.exit()
 
+def runSubcommand(options, config):
+    """Run a subcommand from the 'Commands' section of the bridgedb help menu.
+
+    :type options: :class:`bridgedb.opt.MainOptions`
+    :param options: A pre-parsed options class containing any arguments and
+        options given in the commandline we were called with.
+    :type config: :class:`bridgedb.Main.Conf`
+    :param config: The current configuration.
+    :raises: :exc:`SystemExit` when all subCommands and subOptions have
+        finished running.
+    """
+    # Make sure that the runner module is only imported after logging is set
+    # up, otherwise we run into the same logging configuration problem as
+    # mentioned above with the EmailServer and HTTPServer.
+    from bridgedb import runner
+
+    if options('dump-bridges'):
+        bucketManager = Bucket.BucketManager(config)
+        bucketManager.assignBridgesToBuckets()
+        bucketManager.dumpBridges()
+
+    if options.subCommand is not None:
+        logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
+
+        if 'descriptors' in options.subOptions:
+            runner.generateDescriptors(options)
+
+        if options.subCommand == 'test':
+            if options.subOptions['trial']:
+                runner.runTrial(options.subOptions)
+            if options.subOptions['unittests']:
+                runner.runTests(options.subOptions)
+        raise SystemExit("Subcommand '%s' finished." % options.subCommand)
+
 def run(options):
     """This is the main entry point into BridgeDB.
 
@@ -484,9 +524,4 @@ def run(options):
     # Store the rundir in case it needs to be used again later:
     cfg.RUNDIR = rundir
 
-    if options['dump-bridges']:
-        bucketManager = Bucket.BucketManager(config)
-        bucketManager.assignBridgesToBuckets()
-        bucketManager.dumpBridges()
-    else:
-        startup(config, options)
+    startup(cfg, options)
