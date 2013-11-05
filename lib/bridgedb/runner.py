@@ -22,13 +22,23 @@ import sys
 def generateDescriptors(count=None, rundir=None):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
-    This will run scripts/gen_bridge_descriptors to create a bridge router
-    descriptors, bridge extrainfo descriptors, a consensus document, and a
-    networkstatus document.
+    This will run ``scripts/gen_bridge_descriptors`` to create bridge server
+    descriptors, bridge extra-info descriptors, and networkstatus document.
 
-    :param integer howmany: Number of fake bridges to generate descriptor for.
-    :rtype: integer
-    :returns: The process returncode from the gen_bridge_descriptors script.
+    ** NOTE: **
+        This function can take a very long time to run, especially in headless
+        environments where entropy sources are minimal, because it creates the
+        keys for each mocked OR, which are embedded in the server descriptors,
+        used to calculate the OR fingerprints, and sign the descriptors, among
+        other things.
+
+    :param integer count: Number of mocked bridges to generate descriptor
+        for. (default: 3)
+    :type rundir: string or None
+    :param rundir: If given, use this directory as the current working
+        directory for the bridge descriptor generator script to run in. The
+        directory MUST already exist, and the descriptor files will be created
+        in it. If None, use the whatever directory we are currently in.
     """
     import subprocess
     import os.path
