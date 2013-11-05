@@ -85,7 +85,7 @@ def load(cfg, splitter, clear=False):
     addresses = {}
     timestamps = {}
     if hasattr(cfg, "STATUS_FILE"):
-        logging.info("Opening Network Status document %s", os.path.abspath(cfg.STATUS_FILE))
+        logging.info("Opening Network Status document %s" % cfg.STATUS_FILE)
         f = open(cfg.STATUS_FILE, 'r')
         for ID, running, stable, or_addresses, timestamp in Bridges.parseStatusFile(f):
             status[ID] = running, stable
@@ -126,7 +126,7 @@ def load(cfg, splitter, clear=False):
                     for timestamp in ts:
                         bridgedb.Stability.addOrUpdateBridgeHistory(
                             bridge, timestamp)
-        logging.debug("Closing descriptor document")
+        logging.debug("Closing server-descriptor document")
         f.close()
 
     # read pluggable transports from extra-info document
@@ -328,7 +328,8 @@ def startup(cfg, options):
 
         # Dump bridge pool assignments to disk.
         try:
-            logging.debug("Dumping pool assignments file")
+            logging.debug("Dumping pool assignments to file: '%s'"
+                          % cfg.ASSIGNMENTS_FILE)
             f = open(cfg.ASSIGNMENTS_FILE, 'a')
             f.write("bridge-pool-assignment %s\n" %
                     time.strftime("%Y-%m-%d %H:%M:%S"))
