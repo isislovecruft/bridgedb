@@ -186,7 +186,10 @@ def loadProxyList(cfg):
         f.close()
     return ipset
 
-_reloadFn = lambda x: True
+def _reloadFn(*args, **kwargs):
+    """Placeholder callback function for :func:`_handleSIGHUP`."""
+    return True
+
 def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callLater(0, _reloadFn, *args)
