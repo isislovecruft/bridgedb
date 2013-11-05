@@ -11,33 +11,21 @@
 
 from __future__ import print_function
 
-import bridgedb
-import os
+import os.path
 import sys
 
-from bridgedb import runner
-from bridgedb.parse import options
+from os import getcwd
+
+from bridgedb.Main import run
+from bridgedb.parse.options import parseOptions
 
 
-option = options.parseOptions()
+option = parseOptions()
 
 if option.subCommand is not None:
     # Hack to set the PYTHONPATH:
     sys.path[:] = map(os.path.abspath, sys.path)
-    sys.path.insert(0, os.path.abspath(os.getcwd()))
-    sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '../lib')))
+    sys.path.insert(0, os.path.abspath(getcwd()))
+    sys.path.insert(0, os.path.abspath(os.path.join(getcwd(), '../lib')))
 
-    if 'descriptors' in option.subOptions:
-        runner.generateDescriptors(option)
-
-    if option.subCommand == 'test':
-        if option.subOptions['trial']:
-            runner.runTrial(option.subOptions)
-        if option.subOptions['unittests']:
-            runner.runTests(option.subOptions)
-    sys.exit()
-
-# If no suboption was given, just run bridgedb:
-else:
-    from bridgedb import Main
-    Main.run(option)
+run(option)
