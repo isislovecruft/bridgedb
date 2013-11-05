@@ -291,6 +291,7 @@ def startup(cfg, options):
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
     splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
+    logging.debug("Created splitter: %r" % splitter)
 
     # Create ring parameters.
     forcePorts = getattr(cfg, "FORCE_PORTS")
@@ -303,9 +304,13 @@ def startup(cfg, options):
     emailDistributor = ipDistributor = None
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
+        logging.debug("Setting up HTTPS Distributor...")
         categories = []
         if proxyList.ipset:
+            logging.debug("Adding proxyList to HTTPS Distributor categories.")
             categories.append(proxyList)
+        logging.debug("HTTPS Distributor categories: '%s'" % categories)
+
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
             cfg.N_IP_CLUSTERS,
@@ -320,6 +325,8 @@ def startup(cfg, options):
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         for d in cfg.EMAIL_DOMAINS:
             cfg.EMAIL_DOMAIN_MAP[d] = d
+        logging.debug("New email domain map: '%s'" % cfg.EMAIL_DOMAIN_MAP)
+        logging.debug("Setting up Email Distributor...")
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
@@ -357,11 +364,16 @@ def startup(cfg, options):
         proxyList.replaceProxyList(loadProxyList(cfg))
         logging.info("%d bridges loaded", len(splitter))
         if emailDistributor:
+            logging.debug("Prepopulating email distributor hashrings...")
             emailDistributor.prepopulateRings() # create default rings
-            logging.info("%d for email", len(emailDistributor.splitter))
+            logging.info("Bridges allotted for email distribution: %d"
+                         % len(emailDistributor.splitter))
+
         if ipDistributor:
+            logging.debug("Prepopulating HTTPS distributor hashrings...")
             ipDistributor.prepopulateRings() # create default rings
-            logging.info("%d for web:", len(ipDistributor.splitter))
+            logging.info("Bridges allotted for web distribution: %d"
+                         % len(ipDistributor.splitter))
             for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
                 logging.info("\tby filter set %s, %d" % (n, len(r)))
             #logging.info("  by location set: %s",
