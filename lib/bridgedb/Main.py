@@ -14,6 +14,8 @@ import logging
 import logging.handlers
 import gettext
 
+from pprint import pprint
+
 from twisted.internet import reactor
 
 from bridgedb import crypto
@@ -170,6 +172,43 @@ def load(cfg, splitter, clear=False):
         f.close()
 
     bridges = None
+
+def loadConfig(options, config=None):
+    """Load configuration settings on top of the current settings.
+
+    :type options: :class:`bridgedb.opt.MainOptions`
+    :param options: A pre-parsed options class containing any arguments and
+        options given in the commandline we were called with.
+    :type config: :class:`bridgedb.Main.Conf` or None
+    :param config: The current configuration.
+
+    :rtype: :class:`Conf`
+    :returns: A new configuration, with the old settings as defaults, and the
+        settings from the config file overriding them.
+    """
+    configuration = {}
+
+    if config:
+        oldConfig = config.__dict__
+        configuration.update(**oldConfig) # Load current settings
+        logging.info("Reloading over in-memory configurations...")
+
+    logging.debug("Old configuration settings:\n%s"
+                  % pprint(configuration, depth=4))
+
+    if options['config']:
+        configFile = options['config']
+        logging.info("Loading settings from config file: '%s'" % configFile)
+        compiled = compile(open(configFile).read(), '<string>', 'exec')
+        exec compiled in configuration
+
+    logging.debug("New configuration settings:\n%s"
+                  % pprint(configuration, depth=4))
+
+    # Create a :class:`Conf` from the settings stored within the local scope
+    # of the ``configuration`` dictionary:
+    config = Conf(**configuration)
+    return config
 
 def loadProxyList(cfg):
     ipset = {}
@@ -380,20 +419,31 @@ def run(options):
     starting/reloading the servers or dumping bridge assignments to files.
 
     :type options: :class:`bridgedb.opt.MainOptions`
-    :param options: A pre-parsed options class.
+    :param options: A pre-parsed options class containing any arguments and
+        options given in the commandline we were called with.
     """
     configuration = {}
+    rundir = os.getcwd()
 
     if not options['config']:
         options.getUsage()
         sys.exit(1)
 
-    # Change to the directory where we're supposed to run.
     if options['rundir']:
-        os.chdir(options['rundir'])
+        rundir = os.path.abspath(os.path.expanduser(options['rundir']))
 
-    execfile(options['config'], configuration)
-    config = Conf(**configuration)
+    # Change to the directory where we're supposed to run. This must be done
+    # before parsing the config file, otherwise there will need to be two
+    # copies of the config file, one in the directory BridgeDB is started in,
+    # and another in the directory it changes into.
+    os.chdir(rundir)
+
+    compiled = compile(open(options['config']).read(), '<string>', 'exec')
+    exec compiled in configuration
+    cfg = Conf(**configuration)
+
+    # Store the rundir in case it needs to be used again later:
+    cfg.RUNDIR = rundir
 
     if options['dump-bridges']:
         bucketManager = Bucket.BucketManager(config)
