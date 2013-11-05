@@ -217,8 +217,8 @@ def startup(cfg, options):
         if v:
             setattr(cfg, key, os.path.expanduser(v))
     if hasattr(cfg, "PROXY_LIST_FILES"):
-        cfg.PROXY_LIST_FILES = [
-            os.path.expanduser(v) for v in cfg.PROXY_LIST_FILES ]
+        cfg.PROXY_LIST_FILES = [os.path.abspath(os.path.expanduser(fn))
+                                for fn in cfg.PROXY_LIST_FILES]
     else:
         cfg.PROXY_LIST_FILES = []
 
