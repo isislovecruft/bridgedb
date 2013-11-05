@@ -420,6 +420,7 @@ def startup(cfg, options):
             f.write("bridge-pool-assignment %s\n" %
                     time.strftime("%Y-%m-%d %H:%M:%S"))
             splitter.dumpAssignments(f)
+            f.flush()
             f.close()
         except IOError:
             logging.info("I/O error while writing assignments")
