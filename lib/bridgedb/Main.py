@@ -25,7 +25,6 @@ import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
-import bridgedb.Bucket as Bucket
 import bridgedb.Util as Util
 
 
@@ -473,9 +472,7 @@ def runSubcommand(options, config):
     from bridgedb import runner
 
     if options('dump-bridges'):
-        bucketManager = Bucket.BucketManager(config)
-        bucketManager.assignBridgesToBuckets()
-        bucketManager.dumpBridges()
+        runner.doDumpBridges(config)
 
     if options.subCommand is not None:
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)

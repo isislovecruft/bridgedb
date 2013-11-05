@@ -95,3 +95,17 @@ def runTests(options):
     """
     testModule = __import__('bridgedb.Tests', globals(), '', [])
     testModule.Tests.main()
+
+def doDumpBridges(config):
+    """Dump bridges by assignment to a file.
+
+    This function handles the commandline '--dump-bridges' option.
+
+    :type config: :class:`bridgedb.Main.Conf`
+    :param config: The current configuration.
+    """
+    import bridgedb.Bucket as bucket
+
+    bucketManager = bucket.BucketManager(config)
+    bucketManager.assignBridgesToBuckets()
+    bucketManager.dumpBridges()
