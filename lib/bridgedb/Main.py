@@ -16,9 +16,9 @@ import gettext
 
 from twisted.internet import reactor
 
+from bridgedb import crypto
 from bridgedb.parse import options
 
-import bridgedb.crypto
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time

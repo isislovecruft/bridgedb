@@ -20,7 +20,6 @@
 """
 
 import logging
-log = logging.getLogger()
 
 import re
 import os
