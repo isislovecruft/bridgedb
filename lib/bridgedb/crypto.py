@@ -50,7 +50,7 @@ def getKey(filename):
         fd = os.open(filename, flags, 0400)
         os.write(fd, key)
         os.fsync(fd)
-        fd.close()
+        os.close(fd)
     else:
         logging.debug("getKey(): Secret key file found. Loading...")
         key = fh.read()
