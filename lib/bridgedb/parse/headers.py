@@ -19,11 +19,6 @@
 
 """
 
-import logging
-
-import re
-import os
-
 def parseAcceptLanguage(header):
     """Parse the contents of a client 'Accept-Language' header.
 
