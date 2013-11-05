@@ -346,19 +346,47 @@ def startup(cfg, options):
     for p in cfg.FILE_BUCKETS.keys():
         splitter.addPseudoRing(p)
 
-    # Make the parse-bridges function get re-called on SIGHUP.
     def reload(*args):
-        logging.info("Caught SIGHUP")
+        """Reload settings, proxy lists, and bridges.
 
-        # reparse the config file
-        configuration = {}
-        if options['config']:
-            execfile(options['config'], configuration)
-            cfg = Conf(**configuration)
-            # update loglevel on (re)load
-            level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-            level = getattr(logging, level)
-            logging.getLogger().setLevel(level)
+        The contents of the config file should be compiled (it's roughly 20-30
+        times faster to use the ``compile`` builtin on a string before
+        ``exec``ing it) first, and then ``exec``ed -- not ``execfile``! -- in
+        order to get the contents of the config file to exist within the scope
+        of the configuration object. Otherwise, Python *will* default to
+        placing them directly within the ``globals()`` scope.
+
+        For a more detailed explanation, see http://stackoverflow.com/q/17470193
+        and http://lucumr.pocoo.org/2011/2/1/exec-in-python/
+
+        :type cfg: :class:`Conf`
+        :param cfg: The current configuration, including any in-memory
+            settings (i.e. settings whose values were not obtained from the
+            config file, but were set via a function somewhere)
+        :type options: :class:`twisted.python.usage.Options`
+        :param options: Any commandline options.
+
+        :param splitter: XXX
+
+        :type proxyList: :class:`ProxyCategory`
+        :param proxyList: The container for the IP addresses of any currently
+             known open proxies.
+
+        :param IPDistributor: A :class:`Dist.IPBasedDistributor`.
+        :param emailDistributor: A :class:`Dist.EmailDistributor`.
+        :param dict tasks: A dictionary of {'name': Task}, where Task is some
+            scheduled event, repetitive or otherwise, for the :class:`reactor
+            <twisted.internet.epollreactor.EPollReactor>`
+        """
+        logging.debug("Caught SIGHUP")
+        logging.info("Reloading...")
+
+        cfg = loadConfig(options, cfg)
+
+        # update loglevel on (re)load
+        level = getattr(cfg, 'LOGLEVEL', 'WARNING')
+        level = getattr(logging, level)
+        logging.getLogger().setLevel(level)
 
         load(cfg, splitter, clear=True)
         proxyList.replaceProxyList(loadProxyList(cfg))
