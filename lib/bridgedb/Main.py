@@ -472,7 +472,8 @@ def runSubcommand(options, config):
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
 
         if 'descriptors' in options.subOptions:
-            runner.generateDescriptors(options)
+            runner.generateDescriptors(options.subOptions['descriptors'],
+                                       config.RUNDIR)
 
         if options.subCommand == 'test':
             if options.subOptions['trial']:

@@ -19,7 +19,7 @@ from __future__ import print_function
 import sys
 
 
-def generateDescriptors(options):
+def generateDescriptors(count=None, rundir=None):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
     This will run scripts/gen_bridge_descriptors to create a bridge router
@@ -31,11 +31,12 @@ def generateDescriptors(options):
     :returns: The process returncode from the gen_bridge_descriptors script.
     """
     import subprocess
+    import os.path
 
     proc = None
-    rundir = options['rundir']
     script = 'gen_bridge_descriptors'
-    count = options.subOptions['descriptors']
+    rundir = rundir if os.path.isdir(rundir) else None
+    count = count if count else 3
     try:
         proc = subprocess.Popen([script, '-n', str(count)],
                                 close_fds=True, cwd=rundir)
