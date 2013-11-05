@@ -28,24 +28,11 @@ import bridgedb.Util as Util
 
 
 class Conf:
-    """A configuration object.  Holds unvalidated attributes.
-    """
+    """A configuration object.  Holds unvalidated attributes."""
     def __init__(self, **attrs):
-        self.__dict__.update(attrs)
-        self.setMissing()
-
-    def setMissing(self):
-        for k,v in CONFIG_DEFAULTS.items():
-            if not hasattr(self, k):
-                setattr(self,k,v)
-
-CONFIG_DEFAULTS = {
-    'HTTPS_INCLUDE_FINGERPRINTS' : False,
-    'EMAIL_INCLUDE_FINGERPRINTS' : False,
-    'RECAPTCHA_ENABLED' : False,
-    'RECAPTCHA_PUB_KEY' : "",
-    'RECAPTCHA_PRIV_KEY' : ""
-}
+        for key, value in attrs.items():
+            if key.upper() == key:
+                self.__dict__[key] = value
 
 # An example configuration.  Used for testing.  See sample
 # bridgedb.conf for documentation.
