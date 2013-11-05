@@ -106,7 +106,6 @@ def load(cfg, splitter, clear=False):
             if bridge.getID() in bridges:
                 logging.warn(
                     "Parsed bridge that we've already added. Skipping.")
-                logging.debug("  Bridge: %s" % bridge.getID())
                 continue
             else:
                 bridges[bridge.getID()] = bridge
