@@ -310,6 +310,10 @@ class ProxyCategory:
 
 def startup(options, rundir, configFile):
     """Parse bridges,
+
+    :type state: :class:`bridgedb.persistent.State`
+    :param state: A persistent state object which holds options and config
+         changes.
     """
     # Change to the directory where we're supposed to run. This must be done
     # before parsing the config file, otherwise there will need to be two
