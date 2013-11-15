@@ -361,54 +361,6 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 yield b
             nickname = ip = orport = fingerprint = purpose = None 
 
-class PortList:
-    """ container class for port ranges
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.ports = set()
-        self.add(*args)
-
-    def _sanitycheck(self, val):
-        #XXX: if debug=False this is disabled. bad!
-        assert type(val) is int
-        assert(0 < val <= 65535) 
-
-    def __contains__(self, val1):
-        return val1 in self.ports
-
-    def add(self, *args):
-        for arg in args:
-            try:
-                if type(arg) is str:
-                    ports = set([int(p) for p in arg.split(',')][:PORTSPEC_LEN])
-                    [self._sanitycheck(p) for p in ports]
-                    self.ports.update(ports)
-                if type(arg) is int:
-                    self._sanitycheck(arg)
-                    self.ports.update([arg])
-                if type(arg) is PortList:
-                    self.add(list(arg.ports))
-            except AssertionError: raise ValueError
-            except ValueError: raise
-
-    def __iter__(self):
-        return self.ports.__iter__()
-
-    def __str__(self):
-        s = ""
-        for p in self.ports:
-            s += "".join(",%s"%p)
-        return s.lstrip(",")
-
-    def __repr__(self):
-        return "PortList('%s')" % self.__str__()
-
-    def __len__(self):
-        return len(self.ports)
-
-    def __getitem__(self, x):
-        return list(self.ports)[x]
 
 class ParseORAddressError(Exception):
     def __init__(self):
@@ -418,22 +370,6 @@ class ParseORAddressError(Exception):
 re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
-def parseORAddressLine(line):
-    address = None
-    portlist = None
-    # try regexp to discover ip version
-    for regex in [re_ipv4, re_ipv6]:
-        m = regex.match(line)
-        if m:
-            # get an address and portspec, or raise ParseError
-            try:
-                address  = ipaddr.IPAddress(m.group(1))
-                portlist = PortList(m.group(2))
-            except (IndexError, ValueError): raise ParseORAddressError
-
-    # return a valid address, portlist or raise ParseORAddressError
-    if address and portlist and len(portlist): return address,portlist
-    raise ParseORAddressError
 
 class PluggableTransport:
     """
