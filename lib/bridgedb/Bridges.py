@@ -856,6 +856,7 @@ class FixedBridgeSplitter(BridgeHolder):
         self.rings[which].insert(bridge)
 
     def clear(self):
+        """Clear all bridges from every ring in ``rings``."""
         for r in self.rings:
             r.clear()
 
