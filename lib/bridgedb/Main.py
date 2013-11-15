@@ -370,14 +370,11 @@ def startup(options, rundir, configFile):
     logging.debug("Created splitter: %r" % splitter)
 
     # Create ring parameters.
-    forcePorts = getattr(config, "FORCE_PORTS")
-    forceFlags = getattr(config, "FORCE_FLAGS")
-    if not forcePorts: forcePorts = []
-    if not forceFlags: forceFlags = []
-    ringParams=Bridges.BridgeRingParameters(needPorts=forcePorts,
-                                            needFlags=forceFlags)
+    ringParams = Bridges.BridgeRingParameters(needPorts=config.FORCE_PORTS,
+                                              needFlags=config.FORCE_FLAGS)
 
     emailDistributor = ipDistributor = None
+
     # As appropriate, create an IP-based distributor.
     if config.HTTPS_DIST and config.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
