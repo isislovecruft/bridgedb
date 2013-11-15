@@ -684,18 +684,18 @@ class BridgeRingParameters(object):
         """
         for port, count in needPorts:
             if not (1 <= port <= 65535):
-                raise TypeError("Port %s out of range."%port)
+                raise TypeError("Port %s out of range." % port)
             if count <= 0:
-                raise TypeError("Count %s out of range."%count)
+                raise TypeError("Count %s out of range." % count)
         for flag, count in needFlags:
             flag = flag.lower()
-            if flag not in [ "stable" ]:
-                raise TypeError("Unsupported flag %s"%flag)
+            if flag not in ["stable",]:
+                raise TypeError("Unsupported flag %s" % flag)
             if count <= 0:
-                raise TypeError("Count %s out of range."%count)
+                raise TypeError("Count %s out of range." % count)
 
         self.needPorts = needPorts[:]
-        self.needFlags = [(flag.lower(),count) for flag, count in needFlags[:] ]
+        self.needFlags = [(flag.lower(), count) for flag, count in needFlags[:]]
 
 class BridgeRing(BridgeHolder):
     """Arranges bridges in a ring based on an hmac function."""
