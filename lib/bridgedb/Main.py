@@ -68,40 +68,59 @@ def configureLogging(cfg):
     else:
         logging.warn("Safe Logging: Disabled")
 
+def load(state, splitter, clear=False):
+    """Read and parse all descriptors, and load into a bridge splitter.
 
-def load(cfg, splitter, clear=False):
-    """Read all the bridge files from cfg, and pass them into a splitter
-       object.
+    Read all the appropriate bridge files from the saved
+    :class:`~bridgedb.persistent.State`, parse and validate them, and then
+    store them into our ``state.splitter`` instance. The ``state`` will be
+    saved again at the end of this function.
+
+    :type splitter: :class:`BridgeSplitter <bridgedb.Bridges.BridgeHolder>`
+    :param splitter: A class which provides a mechanism for HMACing
+        Bridges in order to assign them to hashrings.
+    :param boolean clear: If True, clear all previous bridges from the
+        splitter before parsing for new ones.
     """
+    if not state:
+        logging.fatal("bridgedb.Main.load() could not retrieve state!")
+        sys.exit(2)
+
     if clear:
-        logging.info("Clearing old bridges")
+        logging.info("Clearing old bridges...")
         splitter.clear()
-    logging.info("Loading bridges")
+
+    logging.info("Loading bridges...")
+
     status = {}
     addresses = {}
     timestamps = {}
-    if hasattr(cfg, "STATUS_FILE"):
-        logging.info("Opening Network Status document %s" % cfg.STATUS_FILE)
-        f = open(cfg.STATUS_FILE, 'r')
-        for ID, running, stable, or_addresses, timestamp in Bridges.parseStatusFile(f):
-            status[ID] = running, stable
-            addresses[ID] = or_addresses
-            if ID in timestamps.keys(): timestamps[ID].append(timestamp)
-            else: timestamps[ID] = [timestamp]
-            #transports[ID] = transports
-        logging.debug("Closing status document")
-        f.close()
-    bridges = {} 
+
+    logging.info("Opening network status file: %s" % state.STATUS_FILE)
+    f = open(state.STATUS_FILE, 'r')
+    for (ID, running, stable,
+         or_addresses, timestamp) in Bridges.parseStatusFile(f):
+
+        status[ID] = running, stable
+        addresses[ID] = or_addresses
+
+        if ID in timestamps.keys():
+            timestamps[ID].append(timestamp)
+        else:
+            timestamps[ID] = [timestamp]
+        #transports[ID] = transports
+    logging.debug("Closing network status file")
+    f.close()
+
+    bridges = {}
     db = bridgedb.Storage.getDB()
 
-    for fname in cfg.BRIDGE_FILES:
-        logging.info("Opening cached server-descriptor document: '%s'" % fname)
-        logging.debug("Parsing document for purpose=%s" % cfg.BRIDGE_PURPOSE)
+    for fname in state.BRIDGE_FILES:
+        logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
         f = open(fname, 'r')
-        for bridge in Bridges.parseDescFile(f, cfg.BRIDGE_PURPOSE):
+        for bridge in Bridges.parseDescFile(f, state.BRIDGE_PURPOSE):
             if bridge.getID() in bridges:
-                logging.warn(
-                    "Parsed bridge that we've already added. Skipping.")
+                logging.warn("Parsed a duplicate bridge. Skipping.")
                 continue
             else:
                 bridges[bridge.getID()] = bridge
@@ -109,63 +128,73 @@ def load(cfg, splitter, clear=False):
                 if s is not None:
                     running, stable = s
                     bridge.setStatus(running=running, stable=stable)
+                # XXX: what do we do with all these or_addresses?
+                #
+                # The bridge stability metrics are only concerned with a
+                # single ip:port So for now, we will only consider the bridges
+                # primary IP:port
                 bridge.or_addresses = addresses.get(bridge.getID())
                 splitter.insert(bridge)
-                # add or update BridgeHistory entries into the database
-                # XXX: what do we do with all these or_addresses?
-                # The bridge stability metrics are only concerned with a single ip:port
-                # So for now, we will only consider the bridges primary IP:port
+
                 if bridge.getID() in timestamps.keys():
                     ts = timestamps[bridge.getID()][:]
                     ts.sort()
                     for timestamp in ts:
+                        logging.debug(
+                            "Adding/updating timestamps in BridgeHistory for ",
+                            "'%s' in database: %s"
+                            % (bridge.getID(), timestamp))
                         bridgedb.Stability.addOrUpdateBridgeHistory(
                             bridge, timestamp)
-        logging.debug("Closing server-descriptor document")
+        logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
         f.close()
 
     # read pluggable transports from extra-info document
     # XXX: should read from networkstatus after bridge-authority
     # does a reachability test
-    for filename in cfg.EXTRA_INFO_FILES:
-        logging.info("Opening extra-info document: '%s'" % filename)
+    for filename in state.EXTRA_INFO_FILES:
+        logging.info("Opening extra-info file: '%s'" % filename)
         f = open(filename, 'r')
         for transport in Bridges.parseExtraInfoFile(f):
             ID, method_name, address, port, argdict = transport
             try:
                 if bridges[ID].running:
-                    logging.debug("  Appending transport to running bridge")
+                    logging.debug("Adding %s transport to running bridge"
+                                  % method_name)
                     bridgePT = Bridges.PluggableTransport(
                         bridges[ID], method_name, address, port, argdict)
                     bridges[ID].transports.append(bridgePT)
                     if not bridgePT in bridges[ID].transports:
-                        logging.critical("""Added transport...it disappeared!
-                        Transport: %r""" % bridgePT)
+                        logging.critical(
+                            "Added a transport, but it disappeared!",
+                            "\tTransport: %r" % bridgePT)
             except KeyError as error:
                 logging.error("Could not find bridge with fingerprint '%s'."
                               % Bridges.toHex(ID))
-        logging.debug("Closing extra-info document")
+        logging.debug("Closing extra-info file: '%s'" % filename)
         f.close()
-    if hasattr(cfg, "COUNTRY_BLOCK_FILE"):
+
+    if state.COUNTRY_BLOCK_FILE:
         logging.info("Opening Blocking Countries file %s"
-                     % cfg.COUNTRY_BLOCK_FILE)
-        f = open(cfg.COUNTRY_BLOCK_FILE, 'r')
-        for ID, address, portlist, countries in Bridges.parseCountryBlockFile(f):
+                     % state.COUNTRY_BLOCK_FILE)
+        f = open(state.COUNTRY_BLOCK_FILE)
+        # Identity digest, primary OR address, portlist, country codes
+        for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
             if ID in bridges.keys() and bridges[ID].running:
                 for port in portlist:
-                    logging.debug(":.( Tears! %s blocked %s %s:%s"
-                                  % (countries, bridges[ID].fingerprint,
-                                     address, port))
+                    addrport = "{0}:{1}".format(addr, port)
+                    logging.debug(":'( Tears! %s blocked bridge %s at %s"
+                                  % (cc, bridges[ID].fingerprint, addrport))
                     try:
-                        bridges[ID].blockingCountries["%s:%s" % \
-                                (address, port)].update(countries)
+                        bridges[ID].blockingCountries[addrport].update(cc)
                     except KeyError:
-                        bridges[ID].blockingCountries["%s:%s" % \
-                                (address, port)] = set(countries)
+                        bridges[ID].blockingCountries[addrport] = set(cc)
         logging.debug("Closing blocking-countries document")
         f.close()
 
     bridges = None
+    state.save()
+    return
 
 def loadConfig(configFile=None, configCls=None):
     """Load configuration settings on top of the current settings.
