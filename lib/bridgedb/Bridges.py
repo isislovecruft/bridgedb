@@ -1046,12 +1046,17 @@ class FilteredBridgeSplitter(BridgeHolder):
                 logging.debug("insert bridge into %s" % n)
 
     def addRing(self, ring, ringname, filterFn, populate_from=None):
-        """Add a ring to this splitter.
-        ring -- the ring to add
-        ringname -- a unique string identifying the ring
-        filterFn -- a function whose input is a Bridge, and returns
-        True or False
-        populate_from -- an iterable of Bridges
+        """Add a subring to this hashring.
+
+        :type subring: :class:`BridgeHolder`
+        :param subring: The subring to add.
+        :param string ringname: A unique name for identifying the new
+            subring.
+        :param filterFn: A function whose input is a :class:`Bridge`, and
+            returns True/False based on some filtration criteria.
+        :type populate_from: iterable or None
+        :param populate_from: A group of :class:`Bridge`s. If given, the newly
+            added subring will be populated with these bridges.
         """
         assert isinstance(ring, BridgeHolder)
         assert ringname not in self.filterRings.keys()
