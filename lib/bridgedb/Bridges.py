@@ -645,7 +645,7 @@ class BridgeHolder(object):
     def dumpAssignments(self, f, description=""):
         pass
 
-class BridgeRingParameters:
+class BridgeRingParameters(object):
     """DOCDOC"""
     def __init__(self, needPorts=(), needFlags=()):
         """DOCDOC takes list of port, count"""
