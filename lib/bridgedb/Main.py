@@ -339,9 +339,10 @@ def startup(options, rundir, configFile):
     # the real PIDFILE would get overwritten with the PID of the temporary
     # bridgedb process running the subcommand.
     if config.PIDFILE:
-        f = open(config.PIDFILE, 'w')
-        f.write("%s\n" % os.getpid())
-        f.close()
+        logging.debug("Writing server PID to file: '%s'" % config.PIDFILE)
+        with open(config.PIDFILE, 'w') as pidfile:
+            pidfile.write("%s\n" % os.getpid())
+            pidfile.flush()
 
     # Import Servers after logging is set up. Otherwise, python will create a
     # default handler that logs to the console and ignore further basicConfig
