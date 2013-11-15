@@ -526,10 +526,14 @@ def startup(options, rundir, configFile):
     try:
         logging.info("Starting reactors.")
         reactor.run()
+    except KeyboardInterrupt:
+        logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
+        logging.info("Closing databases...")
         db.close()
         if config.PIDFILE:
             os.unlink(config.PIDFILE)
+        logging.info("Exiting...")
         sys.exit()
 
 def runSubcommand(options, config):
