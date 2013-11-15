@@ -104,8 +104,8 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         # add splitter and cache the default rings
         # plus leave room for dynamic filters
         ring_cache_size  = self.nClusters + len(ipCategories) + 5
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
-                                               max_cached_rings=ring_cache_size)
+        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
+            key2, max_cached_rings=ring_cache_size)
 
         logging.debug("added splitter %s" % self.splitter)
 
