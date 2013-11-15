@@ -291,7 +291,7 @@ def loadProxyList(cfg):
         f.close()
     return ipset
 
-def _reloadFn(*args, **kwargs):
+def _reloadFn():
     """Placeholder callback function for :func:`_handleSIGHUP`."""
     return True
 
@@ -413,7 +413,7 @@ def startup(options, rundir, configFile):
     for pseudoRing in config.FILE_BUCKETS.keys():
         splitter.addPseudoRing(pseudoRing)
 
-    def reload(*args):
+    def reload():
         """Reload settings, proxy lists, and bridges.
 
         The contents of the config file should be compiled (it's roughly 20-30
@@ -491,8 +491,8 @@ def startup(options, rundir, configFile):
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
 
-    # And actually load it to start.
-    reload(options)
+    # And actually load it to start parsing.
+    reload()
 
     # Configure HTTP and/or HTTPS servers.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
