@@ -440,7 +440,6 @@ def parseExtraInfoFile(f):
 
         # get the bridge ID ?
         if line.startswith("extra-info "): #XXX: get the router ID
-            logging.debug("Parsing extra-info line")
             line = line[11:]
             (nickname, ID) = line.split()
             logging.debug("  Parsed Nickname: %s", nickname)
@@ -452,7 +451,6 @@ def parseExtraInfoFile(f):
 
         # get the transport line
         if ID and line.startswith("transport "):
-            logging.debug("  Parsing transport line")
             fields = line[10:].split()
             # [ arglist ] field, optional
             if len(fields) >= 3:
