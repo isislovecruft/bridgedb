@@ -21,6 +21,7 @@ from pprint import pprint
 from twisted.internet import reactor
 
 from bridgedb import crypto
+from bridgedb import persistent
 from bridgedb.parse import options
 
 import bridgedb.Bridges as Bridges
@@ -28,14 +29,6 @@ import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
 import bridgedb.Util as Util
-
-
-class Conf:
-    """A configuration object.  Holds unvalidated attributes."""
-    def __init__(self, **attrs):
-        for key, value in attrs.items():
-            if key.upper() == key:
-                self.__dict__[key] = value
 
 
 def configureLogging(cfg):

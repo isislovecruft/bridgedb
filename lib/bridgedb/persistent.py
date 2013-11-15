@@ -76,6 +76,15 @@ def load(stateCls=None):
         return loaded
 
 
+class Conf(object):
+    """A configuration object.  Holds unvalidated attributes."""
+    def __init__(self, **attrs):
+        for key, value in attrs.items():
+            if key == key.upper():
+                if not key.startswith('__'):
+                    self.__dict__[key] = value
+
+
 class State(jelly.Jellyable):
     """Pickled, jellied storage container for persistent state."""
 
