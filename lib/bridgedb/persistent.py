@@ -238,7 +238,8 @@ class State(jelly.Jellyable):
         any settings which were changed to be attributes of the :class:`State`
         instance.
         """
-        updated = new = []
+        updated = []
+        new = []
 
         for key, value in config.__dict__.items():
             try:
