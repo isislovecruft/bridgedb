@@ -1045,7 +1045,7 @@ class FilteredBridgeSplitter(BridgeHolder):
                 r.insert(bridge)
                 logging.debug("insert bridge into %s" % n)
 
-    def addRing(self, ring, ringname, filterFn, populate_from=None):
+    def addRing(self, subring, ringname, filterFn, populate_from=None):
         """Add a subring to this hashring.
 
         :type subring: :class:`BridgeHolder`
@@ -1060,17 +1060,18 @@ class FilteredBridgeSplitter(BridgeHolder):
         """
         assert isinstance(ring, BridgeHolder)
         assert ringname not in self.filterRings.keys()
-        logging.debug("addRing %s" % ringname)
+        logging.debug("Adding subring '%s' to %s."
+                      % (ringname, self.__class__))
+
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
-        self.filterRings[ringname] = (filterFn,ring)
+        self.filterRings[ringname] = (filterFn, subring)
 
-        # populate ring from an iterable
         if populate_from:
-            logging.debug("populating ring %s" % ringname)
+            logging.info("Populating hashring %s..." % ringname)
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
-                    ring.insert(bridge)
+                    subring.insert(bridge)
 
     def dumpAssignments(self, f, description=""):
         # one ring per filter set
