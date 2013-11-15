@@ -631,7 +631,7 @@ def parseCountryBlockFile(f):
         if ID and address and portlist and countries:
             yield ID, address, portlist, countries
 
-class BridgeHolder:
+class BridgeHolder(object):
     """Abstract base class for all classes that hold bridges."""
     def insert(self, bridge):
         raise NotImplementedError
