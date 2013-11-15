@@ -351,6 +351,7 @@ def startup(options, rundir, configFile):
     os.chdir(rundir)
 
     config = loadConfig(configFile)
+    config.RUN_IN_DIR = rundir
 
     # Set up logging as early as possible. We cannot import from the bridgedb
     # package any of our modules which import :mod:`logging` and start using
@@ -376,7 +377,6 @@ def startup(options, rundir, configFile):
     from bridgedb import persistent
 
     state = persistent.State(config=config)
-    state.RUN_IN_DIR = rundir
 
     from bridgedb import EmailServer
     from bridgedb import HTTPServer
