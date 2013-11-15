@@ -88,8 +88,6 @@ class Conf(object):
 class State(jelly.Jellyable):
     """Pickled, jellied storage container for persistent state."""
 
-    #synchronized = ['load', 'save']
-
     def __init__(self, config=None, **kwargs):
         """Create a persistent state storage mechanism.
 
@@ -117,7 +115,6 @@ class State(jelly.Jellyable):
         if config is not None:
             for key, value in config.__dict__.items():
                 self.__dict__[key] = value
-            #self.config = config
 
         _setState(self)
 
