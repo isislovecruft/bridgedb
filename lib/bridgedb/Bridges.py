@@ -1038,12 +1038,11 @@ class FilteredBridgeSplitter(BridgeHolder):
             return
 
         self.bridges.append(bridge)
-
-        # insert in all matching rings
-        for n,(f,r) in self.filterRings.items():
-            if f(bridge):
-                r.insert(bridge)
-                logging.debug("insert bridge into %s" % n)
+        for ringname, (filterFn, subring) in self.filterRings.items():
+            if filterFn(bridge):
+                subring.insert(bridge)
+                logging.debug("Inserted bridge '%s' into '%s' sub hashring"
+                              % (bridge.getID(), ringname))
 
     def addRing(self, subring, ringname, filterFn, populate_from=None):
         """Add a subring to this hashring.
