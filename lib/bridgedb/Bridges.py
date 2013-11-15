@@ -1023,6 +1023,14 @@ class FilteredBridgeSplitter(BridgeHolder):
         self.filterRings = {}
 
     def insert(self, bridge):
+        """Insert a bridge into all appropriate sub-hashrings.
+
+        For all sub-hashrings, the ``bridge`` will only be added iff it passes
+        the filter functions for that sub-hashring.
+
+        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :param bridge: The bridge to add.
+        """
         if not bridge.running:
             logging.debug("insert non-running bridge %s" % bridge.getID())
             return
