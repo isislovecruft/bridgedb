@@ -167,41 +167,112 @@ def load(cfg, splitter, clear=False):
 
     bridges = None
 
-def loadConfig(options, config=None):
+def loadConfig(configFile=None, configCls=None):
     """Load configuration settings on top of the current settings.
 
-    :type options: :class:`bridgedb.opt.MainOptions`
-    :param options: A pre-parsed options class containing any arguments and
-        options given in the commandline we were called with.
-    :type config: :class:`bridgedb.Main.Conf` or None
-    :param config: The current configuration.
+    All pathnames and filenames within settings in the ``configFile`` will be
+    expanded, and their expanded values will be stored in the returned
+    :class:`config <Conf>` object.
 
+    ** Note: **
+    On the strange-looking use of
+      ``exec compile(open(configFile).read(), '<string>', 'exec') in dict()``
+    in this function:
+
+    The contents of the config file should be compiled first, and then
+    ``exec``ed -- not ``execfile``! -- in order to get the contents of the
+    config file to exist within the scope of the configuration dictionary.
+    Otherwise, Python *will* default_ to executing the config file directly
+    within the ``globals()`` scope.
+
+    Additionally, it's roughly 20-30 times faster_ to use the ``compile``
+    builtin on a string (the contents of the file) before ``exec``ing it, than
+    using ``execfile`` directly on the file.
+
+    .. _default: http://stackoverflow.com/q/17470193
+    .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
+
+    :ivar boolean itsSafeToUseLogging: This is called in :func:`startup`
+        before :func:`configureLogging`. When called from ``startup``, the
+        ``configCls`` parameter is not given, because that is the first time
+        that a :class:`Conf` is created. If a :class:`logging.Logger` is
+        created in this function, then logging will not be correctly
+        configured, therefore, if the ``configCls`` parameter is not given,
+        then it's the first time this function has been called and it is
+        therefore not safe to make calls to the logging module.
+    :type: configFile: string or None
+    :param string configFile: If given, the filename of the config file to
+        load.
+    :type configCls: :class:`bridgedb.Main.Conf` or None
+    :param configCls: The current configuration, if one already exists.
     :rtype: :class:`Conf`
     :returns: A new configuration, with the old settings as defaults, and the
         settings from the config file overriding them.
     """
+    itsSafeToUseLogging = False
     configuration = {}
 
-    if config:
-        oldConfig = config.__dict__
+    if configCls:
+        itsSafeToUseLogging = True
+        oldConfig = configCls.__dict__
         configuration.update(**oldConfig) # Load current settings
         logging.info("Reloading over in-memory configurations...")
 
-    logging.debug("Old configuration settings:\n%s"
-                  % pprint(configuration, depth=4))
+    if (len(configuration) > 0) and itsSafeToUseLogging:
+        logging.debug("Old configuration settings:\n%s"
+                      % pprint(configuration, depth=4))
 
-    if options['config']:
-        configFile = options['config']
-        logging.info("Loading settings from config file: '%s'" % configFile)
-        compiled = compile(open(configFile).read(), '<string>', 'exec')
+    conffile = configFile
+    if (configFile is None) and ('CONFIG_FILE' in configuration):
+        conffile = configuration['CONFIG_FILE']
+
+    if conffile is not None:
+        if itsSafeToUseLogging:
+            logging.info("Loading settings from config file: '%s'" % conffile)
+        compiled = compile(open(conffile).read(), '<string>', 'exec')
         exec compiled in configuration
 
-    logging.debug("New configuration settings:\n%s"
-                  % pprint(configuration, depth=4))
+    if itsSafeToUseLogging:
+        logging.debug("New configuration settings:\n%s"
+                      % pprint(configuration, depth=4))
 
     # Create a :class:`Conf` from the settings stored within the local scope
     # of the ``configuration`` dictionary:
-    config = Conf(**configuration)
+    config = persistent.Conf(**configuration)
+
+    # We want to set the updated/expanded paths for files on the ``config``,
+    # because the copy of this config, `state.config` is used later to compare
+    # with a new :class:`Conf` instance, to see if there were any changes.
+    #
+    # See :meth:`bridgedb.persistent.State.useUpdatedSettings`.
+
+    for attr in ["PROXY_LIST_FILES", "BRIDGE_FILES", "EXTRA_INFO_FILES"]:
+        setting = getattr(config, attr, None)
+        if setting is None:
+            setattr(config, attr, []) # If they weren't set, make them lists
+        else:
+            setattr(config, attr, # If they were set, expand the paths:
+                    [os.path.abspath(os.path.expanduser(f)) for f in setting])
+
+    for attr in ["DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE", "PIDFILE",
+                 "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
+                 "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE"]:
+        setting = getattr(config, attr, None)
+        if setting is None:
+            setattr(config, attr, setting)
+        else:
+            setattr(config, attr, os.path.abspath(os.path.expanduser(setting)))
+
+    for attr in ["FORCE_PORTS", "FORCE_FLAGS"]:
+        setting = getattr(config, attr, []) # Default to empty lists
+        setattr(config, attr, setting)
+
+    for domain in config.EMAIL_DOMAINS:
+        config.EMAIL_DOMAIN_MAP[domain] = domain
+
+    if conffile: # Store the pathname of the config file, if one was used
+        config.CONFIG_FILE = os.path.abspath(os.path.expanduser(conffile))
+
     return config
 
 def loadProxyList(cfg):
@@ -237,26 +308,23 @@ class ProxyCategory:
     def replaceProxyList(self, ipset):
         self.ipset = ipset
 
-
-def startup(cfg, options):
+def startup(options, rundir, configFile):
     """Parse bridges,
     """
-    # Expand any ~ characters in paths in the configuration.
-    cfg.BRIDGE_FILES = [ os.path.expanduser(fn) for fn in cfg.BRIDGE_FILES ]
-    for key in ("RUN_IN_DIR", "DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE",
-                "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
-                "PIDFILE", "LOGFILE", "STATUS_FILE"):
+    # Change to the directory where we're supposed to run. This must be done
+    # before parsing the config file, otherwise there will need to be two
+    # copies of the config file, one in the directory BridgeDB is started in,
+    # and another in the directory it changes into.
+    os.chdir(rundir)
 
-        v = getattr(cfg, key, None)
-        if v:
-            setattr(cfg, key, os.path.expanduser(v))
-    if hasattr(cfg, "PROXY_LIST_FILES"):
-        cfg.PROXY_LIST_FILES = [os.path.abspath(os.path.expanduser(fn))
-                                for fn in cfg.PROXY_LIST_FILES]
-    else:
-        cfg.PROXY_LIST_FILES = []
+    cfg = loadConfig(configFile)
 
-    # Set up logging.
+    # Set up logging as early as possible. We cannot import from the bridgedb
+    # package any of our modules which import :mod:`logging` and start using
+    # it, at least, not until :func:`configureLogging` is called. Otherwise a
+    # default handler that logs to the console will be created by the imported
+    # module, and all further calls to :func:`logging.basicConfig` will be
+    # ignored.
     configureLogging(cfg)
 
     if options['dump-bridges'] or (options.subCommand is not None):
@@ -489,27 +557,12 @@ def run(options):
     :param options: A pre-parsed options class containing any arguments and
         options given in the commandline we were called with.
     """
-    configuration = {}
-    rundir = os.getcwd()
-
     if not options['config']:
         options.getUsage()
         sys.exit(1)
-
+    else:
+        configFile = os.path.abspath(os.path.expanduser(options['config']))
     if options['rundir']:
         rundir = os.path.abspath(os.path.expanduser(options['rundir']))
 
-    # Change to the directory where we're supposed to run. This must be done
-    # before parsing the config file, otherwise there will need to be two
-    # copies of the config file, one in the directory BridgeDB is started in,
-    # and another in the directory it changes into.
-    os.chdir(rundir)
-
-    compiled = compile(open(options['config']).read(), '<string>', 'exec')
-    exec compiled in configuration
-    cfg = Conf(**configuration)
-
-    # Store the rundir in case it needs to be used again later:
-    cfg.RUNDIR = rundir
-
-    startup(cfg, options)
+    startup(options, rundir, configFile)
