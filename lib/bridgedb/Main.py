@@ -344,6 +344,11 @@ def startup(options, rundir, configFile):
             pidfile.write("%s\n" % os.getpid())
             pidfile.flush()
 
+    from bridgedb import persistent
+
+    state = persistent.State(config=config)
+    state.RUN_IN_DIR = rundir
+
     from bridgedb import EmailServer
     from bridgedb import HTTPServer
 
@@ -352,6 +357,7 @@ def startup(options, rundir, configFile):
 
     # Initialize our DB file.
     db = bridgedb.Storage.Database(config.DB_FILE + ".sqlite", config.DB_FILE)
+    # TODO: move setGlobalDB to bridgedb.persistent.State class
     bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
@@ -413,6 +419,11 @@ def startup(options, rundir, configFile):
     for pseudoRing in config.FILE_BUCKETS.keys():
         splitter.addPseudoRing(pseudoRing)
 
+    # Save our state
+    state.proxyList = proxyList
+    state.key = key
+    state.save()
+
     def reload():
         """Reload settings, proxy lists, and bridges.
 
@@ -448,17 +459,26 @@ def startup(options, rundir, configFile):
         logging.debug("Caught SIGHUP")
         logging.info("Reloading...")
 
-        cfg = loadConfig(options, cfg)
+        logging.info("Loading saved state...")
+        state = persistent.load()
+        cfg = loadConfig(state.CONFIG_FILE, state.config)
+        logging.info("Updating any changed settings...")
+        state.useChangedSettings(cfg)
 
-        # update loglevel on (re)load
-        level = getattr(cfg, 'LOGLEVEL', 'WARNING')
+        level = getattr(state, 'LOGLEVEL', 'WARNING')
+        logging.info("Updating log level to: '%s'" % level)
         level = getattr(logging, level)
         logging.getLogger().setLevel(level)
 
-        load(cfg, splitter, clear=True)
-        proxyList.replaceProxyList(loadProxyList(cfg))
-        logging.info("%d bridges loaded", len(splitter))
-        if emailDistributor:
+        logging.debug("Saving state again before reparsing descriptors...")
+        state.save()
+
+        state = persistent.load()
+        logging.info("Bridges loaded: %d" % len(splitter))
+        logging.debug("Replacing the list of open proxies...")
+        state.proxyList.replaceProxyList(loadProxyList(cfg))
+
+        if emailDistributor is not None:
             logging.debug("Prepopulating email distributor hashrings...")
             emailDistributor.prepopulateRings() # create default rings
             logging.info("Bridges allotted for email distribution: %d"
@@ -477,15 +497,18 @@ def startup(options, rundir, configFile):
         # Dump bridge pool assignments to disk.
         try:
             logging.debug("Dumping pool assignments to file: '%s'"
-                          % cfg.ASSIGNMENTS_FILE)
-            f = open(cfg.ASSIGNMENTS_FILE, 'a')
-            f.write("bridge-pool-assignment %s\n" %
-                    time.strftime("%Y-%m-%d %H:%M:%S"))
-            splitter.dumpAssignments(f)
-            f.flush()
-            f.close()
+                          % state.ASSIGNMENTS_FILE)
+            fh = open(state.ASSIGNMENTS_FILE, 'a')
+            fh.write("bridge-pool-assignment %s\n" %
+                     time.strftime("%Y-%m-%d %H:%M:%S"))
+            splitter.dumpAssignments(fh)
+            fh.flush()
+            fh.close()
         except IOError:
-            logging.info("I/O error while writing assignments")
+            logging.info("I/O error while writing assignments to: '%s'"
+                         % state.ASSIGNMENTS_FILE)
+
+        state.save()
 
     global _reloadFn
     _reloadFn = reload
