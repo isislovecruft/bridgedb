@@ -1032,7 +1032,9 @@ class FilteredBridgeSplitter(BridgeHolder):
         :param bridge: The bridge to add.
         """
         if not bridge.running:
-            logging.debug("insert non-running bridge %s" % bridge.getID())
+            logging.warn(
+                "Skipping hashring insertion for non-running bridge: '%s'"
+                % bridge.getID())
             return
 
         self.bridges.append(bridge)
