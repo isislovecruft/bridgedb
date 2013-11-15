@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
