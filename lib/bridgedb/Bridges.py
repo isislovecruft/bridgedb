@@ -867,9 +867,17 @@ class FixedBridgeSplitter(BridgeHolder):
             total += len(ring)
         return total
 
-    def dumpAssignments(self, f, description=""):
+    def dumpAssignments(self, filename, description=""):
+        """Write all bridges assigned to this hashring to ``filename``.
+
+        :param string description: If given, include a description next to the
+            index number of the ring from :attr:`FilteredBridgeHolder.rings`
+            the following bridges were assigned to. For example, if the
+            description is ``"IPv6 obfs2 bridges"`` the line would read:
+            ``"IPv6 obfs2 bridges ring=3"``.
+        """
         for i,r in zip(xrange(len(self.rings)), self.rings):
-            r.dumpAssignments(f, "%s ring=%s" % (description, i))
+            r.dumpAssignments(filename, "%s ring=%s" % (description, i))
 
 class UnallocatedHolder(BridgeHolder):
     """A pseudo-bridgeholder that ignores its bridges and leaves them
