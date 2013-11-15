@@ -658,9 +658,31 @@ class BridgeRingParameters(object):
     .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696
     """
 
-    def __init__(self, needPorts=(), needFlags=()):
-        """DOCDOC takes list of port, count"""
-        for port,count in needPorts:
+    def __init__(self, needPorts=[], needFlags=[]):
+        """Control the creation of subrings by including a minimum number of
+        bridges which possess certain attributes.
+
+        XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which
+            reads: "Only 'stable' is now supported." Is this still the case?
+            Why?
+
+        :type needPorts: iterable
+        :param needPorts: An iterable of two-tuples. Each two tuple should
+            contain ``(port, minimum)``, where ``port`` is an integer
+            specifying a port number, and ``minimum`` is another integer
+            specifying the minimum number of Bridges running on that ``port``
+            to include in any new subring.
+        :type needFlags: iterable
+        :param needFlags: An iterable of two-tuples. Each two tuple should
+            contain ``(flag, minimum)``, where ``flag`` is a string specifying
+            an OR flag_, and ``minimum`` is an integer for the minimum number
+            of Bridges which have acquired that ``flag`` to include in any new
+            subring.
+        :raises: An :exc:`TypeError` if an invalid port number, a minimum less
+            than one, or an "unsupported" flag is given. "Stable" appears to
+            be the only currently "supported" flag.
+        """
+        for port, count in needPorts:
             if not (1 <= port <= 65535):
                 raise TypeError("Port %s out of range."%port)
             if count <= 0:
