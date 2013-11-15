@@ -706,7 +706,10 @@ class BridgeRing(BridgeHolder):
     ##   sortedKeys: a list of all the hmacs, in order.
     ##   name: a string to represent this ring in the logs.
     def __init__(self, key, answerParameters=None):
-        """Create a new BridgeRing, using key as its hmac key."""
+        """Create a new BridgeRing, using key as its hmac key.
+
+        :ivar list subrings: XXX
+        """
         self.bridges = {}
         self.bridgesByID = {}
         self.hmac = get_hmac_fn(key, hex=False)
