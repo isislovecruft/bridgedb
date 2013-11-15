@@ -480,8 +480,10 @@ def startup(options, rundir, configFile):
             emailDistributor.prepopulateRings() # create default rings
             logging.info("Bridges allotted for email distribution: %d"
                          % len(emailDistributor.splitter))
+        else:
+            logging.warn("No email distributor created!")
 
-        if ipDistributor:
+        if ipDistributor is not None:
             logging.debug("Prepopulating HTTPS distributor hashrings...")
             ipDistributor.prepopulateRings() # create default rings
             logging.info("Bridges allotted for web distribution: %d"
