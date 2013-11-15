@@ -646,7 +646,18 @@ class BridgeHolder(object):
         pass
 
 class BridgeRingParameters(object):
-    """DOCDOC"""
+    """Store validated settings on minimum number of Bridges with certain
+    attributes which should be included in any generated subring of a
+    hashring.
+
+    :ivar list needPorts: List of two-tuples of desired port numbers and their
+        respective minimums.
+    :ivar list needFlags: List of two-tuples of desired flags_ assigned to a
+        Bridge by the Bridge DirAuth.
+
+    .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696
+    """
+
     def __init__(self, needPorts=(), needFlags=()):
         """DOCDOC takes list of port, count"""
         for port,count in needPorts:
