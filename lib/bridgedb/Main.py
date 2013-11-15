@@ -549,7 +549,7 @@ def runSubcommand(options, config):
     # mentioned above with the EmailServer and HTTPServer.
     from bridgedb import runner
 
-    if options('dump-bridges'):
+    if options['dump-bridges']:
         runner.doDumpBridges(config)
 
     if options.subCommand is not None:
