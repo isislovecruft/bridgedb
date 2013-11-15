@@ -42,26 +42,56 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     return n_bridges_per_answer
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
-    """Object that hands out bridges based on the IP address of an incoming
-       request and the current time period.
+    """A Distributor that hands out bridges based on the IP address of an
+    incoming request and the current time period.
+
+    :ivar areaOrderHmac: An HMAC function used to order areas within rings.
+    :ivar areaClusterHmac: An HMAC function used to assign areas to rings.
+    :ivar list rings: A list of :class:`bridgedb.Bridges.BridgeHolder`
+        hashrings, one for each area in the ``areaMapper``. Every inserted
+        bridge will go into one of these rings, and every area is associated
+        with one.
+    :ivar categories: DOCDOC See :param:`ipCategories`.
+    :type splitter: :class:`bridgedb.Bridges.FixedBridgeSplitter`
+    :ivar splitter: A hashring that assigns bridges to subrings with fixed
+        proportions. Used to assign bridges into the subrings of this
+        distributor.
     """
-    ## Fields:
-    ##    areaMapper -- a function that maps an IP address to a string such
-    ##        that addresses mapping to the same string are in the same "area".
-    ##    rings -- a list of BridgeRing objects.  Every bridge goes into one
-    ##        of these rings, and every area is associated with one.
-    ##    splitter -- a FixedBridgeSplitter to assign bridges into the
-    ##        rings of this distributor.
-    ##    areaOrderHmac -- an hmac function used to order areas within rings.
-    ##    areaClusterHmac -- an hmac function used to assign areas to rings.
-    def __init__(self, areaMapper, nClusters, key, ipCategories=(), answerParameters=None):
+
+    def __init__(self, areaMapper, nClusters, key,
+                 ipCategories=None, answerParameters=None):
+        """Create a Distributor that decides which bridges to distribute based
+        upon the client's IP address and the current time.
+
+        :type areaMapper: callable
+        :param areaMapper: A function that maps IP addresses arbitrarily to
+            strings, such that addresses which map to identical strings are
+            considered to be in the same "area" (for some arbitrary definition
+            of "area"). See :func:`bridgedb.Dist.uniformMap` for an example.
+        :param integer nClusters: The number of clusters to group IP addresses
+            into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then
+            the actual number of clusters is one higher than ``nClusters``,
+            because the set of known open proxies constitutes its own
+            category.
+            DOCDOC What exactly does a cluster *do*?
+        :param bytearray key: The master HMAC key for this distributor. All
+            added bridges are HMACed with this key in order to place them into
+            the hashrings.
+        :type ipCategories: iterable or None
+        :param ipCategories: DOCDOC
+        :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
+        :param answerParameters: A mechanism for ensuring that the set of
+            bridges that this distributor answers a client with fit certain
+            parameters, i.e. that an answer has "at least two obfsproxy
+            bridges" or "at least one bridge on port 443", etc.
+        """
         self.areaMapper = areaMapper
         self.nClusters = nClusters
         self.answerParameters = answerParameters
 
         self.rings = []
 
-        self.categories = [] #DOCDOC 
+        self.categories = []
         for c in ipCategories:
             self.categories.append(c)
 
