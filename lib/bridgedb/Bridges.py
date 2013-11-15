@@ -862,10 +862,10 @@ class FixedBridgeSplitter(BridgeHolder):
 
     def __len__(self):
         """Returns the total number of bridges in all ``rings``."""
-        n = 0
-        for r in self.rings:
-            n += len(r)
-        return n
+        total = 0
+        for ring in self.rings:
+            total += len(ring)
+        return total
 
     def dumpAssignments(self, f, description=""):
         for i,r in zip(xrange(len(self.rings)), self.rings):
