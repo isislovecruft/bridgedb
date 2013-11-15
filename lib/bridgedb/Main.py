@@ -495,6 +495,8 @@ def startup(options, rundir, configFile):
 
         logging.debug("Saving state again before reparsing descriptors...")
         state.save()
+        logging.info("Reparsing bridge descriptors...")
+        reactor.callInThread(load, state, splitter, clear=False)
 
         state = persistent.load()
         logging.info("Bridges loaded: %d" % len(splitter))
