@@ -517,13 +517,11 @@ def startup(options, rundir, configFile):
     # And actually load it to start parsing.
     reload()
 
-    # Configure HTTP and/or HTTPS servers.
-    if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
-        HTTPServer.addWebServer(cfg, ipDistributor, webSchedule)
-
-    # Configure Email servers.
-    if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
-        EmailServer.addSMTPServer(cfg, emailDistributor, emailSchedule)
+    # Configure all servers:
+    if config.HTTPS_DIST and config.HTTPS_SHARE:
+        HTTPServer.addWebServer(config, ipDistributor, webSchedule)
+    if config.EMAIL_DIST and config.EMAIL_SHARE:
+        EmailServer.addSMTPServer(config, emailDistributor, emailSchedule)
 
     # Actually run the servers.
     try:
@@ -531,8 +529,8 @@ def startup(options, rundir, configFile):
         reactor.run()
     finally:
         db.close()
-        if cfg.PIDFILE:
-            os.unlink(cfg.PIDFILE)
+        if config.PIDFILE:
+            os.unlink(config.PIDFILE)
         sys.exit()
 
 def runSubcommand(options, config):
