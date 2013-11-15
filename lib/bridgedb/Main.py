@@ -588,7 +588,7 @@ def runSubcommand(options, config):
 
         if 'descriptors' in options.subOptions:
             runner.generateDescriptors(options.subOptions['descriptors'],
-                                       config.RUNDIR)
+                                       config.RUN_IN_DIR)
 
         if options.subCommand == 'test':
             if options.subOptions['trial']:
