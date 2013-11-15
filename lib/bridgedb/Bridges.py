@@ -876,8 +876,8 @@ class FixedBridgeSplitter(BridgeHolder):
             description is ``"IPv6 obfs2 bridges"`` the line would read:
             ``"IPv6 obfs2 bridges ring=3"``.
         """
-        for i,r in zip(xrange(len(self.rings)), self.rings):
-            r.dumpAssignments(filename, "%s ring=%s" % (description, i))
+        for index, ring in zip(xrange(len(self.rings)), self.rings):
+            ring.dumpAssignments(filename, "%s ring=%s" % (description, index))
 
 class UnallocatedHolder(BridgeHolder):
     """A pseudo-bridgeholder that ignores its bridges and leaves them
