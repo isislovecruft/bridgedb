@@ -106,8 +106,8 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         ring_cache_size  = self.nClusters + len(ipCategories) + 5
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=ring_cache_size)
-
-        logging.debug("added splitter %s" % self.splitter)
+        logging.debug("Added splitter %s to IPBasedDistributor."
+                      % self.splitter.__class__)
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
