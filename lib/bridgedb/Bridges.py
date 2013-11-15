@@ -730,7 +730,10 @@ class BridgeRing(BridgeHolder):
         self.setName("Ring")
 
     def setName(self, name):
-        """DOCDOC"""
+        """Tag a unique name to this hashring for identification.
+
+        :param string name: The name for this hashring.
+        """
         self.name = name
         for tp,val,_,subring in self.subrings:
             if tp == 'port':
