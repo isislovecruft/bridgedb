@@ -1057,11 +1057,17 @@ class FilteredBridgeSplitter(BridgeHolder):
         :param populate_from: A group of :class:`Bridge`s. If given, the newly
             added subring will be populated with these bridges.
         """
-        assert isinstance(ring, BridgeHolder)
-        assert ringname not in self.filterRings.keys()
-        logging.debug("Adding subring '%s' to %s."
-                      % (ringname, self.__class__))
+        if not isinstance(subring, BridgeHolder):
+            logging.fatal("Can't add '%s' to %s because '%s' isn't a hashring."
+                          % (ringname, self.__class__, ringname))
+            return False
+        if ringname in self.filterRings.keys():
+            logging.fatal("Hashring %s already has a subring named '%s'!"
+                          % (self.__class__, ringname))
+            return False
 
+        logging.debug("Adding subring '%s' to hashring %s..."
+                      % (ringname, self.__class__))
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
         self.filterRings[ringname] = (filterFn, subring)
