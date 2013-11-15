@@ -427,34 +427,31 @@ def startup(options, rundir, configFile):
     def reload():
         """Reload settings, proxy lists, and bridges.
 
-        The contents of the config file should be compiled (it's roughly 20-30
-        times faster to use the ``compile`` builtin on a string before
-        ``exec``ing it) first, and then ``exec``ed -- not ``execfile``! -- in
-        order to get the contents of the config file to exist within the scope
-        of the configuration object. Otherwise, Python *will* default to
-        placing them directly within the ``globals()`` scope.
+        State should be saved before calling this method, and will be saved
+        again at the end of it.
 
-        For a more detailed explanation, see http://stackoverflow.com/q/17470193
-        and http://lucumr.pocoo.org/2011/2/1/exec-in-python/
+        The internal variables, ``cfg``, ``splitter``, ``proxyList``,
+        ``ipDistributor``, and ``emailDistributor`` are all taken from a
+        :class:`~bridgedb.persistent.State` instance, which has been saved to
+        a statefile with :meth:`bridgedb.persistent.State.save`.
 
         :type cfg: :class:`Conf`
-        :param cfg: The current configuration, including any in-memory
+        :ivar cfg: The current configuration, including any in-memory
             settings (i.e. settings whose values were not obtained from the
             config file, but were set via a function somewhere)
-        :type options: :class:`twisted.python.usage.Options`
-        :param options: Any commandline options.
-
-        :param splitter: XXX
-
+        :type splitter: A :class:`bridgedb.Bridges.BridgeHolder`
+        :ivar splitter: A class which takes an HMAC key and splits bridges
+            into their hashring assignments.
         :type proxyList: :class:`ProxyCategory`
-        :param proxyList: The container for the IP addresses of any currently
+        :ivar proxyList: The container for the IP addresses of any currently
              known open proxies.
-
-        :param IPDistributor: A :class:`Dist.IPBasedDistributor`.
-        :param emailDistributor: A :class:`Dist.EmailDistributor`.
-        :param dict tasks: A dictionary of {'name': Task}, where Task is some
+        :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.
+        :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
+        :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
+            string to associate with the ``task``, and ``task`` is some
             scheduled event, repetitive or otherwise, for the :class:`reactor
-            <twisted.internet.epollreactor.EPollReactor>`
+            <twisted.internet.epollreactor.EPollReactor>`. See the classes
+            within the :mod:`twisted.internet.tasks` module.
         """
         logging.debug("Caught SIGHUP")
         logging.info("Reloading...")
