@@ -20,6 +20,9 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
+from bridgedb.parse import networkstatus
+
+
 HEX_FP_LEN = 40
 ID_LEN = 20
 
@@ -483,58 +486,50 @@ def parseExtraInfoFile(f):
         if ID and line.startswith("router-signature"):
             ID = None
 
-def parseStatusFile(f):
-    """DOCDOC"""
-    timestamp = ID = None
-    num_or_address_lines = 0
+def parseStatusFile(networkstatusFile):
+    """Parse entries in a bridge networkstatus file.
+
+    :type networkstatusFile: A file-like object.
+    :param networkstatusFile: A file containing `@type bridge-networkstatus` documents.
+    """
+    (nickname, ID, descDigest, timestamp,
+     ORaddr, ORport, dirport, addr, portlist) = (None for x in xrange(9))
+    running = stable = False
+    parsedORAddressLines = 0
     or_addresses = {}
-    for line in f:
-        if not ID:
-            logging.debug("Parsing network status line")
+
+    for line in networkstatusFile:
         line = line.strip()
         if line.startswith("opt "):
             line = line[4:]
 
         if line.startswith("r "):
-            try:
-                ID = binascii.a2b_base64(line.split()[2]+"=")
-                timestamp = time.mktime(time.strptime(
-                    " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
-                    )
-                logging.debug("  Fingerprint: %s", toHex(ID))
-                logging.debug("  Timestamp: %s", timestamp)
-            except binascii.Error:
-                logging.warn("  Unparseable base64 ID %r", line.split()[2])
-            except ValueError:
-                timestamp = None
-                logging.debug("  Timestamp; Invalid")
+            (nickname, ID, descDigest, timestamp,
+             ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
 
         elif ID and line.startswith("a "):
-            if num_or_address_lines < 8:
-                line = line[2:]
-                try:
-                    address,portlist = parseORAddressLine(line)
-                    logging.debug("  Parsed address: %s", address)
-                    logging.debug("  Parsed port(s): %s", portlist)
-                except ParseORAddressError:
-                    logging.debug("  Failed to Parsed address: %s", address)
-                try:
-                    or_addresses[address].add(portlist)
-                except KeyError:
-                    or_addresses[address] = portlist
+            try:
+                addr, portlist = networkstatus.parseALine(line, toHex(ID))
+            except networkstatus.ParseNetstatusError as error:
+                logging.error(error.message)
             else:
-                logging.warn("  Skipping extra or-address line "\
-                             "from Bridge with ID %r" % ID)
-            num_or_address_lines += 1
+
+            try: or_addresses[addr].add(portlist)
+            except KeyError: or_addresses[addr] = portlist
+            parsedORAddressLines += 1
 
         elif ID and timestamp and line.startswith("s "):
-            flags = line.split()
-            logging.debug("  Parsed Flags: %s", flags)
-            yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
-            timestamp = ID = None
-            logging.debug("  Total: %d OR address lines", num_or_address_lines)
-            num_or_address_lines = 0
+            running, stable = networkstatus.parseSLine(line)
+
+            yield ID, running, stable, or_addresses, timestamp
+
+            (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
+             addr, portlist) = (None for x in xrange(9))
+            running = stable = False
             or_addresses = {}
+
+    logging.debug("Total ORAddress lines parsed from '%s': %d"
+                  % (networkstatusFile.name, parsedORAddressLines))
 
 def parseCountryBlockFile(f):
     """Generator. Parses a blocked-bridges file 'f', and yields
