@@ -321,7 +321,7 @@ def startup(options, rundir, configFile):
     # and another in the directory it changes into.
     os.chdir(rundir)
 
-    cfg = loadConfig(configFile)
+    config = loadConfig(configFile)
 
     # Set up logging as early as possible. We cannot import from the bridgedb
     # package any of our modules which import :mod:`logging` and start using
@@ -329,17 +329,17 @@ def startup(options, rundir, configFile):
     # default handler that logs to the console will be created by the imported
     # module, and all further calls to :func:`logging.basicConfig` will be
     # ignored.
-    configureLogging(cfg)
+    configureLogging(config)
 
     if options['dump-bridges'] or (options.subCommand is not None):
-        runSubcommand(options, cfg)
+        runSubcommand(options, config)
 
     # Write the pidfile only after any options.subCommands are run (because
     # these exit when they are finished). Otherwise, if there is a subcommand,
     # the real PIDFILE would get overwritten with the PID of the temporary
     # bridgedb process running the subcommand.
-    if cfg.PIDFILE:
-        f = open(cfg.PIDFILE, 'w')
+    if config.PIDFILE:
+        f = open(config.PIDFILE, 'w')
         f.write("%s\n" % os.getpid())
         f.close()
 
@@ -350,15 +350,15 @@ def startup(options, rundir, configFile):
     from bridgedb import HTTPServer
 
     # Load the master key, or create a new one.
-    key = bridgedb.crypto.getKey(cfg.MASTER_KEY_FILE)
+    key = crypto.getKey(config.MASTER_KEY_FILE)
 
     # Initialize our DB file.
-    db = bridgedb.Storage.Database(cfg.DB_FILE + ".sqlite", cfg.DB_FILE)
+    db = bridgedb.Storage.Database(config.DB_FILE + ".sqlite", config.DB_FILE)
     bridgedb.Storage.setGlobalDB(db)
 
     # Get a proxy list.
     proxyList = ProxyCategory()
-    proxyList.replaceProxyList(loadProxyList(cfg))
+    proxyList.replaceProxyList(loadProxyList(config))
 
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -366,8 +366,8 @@ def startup(options, rundir, configFile):
     logging.debug("Created splitter: %r" % splitter)
 
     # Create ring parameters.
-    forcePorts = getattr(cfg, "FORCE_PORTS")
-    forceFlags = getattr(cfg, "FORCE_FLAGS")
+    forcePorts = getattr(config, "FORCE_PORTS")
+    forceFlags = getattr(config, "FORCE_FLAGS")
     if not forcePorts: forcePorts = []
     if not forceFlags: forceFlags = []
     ringParams=Bridges.BridgeRingParameters(needPorts=forcePorts,
@@ -375,7 +375,7 @@ def startup(options, rundir, configFile):
 
     emailDistributor = ipDistributor = None
     # As appropriate, create an IP-based distributor.
-    if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
+    if config.HTTPS_DIST and config.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
         categories = []
         if proxyList.ipset:
@@ -385,38 +385,35 @@ def startup(options, rundir, configFile):
 
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
-            cfg.N_IP_CLUSTERS,
+            config.N_IP_CLUSTERS,
             Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
             categories,
             answerParameters=ringParams)
-        splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+        splitter.addRing(ipDistributor, "https", config.HTTPS_SHARE)
         #webSchedule = Time.IntervalSchedule("day", 2)
         webSchedule = Time.NoSchedule()
 
     # As appropriate, create an email-based distributor.
-    if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
-        for d in cfg.EMAIL_DOMAINS:
-            cfg.EMAIL_DOMAIN_MAP[d] = d
-        logging.debug("New email domain map: '%s'" % cfg.EMAIL_DOMAIN_MAP)
+    if config.EMAIL_DIST and config.EMAIL_SHARE:
         logging.debug("Setting up Email Distributor...")
         emailDistributor = Dist.EmailBasedDistributor(
             Bridges.get_hmac(key, "Email-Dist-Key"),
-            cfg.EMAIL_DOMAIN_MAP.copy(),
-            cfg.EMAIL_DOMAIN_RULES.copy(),
+            config.EMAIL_DOMAIN_MAP.copy(),
+            config.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
-        splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+        splitter.addRing(emailDistributor, "email", config.EMAIL_SHARE)
         #emailSchedule = Time.IntervalSchedule("day", 1)
         emailSchedule = Time.NoSchedule()
 
     # As appropriate, tell the splitter to leave some bridges unallocated.
-    if cfg.RESERVED_SHARE:
+    if config.RESERVED_SHARE:
         splitter.addRing(Bridges.UnallocatedHolder(),
                          "unallocated",
-                         cfg.RESERVED_SHARE)
+                         config.RESERVED_SHARE)
 
     # Add pseudo distributors to splitter
-    for p in cfg.FILE_BUCKETS.keys():
-        splitter.addPseudoRing(p)
+    for pseudoRing in config.FILE_BUCKETS.keys():
+        splitter.addPseudoRing(pseudoRing)
 
     def reload(*args):
         """Reload settings, proxy lists, and bridges.
