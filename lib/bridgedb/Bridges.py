@@ -1074,9 +1074,13 @@ class FilteredBridgeSplitter(BridgeHolder):
 
         if populate_from:
             logging.info("Populating hashring %s..." % ringname)
+            inserted = 0
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     subring.insert(bridge)
+                    inserted += 1
+            logging.info("Inserted %d bridges into hashring %s!"
+                         % (inserted, ringname))
 
     def dumpAssignments(self, f, description=""):
         # one ring per filter set
