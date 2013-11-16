@@ -254,7 +254,7 @@ class State(jelly.Jellyable):
                     updated.append(key)
                     logging.debug("Updated %s setting: %r → %r"
                                   % (key, self.config.__dict__[key], value))
-            except KeyError:
+            except (KeyError, AttributeError):
                 setattr(self, key, value)
                 new.append(key)
                 logging.debug("New setting: %s = %r" % (key, value))
