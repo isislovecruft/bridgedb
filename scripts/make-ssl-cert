@@ -31,7 +31,7 @@ while [ -h "$THIS_FILE" ]; do
 done
 
 THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
-REPO_PATH=${THIS_PATH%%/maint}
+REPO_PATH=${THIS_PATH%%/scripts}
 
 function usage () {
     printf "Usage: %s\n\n" $NAME
@@ -54,4 +54,6 @@ openssl x509 -req -days 365 -in server.csr -signkey privkey.pem -out cert
 test -f "privkey.nopasswd" && rm -f privkey.nopasswd
 test -f "privkey" && rm -f privkey
 test -f "server.csr" && rm -f server.csr
-echo "Done. Please retrieve the files from $REPO_PATH"
+
+printf "Done. Your private key was saved in ${REPO_PATH}/privkey.pem \n"
+printf "and your certificate is in ${REPO_PATH}/cert \n"
