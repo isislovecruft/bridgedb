@@ -21,6 +21,7 @@ MANIFEST
 
 # Installer logs
 pip-log.txt
+pip-install.log
 installed-files.txt
 
 # Unit test / coverage reports
@@ -85,3 +86,6 @@ lib/bridgedb/_langs.py
 
 # ignore any changes to our GnuPG directory:
 gnupghome/*
+
+# ignore persistent state files
+*bridgedb.state*
