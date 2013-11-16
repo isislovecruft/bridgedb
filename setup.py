@@ -90,19 +90,33 @@ def get_cmdclass():
     return cmdclass
 
 def get_requirements():
-    """Extract the list of requirements from our requirements.txt."""
+    """Extract the list of requirements from our requirements.txt.
+
+    :rtype: 2-tuple
+    :returns: Two lists, the first is a list of requirements in the form of
+        pkgname==version. The second is a list of URIs or VCS checkout strings
+        which specify the dependency links for obtaining a copy of the
+        requirement.
+    """
     requirements_file = os.path.join(os.getcwd(), 'requirements.txt')
     requirements = []
+    links=[]
     try:
         with open(requirements_file) as reqfile:
             for line in reqfile.readlines():
                 line = line.strip()
-                if not line.startswith('#'):
+                if line.startswith('#'):
+                    continue
+                elif line.startswith(
+                        ('https://', 'git://', 'hg://', 'svn://')):
+                    links.append(line)
+                else:
                     requirements.append(line)
-    except OSError as oserr:
-        print(oserr)
 
-    return requirements
+    except (IOError, OSError) as error:
+        print(error)
+
+    return requirements, links
 
 def get_supported_langs():
     """Get the paths for all compiled translation files.
@@ -243,6 +257,13 @@ class runTests(setuptools.Command):
             sys.path = old_path
 
 
+requires, deplinks = get_requirements()
+print('Found requirements:')
+[print('\t%s' % name) for name in requires]
+
+print('Found dependency links:')
+[print('\t%s' % uri) for uri in deplinks]
+
 setuptools.setup(
     name='bridgedb',
     version=versioneer.get_version(),
@@ -264,7 +285,8 @@ setuptools.setup(
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,
-    install_requires=get_requirements(),
+    install_requires=requires,
+    dependency_links=deplinks,
     package_data={'bridgedb': get_data_files(filesonly=True)},
     exclude_package_data={'bridgedb': ['*.po', '*.pot']},
     message_extractors={pkgpath: [
