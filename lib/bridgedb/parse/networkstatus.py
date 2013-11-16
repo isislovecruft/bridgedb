@@ -92,8 +92,8 @@ def parseRLine(line):
 
         if ID.endswith('='):
             raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r: ",
-                "Unpadded, base64-encoded networkstatus router identity ",
+                "Skipping networkstatus parsing for router with nickname %r:"\
+                "\n\tUnpadded, base64-encoded networkstatus router identity "\
                 "string ends with '=': %r" % (nickname, ID))
         try:
             ID = padBase64(ID) # Add the trailing equals sign back in
@@ -103,9 +103,9 @@ def parseRLine(line):
         ID = binascii.a2b_base64(ID) 
         if not ID:
             raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r: ",
-                "Base64-encoding for networkstatus router identity string is ",
-                "invalid! Line: %r" % (nickname, line))
+                "Skipping networkstatus parsing for router with nickname %r:"\
+                "\n\tBase64-encoding for networkstatus router identity string"\
+                "is invalid!\n\tLine: %r" % (nickname, line))
 
     except IndexError as error:
         logging.error(error.message)
