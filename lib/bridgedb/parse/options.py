@@ -4,7 +4,8 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2007-2013, The Tor Project, Inc.
+# :copyright: (c) 2013 Isis Lovecruft
+#             (c) 2007-2013, The Tor Project, Inc.
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
@@ -99,7 +100,9 @@ class TestOptions(BaseOptions):
     longdesc = textwrap.dedent("""BridgeDB testing commands.
     See the `bridgedb mock` command for generating testing environments.""")
 
-    optFlags = [['coverage', 'c', 'Generate coverage statistics']]
+    optFlags = [
+        ['coverage', 'g', 'Generate coverage statistics'],
+        ['trial-coverage', 'G', "Use trial's builtin coverage mechanism"]]
     optParameters = [
         ['file', 'f', None, 'Run tests in specific file(s) (trial only)'],
         ['unittests', 'u', False, 'Run unittests in bridgedb.Tests'],
@@ -107,6 +110,7 @@ class TestOptions(BaseOptions):
 
     completionData = usage.Completions(
         mutuallyExclusive=[('unittests', 'coverage'),
+                           ('unittests', 'trial-coverage'),
                            ('unittests', 'file')],
         optActions={'file': usage.CompleteFiles('lib/bridgedb/test/test_*.py',
                                                 repeat=True,
