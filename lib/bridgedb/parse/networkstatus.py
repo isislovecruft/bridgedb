@@ -41,13 +41,32 @@ class InvalidNetworkstatusRouterIdentity(ValueError):
 class InvalidNetworkstatusDescriptorDigest(ValueError):
     """Descriptor digest of a networkstatus document 'r'-line is invalid."""
 
+class InvalidRouterNickname(ValueError):
+    """Router nickname doesn't follow tor-spec."""
+
+
+ALPHANUMERIC = string.letters + string.digits
+
 
 def isValidRouterNickname(nickname):
     """Determine if a router's given nickname meets the specification.
 
     :param string nickname: An OR's nickname.
     """
-    
+    try:
+        if not (1 <= len(nickname) <= 19):
+            raise InvalidRouterNickname(
+                "Nicknames must be between 1 and 19 characters: %r" % nickname)
+        for letter in nickname:
+            if not letter in ALPHANUMERIC:
+                raise InvalidRouterNickname(
+                    "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
+    except Exception as error:
+        logging.exception(error)
+    else:
+        return True
+
+    raise InvalidRouterNickname
 
 def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
@@ -90,6 +109,8 @@ def parseRLine(line):
     try:
         nickname, ID = fields[:2]
 
+        isValidRouterNickname(nickname)
+
         if ID.endswith('='):
             raise InvalidNetworkstatusRouterIdentity(
                 "Skipping networkstatus parsing for router with nickname %r:"\
@@ -109,6 +130,9 @@ def parseRLine(line):
 
     except IndexError as error:
         logging.error(error.message)
+    except InvalidRouterNickname as error:
+        logging.error(error.message)
+        nickname = None
     except InvalidNetworkstatusRouterIdentity as error:
         logging.error(error.message)
         ID = None
