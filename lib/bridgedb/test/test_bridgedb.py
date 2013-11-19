@@ -18,7 +18,6 @@ import shutil
 import signal
 import time
 
-from functools import wraps
 from os.path import join as pjoin
 from subprocess import Popen, PIPE
 
@@ -26,20 +25,8 @@ from twisted.python import log
 from twisted.python.procutils import which
 from twisted.trial import unittest
 
+from bridgedb.test.util import fileCheckDecorator
 
-def fileCheckDecorator(func):
-    @wraps(func)
-    def wrapper(self, src, dst, description):
-        print("Copying %s:\n  %r\n\t\t↓ ↓ ↓\n  %r\n"
-              % (str(description), src, dst))
-        self.assertTrue(
-            os.path.isfile(src),
-            "Couldn't find original %s file: %r" % (str(description), src))
-        func(self, src, dst, description)
-        self.assertTrue(
-            os.path.isfile(dst),
-            "Couldn't find new %s file: %r" % (str(description), dst))
-    return wrapper
 
 class BridgeDBCliTest(unittest.TestCase):
     """Test the `bridgedb` command."""
