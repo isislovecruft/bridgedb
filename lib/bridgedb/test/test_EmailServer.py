@@ -61,7 +61,9 @@ class EmailGnuPGTest(unittest.TestCase):
         self.runDir   = os.path.join(here, 'rundir')
         self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
         self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
-        os.makedirs(self.runDir)
+
+        if not os.path.isdir(self.runDir):
+            os.makedirs(self.runDir)
 
         configuration = {}
         TEST_CONFIG_FILE.seek(0)
