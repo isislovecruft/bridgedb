@@ -337,21 +337,25 @@ class ProxyCategory:
     def replaceProxyList(self, ipset):
         self.ipset = ipset
 
-def startup(options, rundir, configFile):
+def startup(options):
     """Parse bridges,
 
+    :type options: :class:`bridgedb.parse.options.MainOptions`
+    :param options: A pre-parsed options class containing any arguments and
+        options given in the commandline we were called with.
     :type state: :class:`bridgedb.persistent.State`
-    :param state: A persistent state object which holds options and config
-         changes.
+    :ivar state: A persistent state object which holds config changes.
     """
     # Change to the directory where we're supposed to run. This must be done
     # before parsing the config file, otherwise there will need to be two
     # copies of the config file, one in the directory BridgeDB is started in,
     # and another in the directory it changes into.
-    os.chdir(rundir)
+    os.chdir(options['rundir'])
+    if options['verbosity'] <= 10: # Corresponds to logging.DEBUG
+        print("Changed to runtime directory %r" % os.getcwd())
 
-    config = loadConfig(configFile)
-    config.RUN_IN_DIR = rundir
+    config = loadConfig(options['config'])
+    config.RUN_IN_DIR = options['rundir']
 
     # Set up logging as early as possible. We cannot import from the bridgedb
     # package any of our modules which import :mod:`logging` and start using
@@ -604,16 +608,8 @@ def run(options):
     configuration file, loading and parsing it, and then either
     starting/reloading the servers or dumping bridge assignments to files.
 
-    :type options: :class:`bridgedb.opt.MainOptions`
+    :type options: :class:`bridgedb.parse.options.MainOptions`
     :param options: A pre-parsed options class containing any arguments and
         options given in the commandline we were called with.
     """
-    if not options['config']:
-        options.getUsage()
-        sys.exit(1)
-    else:
-        configFile = os.path.abspath(os.path.expanduser(options['config']))
-    if options['rundir']:
-        rundir = os.path.abspath(os.path.expanduser(options['rundir']))
-
-    startup(options, rundir, configFile)
+    startup(options)

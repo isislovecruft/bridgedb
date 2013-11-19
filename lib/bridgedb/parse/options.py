@@ -19,12 +19,61 @@ from __future__ import unicode_literals
 
 import sys
 import textwrap
+import traceback
 import os
 
 from twisted.python import usage
 
 from bridgedb import __version__
 
+
+#: In :meth:`BaseOptions.findRundirAndConfig`, this is set to the the
+#: absolute path of the ``opts['rundir']`` setting, if given, otherwise it
+#: defaults to the current directory.
+_rundir = None
+
+#: In :meth:`BaseOptions.findRundirAndConfig`, if ``opts['config']`` is
+#: given, this is set to the the absolute path of the ``opts['config']``
+#: settting relative to the ``rundir``, otherwise it defaults to
+#: 'bridgedb.conf' in the current directory.
+_config = None
+
+
+def setConfig(path):
+    """Set the absolute path to the config file.
+
+    See :meth:`BaseOptions.postOptions`.
+
+    :param string path: The path to set.
+    """
+    global _config
+    _config = path
+
+def getConfig():
+    """Get the absolute path to the config file.
+
+    :rtype: string
+    :returns: The path to the config file.
+    """
+    return _config
+
+def setRundir(path):
+    """Set the absolute path to the runtime directory.
+
+    See :meth:`BaseOptions.postOptions`.
+
+    :param string path: The path to set.
+    """
+    global _rundir
+    _rundir = path
+
+def getRundir():
+    """Get the absolute path to the runtime directory.
+
+    :rtype: string
+    :returns: The path to the config file.
+    """
+    return _rundir
 
 def parseOptions():
     """Create the main options parser and its subcommand parsers.
@@ -38,11 +87,18 @@ def parseOptions():
         already parsed.
     """
     options = MainOptions()
+
     try:
         options.parseOptions()
     except usage.UsageError as uerr:
         print(uerr.message)
+        print(options.getUsage())
         sys.exit(1)
+    except Exception as error:
+        exc, value, tb = sys.exc_info()
+        print("Unhandled Error: %s" % error.message)
+        print(traceback.format_exc(tb))
+
     return options
 
 
@@ -53,25 +109,22 @@ class BaseOptions(usage.Options):
     private relays acting as bridges into the Tor network. See `bridgedb
     <command> --help` for addition help.""")
 
-    def opt_rundir(self, rundir):
-        """Change to this directory"""
-        if not rundir:
-            rundir = os.getcwdu()
-        else:
-            try:
-                rundir = os.path.abspath(os.path.expanduser(rundir))
-            except Exception as error:
-                raise usage.UsageError(error.message)
-        if rundir and os.path.isdir(rundir):
-            self['rundir'] = rundir
-    opt_r = opt_rundir
+    optParameters = [
+        ['config', 'c', None,
+         'Configuration file [default: <rundir>/bridgedb.conf]'],
+        ['rundir', 'r', None,
+         """Change to this directory before running. [default: `os.getcwd()']
+
+         All other paths, if not absolute, should be relative to this path.
+         This includes the config file and any further files specified within
+         the config file.
+         """]]
 
     def __init__(self):
         """Create an options parser. All flags, parameters, and attributes of
         this base options parser are inherited by all child classes.
         """
-        usage.Options.__init__(self)
-        self['rundir'] = os.getcwdu()
+        super(BaseOptions, self).__init__()
         self['version'] = self.opt_version
         self['verbosity'] = 30
 
@@ -90,7 +143,84 @@ class BaseOptions(usage.Options):
     def opt_version(self):
         """Display BridgeDB's version and exit."""
         print("%s-%s" % (__package__, __version__))
-        sys.exit()
+        sys.exit(0)
+
+    @staticmethod
+    def findRundirAndConfigFile(rundir=None, config=None):
+        """Find the abspath of the config file and runtime directory, or find
+        suitable defaults.
+
+        Attempts to set the absolute path of the runtime directory. If the
+        config path is relative, its absolute path is set relative to the
+        runtime directory path (unless it starts with '.' or '..', then it is
+        interpreted relative to the current working directory). If the path to
+        the config file is absolute, it is left alone.
+
+        :type rundir: string or None
+        :param rundir: The user-supplied path to the runtime directory, from
+            the commandline options (i.e.
+            ``options = BaseOptions().parseOptions(); options['rundir'];``).
+        :type config: string or None
+        :param config: The user-supplied path to the config file, from the
+            commandline options (i.e.
+            ``options = BaseOptions().parseOptions(); options['config'];``).
+        :raises: :exc:`twisted.python.usage.UsageError` if either the runtime
+            directory or the config file cannot be found.
+        """
+        gRundir = getRundir()
+        gConfig = getConfig()
+
+        if gRundir is None:
+            if rundir is not None:
+                gRundir = os.path.abspath(os.path.expanduser(rundir))
+            else:
+                gRundir = os.getcwdu()
+        setRundir(gRundir)
+
+        if not os.path.isdir(gRundir):
+            raise usage.UsageError(
+                "Could not change to runtime directory: `%s'" % gRundir)
+
+        if gConfig is None:
+            if config is None:
+                config = 'bridgedb.conf'
+            gConfig = config
+
+            if not os.path.isabs(gConfig):
+                if gConfig.startswith('.'): # also covers '..'
+                    gConfig = os.path.abspath(os.path.expanduser(gConfig))
+                else:
+                    gConfig = os.path.join(gRundir, gConfig)
+        setConfig(gConfig)
+
+        gConfig = getConfig()
+        if not os.path.isfile(gConfig):
+            raise usage.UsageError(
+                "Specified config file `%s' doesn't exist!" % gConfig)
+
+    def postOptions(self):
+        """Automatically called by :meth:`parseOptions`.
+
+        Determines appropriate values for the 'config' and 'rundir' settings.
+        """
+        super(BaseOptions, self).postOptions()
+        self.findRundirAndConfigFile(self['rundir'], self['config'])
+
+        gConfig = getConfig()
+        gRundir = getRundir()
+
+        if (self['rundir'] is None) and (gRundir is not None):
+            self['rundir'] = gRundir
+
+        if (self['config'] is None) and (gConfig is not None):
+            self['config'] = gConfig
+
+        if self['verbosity'] <= 10:
+            print("%s.postOptions():" % self.__class__)
+            print("  gCONFIG=%s" % gConfig)
+            print("  self['config']=%s" % self['config'])
+            print("  gRUNDIR=%s" % gRundir)
+            print("  self['rundir']=%s" % self['rundir'])
 
 
 class TestOptions(BaseOptions):
@@ -118,6 +248,7 @@ class TestOptions(BaseOptions):
         """Parse any additional arguments after the options and flags."""
         self['test_args'] = args
 
+
 class MockOptions(BaseOptions):
     """Suboptions for creating necessary conditions for testing purposes."""
 
@@ -133,8 +264,6 @@ class MainOptions(BaseOptions):
     optFlags = [
         ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
         ['reload', 'R', 'Reload bridge descriptors into running servers']]
-    optParameters = [
-        ['config', 'c', 'bridgedb.conf', 'Configuration file']]
     subCommands = [
         ['test', None, TestOptions, "Run twisted.trial tests or unittests"],
         ['mock', None, MockOptions, "Generate a testing environment"]]
