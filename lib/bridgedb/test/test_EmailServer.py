@@ -78,7 +78,9 @@ class EmailGnuPGTest(unittest.TestCase):
 
         XXX: See #5463.
         """
-        self.skipTest("See #5463 for why this test fails when it should pass")
+        raise unittest.SkipTest(
+            "See #5463 for why this test fails when it should pass")
+
         self.doCopyFile(self.gpgFile, self.gpgMoved, "GnuPG test keyfile")
         ctx = EmailServer.getGPGContext(self.config)
         self.assertIsInstance(ctx, EmailServer.gpgme.Context)
