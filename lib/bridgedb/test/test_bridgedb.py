@@ -66,9 +66,9 @@ class BridgeDBCliTest(unittest.TestCase):
         confMoved = pjoin(runDir, 'bridgedb.conf')
         gpgFile   = pjoin(topDir, 'gnupghome', 'TESTING.subkeys.sec')
         gpgMoved  = pjoin(runDir, 'gnupghome', 'TESTING.subkeys.sec')
-        certFile  = pjoin(scriptsDir, 'cert')
+        certFile  = pjoin(topDir, 'cert')
         certMoved = pjoin(runDir, 'cert')
-        keyFile   = pjoin(scriptsDir, 'privkey.pem')
+        keyFile   = pjoin(topDir, 'privkey.pem')
         keyMoved  = pjoin(runDir, 'privkey.pem')
 
         makeSSLCertScript = os.path.join(scriptsDir, 'make-ssl-cert')
@@ -93,14 +93,10 @@ class BridgeDBCliTest(unittest.TestCase):
                           '-n', '50',
                           '-r', runDir])
         mockProcCode = mockProc.wait()
-        #mockProcCode = os.system("%s mock -n 50 -r %s -c bridgedb.conf"
-        #                         % (bridgedbScript, runDir))
         print("`bridgedb mock' exited with status code %d" % int(mockProcCode))
 
         print("Running `bridgedb' to test server startups...")
         bridgedbProc = Popen([bridgedbScript, '-r', runDir])
-        #bridgedbProcCode = os.system("%s -r %s -c bridgedb.conf"
-        #                             % (bridgedbScript, runDir))
         time.sleep(30)
         bridgedbProc.send_signal(signal.SIGINT)
         bridgedbProcCode = bridgedbProc.wait()
