@@ -44,6 +44,7 @@ def generateDescriptors(count=None, rundir=None):
     import os.path
 
     proc = None
+    statuscode = 0
     script = 'gen_bridge_descriptors'
     rundir = rundir if os.path.isdir(rundir) else None
     count = count if count else 3
@@ -56,9 +57,11 @@ def generateDescriptors(count=None, rundir=None):
             if proc.returncode:
                 print("There was an error generating bridge descriptors.",
                       "(Returncode: %d)" % proc.returncode)
+                statuscode = proc.returncode
             else:
-                print("Sucessfully bridge generated descriptors.")
-    del subprocess
+                print("Sucessfully generated %s descriptors." % str(count))
+        del subprocess
+        return statuscode
 
 def runTrial(options):
     """Run Twisted trial based unittests, optionally with coverage.

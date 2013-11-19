@@ -584,6 +584,8 @@ def runSubcommand(options, config):
     # mentioned above with the EmailServer and HTTPServer.
     from bridgedb import runner
 
+    statuscode = 0
+
     if options['dump-bridges']:
         runner.doDumpBridges(config)
 
@@ -591,15 +593,18 @@ def runSubcommand(options, config):
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
 
         if 'descriptors' in options.subOptions:
-            runner.generateDescriptors(options.subOptions['descriptors'],
-                                       config.RUN_IN_DIR)
+            statuscode = runner.generateDescriptors(
+                options.subOptions['descriptors'], config.RUN_IN_DIR)
 
         if options.subCommand == 'test':
             if options.subOptions['trial']:
                 runner.runTrial(options.subOptions)
             if options.subOptions['unittests']:
                 runner.runTests(options.subOptions)
-        raise SystemExit("Subcommand '%s' finished." % options.subCommand)
+
+        logging.info("Subcommand '%s' finished with status %s."
+                     % (options.subCommand, statuscode))
+        sys.exit(statuscode)
 
 def run(options):
     """This is the main entry point into BridgeDB.
