@@ -40,14 +40,12 @@ install:
 #  # For testing with CouchDB
 #  - curl -X PUT localhost:5984/myapp_test
 
-# command to run tests, e.g. python setup.py test
 script:
   - bridgedb mock -n 250
   # Normally, we would do 'bridgedb test' here, but to run with coverage we
   # have to do this instead:
   - coverage run $(which trial) ./lib/bridgedb/test/test_*
   - coverage report
-  - coverage html
   - echo "Build successful."
 
 after_success:
