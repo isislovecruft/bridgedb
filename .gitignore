@@ -89,3 +89,7 @@ gnupghome/*
 
 # ignore persistent state files
 *bridgedb.state*
+
+# ignore coverage results files:
+.coverage
+.coverage.*

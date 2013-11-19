@@ -3,13 +3,10 @@ BeautifulSoup==3.2.1
 Mako==0.8.1
 MarkupSafe==0.18
 Twisted==13.1.0
-coverage==3.6
 https://ipaddr-py.googlecode.com/files/ipaddr-2.1.10.tar.gz#sha1=c608450b077b19773d4f1b5f1ef88b26f6650ce0#egg=ipaddr-2.1.10-py2.7
 pyOpenSSL==0.13.1
 pygeoip==0.2.7
 pygpgme==0.3
 recaptcha==1.0rc1
 recaptcha-client==1.0.6
-sure==1.2.2
-trialcoverage==0.3.12
 zope.interface>=4.0.5
