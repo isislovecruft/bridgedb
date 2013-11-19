@@ -7,7 +7,6 @@ them in rings.
 
 import binascii
 import bisect
-import copy
 import hmac
 import logging
 import re
@@ -83,7 +82,7 @@ def get_hmac_fn(k, hex=True):
        If 'hex' is true, the output of the function will be hex-encoded."""
     h = hmac.new(k, digestmod=DIGESTMOD)
     def hmac_fn(v):
-        h_tmp = copy.deepcopy(h)
+        h_tmp = h.copy()
         h_tmp.update(v)
         if hex:
             return h_tmp.hexdigest()
