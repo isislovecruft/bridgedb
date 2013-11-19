@@ -15,6 +15,7 @@ import time
 import os
 
 from twisted.internet import reactor
+from twisted.internet.error import CannotListenError
 import twisted.web.resource
 from twisted.web.server import Site
 from twisted.web import static
@@ -274,7 +275,10 @@ def addWebServer(cfg, dist, sched):
 
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
-        reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
+        try:
+            reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
+        except CannotListenError as error:
+            raise SystemExit(error)
 
     if cfg.HTTPS_PORT:
         from twisted.internet.ssl import DefaultOpenSSLContextFactory
@@ -282,7 +286,10 @@ def addWebServer(cfg, dist, sched):
         ip = cfg.HTTPS_BIND_IP or ""
         factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
                                                cfg.HTTPS_CERT_FILE)
-        reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
+        try:
+            reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
+        except CannotListenError as error:
+            raise SystemExit(error)
 
     return site
 

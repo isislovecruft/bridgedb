@@ -51,12 +51,16 @@ class StateSaveAndLoadTests(unittest.TestCase):
         self.state.statefile = os.path.abspath('bridgedb.state')
 
     def loadedStateAssertions(self, loadedState):
-        self.assertIsNotNone(loadedState)
+        # For some reason, twisted.trial.unittest.TestCase in Python2.6
+        # doesn't have an 'assertIsNotNone' attribute...
+        self.assertTrue(loadedState is not None)
         self.assertIsInstance(loadedState, persistent.State)
         self.assertNotIdentical(self.state, loadedState)
         self.assertNotEqual(self.state, loadedState)
-        self.assertItemsEqual(self.state.__dict__.keys(),
-                              loadedState.__dict__.keys())
+        # For some reason, twisted.trial.unittest.TestCase in Python2.6
+        # doesn't have an 'assertItemsEqual' attribute...
+        self.assertEqual(self.state.__dict__.keys().sort(),
+                         loadedState.__dict__.keys().sort())
 
     def savedStateAssertions(self, savedStatefile=None):
         self.assertTrue(os.path.isfile(str(self.state.statefile)))

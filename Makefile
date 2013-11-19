@@ -39,3 +39,6 @@ clean:
 	-rm -rf dist
 	-rm -rf lib/bridgedb.egg-info
 	-rm -rf _trial_temp
+
+coverage:
+	-coverage run $(which trial) ./lib/bridgedb/test/test_* && coverage report && coverage html

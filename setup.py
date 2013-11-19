@@ -281,7 +281,7 @@ setuptools.setup(
     scripts=['scripts/bridgedb',
              'scripts/gen_bridge_descriptors'],
     extras_require={'test': ["sure==0.4.5",
-                             "trialcoverage==0.3.12"]},
+                             "coverage==3.6"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,

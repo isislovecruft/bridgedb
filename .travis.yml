@@ -6,7 +6,11 @@ notifications:
       - "irc.oftc.net#tor-bots"
     on_success: always
     on_failure: always
-    use_notice: true
+    #use_notice: true
+  template:
+    - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+    #- "Change view : %{compare_url}"
+    - "Build details : %{build_url}"
   email:
     recipients:
       - isis@torproject.org
@@ -15,7 +19,10 @@ notifications:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential python-dev python-setuptools openssl sqlite3 libgpgme11-dev
+  # Distro development header/library/resource/buildtime dependencies
+  - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential openssl sqlite3 libgpgme11 libgpgme11-dev
+  # Distro python dependencies
+  - sudo apt-get install --no-install-suggests --no-install-recommends python-dev python-setuptools
 
 python:
   - "2.6"
@@ -26,20 +33,20 @@ python:
 
 install:
   - pip install -r requirements.txt --use-mirrors
+  - pip install coverage coveralls sure --use-mirrors
   - make install
 
 #before_script:
 #  # For testing with CouchDB
 #  - curl -X PUT localhost:5984/myapp_test
 
-# command to run tests, e.g. python setup.py test
 script:
-  - chmod u+x scripts/make-ssl-cert
-  - chmod u+x scripts/executioner
-  - ./scripts/make-ssl-cert
   - bridgedb mock -n 250
-  - bridgedb test
-  - ./scripts/executioner 180 bridgedb -c bridgedb.conf
-  # add this when #9199's (or some other trial-based) tests are merged:
-  #- bridgedb test
+  # Normally, we would do 'bridgedb test' here, but to run with coverage we
+  # have to do this instead:
+  - coverage run $(which trial) ./lib/bridgedb/test/test_*
+  - coverage report
   - echo "Build successful."
+
+after_success:
+  - coveralls
