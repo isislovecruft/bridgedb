@@ -51,7 +51,9 @@ class StateSaveAndLoadTests(unittest.TestCase):
         self.state.statefile = os.path.abspath('bridgedb.state')
 
     def loadedStateAssertions(self, loadedState):
-        self.assertIsNotNone(loadedState)
+        # For some reason, twisted.trial.unittest.TestCase in Python2.6
+        # doesn't have an 'assertIsNotNone' attribute...
+        self.assertTrue(loadedState is not None)
         self.assertIsInstance(loadedState, persistent.State)
         self.assertNotIdentical(self.state, loadedState)
         self.assertNotEqual(self.state, loadedState)
