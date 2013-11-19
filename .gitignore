@@ -93,3 +93,6 @@ gnupghome/*
 # ignore coverage results files:
 .coverage
 .coverage.*
+
+# trial test run directory:
+_trial_temp/*
