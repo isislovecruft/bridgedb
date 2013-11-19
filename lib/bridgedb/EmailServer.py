@@ -433,11 +433,17 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
     return clientAddr, f
 
 def getGPGContext(cfg):
-    """ Returns a gpgme Context() with the signers initialized by the keyfile 
-    specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or None
-    if the option was not enabled or unable to initialize.
+    """Import a key from a file and initialise a context for GnuPG operations.
 
-    The key should not be protected by a passphrase.
+    The key should not be protected by a passphrase, and should have the
+    signing flag enabled.
+
+    :type cfg: :class:`bridgedb.persistent.Conf`
+    :param cfg: The loaded config file.
+    :rtype: :class:`gpgme.Context` or None
+    :returns: A GPGME context with the signers initialized by the keyfile
+        specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or
+        None if the option was not enabled, or was unable to initialize.
     """
     try:
         # must have enabled signing and specified a key file
