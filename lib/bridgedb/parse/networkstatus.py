@@ -170,6 +170,10 @@ def parseALine(line, fingerprint=None):
       |    consensus-method 14 or later.)
 
     :param string line: An 'a'-line from an bridge-network-status descriptor.
+    :type fingerprint: string or None
+    :param fingerprint: A string which identifies which OR the descriptor
+        we're parsing came from (since the 'a'-line doesn't tell us, this can
+        help make the log messages clearer).
     :raises: :exc:`NetworkstatusParsingError`
     :rtype: tuple
     :returns: A 2-tuple of a string respresenting the IP address and a
