@@ -256,8 +256,14 @@ def parseSLine(line):
     stable  = 'Stable' in flags
     guard   = 'Guard' in flags
     valid   = 'Valid' in flags
-    
-    logging.debug("Parsed Flags: %s" % flags)
+
+    if (fast or running or stable or guard or valid):
+        logging.debug("Parsed Flags: %s%s%s%s%s"
+                      % ('Fast ' if fast else '',
+                         'Running ' if running else '',
+                         'Stable ' if stable else '',
+                         'Guard ' if guard else '',
+                         'Valid ' if valid else ''))
 
     # Right now, we only care about 'Running' and 'Stable'
     return running, stable
