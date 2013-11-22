@@ -40,6 +40,5 @@ class TrialAdaptedOldUnittests(unittest.TestCase):
     def test_allOldUnittests(self):
         testSuite = Tests.testSuite()
         testResult = pyunit.TestResult()
-        testSuite.run(testresult, debug=True)
-        return unittest.PyUnitResultAdapter(testresult)
-
+        testSuite.run(testResult, debug=True)
+        return unittest.PyUnitResultAdapter(testResult)
