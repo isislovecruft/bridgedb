@@ -17,7 +17,7 @@
 
 ..
   parse
-   \_networkstatus     
+   \_networkstatus
       |_ parseRLine - Parse an 'r'-line from a networkstatus document
       |_ parseALine - Parse an 'a'-line from a networkstatus document
       \_ parseSLine - Parse an 's'-line from a networkstatus document
