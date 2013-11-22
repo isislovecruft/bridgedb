@@ -33,6 +33,9 @@ pyunit = __import__('unittest')
 
 
 class TrialAdaptedOldUnittests(unittest.TestCase):
+    """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
+    compatible output.
+    """
 
     def test_allOldUnittests(self):
         testSuite = Tests.testSuite()
