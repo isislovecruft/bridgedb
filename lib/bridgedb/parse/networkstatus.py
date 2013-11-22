@@ -131,10 +131,10 @@ def parseRLine(line):
         logging.error(error)
         nickname, ID = None, None
     except InvalidRouterNickname as error:
-        logging.error(error.message)
+        logging.error(error)
         nickname = None
     except InvalidNetworkstatusRouterIdentity as error:
-        logging.error(error.message)
+        logging.error(error)
         ID = None
     else:
         try:
