@@ -27,6 +27,9 @@ import binascii
 import logging
 import string
 import time
+import warnings
+
+from twisted.python.log import showwarning
 
 from bridgedb.parse import addr
 from bridgedb.parse import padBase64
@@ -37,9 +40,6 @@ class NetworkstatusParsingError(Exception):
 
 class InvalidNetworkstatusRouterIdentity(ValueError):
     """The ID field of a networkstatus document 'r'-line is invalid."""
-
-class InvalidNetworkstatusDescriptorDigest(ValueError):
-    """Descriptor digest of a networkstatus document 'r'-line is invalid."""
 
 class InvalidRouterNickname(ValueError):
     """Router nickname doesn't follow tor-spec."""
@@ -94,60 +94,55 @@ def parseRLine(line):
     (nickname, ID, descDigest, timestamp,
      ORaddr, ORport, dirport) = (None for x in xrange(7))
 
-    if not line.startswith('r '):
-        raise NetworkstatusParsingError(
-            "Networkstatus parser received non 'r'-line: %r" % line)
-
-    line = line[2:] # Chop of the 'r '
-
-    fields = line.split()
-    if len(fields) != 8:
-        raise NetworkstatusParsingError(
-            "Wrong number of fields in networkstatus 'r'-line: %r" % line)
-
     try:
-        nickname, ID = fields[:2]
+        if not line.startswith('r '):
+            raise NetworkstatusParsingError(
+                "Networkstatus parser received non 'r'-line: %r" % line)
 
+        line = line[2:] # Chop of the 'r '
+        fields = line.split()
+
+        if len(fields) != 8:
+            raise NetworkstatusParsingError(
+                "Wrong number of fields in networkstatus 'r'-line: %r" % line)
+
+        nickname, ID = fields[:2]
         isValidRouterNickname(nickname)
 
         if ID.endswith('='):
             raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r:"\
-                "\n\tUnpadded, base64-encoded networkstatus router identity "\
+                "Skipping networkstatus parsing for router with nickname "\
+                "'%s':\n  Unpadded, base64-encoded networkstatus router identity "\
                 "string ends with '=': %r" % (nickname, ID))
-        try:
-            ID = padBase64(ID) # Add the trailing equals sign back in
-        except (AttributeError, ValueError) as error:
-            raise InvalidNetworkstatusRouterIdentity(error.message)
-
-        ID = binascii.a2b_base64(ID) 
-        if not ID:
+        paddedID = padBase64(ID) # Add the trailing equals sign back in
+        debasedID = binascii.a2b_base64(paddedID)
+        if not debasedID:
             raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r:"\
-                "\n\tBase64-encoding for networkstatus router identity string"\
-                "is invalid!\n\tLine: %r" % (nickname, line))
+                "Skipping networkstatus parsing for router with nickname "\
+                "'%s':\n  Base64-encoding for networkstatus router identity "\
+                "string is invalid!\n  Line: %r" % (nickname, line))
+        ID = debasedID
 
-    except IndexError as error:
-        logging.error(error.message)
+    except NetworkstatusParsingError as error:
+        logging.error(error)
+        nickname, ID = None, None
     except InvalidRouterNickname as error:
-        logging.error(error.message)
+        logging.error(error)
         nickname = None
     except InvalidNetworkstatusRouterIdentity as error:
-        logging.error(error.message)
+        logging.error(error)
         ID = None
-
-    try:
-        descDigest = binascii.a2b_base64(fields[2])
-    except (AttributeError, ValueError) as error:
-        raise InvalidNetworkstatusDescriptorDigest(error.message)
-
-
-        timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
-                                              "%Y-%m-%d %H:%M:%S"))
-        ORaddr = fields[5]
-        ORport = fields[6]
-        dirport = fields[7]
-
+    else:
+        try:
+            descDigest = binascii.a2b_base64(fields[2])
+            timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
+                                                  "%Y-%m-%d %H:%M:%S"))
+            ORaddr = fields[5]
+            ORport = fields[6]
+            dirport = fields[7]
+        except (AttributeError, ValueError, IndexError) as error:
+            logging.error(error)
+            descDigest = None
     finally:
         return (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport)
 
