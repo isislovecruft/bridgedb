@@ -127,8 +127,6 @@ def parseRLine(line):
                 "string is invalid!\n  Line: %r" % (nickname, line))
         ID = debasedID
 
-    except IndexError as error:
-        logging.error(error.message)
     except NetworkstatusParsingError as error:
         logging.error(error)
         nickname, ID = None, None
