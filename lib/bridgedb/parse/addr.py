@@ -139,25 +139,57 @@ def isValidIP(ipaddress):
 
 
 class PortList(object):
-    """ container class for port ranges
+    """A container class for validated port ranges.
+
+    From torspec.git/dir-spec.txt §2.3:
+      |
+      | portspec ::= "*" | port | port "-" port
+      | port ::= an integer between 1 and 65535, inclusive.
+      |
+      |    [Some implementations incorrectly generate ports with value 0.
+      |     Implementations SHOULD accept this, and SHOULD NOT generate it.
+      |     Connections to port 0 are never permitted.]
+      |
+
+    :ivar set ports: All ports which have been added to this ``PortList``.
     """
 
     #: The maximum number of allowed ports per IP address.
     PORTSPEC_LEN = 16
 
     def __init__(self, *args, **kwargs):
+        """Create a :class:`~bridgedb.parse.addr.PortList`.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         self.ports = set()
         self.add(*args)
 
     def _sanitycheck(self, port):
+        """Check that ``port`` is in the range 1-65535 inclusive.
+
+        :raises: InvalidPort, if ``port`` doesn't match ``port`` as defined
+            in the excert from torspec above.
+        """
         if (not isinstance(port, int)) or not (0 < port <= 65535):
             raise InvalidPort("%s is not a valid port number!" % port)
 
     def __contains__(self, port):
+        """Determine whether ``port`` is already in this ``PortList``.
+
+        :returns: True if ``port`` is in this ``PortList``; False otherwise.
+        """
         return port in self.ports
 
     def add(self, *args):
-        """Add a port (or ports) to this PortList."""
+        """Add a port (or ports) to this ``PortList``.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         for arg in args:
             portlist = []
             try:
@@ -197,12 +229,12 @@ class PortList(object):
         """Returns the total number of ports in this PortList."""
         return len(self.ports)
 
-    def __getitem__(self, x):
-        """Get a port if it is in this PortList.
+    def __getitem__(self, port):
+        """Get the value of ``port`` if it is in this PortList.
 
-        :raises: ValueError if ``x`` isn't in this PortList.
+        :raises: ValueError, if ``port`` isn't in this PortList.
         :rtype: integer
-        :returns: The port ``x``, if it is in this PortList.
+        :returns: The ``port``, if it is in this PortList.
         """
         portlist = list(self.ports)
-        return portlist[portlist.index(x)]
+        return portlist[portlist.index(port)]
