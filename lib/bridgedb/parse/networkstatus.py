@@ -246,8 +246,6 @@ def parseSLine(line):
     :returns: A 2-tuple of booleans, the first is True if the bridge has the
         "Running" flag, and the second is True if it has the "Stable" flag.
     """
-    fast, running, stable, guard, valid = False
-    
     line = line[2:]
 
     flags = [x.capitalize() for x in line.split()]
