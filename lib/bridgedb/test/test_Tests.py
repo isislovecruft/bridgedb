@@ -32,13 +32,6 @@ logging.warnings.filterwarnings('ignore', module="Tests")
 pyunit = __import__('unittest')
 
 
-#: A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
-#: compatible output.
-#AdaptedBridgeDBTests = unittest.PyUnitResultAdapter(Tests.main())
-
-#tests = unittest.decorate(testSuite, unittest.PyUnitResultAdapter)
-#tests = stdunittest.findTestCases()
-
 class TrialAdaptedOldUnittests(unittest.TestCase):
 
     def test_allOldUnittests(self):
