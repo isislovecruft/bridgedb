@@ -33,7 +33,7 @@ python:
 
 install:
   - pip install -r requirements.txt --use-mirrors
-  - pip install coverage coveralls sure --use-mirrors
+  - pip install coverage==3.7 coveralls==0.3 sure==1.2.2 --use-mirrors
   - make install
 
 #before_script:
