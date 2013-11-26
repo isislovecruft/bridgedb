@@ -208,14 +208,33 @@ class WebResource(twisted.web.resource.Resource):
                                                        countryCode,
                                                        bridgeFilterRules=rules)
 
+            answers = []
+            if bridges:
+                answers.extend([b.getConfigLine(
+                    includeFingerprint=self.includeFingerprints,
+                    addressClass=addressClass,
+                    transport=transport,
+                    request=bridgedb.Dist.uniformMap(ip)
+                    ) for b in bridges])
+
+            for transport_type in ["obfs2", "obfs3"]:
+                # don't repeat the same transport twice
+                if transport != transport_type:
+                    rules = [filterBridgesByTransport(transport_type, addressClass)]
+                    ptbridges = self.distributor.getBridgesForIP(ip, interval,
+                            self.nBridgesToGive, countryCode, bridgeFilterRules=rules)
+
+                    if ptbridges:
+                        answers.extend([b.getConfigLine(
+                                includeFingerprint=self.includeFingerprints,
+                                addressClass=addressClass,
+                                transport=transport_type,
+                                request=bridgedb.Dist.uniformMap(ip)
+                                ) for b in ptbridges])
+
         answer = None
-        if bridges:
-            answer = "".join("  %s\n" % b.getConfigLine(
-                includeFingerprint=self.includeFingerprints,
-                addressClass=addressClass,
-                transport=transport,
-                request=bridgedb.Dist.uniformMap(ip)
-                ) for b in bridges) 
+        if answers:
+            answer = "".join("  %s\n" % x for x in answers)
 
         logging.info("Replying to web request from %s.  Parameters were %r",
                      Util.logSafely(ip), request.args)
