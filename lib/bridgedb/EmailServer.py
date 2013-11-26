@@ -167,8 +167,8 @@ def getMailResponse(lines, ctx):
         rules.append(filterBridgesByNotBlockedIn(unblocked,
             addressClass, transport))
 
+    interval = ctx.schedule.getInterval(time.time())
     try:
-        interval = ctx.schedule.getInterval(time.time())
         bridges = ctx.distributor.getBridgesForEmail(clientAddr,
             interval, ctx.N,
             countryCode=None,
@@ -195,14 +195,34 @@ def getMailResponse(lines, ctx):
                      Util.logSafely(clientAddr), e)
         return None, None 
 
+    answers = []
+    with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
     if bridges:
-        with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
-        answer = "".join("  %s\n" %b.getConfigLine(
+        answers.extend([b.getConfigLine(
             includeFingerprint=with_fp,
             addressClass=addressClass,
             transport=transport,
             request=clientAddr
-            ) for b in bridges)
+            ) for b in bridges])
+
+    for transport_type in ["obfs2", "obfs3"]:
+    # don't repeat the same transport twice
+        if transport != transport_type:
+            rules = [filterBridgesByTransport(transport_type, addressClass)]
+            ptbridges = self.distributor.getBridgesForEmail(clientAddr, interval,
+                    ctx.N, countryCode=None, bridgeFilterRules=rules)
+
+            if ptbridges:
+                answers.extend([b.getConfigLine(
+                        includeFingerprint=with_fp,
+                        addressClass=addressClass,
+                        transport=transport_type,
+                        request=clientAddr
+                        ) for b in ptbridges])
+
+    answer = None
+    if answers:
+        answer = "".join("  %s\n" % x for x in answers)
     else:
         answer = "(no bridges currently available)"
 
