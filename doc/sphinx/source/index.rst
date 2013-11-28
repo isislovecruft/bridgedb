@@ -13,6 +13,8 @@ Contents:
 
     bridgedb
 
+.. todolist::
+
 Indices and tables
 ==================
 
