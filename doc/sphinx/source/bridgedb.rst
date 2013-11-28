@@ -14,13 +14,15 @@ bridgedb
     bridgedb.HTTPServer
     bridgedb.I18n
     bridgedb.Main
-    :ref:`bridgedb.parse <parse-pkg>`
+    bridgedb.parse
     bridgedb.persistent
     bridgedb.Raptcha
     bridgedb.runner
     bridgedb.Stability
-    :ref:`bridgedb.Storage <Storage>`
+    bridgedb.Storage
     bridgedb.Tests
     bridgedb.Util
     gen_bridge_descriptors
 
+..  :ref:`bridgedb.parse <parse-pkg>`
+..  :ref:`bridgedb.Storage <Storage>`
