@@ -23,6 +23,3 @@ bridgedb
     bridgedb.Tests
     bridgedb.Util
     gen_bridge_descriptors
-
-..  :ref:`bridgedb.parse <parse-pkg>`
-..  :ref:`bridgedb.Storage <Storage>`
