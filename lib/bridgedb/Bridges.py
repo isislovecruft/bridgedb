@@ -10,7 +10,7 @@ import bisect
 import hmac
 import logging
 import re
-import sha
+import hashlib
 import socket
 import time
 import ipaddr
@@ -27,7 +27,7 @@ from bridgedb.parse import networkstatus
 HEX_FP_LEN = 40
 ID_LEN = 20
 
-DIGESTMOD = sha
+DIGESTMOD = hashlib.sha1
 HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
