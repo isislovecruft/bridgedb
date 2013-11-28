@@ -22,4 +22,5 @@ bridgedb
     :ref:`bridgedb.Storage <Storage>`
     bridgedb.Tests
     bridgedb.Util
+    gen_bridge_descriptors
 
