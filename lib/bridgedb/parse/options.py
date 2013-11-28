@@ -164,7 +164,7 @@ class BaseOptions(usage.Options):
         :param config: The user-supplied path to the config file, from the
             commandline options (i.e.
             ``options = BaseOptions().parseOptions(); options['config'];``).
-        :raises: :exc:`twisted.python.usage.UsageError` if either the runtime
+        :raises: :api:`twisted.python.usage.UsageError` if either the runtime
             directory or the config file cannot be found.
         """
         gRundir = getRundir()

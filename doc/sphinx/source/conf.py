@@ -22,6 +22,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(
     '..', '..', '..', 'lib', 'bridgedb')))
 sys.path.insert(0, os.path.abspath(os.path.join(
     '..', '..', '..', 'scripts')))
+sys.path.insert(0, os.path.abspath(os.path.join(
+    '..', 'ext')))
+
 
 import bridgedb
 import bridgedb.Bridges
@@ -42,6 +45,7 @@ import bridgedb.test
 import bridgedb.Tests
 import bridgedb.Util
 import gen_bridge_descriptors
+
 
 class Mock(object):
     """Used to fake the presence of Python C-extensions for documentation
@@ -93,7 +97,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.pngmath',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
-              'sphinx.ext.viewcode']
+              'sphinx.ext.viewcode',
+              'apilinks_sphinxext']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
