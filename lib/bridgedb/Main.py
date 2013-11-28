@@ -481,7 +481,7 @@ def startup(options):
             string to associate with the ``task``, and ``task`` is some
             scheduled event, repetitive or otherwise, for the :class:`reactor
             <twisted.internet.epollreactor.EPollReactor>`. See the classes
-            within the :mod:`twisted.internet.tasks` module.
+            within the :api:`twisted.internet.tasks` module.
         """
         logging.debug("Caught SIGHUP")
         logging.info("Reloading...")

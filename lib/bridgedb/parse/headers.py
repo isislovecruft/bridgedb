@@ -35,7 +35,7 @@ def parseAcceptLanguage(header):
       4. Change all hyphens to underscores.
 
     :param string header: The contents of an 'Accept-Language' header, i.e. as
-        if taken from :func:`twisted.web.server.Request.getHeader`.
+        if taken from :api:`twisted.web.server.Request.getHeader`.
     :rtype: list
     :returns: A list of language codes (with and without locales), in order of
         preference.
