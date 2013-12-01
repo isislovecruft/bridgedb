@@ -1,0 +1,951 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.parse &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.persistent" href="bridgedb.persistent.html" />
+    <link rel="prev" title="bridgedb.Main" href="bridgedb.Main.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.persistent.html" title="bridgedb.persistent" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.Main.html" title="bridgedb.Main" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Main.html"
+                        title="previous chapter">bridgedb.Main</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.persistent.html"
+                        title="next chapter">bridgedb.persistent</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.parse.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Main.html"
+                        title="previous chapter">bridgedb.Main</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.persistent.html"
+                        title="next chapter">bridgedb.persistent</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.parse.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="bridgedb-parse">
+<span id="parse-pkg"></span><h1><a class="toc-backref" href="#id6">bridgedb.parse</a><a class="headerlink" href="#bridgedb-parse" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="id1">
+<p class="topic-title first">bridgedb.parse</p>
+<ul class="simple">
+<li><a class="reference internal" href="#bridgedb-parse" id="id6">bridgedb.parse</a></li>
+</ul>
+</div>
+<span class="target" id="module-bridgedb.parse.addr"></span><p>Utilities for parsing IP addresses.</p>
+<p>** Module Overview: **</p>
+<dl class="exception">
+<dt id="bridgedb.parse.addr.InvalidPort">
+<em class="property">exception </em><tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">InvalidPort</tt><a class="reference internal" href="_modules/bridgedb/parse/addr.html#InvalidPort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.InvalidPort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></tt></p>
+<p>Raised when a given port number is invalid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.addr.isIPAddress">
+<tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">isIPAddress</tt><big>(</big><em>ip</em>, <em>compressed=True</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#isIPAddress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.isIPAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an arbitrary string is an IP address, and that it&#8217;s valid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ip</strong> (<em>basestring or int</em>) &#8211; The IP address to check.</li>
+<li><strong>compressed</strong> (<em>boolean</em>) &#8211; If True, return a string representing the
+compressed form of the address. Otherwise, return an
+<tt class="xref py py-class docutils literal"><span class="pre">ipaddr.IPAddress</span></tt> instance.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">A <tt class="xref py py-class docutils literal"><span class="pre">ipaddr.IPAddress</span></tt>, or a string, or False</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The IP, as a string or a class, if it passed the
+checks. Otherwise, returns False.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.addr.isIPv4">
+<tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">isIPv4</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#isIPv4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.isIPv4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an address is IPv4.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ip</strong> (<em>basestring or int</em>) &#8211; The IP address to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the address is an IPv4 address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.addr.isIPv6">
+<tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">isIPv6</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#isIPv6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.isIPv6" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an address is IPv6.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ip</strong> (<em>basestring or int</em>) &#8211; The IP address to check.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the address is an IPv6 address.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.addr.isValidIP">
+<tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">isValidIP</tt><big>(</big><em>ipaddress</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#isValidIP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.isValidIP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that an IP (v4 or v6) is public and not reserved.</p>
+<dl class="docutils">
+<dt>The IP address, <tt class="docutils literal"><span class="pre">ip</span></tt>, must not be any of the following:</dt>
+<dd><ul class="first last simple">
+<li>A link-local address, such as <tt class="docutils literal"><span class="pre">169.254.0.0/16</span></tt> or <tt class="docutils literal"><span class="pre">fe80::/64</span></tt>.</li>
+<li>The address of a loopback interface, i.e. <tt class="docutils literal"><span class="pre">127.0.0.1</span></tt> or <tt class="docutils literal"><span class="pre">::1</span></tt>.</li>
+<li>A multicast address, for example, <tt class="docutils literal"><span class="pre">255.255.255.0</span></tt>.</li>
+<li>An unspecified address, for example <tt class="docutils literal"><span class="pre">0.0.0.0/32</span></tt> in IPv4 or
+<tt class="docutils literal"><span class="pre">::/128</span></tt> in IPv6.</li>
+<li>A default route address, for example <tt class="docutils literal"><span class="pre">0.0.0.0/0</span></tt> or <tt class="docutils literal"><span class="pre">::/0</span></tt>.</li>
+<li>Any other address within a private networks, such as the IANA
+reserved Shared Address Space, defined in <a class="reference external" href="https://tools.ietf.org/htmłrfc6598">RFC6598</a> as
+<tt class="docutils literal"><span class="pre">100.64.0.0/10</span></tt>.</li>
+</ul>
+</dd>
+<dt>If it is an IPv4 address, it also must not be:</dt>
+<dd><ul class="first last simple">
+<li>A reserved address vis-á-vis <a class="reference external" href="https://tools.ietf.org/html/rfc1918">RFC1918</a></li>
+</ul>
+</dd>
+<dt>If it is an IPv6 address, it also must not be:</dt>
+<dd><ul class="first last simple">
+<li>A &#8220;site-local&#8221;, or Unique Local Address (<a class="reference external" href="https://en.wikipedia.org/wiki/Unique_local_address">ULA</a>), address vis-á-vis
+<a class="reference external" href="https://tools.ietf.org/html/rfc4193">RFC4193</a> (i.e. within the <tt class="docutils literal"><span class="pre">fc00::/7</span></tt> netblock)</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ipaddress</strong> (An <tt class="xref py py-class docutils literal"><span class="pre">ipaddr.IPAddress</span></tt>,
+<tt class="xref py py-class docutils literal"><span class="pre">ipaddr.IPv4Address</span></tt>, or <tt class="xref py py-class docutils literal"><span class="pre">ipaddr.IPv6Address</span></tt>.) &#8211; An IPAddress class.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">boolean</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the address passes the checks, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.parse.addr.PortList">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.addr.</tt><tt class="descname">PortList</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#PortList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.PortList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>container class for port ranges</p>
+<dl class="attribute">
+<dt id="bridgedb.parse.addr.PortList.PORTSPEC_LEN">
+<tt class="descname">PORTSPEC_LEN</tt><em class="property"> = 16</em><a class="headerlink" href="#bridgedb.parse.addr.PortList.PORTSPEC_LEN" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum number of allowed ports per IP address.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.addr.PortList.add">
+<tt class="descname">add</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/addr.html#PortList.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.addr.PortList.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a port (or ports) to this PortList.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-bridgedb.parse.headers"></span><p>bridgedb.parse.headers &#8211; Parsers for HTTP and Email headers.</p>
+<p>** Module Overview: **</p>
+<div class="highlight-python"><pre>parseAcceptLanguage - Parse the contents of a client 'Accept-Language' header</pre>
+</div>
+<dl class="function">
+<dt id="bridgedb.parse.headers.parseAcceptLanguage">
+<tt class="descclassname">bridgedb.parse.headers.</tt><tt class="descname">parseAcceptLanguage</tt><big>(</big><em>header</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/headers.html#parseAcceptLanguage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.headers.parseAcceptLanguage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the contents of a client &#8216;Accept-Language&#8217; header.</p>
+<p>Parse the header in the following manner:</p>
+<blockquote>
+<div><ol class="arabic simple" start="0">
+<li>If <tt class="docutils literal"><span class="pre">header</span></tt> is None or an empty string, return an empty list.</li>
+<li>Split the <tt class="docutils literal"><span class="pre">header</span></tt> string on any commas.</li>
+<li>Chop of the RFC2616 quality/level suffix. We ignore these, and just
+use the order of the list as the preference order, without any
+parsing of quality/level assignments.</li>
+<li>Add a fallback language of the same type if it is missing. For
+example, if we only got [&#8216;es-ES&#8217;, &#8216;de-DE&#8217;], add &#8216;es&#8217; after &#8216;es-ES&#8217;
+and add &#8216;de&#8217; after &#8216;de-DE&#8217;.</li>
+<li>Change all hyphens to underscores.</li>
+</ol>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>header</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The contents of an &#8216;Accept-Language&#8217; header, i.e. as
+if taken from <a class="reference external" href="https://twistedmatrix.com/documents/current/api/twisted.web.server.Request.getHeader.html">twisted.web.server.Request.getHeader</a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of language codes (with and without locales), in order of
+preference.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-bridgedb.parse.networkstatus"></span><p>Parsers for <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">bridge-network-status</span> <span class="pre">1.0</span></tt> descriptors.</p>
+<p><strong>Module Overview:</strong></p>
+<dl class="exception">
+<dt id="bridgedb.parse.networkstatus.NetworkstatusParsingError">
+<em class="property">exception </em><tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">NetworkstatusParsingError</tt><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#NetworkstatusParsingError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.NetworkstatusParsingError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Unable to parse networkstatus document line.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="bridgedb.parse.networkstatus.InvalidNetworkstatusRouterIdentity">
+<em class="property">exception </em><tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">InvalidNetworkstatusRouterIdentity</tt><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#InvalidNetworkstatusRouterIdentity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.InvalidNetworkstatusRouterIdentity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></tt></p>
+<p>The ID field of a networkstatus document &#8216;r&#8217;-line is invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="bridgedb.parse.networkstatus.InvalidNetworkstatusDescriptorDigest">
+<em class="property">exception </em><tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">InvalidNetworkstatusDescriptorDigest</tt><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#InvalidNetworkstatusDescriptorDigest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.InvalidNetworkstatusDescriptorDigest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></tt></p>
+<p>Descriptor digest of a networkstatus document &#8216;r&#8217;-line is invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="bridgedb.parse.networkstatus.InvalidRouterNickname">
+<em class="property">exception </em><tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">InvalidRouterNickname</tt><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#InvalidRouterNickname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.InvalidRouterNickname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.ValueError</span></tt></p>
+<p>Router nickname doesn&#8217;t follow tor-spec.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.networkstatus.isValidRouterNickname">
+<tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">isValidRouterNickname</tt><big>(</big><em>nickname</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#isValidRouterNickname"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.isValidRouterNickname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if a router&#8217;s given nickname meets the specification.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nickname</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An OR&#8217;s nickname.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.networkstatus.parseRLine">
+<tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">parseRLine</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#parseRLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.parseRLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an &#8216;r&#8217;-line from a networkstatus document.</p>
+<dl class="docutils">
+<dt>From torspec.git/dir-spec.txt, commit 36761c7d553d L1499-1512:</dt>
+<dd><div class="first line-block">
+<div class="line"><br /></div>
+</div>
+<p class="last"><a href="#id2"><span class="problematic" id="id3">|</span></a>&#8220;r&#8221; SP nickname SP identity SP digest SP publication SP IP SP ORPort
+|    SP DirPort NL
+|
+|    [At start, exactly once.]
+|
+|    &#8220;Nickname&#8221; is the OR&#8217;s nickname.  &#8220;Identity&#8221; is a hash of its
+|    identity key, encoded in base64, with trailing equals sign(s)
+|    removed.  &#8220;Digest&#8221; is a hash of its most recent descriptor as
+|    signed (that is, not including the signature), encoded in base64.
+|    &#8220;Publication&#8221; is the
+|    publication time of its most recent descriptor, in the form
+|    YYYY-MM-DD HH:MM:SS, in UTC.  &#8220;IP&#8221; is its current IP address;
+|    ORPort is its current OR port, &#8220;DirPort&#8221; is its current directory
+|    port, or &#8220;0&#8221; for &#8220;none&#8221;.
+|</p>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An &#8216;r&#8217;-line from an bridge-network-status descriptor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.networkstatus.parseALine">
+<tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">parseALine</tt><big>(</big><em>line</em>, <em>fingerprint=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#parseALine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.parseALine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an &#8216;a&#8217;-line of a bridge networkstatus document.</p>
+<dl class="docutils">
+<dt>From torspec.git/dir-spec.txt, commit 36761c7d553d L1499-1512:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">&#8220;a&#8221; SP address &#8221;:&#8221; port NL</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">[Any number.]</div>
+<div class="line"><br /></div>
+<div class="line">Present only if the OR has at least one IPv6 address.</div>
+<div class="line"><br /></div>
+<div class="line">Address and portlist are as for &#8220;or-address&#8221; as specified in</div>
+<div class="line">2.1.</div>
+<div class="line"><br /></div>
+<div class="line">(Only included when the vote or consensus is generated with</div>
+<div class="line">consensus-method 14 or later.)</div>
+</div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An &#8216;a&#8217;-line from an bridge-network-status descriptor.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><a class="reference internal" href="#bridgedb.parse.networkstatus.NetworkstatusParsingError" title="bridgedb.parse.networkstatus.NetworkstatusParsingError"><tt class="xref py py-exc docutils literal"><span class="pre">NetworkstatusParsingError</span></tt></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A 2-tuple of a string respresenting the IP address and a
+<a class="reference internal" href="#bridgedb.parse.addr.PortList" title="bridgedb.parse.addr.PortList"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.addr.PortList</span></tt></a>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.networkstatus.parseSLine">
+<tt class="descclassname">bridgedb.parse.networkstatus.</tt><tt class="descname">parseSLine</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/networkstatus.html#parseSLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.networkstatus.parseSLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an &#8216;s&#8217;-line from a bridge networkstatus document.</p>
+<p>The &#8216;s&#8217;-line contains all flags assigned to a bridge. The flags which may
+be assigned to a bridge are as follows:</p>
+<dl class="docutils">
+<dt>From torspec.git/dir-spec.txt, commit 36761c7d553d L1526-1554:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">&#8220;s&#8221; SP Flags NL</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">[Exactly once.]</div>
+<div class="line"><br /></div>
+<div class="line">A series of space-separated status flags, in lexical order (as ASCII</div>
+<div class="line">byte strings).  Currently documented flags are:</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">&#8220;BadDirectory&#8221; if the router is believed to be useless as a</div>
+<div class="line-block">
+<div class="line">directory cache (because its directory port isn&#8217;t working,</div>
+<div class="line">its bandwidth is always throttled, or for some similar</div>
+<div class="line">reason).</div>
+</div>
+<div class="line">&#8220;Fast&#8221; if the router is suitable for high-bandwidth circuits.</div>
+<div class="line">&#8220;Guard&#8221; if the router is suitable for use as an entry guard.</div>
+<div class="line">&#8220;HSDir&#8221; if the router is considered a v2 hidden service directory.</div>
+<div class="line">&#8220;Named&#8221; if the router&#8217;s identity-nickname mapping is canonical,</div>
+<div class="line-block">
+<div class="line">and this authority binds names.</div>
+</div>
+<div class="line">&#8220;Stable&#8221; if the router is suitable for long-lived circuits.</div>
+<div class="line">&#8220;Running&#8221; if the router is currently usable.</div>
+<div class="line">&#8220;Valid&#8221; if the router has been &#8216;validated&#8217;.</div>
+<div class="line">&#8220;V2Dir&#8221; if the router implements the v2 directory protocol.</div>
+</div>
+</div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>line</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An &#8216;s&#8217;-line from an bridge-network-status descriptor.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A 2-tuple of booleans, the first is True if the bridge has the
+&#8220;Running&#8221; flag, and the second is True if it has the &#8220;Stable&#8221; flag.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-bridgedb.parse.options"></span><p>Classes for commandline options parsing.</p>
+<p>** Module Overview: **</p>
+<dl class="function">
+<dt id="bridgedb.parse.options.setConfig">
+<tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">setConfig</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#setConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.setConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the absolute path to the config file.</p>
+<p>See <a class="reference internal" href="#bridgedb.parse.options.BaseOptions.postOptions" title="bridgedb.parse.options.BaseOptions.postOptions"><tt class="xref py py-meth docutils literal"><span class="pre">BaseOptions.postOptions()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The path to set.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.options.getConfig">
+<tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">getConfig</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#getConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.getConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the absolute path to the config file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the config file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.options.setRundir">
+<tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">setRundir</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#setRundir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.setRundir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the absolute path to the runtime directory.</p>
+<p>See <a class="reference internal" href="#bridgedb.parse.options.BaseOptions.postOptions" title="bridgedb.parse.options.BaseOptions.postOptions"><tt class="xref py py-meth docutils literal"><span class="pre">BaseOptions.postOptions()</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The path to set.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.options.getRundir">
+<tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">getRundir</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#getRundir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.getRundir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the absolute path to the runtime directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the config file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.parse.options.parseOptions">
+<tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">parseOptions</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#parseOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.parseOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the main options parser and its subcommand parsers.</p>
+<p>Any <tt class="xref py py-exc docutils literal"><span class="pre">UsageErrors</span></tt> which are raised due to
+invalid options are ignored; their error message is printed and then we
+exit the program.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#bridgedb.parse.options.MainOptions" title="bridgedb.parse.options.MainOptions"><tt class="xref py py-class docutils literal"><span class="pre">MainOptions</span></tt></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The main options parsing class, with any commandline arguments
+already parsed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.parse.options.BaseOptions">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">BaseOptions</tt><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">twisted.python.usage.Options</span></tt></p>
+<p>Base options included in all main and sub options menus.</p>
+<p>Create an options parser. All flags, parameters, and attributes of
+this base options parser are inherited by all child classes.</p>
+<dl class="attribute">
+<dt id="bridgedb.parse.options.BaseOptions.longdesc">
+<tt class="descname">longdesc</tt><em class="property"> = u'BridgeDB is a proxy distribution system for\n    private relays acting as bridges into the Tor network. See `bridgedb\n    &lt;command&gt; --help` for addition help.'</em><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.longdesc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.parse.options.BaseOptions.optParameters">
+<tt class="descname">optParameters</tt><em class="property"> = [[u'config', u'c', None, u'Configuration file [default: &lt;rundir&gt;/bridgedb.conf]'], [u'rundir', u'r', None, u&quot;Change to this directory before running. [default: `os.getcwd()']\n\n         All other paths, if not absolute, should be relative to this path.\n         This includes the config file and any further files specified within\n         the config file.\n         &quot;]]</em><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.optParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.opt_quiet">
+<tt class="descname">opt_quiet</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions.opt_quiet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.opt_quiet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease verbosity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.opt_verbose">
+<tt class="descname">opt_verbose</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions.opt_verbose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.opt_verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase verbosity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.opt_q">
+<tt class="descname">opt_q</tt><big>(</big><big>)</big><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.opt_q" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrease verbosity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.opt_v">
+<tt class="descname">opt_v</tt><big>(</big><big>)</big><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.opt_v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase verbosity</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.opt_version">
+<tt class="descname">opt_version</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions.opt_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.opt_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display BridgeDB&#8217;s version and exit.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="bridgedb.parse.options.BaseOptions.findRundirAndConfigFile">
+<em class="property">static </em><tt class="descname">findRundirAndConfigFile</tt><big>(</big><em>rundir=None</em>, <em>config=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions.findRundirAndConfigFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.findRundirAndConfigFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the abspath of the config file and runtime directory, or find
+suitable defaults.</p>
+<p>Attempts to set the absolute path of the runtime directory. If the
+config path is relative, its absolute path is set relative to the
+runtime directory path (unless it starts with &#8216;.&#8217; or &#8216;..&#8217;, then it is
+interpreted relative to the current working directory). If the path to
+the config file is absolute, it is left alone.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rundir</strong> (<em>string or None</em>) &#8211; The user-supplied path to the runtime directory, from
+the commandline options (i.e.
+<tt class="docutils literal"><span class="pre">options</span> <span class="pre">=</span> <span class="pre">BaseOptions().parseOptions();</span> <span class="pre">options['rundir'];</span></tt>).</li>
+<li><strong>config</strong> (<em>string or None</em>) &#8211; The user-supplied path to the config file, from the
+commandline options (i.e.
+<tt class="docutils literal"><span class="pre">options</span> <span class="pre">=</span> <span class="pre">BaseOptions().parseOptions();</span> <span class="pre">options['config'];</span></tt>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><p class="first last"><a class="reference external" href="https://twistedmatrix.com/documents/current/api/twisted.python.usage.UsageError.html">twisted.python.usage.UsageError</a> if either the runtime
+directory or the config file cannot be found.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.BaseOptions.postOptions">
+<tt class="descname">postOptions</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#BaseOptions.postOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.BaseOptions.postOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically called by <a class="reference internal" href="#bridgedb.parse.options.parseOptions" title="bridgedb.parse.options.parseOptions"><tt class="xref py py-meth docutils literal"><span class="pre">parseOptions()</span></tt></a>.</p>
+<p>Determines appropriate values for the &#8216;config&#8217; and &#8216;rundir&#8217; settings.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.parse.options.TestOptions">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">TestOptions</tt><a class="reference internal" href="_modules/bridgedb/parse/options.html#TestOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.TestOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.parse.options.BaseOptions" title="bridgedb.parse.options.BaseOptions"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.options.BaseOptions</span></tt></a></p>
+<p>Suboptions for running twisted.trial and unittest based tests.</p>
+<p>Create an options parser. All flags, parameters, and attributes of
+this base options parser are inherited by all child classes.</p>
+<dl class="attribute">
+<dt id="bridgedb.parse.options.TestOptions.longdesc">
+<tt class="descname">longdesc</tt><em class="property"> = u'BridgeDB testing commands.\n    See the `bridgedb mock` command for generating testing environments.'</em><a class="headerlink" href="#bridgedb.parse.options.TestOptions.longdesc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.parse.options.TestOptions.optFlags">
+<tt class="descname">optFlags</tt><em class="property"> = [[u'coverage', u'c', u'Generate coverage statistics']]</em><a class="headerlink" href="#bridgedb.parse.options.TestOptions.optFlags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.parse.options.TestOptions.optParameters">
+<tt class="descname">optParameters</tt><em class="property"> = [[u'file', u'f', None, u'Run tests in specific file(s) (trial only)'], [u'unittests', u'u', False, u'Run unittests in bridgedb.Tests'], [u'trial', u't', True, u'Run twisted.trial tests in bridgedb.test']]</em><a class="headerlink" href="#bridgedb.parse.options.TestOptions.optParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.parse.options.TestOptions.completionData">
+<tt class="descname">completionData</tt><em class="property"> = &lt;twisted.python.usage.Completions object at 0x30e7d90&gt;</em><a class="headerlink" href="#bridgedb.parse.options.TestOptions.completionData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.options.TestOptions.parseArgs">
+<tt class="descname">parseArgs</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/options.html#TestOptions.parseArgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.TestOptions.parseArgs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse any additional arguments after the options and flags.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.parse.options.MockOptions">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">MockOptions</tt><a class="reference internal" href="_modules/bridgedb/parse/options.html#MockOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.MockOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.parse.options.BaseOptions" title="bridgedb.parse.options.BaseOptions"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.options.BaseOptions</span></tt></a></p>
+<p>Suboptions for creating necessary conditions for testing purposes.</p>
+<p>Create an options parser. All flags, parameters, and attributes of
+this base options parser are inherited by all child classes.</p>
+<dl class="attribute">
+<dt id="bridgedb.parse.options.MockOptions.optParameters">
+<tt class="descname">optParameters</tt><em class="property"> = [[u'descriptors', u'n', 1000, u'Generate &lt;n&gt; mock bridge descriptor sets\n          (types: netstatus, extrainfo, server)']]</em><a class="headerlink" href="#bridgedb.parse.options.MockOptions.optParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.parse.options.MainOptions">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.options.</tt><tt class="descname">MainOptions</tt><a class="reference internal" href="_modules/bridgedb/parse/options.html#MainOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.options.MainOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.parse.options.BaseOptions" title="bridgedb.parse.options.BaseOptions"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.options.BaseOptions</span></tt></a></p>
+<p>Main commandline options parser for BridgeDB.</p>
+<p>Create an options parser. All flags, parameters, and attributes of
+this base options parser are inherited by all child classes.</p>
+<dl class="attribute">
+<dt id="bridgedb.parse.options.MainOptions.optFlags">
+<tt class="descname">optFlags</tt><em class="property"> = [[u'dump-bridges', u'd', u'Dump bridges by hashring assignment into files'], [u'reload', u'R', u'Reload bridge descriptors into running servers']]</em><a class="headerlink" href="#bridgedb.parse.options.MainOptions.optFlags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.parse.options.MainOptions.subCommands">
+<tt class="descname">subCommands</tt><em class="property"> = [[u'test', None, &lt;class 'bridgedb.parse.options.TestOptions'&gt;, u'Run twisted.trial tests or unittests'], [u'mock', None, &lt;class 'bridgedb.parse.options.MockOptions'&gt;, u'Generate a testing environment']]</em><a class="headerlink" href="#bridgedb.parse.options.MainOptions.subCommands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-bridgedb.parse.versions"></span><dl class="class">
+<dt id="bridgedb.parse.versions.Version">
+<em class="property">class </em><tt class="descclassname">bridgedb.parse.versions.</tt><tt class="descname">Version</tt><big>(</big><em>version</em>, <em>package=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/versions.html#Version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.versions.Version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">twisted.python.versions.Version</span></tt></p>
+<p>Holds, parses, and does comparison operations for version numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr string major:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">The major version number.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr string minor:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">The minor version number.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attr string micro:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">The micro version number.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attr string prerelease:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body">Sometime, another number, though often suffixed
+with a <cite>-</cite>, <cite>+</cite>, or <cite>#</cite>.</td>
+</tr>
+</tbody>
+</table>
+<p>Create a version object.</p>
+<p>Comparisons may be computed between instances of :class:<a href="#id4"><span class="problematic" id="id5">`</span></a>Version`s.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</li>
+<li><strong>package</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The package or program which we are creating a
+version number for, i.e. for &#8220;tor-0.2.5.1-alpha&#8221; the <tt class="docutils literal"><span class="pre">package</span></tt>
+would be &#8220;tor&#8221;.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bridgedb.parse.versions.Version.base">
+<tt class="descname">base</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/versions.html#Version.base"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.versions.Version.base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the base version number (with prerelease).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A version number, without the package/program name, and with
+the prefix (if available). For example: &#8216;0.2.5.1-alpha&#8217;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.parse.versions.Version.getPrefixedPrerelease">
+<tt class="descname">getPrefixedPrerelease</tt><big>(</big><em>separator='.'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/parse/versions.html#Version.getPrefixedPrerelease"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.parse.versions.Version.getPrefixedPrerelease" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the prerelease string, prefixed by the separator <tt class="docutils literal"><span class="pre">prefix</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>separator</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The separator to use between the rest of the
+version string and the <tt class="xref py py-attr docutils literal"><span class="pre">prerelease</span></tt> string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The separator plus the <tt class="docutils literal"><span class="pre">prefix</span></tt>, i.e. &#8216;.1-alpha&#8217;.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.persistent.html" title="bridgedb.persistent" >next</a></li>
+        <li><a href="bridgedb.Main.html" title="bridgedb.Main" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

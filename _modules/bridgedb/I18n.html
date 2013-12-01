@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.I18n &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.I18n</h1><div class="highlight"><pre>
+<span class="c"># BridgeDB i18n strings &amp; helper routines. The string should go into pootle</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+
+<div class="viewcode-block" id="getLang"><a class="viewcode-back" href="../../bridgedb.I18n.html#bridgedb.I18n.getLang">[docs]</a><span class="k">def</span> <span class="nf">getLang</span><span class="p">(</span><span class="n">lang</span><span class="p">,</span> <span class="n">localedir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s">&quot;~&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;/share/locale&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the Translation instance for a given language. If no Translation</span>
+<span class="sd">       instance is found, return the one for &#39;en&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">gettext</span><span class="o">.</span><span class="n">translation</span><span class="p">(</span><span class="s">&quot;bridgedb&quot;</span><span class="p">,</span> <span class="n">localedir</span><span class="o">=</span><span class="n">localedir</span><span class="p">,</span> 
+                               <span class="n">languages</span><span class="o">=</span><span class="p">[</span><span class="n">lang</span><span class="p">],</span> <span class="n">fallback</span><span class="o">=</span><span class="s">&quot;en&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="_"><a class="viewcode-back" href="../../bridgedb.I18n.html#bridgedb.I18n._">[docs]</a><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is necessary because strings are translated when they&#39;re imported.</span>
+<span class="sd">       Otherwise this would make it impossible to switch languages more than </span>
+<span class="sd">       once</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">text</span>
+
+<span class="c"># All text that needs translation goes here</span></div>
+<span class="n">BRIDGEDB_TEXT</span> <span class="o">=</span> <span class="p">[</span>
+ <span class="c"># BRIDGEDB_TEXT[0]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Here are your bridge relays: &quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[1]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Bridge relays (or &quot;bridges&quot; for short) are Tor relays that aren&#39;t listed</span>
+<span class="s">in the main directory. Since there is no complete public list of them,</span>
+<span class="s">even if your ISP is filtering connections to all the known Tor relays,</span>
+<span class="s">they probably won&#39;t be able to block all the bridges.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[2]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;To use the above lines, go to Vidalia&#39;s Network settings page, and click</span>
+<span class="s">&quot;My ISP blocks connections to the Tor network&quot;. Then add each bridge</span>
+<span class="s">address one at a time.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[3]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Configuring more than one bridge address will make your Tor connection</span>
+<span class="s">more stable, in case some of the bridges become unreachable.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[4]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Another way to find public bridge addresses is to send mail to</span>
+<span class="s">bridges@torproject.org with the line &quot;get bridges&quot; by itself in the body</span>
+<span class="s">of the mail. However, so we can make it harder for an attacker to learn</span>
+<span class="s">lots of bridge addresses, you must send this request from an email address at</span>
+<span class="s">one of the following domains:&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[5]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;[This is an automated message; please do not reply.]&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[6]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Another way to find public bridge addresses is to visit</span>
+<span class="s">https://bridges.torproject.org/. The answers you get from that page</span>
+<span class="s">will change every few days, so check back periodically if you need more</span>
+<span class="s">bridge addresses.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[7]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;(no bridges currently available)&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[8]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;(e-mail requests not currently supported)&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[9]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;To receive your bridge relays, please prove you are human&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[10]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;You have exceeded the rate limit. Please slow down, the minimum time</span>
+<span class="s">between emails is: &quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[11]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;hours&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[12]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;All further emails will be ignored.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[13]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Type the two words&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[14]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;I am human&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[15]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Upgrade your browser to Firefox&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[16]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;(Might be blocked)&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[17]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;The following commands are also supported:&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[18]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;ipv6 : request ipv6 bridges.&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[19]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;transport NAME : request transport NAME. Example: &#39;transport obfs2&#39;&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[20]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Looking for IPv6 bridges?&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[21]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Looking for obfsproxy bridges?&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[22]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Specify transport by name:&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[23]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Submit&quot;&quot;&quot;</span><span class="p">),</span>
+ <span class="c"># BRIDGEDB_TEXT[24]</span>
+ <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;days at this address&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

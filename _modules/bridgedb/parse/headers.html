@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.parse.headers &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.parse.headers</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of BridgeDB, a Tor bridge distribution system.</span>
+<span class="c">#</span>
+<span class="c"># :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 &lt;isis@torproject.org&gt;</span>
+<span class="c">#           please also see AUTHORS file</span>
+<span class="c"># :copyright: (c) 2013 Isis Lovecruft</span>
+<span class="c">#             (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c">#             (c) 2007-2013, all entities within the AUTHORS file</span>
+<span class="c"># :license: 3-clause BSD, see included LICENSE for information</span>
+
+<span class="sd">&quot;&quot;&quot;bridgedb.parse.headers -- Parsers for HTTP and Email headers.</span>
+
+<span class="sd">** Module Overview: **</span>
+
+<span class="sd">::</span>
+
+<span class="sd"> parseAcceptLanguage - Parse the contents of a client &#39;Accept-Language&#39; header</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="parseAcceptLanguage"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.headers.parseAcceptLanguage">[docs]</a><span class="k">def</span> <span class="nf">parseAcceptLanguage</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the contents of a client &#39;Accept-Language&#39; header.</span>
+
+<span class="sd">    Parse the header in the following manner:</span>
+
+<span class="sd">      0. If ``header`` is None or an empty string, return an empty list.</span>
+<span class="sd">      1. Split the ``header`` string on any commas.</span>
+<span class="sd">      2. Chop of the RFC2616 quality/level suffix. We ignore these, and just</span>
+<span class="sd">         use the order of the list as the preference order, without any</span>
+<span class="sd">         parsing of quality/level assignments.</span>
+<span class="sd">      3. Add a fallback language of the same type if it is missing. For</span>
+<span class="sd">         example, if we only got [&#39;es-ES&#39;, &#39;de-DE&#39;], add &#39;es&#39; after &#39;es-ES&#39;</span>
+<span class="sd">         and add &#39;de&#39; after &#39;de-DE&#39;.</span>
+<span class="sd">      4. Change all hyphens to underscores.</span>
+
+<span class="sd">    :param string header: The contents of an &#39;Accept-Language&#39; header, i.e. as</span>
+<span class="sd">        if taken from :api:`twisted.web.server.Request.getHeader`.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :returns: A list of language codes (with and without locales), in order of</span>
+<span class="sd">        preference.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">langs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">langs</span>
+
+    <span class="n">langHeader</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">langHeader</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lang</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Chop off the RFC2616 Accept `q=` and `level=` feilds</span>
+            <span class="n">code</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lang</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+            <span class="n">langs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">langs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
+
+    <span class="c"># Add a fallback language of the same type if it is missing.</span>
+    <span class="n">langsWithLocales</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">,</span> <span class="n">langs</span><span class="p">)</span>
+    <span class="n">langsOnly</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">langsWithLocales</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">only</span> <span class="ow">in</span> <span class="n">langsOnly</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">only</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">langs</span><span class="p">:</span>
+            <span class="c"># Add the fallback after the other languages like it:</span>
+            <span class="n">insertAfter</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">only</span><span class="p">),</span>
+                                 <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">langs</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">insertAfter</span><span class="p">:</span>
+                <span class="n">placement</span> <span class="o">=</span> <span class="n">langs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">insertAfter</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">langs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">only</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c"># Otherwise just put it at the end</span>
+            <span class="n">langs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">only</span><span class="p">)</span>
+
+    <span class="c"># Gettext wants underderscores, because that is how it creates the</span>
+    <span class="c"># directories under i18n/, not hyphens:</span>
+    <span class="n">langs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">),</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">langs</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">langs</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

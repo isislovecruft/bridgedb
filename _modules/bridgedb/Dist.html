@@ -1,0 +1,671 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Dist &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Dist</h1><div class="highlight"><pre>
+<span class="c"># BridgeDB by Nick Mathewson.</span>
+<span class="c"># Copyright (c) 2007-2009, The Tor Project, Inc.</span>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module has functions to decide which bridges to hand out to whom.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Bridges</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Storage</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Util</span> <span class="kn">as</span> <span class="nn">Util</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">ipaddr</span> <span class="kn">import</span> <span class="n">IPv6Address</span><span class="p">,</span> <span class="n">IPAddress</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterAssignBridgesToRing</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByRules</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByIP4</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByIP6</span>
+
+<div class="viewcode-block" id="uniformMap"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.uniformMap">[docs]</a><span class="k">def</span> <span class="nf">uniformMap</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Map an IP to an arbitrary &#39;area&#39; string, such that any two /24 addresses</span>
+<span class="sd">       get the same string.</span>
+
+<span class="sd">    &gt;&gt;&gt; uniformMap(&#39;1.2.3.4&#39;)</span>
+<span class="sd">    &#39;1.2.3&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">ip</span><span class="p">))</span> <span class="ow">is</span> <span class="n">IPv6Address</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">IPv6Address</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span><span class="o">.</span><span class="n">exploded</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">)[:</span><span class="mi">4</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">ip</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="getNumBridgesPerAnswer"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.getNumBridgesPerAnswer">[docs]</a><span class="k">def</span> <span class="nf">getNumBridgesPerAnswer</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">max_bridges_per_answer</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span> <span class="n">n_bridges_per_answer</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="mi">20</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span> <span class="n">n_bridges_per_answer</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_bridges_per_answer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">100</span><span class="p">:</span> <span class="n">n_bridges_per_answer</span> <span class="o">=</span> <span class="n">max_bridges_per_answer</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Returning </span><span class="si">%d</span><span class="s"> bridges from ring of len: </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> \
+            <span class="p">(</span><span class="n">n_bridges_per_answer</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">n_bridges_per_answer</span>
+</div>
+<div class="viewcode-block" id="IPBasedDistributor"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor">[docs]</a><span class="k">class</span> <span class="nc">IPBasedDistributor</span><span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Distributor that hands out bridges based on the IP address of an</span>
+<span class="sd">    incoming request and the current time period.</span>
+
+<span class="sd">    :ivar areaOrderHmac: An HMAC function used to order areas within rings.</span>
+<span class="sd">    :ivar areaClusterHmac: An HMAC function used to assign areas to rings.</span>
+<span class="sd">    :ivar list rings: A list of :class:`bridgedb.Bridges.BridgeHolder`</span>
+<span class="sd">        hashrings, one for each area in the ``areaMapper``. Every inserted</span>
+<span class="sd">        bridge will go into one of these rings, and every area is associated</span>
+<span class="sd">        with one.</span>
+<span class="sd">    :ivar categories: DOCDOC See :param:`ipCategories`.</span>
+<span class="sd">    :type splitter: :class:`bridgedb.Bridges.FixedBridgeSplitter`</span>
+<span class="sd">    :ivar splitter: A hashring that assigns bridges to subrings with fixed</span>
+<span class="sd">        proportions. Used to assign bridges into the subrings of this</span>
+<span class="sd">        distributor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">areaMapper</span><span class="p">,</span> <span class="n">nClusters</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span>
+                 <span class="n">ipCategories</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">answerParameters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a Distributor that decides which bridges to distribute based</span>
+<span class="sd">        upon the client&#39;s IP address and the current time.</span>
+
+<span class="sd">        :type areaMapper: callable</span>
+<span class="sd">        :param areaMapper: A function that maps IP addresses arbitrarily to</span>
+<span class="sd">            strings, such that addresses which map to identical strings are</span>
+<span class="sd">            considered to be in the same &quot;area&quot; (for some arbitrary definition</span>
+<span class="sd">            of &quot;area&quot;). See :func:`bridgedb.Dist.uniformMap` for an example.</span>
+<span class="sd">        :param integer nClusters: The number of clusters to group IP addresses</span>
+<span class="sd">            into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then</span>
+<span class="sd">            the actual number of clusters is one higher than ``nClusters``,</span>
+<span class="sd">            because the set of known open proxies constitutes its own</span>
+<span class="sd">            category.</span>
+<span class="sd">            DOCDOC What exactly does a cluster *do*?</span>
+<span class="sd">        :param bytearray key: The master HMAC key for this distributor. All</span>
+<span class="sd">            added bridges are HMACed with this key in order to place them into</span>
+<span class="sd">            the hashrings.</span>
+<span class="sd">        :type ipCategories: iterable or None</span>
+<span class="sd">        :param ipCategories: DOCDOC</span>
+<span class="sd">        :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`</span>
+<span class="sd">        :param answerParameters: A mechanism for ensuring that the set of</span>
+<span class="sd">            bridges that this distributor answers a client with fit certain</span>
+<span class="sd">            parameters, i.e. that an answer has &quot;at least two obfsproxy</span>
+<span class="sd">            bridges&quot; or &quot;at least one bridge on port 443&quot;, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">areaMapper</span> <span class="o">=</span> <span class="n">areaMapper</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">=</span> <span class="n">nClusters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span> <span class="o">=</span> <span class="n">answerParameters</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rings</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ipCategories</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="n">key2</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Assign-Bridges-To-Rings&quot;</span><span class="p">)</span>
+        <span class="n">key3</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Order-Areas-In-Rings&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">areaOrderHmac</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key3</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">key4</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Assign-Areas-To-Rings&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">areaClusterHmac</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key4</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c"># add splitter and cache the default rings</span>
+        <span class="c"># plus leave room for dynamic filters</span>
+        <span class="c">#</span>
+        <span class="c"># XXX Why is the &quot;extra room&quot; hardcoded to be 5? Shouldn&#39;t it be some</span>
+        <span class="c">#     fraction of the number of clusters/categories? --isis</span>
+        <span class="n">ring_cache_size</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">ipCategories</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">FilteredBridgeSplitter</span><span class="p">(</span>
+            <span class="n">key2</span><span class="p">,</span> <span class="n">max_cached_rings</span><span class="o">=</span><span class="n">ring_cache_size</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Added splitter </span><span class="si">%s</span><span class="s"> to IPBasedDistributor.&quot;</span>
+                      <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IPBasedDistributor.prepopulateRings"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor.prepopulateRings">[docs]</a>    <span class="k">def</span> <span class="nf">prepopulateRings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># populate all rings (for dumping assignments and testing)</span>
+        <span class="k">for</span> <span class="n">filterFn</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">filterBridgesByIP4</span><span class="p">,</span> <span class="n">filterBridgesByIP6</span><span class="p">]:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span>
+            <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="n">filterAssignBridgesToRing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">hmac</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">+</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">),</span>
+                        <span class="n">n</span><span class="p">)</span>
+                <span class="n">bridgeFilterRules</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">filterFn</span><span class="p">:</span>
+                    <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterFn</span><span class="p">)</span>
+                <span class="n">ruleset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">)</span>
+                <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                        <span class="s">&quot;Order-Bridges-In-Ring-</span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">n</span><span class="p">)</span> 
+                <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">ring</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">ruleset</span><span class="p">,</span> <span class="n">filterBridgesByRules</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">),</span>
+                                      <span class="n">populate_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+
+
+            <span class="c"># populate all ip clusters</span>
+            <span class="k">for</span> <span class="n">clusterNum</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span><span class="p">):</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="n">filterAssignBridgesToRing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">hmac</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">+</span>
+                                              <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">),</span>
+                                              <span class="n">clusterNum</span><span class="p">)</span> 
+                <span class="n">bridgeFilterRules</span> <span class="o">=</span> <span class="p">[</span><span class="n">g</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">filterFn</span><span class="p">:</span>
+                    <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterFn</span><span class="p">)</span>
+                <span class="n">ruleset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">)</span>
+                <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                                                 <span class="s">&quot;Order-Bridges-In-Ring-</span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">clusterNum</span><span class="p">)</span> 
+                <span class="n">ring</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">ruleset</span><span class="p">,</span> <span class="n">filterBridgesByRules</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">),</span>
+                                      <span class="n">populate_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="IPBasedDistributor.clear"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="IPBasedDistributor.insert"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assign a bridge to this distributor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="IPBasedDistributor.getBridgesForIP"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor.getBridgesForIP">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgesForIP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">countryCode</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                        <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of bridges to give to a user.</span>
+<span class="sd">           ip -- the user&#39;s IP address, as a dotted quad.</span>
+<span class="sd">           epoch -- the time period when we got this request.  This can</span>
+<span class="sd">               be any string, so long as it changes with every period.</span>
+<span class="sd">           N -- the number of bridges to try to give back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bridgeFilterRules</span><span class="p">:</span> <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;getBridgesForIP(</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">ip</span><span class="p">),</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">bridgeFilterRules</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;bailing without splitter&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areaMapper</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;area is </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">area</span><span class="p">))</span>
+        
+        <span class="n">key1</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span>
+
+        <span class="c"># only one of ip categories or area clustering is active</span>
+        <span class="c"># try to match the request to an ip category</span>
+        <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+            <span class="c"># IP Categories</span>
+            <span class="k">if</span> <span class="n">category</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="n">filterAssignBridgesToRing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">hmac</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">+</span>
+                                                      <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">),</span>
+                                                      <span class="n">n</span><span class="p">)</span>
+                <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;category&lt;</span><span class="si">%s</span><span class="s">&gt;</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">area</span><span class="p">))</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areaOrderHmac</span><span class="p">(</span><span class="s">&quot;category&lt;</span><span class="si">%s</span><span class="s">&gt;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">area</span><span class="p">))</span>
+                <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                                             <span class="s">&quot;Order-Bridges-In-Ring-</span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">n</span><span class="p">)</span> 
+                <span class="k">break</span><span class="p">;</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c"># if no category matches, use area clustering</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># IP clustering</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">areaClusterHmac</span><span class="p">(</span><span class="n">area</span><span class="p">)[:</span><span class="mi">8</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="c"># length of numClusters</span>
+            <span class="n">clusterNum</span> <span class="o">=</span> <span class="n">h</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span>
+ 
+            <span class="n">g</span> <span class="o">=</span> <span class="n">filterAssignBridgesToRing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">hmac</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">nClusters</span> <span class="o">+</span>
+                                          <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">),</span>
+                                          <span class="n">clusterNum</span><span class="p">)</span> 
+            <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areaOrderHmac</span><span class="p">(</span><span class="s">&quot;&lt;</span><span class="si">%s</span><span class="s">&gt;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">area</span><span class="p">))</span>
+            <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                                             <span class="s">&quot;Order-Bridges-In-Ring-</span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">clusterNum</span><span class="p">)</span> 
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;bridgeFilterRules: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">bridgeFilterRules</span><span class="p">)</span>
+
+        <span class="c"># try to find a cached copy</span>
+        <span class="n">ruleset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">)</span>
+
+        <span class="c"># See if we have a cached copy of the ring,</span>
+        <span class="c"># otherwise, add a new ring and populate it</span>
+        <span class="k">if</span> <span class="n">ruleset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Cache hit </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ruleset</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span><span class="n">ring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">filterRings</span><span class="p">[</span><span class="n">ruleset</span><span class="p">]</span>
+
+        <span class="c"># else create the ring and populate it</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Cache miss </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ruleset</span><span class="p">)</span>
+            <span class="n">ring</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">ruleset</span><span class="p">,</span> <span class="n">filterBridgesByRules</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">),</span>
+                                  <span class="n">populate_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+
+        <span class="c"># get an appropriate number of bridges</span>
+        <span class="k">return</span> <span class="n">ring</span><span class="o">.</span><span class="n">getBridges</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">getNumBridgesPerAnswer</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">max_bridges_per_answer</span><span class="o">=</span><span class="n">N</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IPBasedDistributor.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IPBasedDistributor.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">dumpAssignments</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span>
+
+
+<span class="c"># These characters are the ones that RFC2822 allows.</span>
+<span class="c">#ASPECIAL = &#39;!#$%&amp;*+-/=?^_`{|}~&#39;</span>
+<span class="c">#ASPECIAL += &quot;\\\&#39;&quot;</span>
+<span class="c"># These are the ones we&#39;re pretty sure we can handle right.</span></div></div>
+<span class="n">ASPECIAL</span> <span class="o">=</span> <span class="s">&#39;-_+/=_~&#39;</span>
+
+<span class="n">ACHAR</span> <span class="o">=</span> <span class="s">r&#39;[\w</span><span class="si">%s</span><span class="s">]&#39;</span> <span class="o">%</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ASPECIAL</span><span class="p">)</span>
+<span class="n">DOTATOM</span> <span class="o">=</span> <span class="s">r&#39;</span><span class="si">%s</span><span class="s">+(?:\.</span><span class="si">%s</span><span class="s">+)*&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">ACHAR</span><span class="p">,</span><span class="n">ACHAR</span><span class="p">)</span>
+<span class="n">DOMAIN</span> <span class="o">=</span> <span class="s">r&#39;\w+(?:\.\w+)*&#39;</span>
+<span class="n">ADDRSPEC</span> <span class="o">=</span> <span class="s">r&#39;(</span><span class="si">%s</span><span class="s">)\@(</span><span class="si">%s</span><span class="s">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">DOTATOM</span><span class="p">,</span> <span class="n">DOMAIN</span><span class="p">)</span>
+
+<span class="n">SPACE_PAT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s+&#39;</span><span class="p">)</span>
+<span class="n">ADDRSPEC_PAT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">ADDRSPEC</span><span class="p">)</span>
+
+<span class="n">MAX_EMAIL_RATE</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="mi">3600</span>
+
+<div class="viewcode-block" id="BadEmail"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.BadEmail">[docs]</a><span class="k">class</span> <span class="nc">BadEmail</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised when we get a bad email address.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+</div>
+<div class="viewcode-block" id="UnsupportedDomain"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.UnsupportedDomain">[docs]</a><span class="k">class</span> <span class="nc">UnsupportedDomain</span><span class="p">(</span><span class="n">BadEmail</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised when we get an email address from a domain we</span>
+<span class="sd">       don&#39;t know.&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="TooSoonEmail"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.TooSoonEmail">[docs]</a><span class="k">class</span> <span class="nc">TooSoonEmail</span><span class="p">(</span><span class="n">BadEmail</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when we got a request from this address too recently.&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="IgnoreEmail"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.IgnoreEmail">[docs]</a><span class="k">class</span> <span class="nc">IgnoreEmail</span><span class="p">(</span><span class="n">BadEmail</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when we get requests from this address after rate warning.&quot;&quot;&quot;</span>
+    <span class="k">pass</span> 
+</div>
+<div class="viewcode-block" id="extractAddrSpec"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.extractAddrSpec">[docs]</a><span class="k">def</span> <span class="nf">extractAddrSpec</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given an email From line, try to extract and parse the addrspec</span>
+<span class="sd">       portion.  Returns localpart,domain on success; raises BadEmail</span>
+<span class="sd">       on failure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig_addr</span> <span class="o">=</span> <span class="n">addr</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">SPACE_PAT</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="c"># Only works on usual-form addresses; raises BadEmail on weird</span>
+    <span class="c"># address form.  That&#39;s okay, since we&#39;ll only get those when</span>
+    <span class="c"># people are trying to fool us.</span>
+    <span class="k">if</span> <span class="s">&#39;&lt;&#39;</span> <span class="ow">in</span> <span class="n">addr</span><span class="p">:</span>
+        <span class="c"># Take the _last_ index of &lt;, so that we don&#39;t need to bother</span>
+        <span class="c"># with quoting tricks.</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span><span class="p">)</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">addr</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;&lt;([^&gt;]*)&gt;&#39;</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BadEmail</span><span class="p">(</span><span class="s">&quot;Couldn&#39;t extract address spec&quot;</span><span class="p">,</span> <span class="n">orig_addr</span><span class="p">)</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># At this point, addr holds a putative addr-spec.  We only allow the</span>
+    <span class="c"># following form:</span>
+    <span class="c">#   addr-spec = local-part &quot;@&quot; domain</span>
+    <span class="c">#   local-part = dot-atom</span>
+    <span class="c">#   domain = dot-atom</span>
+    <span class="c">#</span>
+    <span class="c"># In particular, we are disallowing: obs-local-part, obs-domain,</span>
+    <span class="c"># comment, obs-FWS,</span>
+    <span class="c">#</span>
+    <span class="c"># Other forms exist, but none of the incoming services we recognize</span>
+    <span class="c"># support them.</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">ADDRSPEC_PAT</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BadEmail</span><span class="p">(</span><span class="s">&quot;Bad address spec format&quot;</span><span class="p">,</span> <span class="n">orig_addr</span><span class="p">)</span>
+    <span class="n">localpart</span><span class="p">,</span> <span class="n">domain</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">localpart</span><span class="p">,</span> <span class="n">domain</span>
+</div>
+<div class="viewcode-block" id="normalizeEmail"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.normalizeEmail">[docs]</a><span class="k">def</span> <span class="nf">normalizeEmail</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">domainmap</span><span class="p">,</span> <span class="n">domainrules</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given the contents of a from line, and a map of supported email</span>
+<span class="sd">       domains (in lowercase), raise BadEmail or return a normalized</span>
+<span class="sd">       email address.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">localpart</span><span class="p">,</span> <span class="n">domain</span> <span class="o">=</span> <span class="n">extractAddrSpec</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">domainmap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="n">domainmap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnsupportedDomain</span><span class="p">(</span><span class="s">&quot;Domain not supported&quot;</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+
+    <span class="c">#XXXX Do these rules also hold for Yahoo?</span>
+
+    <span class="c"># addr+foo@ is an alias for addr@</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">localpart</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">localpart</span> <span class="o">=</span> <span class="n">localpart</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">rules</span> <span class="o">=</span> <span class="n">domainrules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">domain</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="s">&#39;ignore_dots&#39;</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="c"># j.doe@ is the same as jdoe@.</span>
+        <span class="n">localpart</span> <span class="o">=</span> <span class="n">localpart</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">@</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">localpart</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EmailBasedDistributor"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor">[docs]</a><span class="k">class</span> <span class="nc">EmailBasedDistributor</span><span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object that hands out bridges based on the email address of an incoming</span>
+<span class="sd">       request and the current time period.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">## Fields:</span>
+    <span class="c">##   emailHmac -- an hmac function used to order email addresses within</span>
+    <span class="c">##       a ring.</span>
+    <span class="c">##   ring -- a BridgeRing object to hold all the bridges we hand out.</span>
+    <span class="c">##   store -- a database object to remember what we&#39;ve given to whom.</span>
+    <span class="c">##   domainmap -- a map from lowercase domains that we support mail from</span>
+    <span class="c">##       to their canonical forms.</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">domainmap</span><span class="p">,</span> <span class="n">domainrules</span><span class="p">,</span>
+                 <span class="n">answerParameters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Map-Addresses-To-Ring&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emailHmac</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">key2</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Order-Bridges-In-Ring&quot;</span><span class="p">)</span>
+        <span class="c"># XXXX clear the store when the period rolls over!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domainmap</span> <span class="o">=</span> <span class="n">domainmap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domainrules</span> <span class="o">=</span> <span class="n">domainrules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span> <span class="o">=</span> <span class="n">answerParameters</span>
+
+        <span class="c">#XXX cache options not implemented</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">FilteredBridgeSplitter</span><span class="p">(</span><span class="n">key2</span><span class="p">,</span>
+                                                            <span class="n">max_cached_rings</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EmailBasedDistributor.clear"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="c">#self.ring.clear() # should be take care of by above</span>
+</div>
+<div class="viewcode-block" id="EmailBasedDistributor.insert"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assign a bridge to this distributor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EmailBasedDistributor.getBridgesForEmail"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.getBridgesForEmail">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgesForEmail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emailaddress</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">countryCode</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of bridges to give to a user.</span>
+<span class="sd">           emailaddress -- the user&#39;s email address, as given in a from line.</span>
+<span class="sd">           epoch -- the time period when we got this request.  This can</span>
+<span class="sd">               be any string, so long as it changes with every period.</span>
+<span class="sd">           N -- the number of bridges to try to give back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bridgeFilterRules</span><span class="p">:</span>
+            <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">emailaddress</span> <span class="o">=</span> <span class="n">normalizeEmail</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">domainmap</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">domainrules</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BadEmail</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span> <span class="c">#XXXX log the exception</span>
+        <span class="k">if</span> <span class="n">emailaddress</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span> <span class="c">#XXXX raise an exception.</span>
+
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="n">wasWarned</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getWarnedEmail</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">)</span>
+
+        <span class="n">lastSaw</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getEmailTime</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lastSaw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">lastSaw</span> <span class="o">+</span> <span class="n">MAX_EMAIL_RATE</span> <span class="o">&gt;=</span> <span class="n">now</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wasWarned</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a request for bridges from </span><span class="si">%r</span><span class="s">; we already &quot;</span>
+                             <span class="s">&quot;sent a warning. Ignoring.&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="n">IgnoreEmail</span><span class="p">(</span><span class="s">&quot;Client was warned&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">setWarnedEmail</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span> 
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a request for bridges from </span><span class="si">%r</span><span class="s">; we already &quot;</span>
+                         <span class="s">&quot;answered one within the last </span><span class="si">%d</span><span class="s"> seconds. Warning.&quot;</span><span class="p">,</span>
+                         <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">),</span> <span class="n">MAX_EMAIL_RATE</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">TooSoonEmail</span><span class="p">(</span><span class="s">&quot;Too many emails; wait till later&quot;</span><span class="p">,</span> <span class="n">emailaddress</span><span class="p">)</span>
+
+        <span class="c"># warning period is over</span>
+        <span class="k">elif</span> <span class="n">wasWarned</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">setWarnedEmail</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span> 
+
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">emailHmac</span><span class="p">(</span><span class="s">&quot;&lt;</span><span class="si">%s</span><span class="s">&gt;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">emailaddress</span><span class="p">))</span>
+
+        <span class="n">ring</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">ruleset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ruleset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Cache hit </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ruleset</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span><span class="n">ring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">filterRings</span><span class="p">[</span><span class="n">ruleset</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># cache miss, add new ring</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Cache miss </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ruleset</span><span class="p">)</span>
+
+            <span class="c"># add new ring </span>
+            <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                    <span class="s">&quot;Order-Bridges-In-Ring&quot;</span><span class="p">)</span>
+            <span class="n">ring</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="p">)</span>
+            <span class="c"># debug log: cache miss </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">ruleset</span><span class="p">,</span>
+                                  <span class="n">filterBridgesByRules</span><span class="p">(</span><span class="n">bridgeFilterRules</span><span class="p">),</span>
+                                  <span class="n">populate_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ring</span><span class="o">.</span><span class="n">getBridges</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">getNumBridgesPerAnswer</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">max_bridges_per_answer</span><span class="o">=</span><span class="n">N</span><span class="p">))</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">setEmailTime</span><span class="p">(</span><span class="n">emailaddress</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EmailBasedDistributor.cleanDatabase"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.cleanDatabase">[docs]</a>    <span class="k">def</span> <span class="nf">cleanDatabase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">cleanEmailedBridges</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">MAX_EMAIL_RATE</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">cleanWarnedEmails</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">MAX_EMAIL_RATE</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="EmailBasedDistributor.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">dumpAssignments</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EmailBasedDistributor.prepopulateRings"><a class="viewcode-back" href="../../bridgedb.Dist.html#bridgedb.Dist.EmailBasedDistributor.prepopulateRings">[docs]</a>    <span class="k">def</span> <span class="nf">prepopulateRings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># populate all rings (for dumping assignments and testing)</span>
+        <span class="k">for</span> <span class="n">filterFn</span> <span class="ow">in</span> <span class="p">[</span><span class="n">filterBridgesByIP4</span><span class="p">,</span> <span class="n">filterBridgesByIP6</span><span class="p">]:</span>
+            <span class="n">ruleset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="n">filterFn</span><span class="p">])</span>
+            <span class="n">key1</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+                    <span class="s">&quot;Order-Bridges-In-Ring&quot;</span><span class="p">)</span>
+            <span class="n">ring</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">ruleset</span><span class="p">,</span>
+                                  <span class="n">filterBridgesByRules</span><span class="p">([</span><span class="n">filterFn</span><span class="p">]),</span>
+                                  <span class="n">populate_from</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span></div></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

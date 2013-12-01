@@ -1,0 +1,822 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Main &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Main</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># BridgeDB by Nick Mathewson.</span>
+<span class="c"># Copyright (c) 2007-2009, The Tor Project, Inc.</span>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module sets up a bridgedb and starts the servers running.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging.handlers</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">crypto</span>
+<span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">persistent</span>
+<span class="kn">from</span> <span class="nn">bridgedb.parse</span> <span class="kn">import</span> <span class="n">options</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Bridges</span> <span class="kn">as</span> <span class="nn">Bridges</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Dist</span> <span class="kn">as</span> <span class="nn">Dist</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Time</span> <span class="kn">as</span> <span class="nn">Time</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Storage</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Util</span> <span class="kn">as</span> <span class="nn">Util</span>
+
+
+<div class="viewcode-block" id="configureLogging"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.configureLogging">[docs]</a><span class="k">def</span> <span class="nf">configureLogging</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set up Python&#39;s logging subsystem based on the configuratino.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Turn on safe logging by default</span>
+    <span class="n">safelogging</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&#39;SAFELOGGING&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&#39;LOGLEVEL&#39;</span><span class="p">,</span> <span class="s">&#39;WARNING&#39;</span><span class="p">)</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+    <span class="n">logfile</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&#39;LOGFILE&#39;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">logfile_count</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&#39;LOGFILE_COUNT&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">logfile_rotate_size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&#39;LOGFILE_ROTATE_SIZE&#39;</span><span class="p">,</span> <span class="mi">10000000</span><span class="p">)</span>
+    <span class="n">Util</span><span class="o">.</span><span class="n">set_safe_logging</span><span class="p">(</span><span class="n">safelogging</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logfile</span><span class="p">:</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span><span class="n">logfile</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span>
+                                                       <span class="n">logfile_rotate_size</span><span class="p">,</span>
+                                                       <span class="n">logfile_count</span><span class="p">)</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(asctime)s</span><span class="s"> [</span><span class="si">%(levelname)s</span><span class="s">] </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">,</span>
+                                      <span class="s">&quot;%b </span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Logger Started.&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Level: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logfile</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Log File: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">logfile</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Log File Count: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">logfile_count</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Rotate Logs After Size: </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span>  <span class="n">logfile_rotate_size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Logging to stderr&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">safelogging</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Safe Logging: Enabled&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Safe Logging: Disabled&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read and parse all descriptors, and load into a bridge splitter.</span>
+
+<span class="sd">    Read all the appropriate bridge files from the saved</span>
+<span class="sd">    :class:`~bridgedb.persistent.State`, parse and validate them, and then</span>
+<span class="sd">    store them into our ``state.splitter`` instance. The ``state`` will be</span>
+<span class="sd">    saved again at the end of this function.</span>
+
+<span class="sd">    :type splitter: :class:`BridgeSplitter &lt;bridgedb.Bridges.BridgeHolder&gt;`</span>
+<span class="sd">    :param splitter: A class which provides a mechanism for HMACing</span>
+<span class="sd">        Bridges in order to assign them to hashrings.</span>
+<span class="sd">    :param boolean clear: If True, clear all previous bridges from the</span>
+<span class="sd">        splitter before parsing for new ones.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="s">&quot;bridgedb.Main.load() could not retrieve state!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Clearing old bridges...&quot;</span><span class="p">)</span>
+        <span class="n">splitter</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading bridges...&quot;</span><span class="p">)</span>
+
+    <span class="n">status</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">addresses</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">timestamps</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Opening network status file: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">state</span><span class="o">.</span><span class="n">STATUS_FILE</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">STATUS_FILE</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">ID</span><span class="p">,</span> <span class="n">running</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span>
+         <span class="n">or_addresses</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span> <span class="ow">in</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">parseStatusFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+
+        <span class="n">status</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">running</span><span class="p">,</span> <span class="n">stable</span>
+        <span class="n">addresses</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">or_addresses</span>
+
+        <span class="k">if</span> <span class="n">ID</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">timestamps</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamps</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">timestamp</span><span class="p">]</span>
+        <span class="c">#transports[ID] = transports</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Closing network status file&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">bridges</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">BRIDGE_FILES</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Opening bridge-server-descriptor file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bridge</span> <span class="ow">in</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">parseDescFile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">BRIDGE_PURPOSE</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()</span> <span class="ow">in</span> <span class="n">bridges</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Parsed a duplicate bridge. Skipping.&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bridges</span><span class="p">[</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()]</span> <span class="o">=</span> <span class="n">bridge</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">running</span><span class="p">,</span> <span class="n">stable</span> <span class="o">=</span> <span class="n">s</span>
+                    <span class="n">bridge</span><span class="o">.</span><span class="n">setStatus</span><span class="p">(</span><span class="n">running</span><span class="o">=</span><span class="n">running</span><span class="p">,</span> <span class="n">stable</span><span class="o">=</span><span class="n">stable</span><span class="p">)</span>
+                <span class="c"># XXX: what do we do with all these or_addresses?</span>
+                <span class="c">#</span>
+                <span class="c"># The bridge stability metrics are only concerned with a</span>
+                <span class="c"># single ip:port So for now, we will only consider the bridges</span>
+                <span class="c"># primary IP:port</span>
+                <span class="n">bridge</span><span class="o">.</span><span class="n">or_addresses</span> <span class="o">=</span> <span class="n">addresses</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">())</span>
+                <span class="n">splitter</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()</span> <span class="ow">in</span> <span class="n">timestamps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">ts</span> <span class="o">=</span> <span class="n">timestamps</span><span class="p">[</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()][:]</span>
+                    <span class="n">ts</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">ts</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                            <span class="s">&quot;Adding/updating timestamps in BridgeHistory for &quot;</span><span class="p">,</span>
+                            <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39; in database: </span><span class="si">%s</span><span class="s">&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">(),</span> <span class="n">timestamp</span><span class="p">))</span>
+                        <span class="n">bridgedb</span><span class="o">.</span><span class="n">Stability</span><span class="o">.</span><span class="n">addOrUpdateBridgeHistory</span><span class="p">(</span>
+                            <span class="n">bridge</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Closing bridge-server-descriptor file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c"># read pluggable transports from extra-info document</span>
+    <span class="c"># XXX: should read from networkstatus after bridge-authority</span>
+    <span class="c"># does a reachability test</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">EXTRA_INFO_FILES</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Opening extra-info file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">transport</span> <span class="ow">in</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">parseExtraInfoFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">ID</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">argdict</span> <span class="o">=</span> <span class="n">transport</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding </span><span class="si">%s</span><span class="s"> transport to running bridge&quot;</span>
+                                  <span class="o">%</span> <span class="n">method_name</span><span class="p">)</span>
+                    <span class="n">bridgePT</span> <span class="o">=</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">PluggableTransport</span><span class="p">(</span>
+                        <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">],</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">argdict</span><span class="p">)</span>
+                    <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">transports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridgePT</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">bridgePT</span> <span class="ow">in</span> <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">transports</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                            <span class="s">&quot;Added a transport, but it disappeared!&quot;</span><span class="p">,</span>
+                            <span class="s">&quot;</span><span class="se">\t</span><span class="s">Transport: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">bridgePT</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not find bridge with fingerprint &#39;</span><span class="si">%s</span><span class="s">&#39;.&quot;</span>
+                              <span class="o">%</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">toHex</span><span class="p">(</span><span class="n">ID</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Closing extra-info file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">COUNTRY_BLOCK_FILE</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Opening Blocking Countries file </span><span class="si">%s</span><span class="s">&quot;</span>
+                     <span class="o">%</span> <span class="n">state</span><span class="o">.</span><span class="n">COUNTRY_BLOCK_FILE</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">COUNTRY_BLOCK_FILE</span><span class="p">)</span>
+        <span class="c"># Identity digest, primary OR address, portlist, country codes</span>
+        <span class="k">for</span> <span class="n">ID</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">portlist</span><span class="p">,</span> <span class="n">cc</span> <span class="ow">in</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">parseCountryBlockFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ID</span> <span class="ow">in</span> <span class="n">bridges</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">portlist</span><span class="p">:</span>
+                    <span class="n">addrport</span> <span class="o">=</span> <span class="s">&quot;{0}:{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;:&#39;( Tears! </span><span class="si">%s</span><span class="s"> blocked bridge </span><span class="si">%s</span><span class="s"> at </span><span class="si">%s</span><span class="s">&quot;</span>
+                                  <span class="o">%</span> <span class="p">(</span><span class="n">cc</span><span class="p">,</span> <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">addrport</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">blockingCountries</span><span class="p">[</span><span class="n">addrport</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">bridges</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">blockingCountries</span><span class="p">[</span><span class="n">addrport</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Closing blocking-countries document&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">bridges</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">return</span>
+</div>
+<div class="viewcode-block" id="loadConfig"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.loadConfig">[docs]</a><span class="k">def</span> <span class="nf">loadConfig</span><span class="p">(</span><span class="n">configFile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">configCls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load configuration settings on top of the current settings.</span>
+
+<span class="sd">    All pathnames and filenames within settings in the ``configFile`` will be</span>
+<span class="sd">    expanded, and their expanded values will be stored in the returned</span>
+<span class="sd">    :class:`config &lt;Conf&gt;` object.</span>
+
+<span class="sd">    ** Note: **</span>
+<span class="sd">    On the strange-looking use of</span>
+<span class="sd">      ``exec compile(open(configFile).read(), &#39;&lt;string&gt;&#39;, &#39;exec&#39;) in dict()``</span>
+<span class="sd">    in this function:</span>
+
+<span class="sd">    The contents of the config file should be compiled first, and then</span>
+<span class="sd">    ``exec``ed -- not ``execfile``! -- in order to get the contents of the</span>
+<span class="sd">    config file to exist within the scope of the configuration dictionary.</span>
+<span class="sd">    Otherwise, Python *will* default_ to executing the config file directly</span>
+<span class="sd">    within the ``globals()`` scope.</span>
+
+<span class="sd">    Additionally, it&#39;s roughly 20-30 times faster_ to use the ``compile``</span>
+<span class="sd">    builtin on a string (the contents of the file) before ``exec``ing it, than</span>
+<span class="sd">    using ``execfile`` directly on the file.</span>
+
+<span class="sd">    .. _default: http://stackoverflow.com/q/17470193</span>
+<span class="sd">    .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/</span>
+
+<span class="sd">    :ivar boolean itsSafeToUseLogging: This is called in :func:`startup`</span>
+<span class="sd">        before :func:`configureLogging`. When called from ``startup``, the</span>
+<span class="sd">        ``configCls`` parameter is not given, because that is the first time</span>
+<span class="sd">        that a :class:`Conf` is created. If a :class:`logging.Logger` is</span>
+<span class="sd">        created in this function, then logging will not be correctly</span>
+<span class="sd">        configured, therefore, if the ``configCls`` parameter is not given,</span>
+<span class="sd">        then it&#39;s the first time this function has been called and it is</span>
+<span class="sd">        therefore not safe to make calls to the logging module.</span>
+<span class="sd">    :type: configFile: string or None</span>
+<span class="sd">    :param string configFile: If given, the filename of the config file to</span>
+<span class="sd">        load.</span>
+<span class="sd">    :type configCls: :class:`bridgedb.Main.Conf` or None</span>
+<span class="sd">    :param configCls: The current configuration, if one already exists.</span>
+<span class="sd">    :rtype: :class:`Conf`</span>
+<span class="sd">    :returns: A new configuration, with the old settings as defaults, and the</span>
+<span class="sd">        settings from the config file overriding them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">itsSafeToUseLogging</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">configuration</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">configCls</span><span class="p">:</span>
+        <span class="n">itsSafeToUseLogging</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">oldConfig</span> <span class="o">=</span> <span class="n">configCls</span><span class="o">.</span><span class="n">__dict__</span>
+        <span class="n">configuration</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">oldConfig</span><span class="p">)</span> <span class="c"># Load current settings</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Reloading over in-memory configurations...&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">itsSafeToUseLogging</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Old configuration settings:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span>
+                      <span class="o">%</span> <span class="n">pprint</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="n">conffile</span> <span class="o">=</span> <span class="n">configFile</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">configFile</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s">&#39;CONFIG_FILE&#39;</span> <span class="ow">in</span> <span class="n">configuration</span><span class="p">):</span>
+        <span class="n">conffile</span> <span class="o">=</span> <span class="n">configuration</span><span class="p">[</span><span class="s">&#39;CONFIG_FILE&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">conffile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">itsSafeToUseLogging</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading settings from config file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">conffile</span><span class="p">)</span>
+        <span class="n">compiled</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">conffile</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
+        <span class="k">exec</span> <span class="n">compiled</span> <span class="ow">in</span> <span class="n">configuration</span>
+
+    <span class="k">if</span> <span class="n">itsSafeToUseLogging</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;New configuration settings:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span>
+                      <span class="o">%</span> <span class="n">pprint</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+    <span class="c"># Create a :class:`Conf` from the settings stored within the local scope</span>
+    <span class="c"># of the ``configuration`` dictionary:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">persistent</span><span class="o">.</span><span class="n">Conf</span><span class="p">(</span><span class="o">**</span><span class="n">configuration</span><span class="p">)</span>
+
+    <span class="c"># We want to set the updated/expanded paths for files on the ``config``,</span>
+    <span class="c"># because the copy of this config, `state.config` is used later to compare</span>
+    <span class="c"># with a new :class:`Conf` instance, to see if there were any changes.</span>
+    <span class="c">#</span>
+    <span class="c"># See :meth:`bridgedb.persistent.State.useUpdatedSettings`.</span>
+
+    <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;PROXY_LIST_FILES&quot;</span><span class="p">,</span> <span class="s">&quot;BRIDGE_FILES&quot;</span><span class="p">,</span> <span class="s">&quot;EXTRA_INFO_FILES&quot;</span><span class="p">]:</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">setting</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[])</span> <span class="c"># If they weren&#39;t set, make them lists</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="c"># If they were set, expand the paths:</span>
+                    <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">setting</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;DB_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;DB_LOG_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;MASTER_KEY_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;PIDFILE&quot;</span><span class="p">,</span>
+                 <span class="s">&quot;ASSIGNMENTS_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;HTTPS_CERT_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;HTTPS_KEY_FILE&quot;</span><span class="p">,</span>
+                 <span class="s">&quot;LOG_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;STATUS_FILE&quot;</span><span class="p">,</span> <span class="s">&quot;COUNTRY_BLOCK_FILE&quot;</span><span class="p">]:</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">setting</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">setting</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;FORCE_PORTS&quot;</span><span class="p">,</span> <span class="s">&quot;FORCE_FLAGS&quot;</span><span class="p">]:</span>
+        <span class="n">setting</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="p">[])</span> <span class="c"># Default to empty lists</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">setting</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">domain</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DOMAINS</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_MAP</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span> <span class="o">=</span> <span class="n">domain</span>
+
+    <span class="k">if</span> <span class="n">conffile</span><span class="p">:</span> <span class="c"># Store the pathname of the config file, if one was used</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">conffile</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+</div>
+<div class="viewcode-block" id="loadProxyList"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.loadProxyList">[docs]</a><span class="k">def</span> <span class="nf">loadProxyList</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+    <span class="n">ipset</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">PROXY_LIST_FILES</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;#&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">is_valid_ip</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+                <span class="n">ipset</span><span class="p">[</span><span class="n">line</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Skipping line </span><span class="si">%r</span><span class="s"> in </span><span class="si">%s</span><span class="s">: not an IP.&quot;</span><span class="p">,</span>
+                             <span class="n">line</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ipset</span>
+</div>
+<div class="viewcode-block" id="_reloadFn"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main._reloadFn">[docs]</a><span class="k">def</span> <span class="nf">_reloadFn</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Placeholder callback function for :func:`_handleSIGHUP`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="_handleSIGHUP"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main._handleSIGHUP">[docs]</a><span class="k">def</span> <span class="nf">_handleSIGHUP</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called when we receive a SIGHUP; invokes _reloadFn.&quot;&quot;&quot;</span>
+    <span class="n">reactor</span><span class="o">.</span><span class="n">callLater</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">_reloadFn</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ProxyCategory"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.ProxyCategory">[docs]</a><span class="k">class</span> <span class="nc">ProxyCategory</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ipset</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="viewcode-block" id="ProxyCategory.contains"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.ProxyCategory.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ipset</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ProxyCategory.replaceProxyList"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.ProxyCategory.replaceProxyList">[docs]</a>    <span class="k">def</span> <span class="nf">replaceProxyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ipset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ipset</span> <span class="o">=</span> <span class="n">ipset</span>
+</div></div>
+<div class="viewcode-block" id="startup"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.startup">[docs]</a><span class="k">def</span> <span class="nf">startup</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse bridges,</span>
+
+<span class="sd">    :type options: :class:`bridgedb.parse.options.MainOptions`</span>
+<span class="sd">    :param options: A pre-parsed options class containing any arguments and</span>
+<span class="sd">        options given in the commandline we were called with.</span>
+<span class="sd">    :type state: :class:`bridgedb.persistent.State`</span>
+<span class="sd">    :ivar state: A persistent state object which holds config changes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Change to the directory where we&#39;re supposed to run. This must be done</span>
+    <span class="c"># before parsing the config file, otherwise there will need to be two</span>
+    <span class="c"># copies of the config file, one in the directory BridgeDB is started in,</span>
+    <span class="c"># and another in the directory it changes into.</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;verbosity&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">:</span> <span class="c"># Corresponds to logging.DEBUG</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Changed to runtime directory </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">loadConfig</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">])</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">RUN_IN_DIR</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">]</span>
+
+    <span class="c"># Set up logging as early as possible. We cannot import from the bridgedb</span>
+    <span class="c"># package any of our modules which import :mod:`logging` and start using</span>
+    <span class="c"># it, at least, not until :func:`configureLogging` is called. Otherwise a</span>
+    <span class="c"># default handler that logs to the console will be created by the imported</span>
+    <span class="c"># module, and all further calls to :func:`logging.basicConfig` will be</span>
+    <span class="c"># ignored.</span>
+    <span class="n">configureLogging</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;dump-bridges&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">subCommand</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">runSubcommand</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+
+    <span class="c"># Write the pidfile only after any options.subCommands are run (because</span>
+    <span class="c"># these exit when they are finished). Otherwise, if there is a subcommand,</span>
+    <span class="c"># the real PIDFILE would get overwritten with the PID of the temporary</span>
+    <span class="c"># bridgedb process running the subcommand.</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">PIDFILE</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Writing server PID to file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">config</span><span class="o">.</span><span class="n">PIDFILE</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">PIDFILE</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pidfile</span><span class="p">:</span>
+            <span class="n">pidfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())</span>
+            <span class="n">pidfile</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+    <span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">persistent</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="n">persistent</span><span class="o">.</span><span class="n">State</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">EmailServer</span>
+    <span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">HTTPServer</span>
+
+    <span class="c"># Load the master key, or create a new one.</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">getKey</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">MASTER_KEY_FILE</span><span class="p">)</span>
+
+    <span class="c"># Initialize our DB file.</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">Database</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">DB_FILE</span> <span class="o">+</span> <span class="s">&quot;.sqlite&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">DB_FILE</span><span class="p">)</span>
+    <span class="c"># TODO: move setGlobalDB to bridgedb.persistent.State class</span>
+    <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">setGlobalDB</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+
+    <span class="c"># Get a proxy list.</span>
+    <span class="n">proxyList</span> <span class="o">=</span> <span class="n">ProxyCategory</span><span class="p">()</span>
+    <span class="n">proxyList</span><span class="o">.</span><span class="n">replaceProxyList</span><span class="p">(</span><span class="n">loadProxyList</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+    <span class="c"># Create a BridgeSplitter to assign the bridges to the different</span>
+    <span class="c"># distributors.</span>
+    <span class="n">splitter</span> <span class="o">=</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeSplitter</span><span class="p">(</span><span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Splitter-Key&quot;</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Created splitter: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">splitter</span><span class="p">)</span>
+
+    <span class="c"># Create ring parameters.</span>
+    <span class="n">ringParams</span> <span class="o">=</span> <span class="n">Bridges</span><span class="o">.</span><span class="n">BridgeRingParameters</span><span class="p">(</span><span class="n">needPorts</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">FORCE_PORTS</span><span class="p">,</span>
+                                              <span class="n">needFlags</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">FORCE_FLAGS</span><span class="p">)</span>
+
+    <span class="n">emailDistributor</span> <span class="o">=</span> <span class="n">ipDistributor</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="c"># As appropriate, create an IP-based distributor.</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">HTTPS_DIST</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">HTTPS_SHARE</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting up HTTPS Distributor...&quot;</span><span class="p">)</span>
+        <span class="n">categories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">proxyList</span><span class="o">.</span><span class="n">ipset</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding proxyList to HTTPS Distributor categories.&quot;</span><span class="p">)</span>
+            <span class="n">categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">proxyList</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;HTTPS Distributor categories: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">categories</span><span class="p">)</span>
+
+        <span class="n">ipDistributor</span> <span class="o">=</span> <span class="n">Dist</span><span class="o">.</span><span class="n">IPBasedDistributor</span><span class="p">(</span>
+            <span class="n">Dist</span><span class="o">.</span><span class="n">uniformMap</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">N_IP_CLUSTERS</span><span class="p">,</span>
+            <span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;HTTPS-IP-Dist-Key&quot;</span><span class="p">),</span>
+            <span class="n">categories</span><span class="p">,</span>
+            <span class="n">answerParameters</span><span class="o">=</span><span class="n">ringParams</span><span class="p">)</span>
+        <span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">ipDistributor</span><span class="p">,</span> <span class="s">&quot;https&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">HTTPS_SHARE</span><span class="p">)</span>
+        <span class="c">#webSchedule = Time.IntervalSchedule(&quot;day&quot;, 2)</span>
+        <span class="n">webSchedule</span> <span class="o">=</span> <span class="n">Time</span><span class="o">.</span><span class="n">NoSchedule</span><span class="p">()</span>
+
+    <span class="c"># As appropriate, create an email-based distributor.</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DIST</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_SHARE</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting up Email Distributor...&quot;</span><span class="p">)</span>
+        <span class="n">emailDistributor</span> <span class="o">=</span> <span class="n">Dist</span><span class="o">.</span><span class="n">EmailBasedDistributor</span><span class="p">(</span>
+            <span class="n">Bridges</span><span class="o">.</span><span class="n">get_hmac</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&quot;Email-Dist-Key&quot;</span><span class="p">),</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_MAP</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_RULES</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">answerParameters</span><span class="o">=</span><span class="n">ringParams</span><span class="p">)</span>
+        <span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">emailDistributor</span><span class="p">,</span> <span class="s">&quot;email&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_SHARE</span><span class="p">)</span>
+        <span class="c">#emailSchedule = Time.IntervalSchedule(&quot;day&quot;, 1)</span>
+        <span class="n">emailSchedule</span> <span class="o">=</span> <span class="n">Time</span><span class="o">.</span><span class="n">NoSchedule</span><span class="p">()</span>
+
+    <span class="c"># As appropriate, tell the splitter to leave some bridges unallocated.</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">RESERVED_SHARE</span><span class="p">:</span>
+        <span class="n">splitter</span><span class="o">.</span><span class="n">addRing</span><span class="p">(</span><span class="n">Bridges</span><span class="o">.</span><span class="n">UnallocatedHolder</span><span class="p">(),</span>
+                         <span class="s">&quot;unallocated&quot;</span><span class="p">,</span>
+                         <span class="n">config</span><span class="o">.</span><span class="n">RESERVED_SHARE</span><span class="p">)</span>
+
+    <span class="c"># Add pseudo distributors to splitter</span>
+    <span class="k">for</span> <span class="n">pseudoRing</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">FILE_BUCKETS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">splitter</span><span class="o">.</span><span class="n">addPseudoRing</span><span class="p">(</span><span class="n">pseudoRing</span><span class="p">)</span>
+
+    <span class="c"># Save our state</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">proxyList</span> <span class="o">=</span> <span class="n">proxyList</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reload</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Reload settings, proxy lists, and bridges.</span>
+
+<span class="sd">        State should be saved before calling this method, and will be saved</span>
+<span class="sd">        again at the end of it.</span>
+
+<span class="sd">        The internal variables, ``cfg``, ``splitter``, ``proxyList``,</span>
+<span class="sd">        ``ipDistributor``, and ``emailDistributor`` are all taken from a</span>
+<span class="sd">        :class:`~bridgedb.persistent.State` instance, which has been saved to</span>
+<span class="sd">        a statefile with :meth:`bridgedb.persistent.State.save`.</span>
+
+<span class="sd">        :type cfg: :class:`Conf`</span>
+<span class="sd">        :ivar cfg: The current configuration, including any in-memory</span>
+<span class="sd">            settings (i.e. settings whose values were not obtained from the</span>
+<span class="sd">            config file, but were set via a function somewhere)</span>
+<span class="sd">        :type splitter: A :class:`bridgedb.Bridges.BridgeHolder`</span>
+<span class="sd">        :ivar splitter: A class which takes an HMAC key and splits bridges</span>
+<span class="sd">            into their hashring assignments.</span>
+<span class="sd">        :type proxyList: :class:`ProxyCategory`</span>
+<span class="sd">        :ivar proxyList: The container for the IP addresses of any currently</span>
+<span class="sd">             known open proxies.</span>
+<span class="sd">        :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.</span>
+<span class="sd">        :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.</span>
+<span class="sd">        :ivar dict tasks: A dictionary of ``{name: task}``, where name is a</span>
+<span class="sd">            string to associate with the ``task``, and ``task`` is some</span>
+<span class="sd">            scheduled event, repetitive or otherwise, for the :class:`reactor</span>
+<span class="sd">            &lt;twisted.internet.epollreactor.EPollReactor&gt;`. See the classes</span>
+<span class="sd">            within the :api:`twisted.internet.tasks` module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Caught SIGHUP&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Reloading...&quot;</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading saved state...&quot;</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">persistent</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">loadConfig</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">CONFIG_FILE</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Updating any changed settings...&quot;</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">useChangedSettings</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+        <span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s">&#39;LOGLEVEL&#39;</span><span class="p">,</span> <span class="s">&#39;WARNING&#39;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Updating log level to: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">level</span><span class="p">)</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Saving state again before reparsing descriptors...&quot;</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Reparsing bridge descriptors...&quot;</span><span class="p">)</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">callInThread</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">splitter</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">state</span> <span class="o">=</span> <span class="n">persistent</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Bridges loaded: </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">splitter</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Replacing the list of open proxies...&quot;</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">proxyList</span><span class="o">.</span><span class="n">replaceProxyList</span><span class="p">(</span><span class="n">loadProxyList</span><span class="p">(</span><span class="n">cfg</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">emailDistributor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Prepopulating email distributor hashrings...&quot;</span><span class="p">)</span>
+            <span class="n">emailDistributor</span><span class="o">.</span><span class="n">prepopulateRings</span><span class="p">()</span> <span class="c"># create default rings</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Bridges allotted for email distribution: </span><span class="si">%d</span><span class="s">&quot;</span>
+                         <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">emailDistributor</span><span class="o">.</span><span class="n">splitter</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;No email distributor created!&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ipDistributor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Prepopulating HTTPS distributor hashrings...&quot;</span><span class="p">)</span>
+            <span class="n">ipDistributor</span><span class="o">.</span><span class="n">prepopulateRings</span><span class="p">()</span> <span class="c"># create default rings</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Bridges allotted for web distribution: </span><span class="si">%d</span><span class="s">&quot;</span>
+                         <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">ipDistributor</span><span class="o">.</span><span class="n">splitter</span><span class="p">))</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,(</span><span class="n">f</span><span class="p">,</span><span class="n">r</span><span class="p">))</span> <span class="ow">in</span> <span class="n">ipDistributor</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">by filter set </span><span class="si">%s</span><span class="s">, </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;No HTTP(S) distributor created!&quot;</span><span class="p">)</span>
+
+        <span class="c"># Dump bridge pool assignments to disk.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Dumping pool assignments to file: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
+                          <span class="o">%</span> <span class="n">state</span><span class="o">.</span><span class="n">ASSIGNMENTS_FILE</span><span class="p">)</span>
+            <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">ASSIGNMENTS_FILE</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;bridge-pool-assignment </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span>
+                     <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">))</span>
+            <span class="n">splitter</span><span class="o">.</span><span class="n">dumpAssignments</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;I/O error while writing assignments to: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
+                         <span class="o">%</span> <span class="n">state</span><span class="o">.</span><span class="n">ASSIGNMENTS_FILE</span><span class="p">)</span>
+
+        <span class="n">state</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="k">global</span> <span class="n">_reloadFn</span>
+    <span class="n">_reloadFn</span> <span class="o">=</span> <span class="nb">reload</span>
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGHUP</span><span class="p">,</span> <span class="n">_handleSIGHUP</span><span class="p">)</span>
+
+    <span class="c"># And actually load it to start parsing.</span>
+    <span class="nb">reload</span><span class="p">()</span>
+
+    <span class="c"># Configure all servers:</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">HTTPS_DIST</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">HTTPS_SHARE</span><span class="p">:</span>
+        <span class="n">HTTPServer</span><span class="o">.</span><span class="n">addWebServer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">ipDistributor</span><span class="p">,</span> <span class="n">webSchedule</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_DIST</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">EMAIL_SHARE</span><span class="p">:</span>
+        <span class="n">EmailServer</span><span class="o">.</span><span class="n">addSMTPServer</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">emailDistributor</span><span class="p">,</span> <span class="n">emailSchedule</span><span class="p">)</span>
+
+    <span class="c"># Actually run the servers.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Starting reactors.&quot;</span><span class="p">)</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="s">&quot;Received keyboard interrupt. Shutting down...&quot;</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Closing databases...&quot;</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">PIDFILE</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">PIDFILE</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Exiting...&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="runSubcommand"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.runSubcommand">[docs]</a><span class="k">def</span> <span class="nf">runSubcommand</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Run a subcommand from the &#39;Commands&#39; section of the bridgedb help menu.</span>
+
+<span class="sd">    :type options: :class:`bridgedb.opt.MainOptions`</span>
+<span class="sd">    :param options: A pre-parsed options class containing any arguments and</span>
+<span class="sd">        options given in the commandline we were called with.</span>
+<span class="sd">    :type config: :class:`bridgedb.Main.Conf`</span>
+<span class="sd">    :param config: The current configuration.</span>
+<span class="sd">    :raises: :exc:`SystemExit` when all subCommands and subOptions have</span>
+<span class="sd">        finished running.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Make sure that the runner module is only imported after logging is set</span>
+    <span class="c"># up, otherwise we run into the same logging configuration problem as</span>
+    <span class="c"># mentioned above with the EmailServer and HTTPServer.</span>
+    <span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">runner</span>
+
+    <span class="n">statuscode</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s">&#39;dump-bridges&#39;</span><span class="p">]:</span>
+        <span class="n">runner</span><span class="o">.</span><span class="n">doDumpBridges</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">subCommand</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Running BridgeDB command: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">options</span><span class="o">.</span><span class="n">subCommand</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s">&#39;descriptors&#39;</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">:</span>
+            <span class="n">statuscode</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">generateDescriptors</span><span class="p">(</span>
+                <span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">[</span><span class="s">&#39;descriptors&#39;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">RUN_IN_DIR</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">subCommand</span> <span class="o">==</span> <span class="s">&#39;test&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">[</span><span class="s">&#39;trial&#39;</span><span class="p">]:</span>
+                <span class="n">runner</span><span class="o">.</span><span class="n">runTrial</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">[</span><span class="s">&#39;unittests&#39;</span><span class="p">]:</span>
+                <span class="n">runner</span><span class="o">.</span><span class="n">runTests</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">subOptions</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Subcommand &#39;</span><span class="si">%s</span><span class="s">&#39; finished with status </span><span class="si">%s</span><span class="s">.&quot;</span>
+                     <span class="o">%</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">subCommand</span><span class="p">,</span> <span class="n">statuscode</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">statuscode</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../bridgedb.Main.html#bridgedb.Main.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is the main entry point into BridgeDB.</span>
+
+<span class="sd">    Given the parsed commandline options, this function handles locating the</span>
+<span class="sd">    configuration file, loading and parsing it, and then either</span>
+<span class="sd">    starting/reloading the servers or dumping bridge assignments to files.</span>
+
+<span class="sd">    :type options: :class:`bridgedb.parse.options.MainOptions`</span>
+<span class="sd">    :param options: A pre-parsed options class containing any arguments and</span>
+<span class="sd">        options given in the commandline we were called with.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">startup</span><span class="p">(</span><span class="n">options</span><span class="p">)</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

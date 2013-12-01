@@ -1,0 +1,607 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Tests &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.Util" href="bridgedb.Util.html" />
+    <link rel="prev" title="bridgedb.Storage" href="bridgedb.Storage.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.Util.html" title="bridgedb.Util" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.Storage.html" title="bridgedb.Storage" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Storage.html"
+                        title="previous chapter">bridgedb.Storage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Util.html"
+                        title="next chapter">bridgedb.Util</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Tests.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Storage.html"
+                        title="previous chapter">bridgedb.Storage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Util.html"
+                        title="next chapter">bridgedb.Util</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Tests.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.Tests">
+<span id="bridgedb-tests"></span><h1>bridgedb.Tests<a class="headerlink" href="#module-bridgedb.Tests" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="bridgedb.Tests.suppressWarnings">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">suppressWarnings</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#suppressWarnings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.suppressWarnings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIP">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIP</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIP4">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIP4</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIP4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIP4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIP4String">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIP4String</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIP4String"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIP4String" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIP6">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIP6</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIP6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIP6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIP6String">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIP6String</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIP6String"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIP6String" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomIPString">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomIPString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomIPString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomIPString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.random16IP">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">random16IP</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#random16IP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.random16IP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomPort">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomPort</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomPort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomPort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomPortSpec">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomPortSpec</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomPortSpec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomPortSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a random list of ports</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomCountry">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomCountry</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomCountry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomCountry" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.randomCountrySpec">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">randomCountrySpec</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#randomCountrySpec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.randomCountrySpec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.fakeBridge">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">fakeBridge</tt><big>(</big><em>orport=8080</em>, <em>running=True</em>, <em>stable=True</em>, <em>or_addresses=False</em>, <em>transports=False</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#fakeBridge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.fakeBridge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.fakeBridge6">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">fakeBridge6</tt><big>(</big><em>orport=8080</em>, <em>running=True</em>, <em>stable=True</em>, <em>or_addresses=False</em>, <em>transports=False</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#fakeBridge6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.fakeBridge6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.fake16Bridge">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">fake16Bridge</tt><big>(</big><em>orport=8080</em>, <em>running=True</em>, <em>stable=True</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#fake16Bridge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.fake16Bridge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.gettimestamp">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">gettimestamp</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#gettimestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.gettimestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.RhymesWith255Category">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">RhymesWith255Category</tt><a class="reference internal" href="_modules/bridgedb/Tests.html#RhymesWith255Category"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.RhymesWith255Category" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="bridgedb.Tests.RhymesWith255Category.contains">
+<tt class="descname">contains</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#RhymesWith255Category.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.RhymesWith255Category.contains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.EmailBridgeDistTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">EmailBridgeDistTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#EmailBridgeDistTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.EmailBridgeDistTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.EmailBridgeDistTests.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#EmailBridgeDistTests.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.EmailBridgeDistTests.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.EmailBridgeDistTests.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#EmailBridgeDistTests.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.EmailBridgeDistTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.EmailBridgeDistTests.testEmailRateLimit">
+<tt class="descname">testEmailRateLimit</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#EmailBridgeDistTests.testEmailRateLimit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.EmailBridgeDistTests.testEmailRateLimit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.EmailBridgeDistTests.testUnsupportedDomain">
+<tt class="descname">testUnsupportedDomain</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#EmailBridgeDistTests.testUnsupportedDomain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.EmailBridgeDistTests.testUnsupportedDomain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.IPBridgeDistTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">IPBridgeDistTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.dumbAreaMapper">
+<tt class="descname">dumbAreaMapper</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.dumbAreaMapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.dumbAreaMapper" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testBasicDist">
+<tt class="descname">testBasicDist</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testBasicDist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testBasicDist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithCategories">
+<tt class="descname">testDistWithCategories</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithCategories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithCategories" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterIP6">
+<tt class="descname">testDistWithFilterIP6</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterIP6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterIP6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterIP4">
+<tt class="descname">testDistWithFilterIP4</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterIP4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterIP4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBoth">
+<tt class="descname">testDistWithFilterBoth</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterBoth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBoth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterAll">
+<tt class="descname">testDistWithFilterAll</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterAll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterAll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBlockedCountries">
+<tt class="descname">testDistWithFilterBlockedCountries</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterBlockedCountries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBlockedCountries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBlockedCountriesAdvanced">
+<tt class="descname">testDistWithFilterBlockedCountriesAdvanced</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#IPBridgeDistTests.testDistWithFilterBlockedCountriesAdvanced"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.IPBridgeDistTests.testDistWithFilterBlockedCountriesAdvanced" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.DictStorageTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">DictStorageTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.DictStorageTests.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.DictStorageTests.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.DictStorageTests.testSimpleDict">
+<tt class="descname">testSimpleDict</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests.testSimpleDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests.testSimpleDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.DictStorageTests.testComplexDict">
+<tt class="descname">testComplexDict</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests.testComplexDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests.testComplexDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.DictStorageTests.basictests">
+<tt class="descname">basictests</tt><big>(</big><em>d</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#DictStorageTests.basictests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.DictStorageTests.basictests" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.SQLStorageTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">SQLStorageTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#SQLStorageTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.SQLStorageTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.SQLStorageTests.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#SQLStorageTests.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.SQLStorageTests.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.SQLStorageTests.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#SQLStorageTests.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.SQLStorageTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.SQLStorageTests.assertCloseTo">
+<tt class="descname">assertCloseTo</tt><big>(</big><em>a</em>, <em>b</em>, <em>delta=60</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#SQLStorageTests.assertCloseTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.SQLStorageTests.assertCloseTo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.SQLStorageTests.testBridgeStorage">
+<tt class="descname">testBridgeStorage</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#SQLStorageTests.testBridgeStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.SQLStorageTests.testBridgeStorage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.ParseDescFileTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">ParseDescFileTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.ParseDescFileTests.testSimpleDesc">
+<tt class="descname">testSimpleDesc</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests.testSimpleDesc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests.testSimpleDesc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.ParseDescFileTests.testSingleOrAddress">
+<tt class="descname">testSingleOrAddress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests.testSingleOrAddress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests.testSingleOrAddress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.ParseDescFileTests.testMultipleOrAddress">
+<tt class="descname">testMultipleOrAddress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests.testMultipleOrAddress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests.testMultipleOrAddress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.ParseDescFileTests.testConvolutedOrAddress">
+<tt class="descname">testConvolutedOrAddress</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests.testConvolutedOrAddress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests.testConvolutedOrAddress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.ParseDescFileTests.testParseCountryBlockFile">
+<tt class="descname">testParseCountryBlockFile</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#ParseDescFileTests.testParseCountryBlockFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.ParseDescFileTests.testParseCountryBlockFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Tests.BridgeStabilityTests">
+<em class="property">class </em><tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">BridgeStabilityTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Create an instance of the class that will use the named test
+method when executed. Raises a ValueError if the instance does
+not have a method with the specified name.</p>
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.setUp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.tearDown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testAddOrUpdateSingleBridgeHistory">
+<tt class="descname">testAddOrUpdateSingleBridgeHistory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testAddOrUpdateSingleBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testAddOrUpdateSingleBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testDeletingSingleBridgeHistory">
+<tt class="descname">testDeletingSingleBridgeHistory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testDeletingSingleBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testDeletingSingleBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testTOSA">
+<tt class="descname">testTOSA</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testTOSA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testTOSA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testLastSeenWithDifferentAddressAndPort">
+<tt class="descname">testLastSeenWithDifferentAddressAndPort</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testLastSeenWithDifferentAddressAndPort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testLastSeenWithDifferentAddressAndPort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testFamiliar">
+<tt class="descname">testFamiliar</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testFamiliar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testFamiliar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Tests.BridgeStabilityTests.testDiscountAndPruneBridgeHistory">
+<tt class="descname">testDiscountAndPruneBridgeHistory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#BridgeStabilityTests.testDiscountAndPruneBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.BridgeStabilityTests.testDiscountAndPruneBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test pruning of old Bridge History</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.testSuite">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">testSuite</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#testSuite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.testSuite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Tests.main">
+<tt class="descclassname">bridgedb.Tests.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Tests.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Tests.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.Util.html" title="bridgedb.Util" >next</a></li>
+        <li><a href="bridgedb.Storage.html" title="bridgedb.Storage" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

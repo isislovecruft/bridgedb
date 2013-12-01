@@ -1,0 +1,452 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Main &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.parse" href="bridgedb.parse.html" />
+    <link rel="prev" title="bridgedb.I18n" href="bridgedb.I18n.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.parse.html" title="bridgedb.parse" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.I18n.html" title="bridgedb.I18n" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.I18n.html"
+                        title="previous chapter">bridgedb.I18n</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.parse.html"
+                        title="next chapter">bridgedb.parse</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Main.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.I18n.html"
+                        title="previous chapter">bridgedb.I18n</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.parse.html"
+                        title="next chapter">bridgedb.parse</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Main.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.Main">
+<span id="bridgedb-main"></span><h1>bridgedb.Main<a class="headerlink" href="#module-bridgedb.Main" title="Permalink to this headline">¶</a></h1>
+<p>This module sets up a bridgedb and starts the servers running.</p>
+<dl class="function">
+<dt id="bridgedb.Main.configureLogging">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">configureLogging</tt><big>(</big><em>cfg</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#configureLogging"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.configureLogging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up Python&#8217;s logging subsystem based on the configuratino.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.load">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">load</tt><big>(</big><em>state</em>, <em>splitter</em>, <em>clear=False</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and parse all descriptors, and load into a bridge splitter.</p>
+<p>Read all the appropriate bridge files from the saved
+<a class="reference internal" href="bridgedb.persistent.html#bridgedb.persistent.State" title="bridgedb.persistent.State"><tt class="xref py py-class docutils literal"><span class="pre">State</span></tt></a>, parse and validate them, and then
+store them into our <tt class="docutils literal"><span class="pre">state.splitter</span></tt> instance. The <tt class="docutils literal"><span class="pre">state</span></tt> will be
+saved again at the end of this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>splitter</strong> (<a class="reference internal" href="bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">BridgeSplitter</span></tt></a>) &#8211; A class which provides a mechanism for HMACing
+Bridges in order to assign them to hashrings.</li>
+<li><strong>clear</strong> (<em>boolean</em>) &#8211; If True, clear all previous bridges from the
+splitter before parsing for new ones.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.loadConfig">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">loadConfig</tt><big>(</big><em>configFile=None</em>, <em>configCls=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#loadConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.loadConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load configuration settings on top of the current settings.</p>
+<p>All pathnames and filenames within settings in the <tt class="docutils literal"><span class="pre">configFile</span></tt> will be
+expanded, and their expanded values will be stored in the returned
+<tt class="xref py py-class docutils literal"><span class="pre">config</span></tt> object.</p>
+<p>** Note: **
+On the strange-looking use of</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">exec</span> <span class="pre">compile(open(configFile).read(),</span> <span class="pre">'&lt;string&gt;',</span> <span class="pre">'exec')</span> <span class="pre">in</span> <span class="pre">dict()</span></tt></div></blockquote>
+<p>in this function:</p>
+<p>The contents of the config file should be compiled first, and then
+<tt class="docutils literal"><span class="pre">exec``ed</span> <span class="pre">--</span> <span class="pre">not</span> <span class="pre">``execfile</span></tt>! &#8211; in order to get the contents of the
+config file to exist within the scope of the configuration dictionary.
+Otherwise, Python <em>will</em> <a class="reference external" href="http://stackoverflow.com/q/17470193">default</a> to executing the config file directly
+within the <tt class="docutils literal"><span class="pre">globals()</span></tt> scope.</p>
+<p>Additionally, it&#8217;s roughly 20-30 times <a class="reference external" href="http://lucumr.pocoo.org/2011/2/1/exec-in-python/">faster</a> to use the <tt class="docutils literal"><span class="pre">compile</span></tt>
+builtin on a string (the contents of the file) before <tt class="docutils literal"><span class="pre">exec``ing</span> <span class="pre">it,</span> <span class="pre">than</span>
+<span class="pre">using</span> <span class="pre">``execfile</span></tt> directly on the file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><p class="first"><strong>itsSafeToUseLogging</strong> (<em>boolean</em>) &#8211; This is called in <a class="reference internal" href="#bridgedb.Main.startup" title="bridgedb.Main.startup"><tt class="xref py py-func docutils literal"><span class="pre">startup()</span></tt></a>
+before <a class="reference internal" href="#bridgedb.Main.configureLogging" title="bridgedb.Main.configureLogging"><tt class="xref py py-func docutils literal"><span class="pre">configureLogging()</span></tt></a>. When called from <tt class="docutils literal"><span class="pre">startup</span></tt>, the
+<tt class="docutils literal"><span class="pre">configCls</span></tt> parameter is not given, because that is the first time
+that a <tt class="xref py py-class docutils literal"><span class="pre">Conf</span></tt> is created. If a <a class="reference external" href="http://docs.python.org/library/logging.html#logging.Logger" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">logging.Logger</span></tt></a> is
+created in this function, then logging will not be correctly
+configured, therefore, if the <tt class="docutils literal"><span class="pre">configCls</span></tt> parameter is not given,
+then it&#8217;s the first time this function has been called and it is
+therefore not safe to make calls to the logging module.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type :</th><td class="field-body"><p class="first">configFile: string or None</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>configFile</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; If given, the filename of the config file to
+load.</li>
+<li><strong>configCls</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Main.Conf</span></tt> or None) &#8211; The current configuration, if one already exists.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><tt class="xref py py-class docutils literal"><span class="pre">Conf</span></tt></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A new configuration, with the old settings as defaults, and the
+settings from the config file overriding them.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.loadProxyList">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">loadProxyList</tt><big>(</big><em>cfg</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#loadProxyList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.loadProxyList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main._reloadFn">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">_reloadFn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#_reloadFn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main._reloadFn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholder callback function for <a class="reference internal" href="#bridgedb.Main._handleSIGHUP" title="bridgedb.Main._handleSIGHUP"><tt class="xref py py-func docutils literal"><span class="pre">_handleSIGHUP()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main._handleSIGHUP">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">_handleSIGHUP</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#_handleSIGHUP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main._handleSIGHUP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when we receive a SIGHUP; invokes _reloadFn.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Main.ProxyCategory">
+<em class="property">class </em><tt class="descclassname">bridgedb.Main.</tt><tt class="descname">ProxyCategory</tt><a class="reference internal" href="_modules/bridgedb/Main.html#ProxyCategory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.ProxyCategory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="bridgedb.Main.ProxyCategory.contains">
+<tt class="descname">contains</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#ProxyCategory.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.ProxyCategory.contains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Main.ProxyCategory.replaceProxyList">
+<tt class="descname">replaceProxyList</tt><big>(</big><em>ipset</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#ProxyCategory.replaceProxyList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.ProxyCategory.replaceProxyList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.startup">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">startup</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#startup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.startup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse bridges,</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>options</strong> (<a class="reference internal" href="bridgedb.parse.html#bridgedb.parse.options.MainOptions" title="bridgedb.parse.options.MainOptions"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.options.MainOptions</span></tt></a>) &#8211; A pre-parsed options class containing any arguments and
+options given in the commandline we were called with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Variables:</th><td class="field-body"><strong>state</strong> &#8211; A persistent state object which holds config changes.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.runSubcommand">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">runSubcommand</tt><big>(</big><em>options</em>, <em>config</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#runSubcommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.runSubcommand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a subcommand from the &#8216;Commands&#8217; section of the bridgedb help menu.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>options</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bridgedb.opt.MainOptions</span></tt>) &#8211; A pre-parsed options class containing any arguments and
+options given in the commandline we were called with.</li>
+<li><strong>config</strong> (<tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Main.Conf</span></tt>) &#8211; The current configuration.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><p class="first last"><tt class="xref py py-exc docutils literal"><span class="pre">SystemExit</span></tt> when all subCommands and subOptions have
+finished running.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Main.run">
+<tt class="descclassname">bridgedb.Main.</tt><tt class="descname">run</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Main.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Main.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main entry point into BridgeDB.</p>
+<p>Given the parsed commandline options, this function handles locating the
+configuration file, loading and parsing it, and then either
+starting/reloading the servers or dumping bridge assignments to files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>options</strong> (<a class="reference internal" href="bridgedb.parse.html#bridgedb.parse.options.MainOptions" title="bridgedb.parse.options.MainOptions"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.parse.options.MainOptions</span></tt></a>) &#8211; A pre-parsed options class containing any arguments and
+options given in the commandline we were called with.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.parse.html" title="bridgedb.parse" >next</a></li>
+        <li><a href="bridgedb.I18n.html" title="bridgedb.I18n" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

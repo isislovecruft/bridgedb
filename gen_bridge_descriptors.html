@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>gen_bridge_descriptors &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="prev" title="bridgedb.Util" href="bridgedb.Util.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.Util.html" title="bridgedb.Util" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Util.html"
+                        title="previous chapter">bridgedb.Util</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gen_bridge_descriptors.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Util.html"
+                        title="previous chapter">bridgedb.Util</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gen_bridge_descriptors.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-gen_bridge_descriptors">
+<span id="gen-bridge-descriptors"></span><h1>gen_bridge_descriptors<a class="headerlink" href="#module-gen_bridge_descriptors" title="Permalink to this headline">¶</a></h1>
+<p>gen_bridge_descriptors &#8211; Generate fake Tor relay signed descriptors.</p>
+<p>** TODO: **</p>
+<p>Finish enough <a class="reference external" href="https://cffi.readthedocs.org">CFFI</a> bindings for the newer <a class="reference external" href="https://github.com/seanlynch/pynacl">PyNaCl</a> (or enough of the
+<a class="reference external" href="https://github.com/swig/swig">SWIG</a> bindings for the older <a class="reference external" href="https://github.com/seanlynch/pynacl">pynacl</a>) to be able to emulate the following
+<a class="reference external" href="http://curvecp.org/">curvecp</a> command (the <tt class="docutils literal"><span class="pre">curvecp*</span></tt> commands require <a class="reference external" href="https://github.com/jedisct1/libchloride">libchloride</a>):</p>
+<blockquote>
+<div><blockquote>
+<div>$ curvecpmakekey ntor-key
+$ curvecpprintkey ntor-key &gt; ntor-key.hex
+$ python -c &#8216;import binascii, sys;         key_hex=open(&#8216;./ntor-key.hex&#8217;,&#8217;rb&#8217;).read();        key_b64=binascii.b2a_base64(binascii.unhexlify(key_hex));        sys.stdout.write(key_b64);&#8217;</div></blockquote>
+</div></blockquote>
+<dl class="exception">
+<dt id="gen_bridge_descriptors.OpenSSLKeyGenError">
+<em class="property">exception </em><tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">OpenSSLKeyGenError</tt><a class="headerlink" href="#gen_bridge_descriptors.OpenSSLKeyGenError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Raised when there is a problem generating a new key.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.attachKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">attachKey</tt><big>(</big><em>key</em>, <em>cert</em>, <em>selfsign=True</em>, <em>digest=u'sha1'</em>, <em>pem=False</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.attachKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach a key to a cert and optionally self-sign the cert.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.PKey</span></tt>) &#8211; A previously generated key, used to generate the other half of
+the keypair.</li>
+<li><strong>cert</strong> (<tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.X509</span></tt>) &#8211; A TLS certificate without a public key attached to it, such
+as one created with <a class="reference internal" href="#gen_bridge_descriptors.createTLSCert" title="gen_bridge_descriptors.createTLSCert"><tt class="xref py py-func docutils literal"><span class="pre">createTLSCert()</span></tt></a>.</li>
+<li><strong>selfsign</strong> (<em>boolean</em>) &#8211; If True, use the <tt class="docutils literal"><span class="pre">key</span></tt> to self-sign the
+<tt class="docutils literal"><span class="pre">cert</span></tt>. Note that this will result in several nasty OpenSSL errors
+if you attempt to export the public key of a cert in order to create
+another cert which <em>only</em> holds the public key. (Otherwise, if you
+used the first cert in the following example, it contains both halves
+of the RSA keypair.) Do this instead:</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">secret_key</span> <span class="o">=</span> <span class="n">createRSAKey</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">secret_cert</span> <span class="o">=</span> <span class="n">attachKey</span><span class="p">(</span><span class="n">secret_key</span><span class="p">,</span> <span class="n">createTLSCert</span><span class="p">(</span><span class="n">selfsign</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">public_key</span> <span class="o">=</span> <span class="n">secret_cert</span><span class="o">.</span><span class="n">get_pubkey</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">public_cert</span> <span class="o">=</span> <span class="n">attachKey</span><span class="p">(</span><span class="n">public_key</span><span class="p">,</span> <span class="n">createTLSCert</span><span class="p">,</span> <span class="n">selfsign</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>digest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The digest to use. Check your OpenSSL installation
+to see which are supported. We pretty much only care about &#8216;sha1&#8217; and
+&#8216;sha256&#8217; here.</li>
+<li><strong>pem</strong> (<em>boolean</em>) &#8211; If True, return a 3-tuple of PEM-encoded strings, one
+for each of (certificate, private_key, public_key), where
+&#8216;certificate&#8217; is the original <tt class="docutils literal"><span class="pre">cert</span></tt> with the <tt class="docutils literal"><span class="pre">key</span></tt> attached,
+&#8216;private_key&#8217; is the private RSA modulus, primes, and exponents
+exported from the &#8216;certificate&#8217;, and &#8216;public_key&#8217; is the public RSA
+modulus exported from the cert. NOTE: Using this when passing in a key
+with only the public RSA modulus (as described above) will result in
+nasty OpenSSL errors. Trust me, you do <em>not</em> want to try to parse
+OpenSSL&#8217;s errors.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><p class="first">An infinite, labyrinthine mire of non-Euclidean OpenSSL errors
+with non-deterministic messages and self-referential errorcodes,
+tangled upon itself in contempt of sanity, hope, and decent software
+engineering practices.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">If <tt class="docutils literal"><span class="pre">pem</span></tt> is True, then the values described there are
+returned. Otherwise, returns the <tt class="docutils literal"><span class="pre">cert</span></tt> with the <tt class="docutils literal"><span class="pre">key</span></tt> attached to
+it.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.convertToSpaceyFingerprint">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">convertToSpaceyFingerprint</tt><big>(</big><em>fingerprint</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.convertToSpaceyFingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert to a space-delimited 40 character fingerprint</p>
+<p>Given a 40 character string, usually the the SHA-1 hash of the
+DER encoding of an ASN.1 RSA public key, such as:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><br /></div>
+<div class="line">72C2F0AE1C14F40ED37ED5F5434B64711A658E46</div>
+<div class="line"><br /></div>
+</div>
+</div></blockquote>
+<dl class="docutils">
+<dt>convert it to the following format:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">72C2 F0AE 1C14 F40E D37E D5F5 434B 6471 1A65 8E46</div>
+<div class="line"><br /></div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fingerprint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A 40 character hex fingerprint.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A 4-character space-delimited fingerprint.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.create">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">create</tt><big>(</big><em>count</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all types of descriptors and write them to files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>count</strong> (<em>integer</em>) &#8211; How many sets of descriptors to generate, i.e. how
+many mock bridges/relays to create.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.createKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">createKey</tt><big>(</big><em>selfsign=True</em>, <em>digest=u'sha1'</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.createKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a set of public and private RSA keypairs and corresponding certs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>selfsign</strong> (<em>boolean</em>) &#8211; If True, use the private key to sign the public
+certificate (otherwise, the private key will only sign the private
+certificate to which it is attached).</li>
+<li><strong>digest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The digest to use. (default: &#8216;sha1&#8217;)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">4-tuple</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(private_key, private_cert, public_key, public_cert)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.createNTORKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">createNTORKey</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.createNTORKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Curve25519 key.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.createRSAKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">createRSAKey</tt><big>(</big><em>bits=1024</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.createRSAKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new RSA keypair.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bits</strong> (<em>integer</em>) &#8211; The bitlength of the keypair to generate.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.PKey</span></tt></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An RSA keypair of bitlength <tt class="docutils literal"><span class="pre">bits</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.createTLSCert">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">createTLSCert</tt><big>(</big><em>lifetime=None</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.createTLSCert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a TLS certificate.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lifetime</strong> (<em>integer</em>) &#8211; The time, in seconds, that the certificate should
+remain valid for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.X509</span></tt></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A certificate, unsigned, and without a key attached to it.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.createTLSLinkCert">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">createTLSLinkCert</tt><big>(</big><em>lifetime=7200</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.createTLSLinkCert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a certificate for the TLS link layer.</p>
+<p>The TLS certificate used for the link layer between Tor relays, and
+between clients and their bridges/guards, has a shorter lifetime than the
+other certificates. Currently, these certs expire after two hours.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lifetime</strong> (<em>integer</em>) &#8211; The time, in seconds, that the certificate should
+remain valid for.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.X509</span></tt></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A certificate, unsigned, and without a key attached to it.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.generateDescriptors">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">generateDescriptors</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.generateDescriptors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create keys, certs, signatures, documents and descriptors for an OR.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><blockquote>
+<div><dl class="docutils">
+<dt>A 3-tuple of strings:</dt>
+<dd><ul class="first last simple">
+<li>a <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">[bridge-]extra-info</span></tt> descriptor,</li>
+<li>a <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">[bridge-]server-descriptor</span></tt>, and</li>
+<li>a <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">network-status</span></tt> document</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>for a mock Tor relay/bridge.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.generateExtraInfo">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">generateExtraInfo</tt><big>(</big><em>fingerprint</em>, <em>ts</em>, <em>ipv4</em>, <em>port</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.generateExtraInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an OR extra-info document.</p>
+<p>See §2.2 &#8220;Extra-info documents&#8221; in torspec.git/dir-spec.txt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fingerprint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A space-separated, hex-encoded, SHA-1 digest of
+the OR&#8217;s private identity key. See <a class="reference internal" href="#gen_bridge_descriptors.convertToSpaceyFingerprint" title="gen_bridge_descriptors.convertToSpaceyFingerprint"><tt class="xref py py-func docutils literal"><span class="pre">convertToSpaceyFingerprint()</span></tt></a>.</li>
+<li><strong>ts</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An ISO-8601 timestamp. See <a class="reference internal" href="#gen_bridge_descriptors.makeTimeStamp" title="gen_bridge_descriptors.makeTimeStamp"><tt class="xref py py-func docutils literal"><span class="pre">makeTimeStamp()</span></tt></a>.</li>
+<li><strong>ipv4</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; An IPv4 address.</li>
+<li><strong>port</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The OR&#8217;s ORPort.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An extra-info document (unsigned).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.generateNetstatus">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">generateNetstatus</tt><big>(</big><em>idkey_digest</em>, <em>server_desc_digest</em>, <em>timestamp</em>, <em>ipv4</em>, <em>orport</em>, <em>ipv6=None</em>, <em>dirport=None</em>, <em>flags=u'Fast Guard Running Stable Valid'</em>, <em>bandwidth_line=None</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.generateNetstatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">networkwork-status</span></tt> document (unsigned).</p>
+<p>DOCDOC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>idkey_digest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The SHA-1 digest of the router&#8217;s public identity
+key.</li>
+<li><strong>server_desc_digest</strong> (<em>XXX</em>) &#8211; The SHA-1 digest of the router&#8217;s
+<tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">[bridge-]server-descriptor</span></tt>, before the descriptor is signed.</li>
+<li><strong>timestamp</strong> (<em>XXX</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.getArgParser">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">getArgParser</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.getArgParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get our <a class="reference external" href="http://docs.python.org/library/argparse.html#argparse.ArgumentParser" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">ArgumentParser</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.getHexString">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">getHexString</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.getHexString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a capitalised hexidecimal string <tt class="docutils literal"><span class="pre">size</span></tt> bytes long.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>size</strong> (<em>integer</em>) &#8211; The number of bytes in the returned string.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A hex string.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.getPEMPrivateKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">getPEMPrivateKey</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.getPEMPrivateKey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.getPEMPublicKey">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">getPEMPublicKey</tt><big>(</big><em>cert</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.getPEMPublicKey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeBandwidthLine">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeBandwidthLine</tt><big>(</big><em>variance=30</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeBandwidthLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random &#8216;bandwidth&#8217; line with some plausible burst variance.</p>
+<dl class="docutils">
+<dt>From torspec.git/dir-spec.txt, §2.1 &#8220;Router descriptors&#8221;:</dt>
+<dd><div class="first last line-block">
+<div class="line">&#8220;bandwidth&#8221; bandwidth-avg bandwidth-burst bandwidth-observed NL</div>
+<div class="line"><br /></div>
+<div class="line">[Exactly once]</div>
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">Estimated bandwidth for this router, in bytes per second.  The</div>
+<div class="line">&#8220;average&#8221; bandwidth is the volume per second that the OR is willing</div>
+<div class="line">to sustain over long periods; the &#8220;burst&#8221; bandwidth is the volume</div>
+<div class="line">that the OR is willing to sustain in very short intervals.  The</div>
+<div class="line">&#8220;observed&#8221; value is an estimate of the capacity this relay can</div>
+<div class="line">handle.  The relay remembers the max bandwidth sustained output over</div>
+<div class="line">any ten second period in the past day, and another sustained input.</div>
+<div class="line">The &#8220;observed&#8221; value is the lesser of these two numbers.</div>
+</div>
+</div>
+</dd>
+</dl>
+<p>The &#8220;observed&#8221; bandwidth, in this function, is taken as some random value,
+bounded between 20KB/s and 2MB/s. For example, say:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">math</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variance</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">observed</span> <span class="o">=</span> <span class="mi">180376</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">percentage</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">percentage</span>
+<span class="go">0.25</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">variance</span></tt> in this context is the percentage of the &#8220;observed&#8221;
+bandwidth, which will be added to the &#8220;observed&#8221; bandwidth, and becomes
+the value for the &#8220;burst&#8221; bandwidth:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">burst</span> <span class="o">=</span> <span class="n">observed</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">observed</span> <span class="o">*</span> <span class="n">percentage</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">burst</span> <span class="o">&gt;</span> <span class="n">observed</span>
+</pre></div>
+</div>
+<p>This doesn&#8217;t do much, since the &#8220;burst&#8221; bandwidth in a real
+[bridge-]server-descriptor is reported by the OR; this function mostly
+serves to avoid generating completely-crazy, totally-implausible bandwidth
+values. The &#8220;average&#8221; bandwidth value is then just the mean value of the
+other two.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variance</strong> (<em>integer</em>) &#8211; The percent of the fake &#8220;observed&#8221; bandwidth to
+increase the &#8220;burst&#8221; bandwidth by.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A &#8220;bandwidth&#8221; line for a [bridge-]server-descriptor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeExtraInfoDigestLine">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeExtraInfoDigestLine</tt><big>(</big><em>hexdigest</em>, <em>version</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeExtraInfoDigestLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a line to embed the hex SHA-1 digest of the extrainfo.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hexdigest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; Should be the hex-encoded (uppercase) output of
+the SHA-1 digest of the generated extrainfo document (this is the
+extra-info descriptor, just without the signature at the end). This is
+the same exact digest which gets signed by the OR server identity key,
+and that signature is appended to the extrainfo document to create the
+extra-info descriptor.</li>
+<li><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">[bridge-]server-descriptor</span></tt> &#8216;extra-info-digest&#8217;
+line.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeFingerprintLine">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeFingerprintLine</tt><big>(</big><em>fingerprint</em>, <em>version=None</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeFingerprintLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an appropriate [bridge-]server-descriptor &#8216;fingerprint&#8217; line.</p>
+<dl class="docutils">
+<dt>For example, for tor-0.2.3.25 and prior versions, this would look like:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">opt fingerprint D4BB C339 2560 1B7F 226E 133B A85F 72AF E734 0B29</div>
+<div class="line"><br /></div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fingerprint</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A public key fingerprint in groups of four,
+separated by spaces.</li>
+<li><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">string</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An <a class="reference external" href="mailto:'&#37;&#52;&#48;type">'<span>&#64;</span>type</a> [bridge-]server-descriptor&#8217; &#8216;published&#8217; line.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeHSDirLine">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeHSDirLine</tt><big>(</big><em>version</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeHSDirLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>This line doesn&#8217;t do much… all the cool kids are HSDirs these days.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An <tt class="docutils literal"><span class="pre">&#64;type</span> <span class="pre">[bridge-]server-descriptor</span></tt> &#8216;hidden-service-dir&#8217;
+line.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeOnionKeys">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeOnionKeys</tt><big>(</big><em>bridge=True</em>, <em>digest=u'sha1'</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeOnionKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make all the keys and certificates necessary to fake an OR.</p>
+<p>The encodings for the various key and descriptor digests needed are
+described in dir-spec.txt and tor-spec.txt, the latter mostly for the
+padding and encoding used in the creation of an OR&#8217;s keys.</p>
+<p>For the &#8220;router&#8221; line in a networkstatus document, the following encodings
+are specified:</p>
+<dl class="docutils">
+<dt>From dir-spec.txt, commit 36761c7d5, L1504-1512:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line-block">
+<div class="line">[…] &#8220;Identity&#8221; is a hash of its</div>
+</div>
+<div class="line">identity key, encoded in base64, with trailing equals sign(s)</div>
+<div class="line">removed.  &#8220;Digest&#8221; is a hash of its most recent descriptor as</div>
+<div class="line">signed (that is, not including the signature), encoded in base64.</div>
+<div class="line"><br /></div>
+</div>
+</dd>
+</dl>
+<p>Before the hash digest of an OR&#8217;s identity key is base64-encoded for
+inclusion in a networkstatus document, the hash digest is created in the
+following manner:</p>
+<dl class="docutils">
+<dt>From tor-spec.txt, commit 36761c7d5, L109-110:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">When we refer to &#8220;the hash of a public key&#8221;, we mean the SHA-1 hash of the</div>
+<div class="line">DER encoding of an ASN.1 RSA public key (as specified in PKCS.1).</div>
+<div class="line"><br /></div>
+</div>
+</dd>
+<dt>From tor-spec.txt, commit 36761c7d5, L785-787:</dt>
+<dd><div class="first last line-block">
+<div class="line"><br /></div>
+<div class="line">The &#8220;legacy identity&#8221; and &#8220;identity fingerprint&#8221; fields are the SHA1</div>
+<div class="line">hash of the PKCS#1 ASN1 encoding of the next onion router&#8217;s identity</div>
+<div class="line">(signing) key.  (See 0.3 above.)</div>
+<div class="line"><br /></div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>bridge</strong> (<em>boolean</em>) &#8211; If False, generate a server OR ID key, a signing
+key, and a TLS certificate/key pair. If True, generate a client ID key
+as well.</li>
+<li><strong>digest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The digest to use. (default: &#8216;sha1&#8217;)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The server ID key, and a tuple of strings (fingerprint,
+onion-key, signing-key), where onion-key and secret key are the strings
+which should directly go into a server-descriptor. There are a <em>ton</em> of
+keys and certs in the this function. If you need more for some reason,
+this is definitely the thing you want to modify.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeProtocolsLine">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeProtocolsLine</tt><big>(</big><em>version=None</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeProtocolsLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an appropriate [bridge-]server-descriptor &#8216;protocols&#8217; line.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An <a class="reference external" href="mailto:'&#37;&#52;&#48;type">'<span>&#64;</span>type</a> [bridge-]server-descriptor&#8217; &#8216;protocols&#8217; line.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.makeTimeStamp">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">makeTimeStamp</tt><big>(</big><em>now=None</em>, <em>fmt=None</em>, <em>variation=False</em>, <em>period=None</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.makeTimeStamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random timestamp suitable for a bridge server descriptor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>now</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The time, in seconds since the Epoch, to generate the
+timestamp for (and to consider as the maximum time, if other options
+are enabled).</li>
+<li><strong>fmt</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A strftime(3) format string for the timestamp. If not
+given, defaults to ISO-8601 format without the &#8216;T&#8217; separator.</li>
+<li><strong>variation</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; If True, enable timestamp variation. Otherwise,
+make all timestamps be set to the current time.</li>
+<li><strong>period</strong> (<em>int or None</em>) &#8211; If given, vary the generated timestamps to be a random time
+between <tt class="docutils literal"><span class="pre">period</span></tt> hours ago and the current time. If None, generate
+completely random timestamps which are anywhere between the Unix Epoch
+and the current time. This parameter only has an effect if
+<tt class="docutils literal"><span class="pre">variation</span></tt> is enabled.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.randomIP">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">randomIP</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.randomIP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random IPv4 or IPv6 address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.randomIPv4">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">randomIPv4</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.randomIPv4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random IPv4 address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.randomIPv6">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">randomIPv6</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.randomIPv6" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random IPv6 address.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.randomPort">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">randomPort</tt><big>(</big><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.randomPort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a random integer in the range [1024, 65535].</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.shouldHaveOptPrefix">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">shouldHaveOptPrefix</tt><big>(</big><em>version</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.shouldHaveOptPrefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if a tor <tt class="docutils literal"><span class="pre">version</span></tt> should have the &#8216;opt &#8216; prefix.</p>
+<p>In tor, up to and including, version 0.2.3.25, server-descriptors (bridge
+or regular) prefixed several lines with &#8216;opt &#8216;. For the 0.2.3.x series,
+these lines were:</p>
+<blockquote>
+<div><ul class="simple">
+<li>&#8216;protocols&#8217;</li>
+<li>&#8216;fingerprint&#8217;</li>
+<li>&#8216;hidden-service-dir&#8217;</li>
+<li>&#8216;extra-info-digest&#8217;</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>version</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; One of <tt class="docutils literal"><span class="pre">SERVER_VERSIONS</span></tt>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if we should include the &#8216;opt &#8216; prefix.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.signDescriptorDigest">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">signDescriptorDigest</tt><big>(</big><em>key</em>, <em>descriptorDigest</em>, <em>digest=u'sha1'</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.signDescriptorDigest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ugh...I hate OpenSSL.</p>
+<p>The extra-info-digest is a SHA-1 hash digest of the extrainfo document,
+that is, the entire extrainfo descriptor up until the end of the
+&#8216;router-signature&#8217; line and including the newline, but not the actual
+signature.</p>
+<p>The signature at the end of the extra-info descriptor is a signature of
+the above extra-info-digest. This signature is appended to the end of the
+extrainfo document, and the extra-info-digest is added to the
+&#8216;extra-info-digest&#8217; line of the [bridge-]server-descriptor.</p>
+<p>The first one of these was created with a raw digest, the second with a
+hexdigest. They both encode the the &#8216;sha1&#8217; digest type if you check the
+<cite>-asnparse</cite> output (instead of <cite>-raw -hexdump</cite>).</p>
+<p>∃!isisⒶwintermute:(feature/9865 <em>$&lt;&gt;)~/code/torproject/bridgedb/scripts ∴ openssl rsautl -inkey eiprivkey -verify -in eisig1 -raw -hexdump
+0000 - 00 01 ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0010 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0020 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0030 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0040 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0050 - ff ff ff ff ff ff ff ff-ff ff ff ff 00 30 21 30   .............0!0
+0060 - 09 06 05 2b 0e 03 02 1a-05 00 04 14 42 25 41 fb   ...+........B%A.
+0070 - 82 ef 11 f4 5f 2c 95 53-67 2d bb fe 7f c2 34 7f   ...._,.Sg-....4.
+∃!isisⒶwintermute:(feature/9865 *$&lt;&gt;)~/code/torproject/bridgedb/scripts ∴ openssl rsautl -inkey eiprivkey -verify -in eisig2 -raw -hexdump
+0000 - 00 01 ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0010 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0020 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0030 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0040 - ff ff ff ff ff ff ff ff-ff ff ff ff ff ff ff ff   ................
+0050 - ff ff ff ff ff ff ff ff-ff ff ff ff 00 30 21 30   .............0!0
+0060 - 09 06 05 2b 0e 03 02 1a-05 00 04 14 44 30 ab 90   ...+........D0..
+0070 - 93 d1 08 21 df 87 c2 39-2a 04 1c a5 bb 34 44 cd   ...!...9</em>....4D.</p>
+<p>see <a class="reference external" href="http://www.emc.com/collateral/white-papers/h11300-pkcs-1v2-2-rsa-cryptography-standard-wp.pdf">http://www.emc.com/collateral/white-papers/h11300-pkcs-1v2-2-rsa-cryptography-standard-wp.pdf</a>
+for why this function is totally wrong.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<tt class="xref py py-class docutils literal"><span class="pre">OpenSSL.crypto.PKey</span></tt>) &#8211; An RSA private key.</li>
+<li><strong>descriptorDigest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The raw SHA-1 digest of any descriptor
+document.</li>
+<li><strong>digest</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The digest to use. (default: &#8216;sha1&#8217;)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="gen_bridge_descriptors.writeDescToFile">
+<tt class="descclassname">gen_bridge_descriptors.</tt><tt class="descname">writeDescToFile</tt><big>(</big><em>filename</em>, <em>descriptors</em><big>)</big><a class="headerlink" href="#gen_bridge_descriptors.writeDescToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open <tt class="docutils literal"><span class="pre">filename</span></tt> and write a string containing descriptors into it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The name of the file to write to.</li>
+<li><strong>descriptors</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A giant string containing descriptors,
+newlines, formatting, whatever is necessary to make it look like a
+file tor would generate.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.Util.html" title="bridgedb.Util" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

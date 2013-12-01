@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Bucket &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.crypto" href="bridgedb.crypto.html" />
+    <link rel="prev" title="bridgedb.Bridges" href="bridgedb.Bridges.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.crypto.html" title="bridgedb.crypto" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.Bridges.html" title="bridgedb.Bridges" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Bridges.html"
+                        title="previous chapter">bridgedb.Bridges</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.crypto.html"
+                        title="next chapter">bridgedb.crypto</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Bucket.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Bridges.html"
+                        title="previous chapter">bridgedb.Bridges</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.crypto.html"
+                        title="next chapter">bridgedb.crypto</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Bucket.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.Bucket">
+<span id="bridgedb-bucket"></span><h1>bridgedb.Bucket<a class="headerlink" href="#module-bridgedb.Bucket" title="Permalink to this headline">¶</a></h1>
+<p>This module is responsible for everything concerning file bucket bridge 
+distribution. File bucket bridge distribution means that unallocated bridges 
+are allocated to a certain pseudo-distributor and later written to a file.</p>
+<p>For example, the following is a dict of pseudo-distributors (also called 
+&#8216;bucket identifiers&#8217;) with numbers of bridges assigned to them:</p>
+<blockquote>
+<div>FILE_BUCKETS = { &#8220;name1&#8221;: 10, &#8220;name2&#8221;: 15, &#8220;foobar&#8221;: 3 }</div></blockquote>
+<p>This configuration for buckets would result in 3 files being created for bridge
+distribution: name1-2010-07-17.brdgs, name2-2010-07-17.brdgs and 
+foobar-2010-07-17.brdgs. The first file would contain 10 bridges from BridgeDB&#8217;s
+&#8216;unallocated&#8217; pool. The second file would contain 15 bridges from the same pool
+and the third one similarly 3 bridges. These files can then be handed out to 
+trusted parties via mail or fed to other distribution mechanisms such as 
+twitter.</p>
+<p>Note that in BridgeDB slang, the _distributor_ would still be &#8216;unallocated&#8217;,
+even though in the database, there would now by &#8216;name1&#8217;, &#8216;name2&#8217; or &#8216;foobar&#8217;
+instead of &#8216;unallocated&#8217;. This is why they are called pseudo-distributors.</p>
+<dl class="class">
+<dt id="bridgedb.Bucket.BucketData">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bucket.</tt><tt class="descname">BucketData</tt><big>(</big><em>name</em>, <em>needed</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketData" title="Permalink to this definition">¶</a></dt>
+<dd><p>A file bucket value class.
+name      - Name of the bucket (From config), prefixed by pseudo</p>
+<blockquote>
+<div>distributor prefix</div></blockquote>
+<p>needed    - Needed number of bridges for that bucket (From config)
+allocated - Number of already allocated bridges for that bucket</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bucket.BucketManager">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bucket.</tt><tt class="descname">BucketManager</tt><big>(</big><em>cfg</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>BucketManager reads a number of file bucket identifiers from the config.
+They&#8217;re expected to be in the following format:</p>
+<p>FILE_BUCKETS = { &#8220;name1&#8221;: 10, &#8220;name2&#8221;: 15, &#8220;foobar&#8221;: 3 }</p>
+<p>This syntax means that certain buckets (&#8220;name1&#8221;, &#8220;name2&#8221; and so on)
+are given a number of bridges (10, 15 and so on). Names can be anything.
+The name will later be the prefix of the file that is written with the
+assigned number of bridges in it. Instead of a number, a wildcard item
+(&#8220;*&#8221;) is allowed, too. This means that the corresponsing bucket file 
+will get the maximum number of possible bridges (as many as are left in 
+the unallocated bucket).</p>
+<p>The files will be written in ip:port format, one bridge per line.</p>
+<p>The way this works internally is as follows:</p>
+<p>First of all, the assignBridgesToBuckets() routine runs through
+the database of bridges and looks up the &#8216;distributor&#8217; field of each 
+bridge. Unallocated bridges are sent to a pool for later assignement.
+Already allocated bridges for file bucket distribution are sorted and 
+checked.
+They&#8217;re checked for whether their bucket identifier still exists in the 
+current config and also whether the number of assigned bridges is still 
+valid. If either the bucket identifier is not existing anymore or too 
+many bridges are currently assigned to it, bridges will go to the 
+unassigned pool.</p>
+<p>In the second step, after bridges are sorted and the unassigned pool is
+ready, the assignBridgesToBuckets() routine assigns one bridge
+from the unassigned pool to a known bucket identifier at a time until it
+either runs out of bridges in the unallocated pool or the number of
+needed bridges for that bucket is reached.</p>
+<p>When all bridges are assigned in this way, they can then be dumped into
+files by calling the dumpBridges() routine.</p>
+<p>cfg                      - The central configuration instance
+bucketList               - A list of BucketData instances, holding all</p>
+<blockquote>
+<div>configured (and thus requested) buckets with
+their respective numbers</div></blockquote>
+<dl class="docutils">
+<dt>unallocatedList          - Holding all bridges from the &#8216;unallocated&#8217;</dt>
+<dd>pool</dd>
+<dt>unallocated_available    - Is at least one unallocated bridge</dt>
+<dd>available?</dd>
+<dt>distributor_prefix       - The &#8216;distributor&#8217; field in the database will</dt>
+<dd>hold the name of our pseudo-distributor,
+prefixed by this</dd>
+</dl>
+<p>db                       - The bridge database access instance</p>
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.addToUnallocatedList">
+<tt class="descname">addToUnallocatedList</tt><big>(</big><em>hex_key</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.addToUnallocatedList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.addToUnallocatedList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a bridge by hex_key into the unallocated pool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.getBucketByIdent">
+<tt class="descname">getBucketByIdent</tt><big>(</big><em>bucketIdent</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.getBucketByIdent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.getBucketByIdent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do we know this bucket identifier? If yes, return the corresponding
+BucketData object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.assignUnallocatedBridge">
+<tt class="descname">assignUnallocatedBridge</tt><big>(</big><em>bucket</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.assignUnallocatedBridge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.assignUnallocatedBridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign an unallocated bridge to a certain bucket</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.assignBridgesToBuckets">
+<tt class="descname">assignBridgesToBuckets</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.assignBridgesToBuckets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.assignBridgesToBuckets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read file bucket identifiers from the configuration, sort them and 
+write necessary changes to the database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.dumpBridgesToFile">
+<tt class="descname">dumpBridgesToFile</tt><big>(</big><em>filename</em>, <em>bridges</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.dumpBridgesToFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.dumpBridgesToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump a list of given bridges into a file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bucket.BucketManager.dumpBridges">
+<tt class="descname">dumpBridges</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bucket.html#BucketManager.dumpBridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bucket.BucketManager.dumpBridges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump all known file distributors to files, sort by distributor</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.crypto.html" title="bridgedb.crypto" >next</a></li>
+        <li><a href="bridgedb.Bridges.html" title="bridgedb.Bridges" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

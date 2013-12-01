@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.parse.options &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.parse.options</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of BridgeDB, a Tor bridge distribution system.</span>
+<span class="c">#</span>
+<span class="c"># :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 &lt;isis@torproject.org&gt;</span>
+<span class="c">#           please also see AUTHORS file</span>
+<span class="c"># :copyright: (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c">#             (c) 2007-2013, all entities within the AUTHORS file</span>
+<span class="c"># :license: 3-clause BSD, see included LICENSE for information</span>
+
+<span class="sd">&quot;&quot;&quot;Classes for commandline options parsing.</span>
+
+<span class="sd">** Module Overview: **</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">usage</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">__version__</span>
+
+
+<span class="c">#: In :meth:`BaseOptions.findRundirAndConfig`, this is set to the the</span>
+<span class="c">#: absolute path of the ``opts[&#39;rundir&#39;]`` setting, if given, otherwise it</span>
+<span class="c">#: defaults to the current directory.</span>
+<span class="n">_rundir</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="c">#: In :meth:`BaseOptions.findRundirAndConfig`, if ``opts[&#39;config&#39;]`` is</span>
+<span class="c">#: given, this is set to the the absolute path of the ``opts[&#39;config&#39;]``</span>
+<span class="c">#: settting relative to the ``rundir``, otherwise it defaults to</span>
+<span class="c">#: &#39;bridgedb.conf&#39; in the current directory.</span>
+<span class="n">_config</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<div class="viewcode-block" id="setConfig"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.setConfig">[docs]</a><span class="k">def</span> <span class="nf">setConfig</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the absolute path to the config file.</span>
+
+<span class="sd">    See :meth:`BaseOptions.postOptions`.</span>
+
+<span class="sd">    :param string path: The path to set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_config</span>
+    <span class="n">_config</span> <span class="o">=</span> <span class="n">path</span>
+</div>
+<div class="viewcode-block" id="getConfig"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.getConfig">[docs]</a><span class="k">def</span> <span class="nf">getConfig</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get the absolute path to the config file.</span>
+
+<span class="sd">    :rtype: string</span>
+<span class="sd">    :returns: The path to the config file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_config</span>
+</div>
+<div class="viewcode-block" id="setRundir"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.setRundir">[docs]</a><span class="k">def</span> <span class="nf">setRundir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the absolute path to the runtime directory.</span>
+
+<span class="sd">    See :meth:`BaseOptions.postOptions`.</span>
+
+<span class="sd">    :param string path: The path to set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_rundir</span>
+    <span class="n">_rundir</span> <span class="o">=</span> <span class="n">path</span>
+</div>
+<div class="viewcode-block" id="getRundir"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.getRundir">[docs]</a><span class="k">def</span> <span class="nf">getRundir</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get the absolute path to the runtime directory.</span>
+
+<span class="sd">    :rtype: string</span>
+<span class="sd">    :returns: The path to the config file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_rundir</span>
+</div>
+<div class="viewcode-block" id="parseOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.parseOptions">[docs]</a><span class="k">def</span> <span class="nf">parseOptions</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Create the main options parser and its subcommand parsers.</span>
+
+<span class="sd">    Any :exc:`~twisted.python.usage.UsageErrors` which are raised due to</span>
+<span class="sd">    invalid options are ignored; their error message is printed and then we</span>
+<span class="sd">    exit the program.</span>
+
+<span class="sd">    :rtype: :class:`MainOptions`</span>
+<span class="sd">    :returns: The main options parsing class, with any commandline arguments</span>
+<span class="sd">        already parsed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">MainOptions</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">parseOptions</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">usage</span><span class="o">.</span><span class="n">UsageError</span> <span class="k">as</span> <span class="n">uerr</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">uerr</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">getUsage</span><span class="p">())</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">exc</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Unhandled Error: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">(</span><span class="n">tb</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">options</span>
+
+</div>
+<div class="viewcode-block" id="BaseOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions">[docs]</a><span class="k">class</span> <span class="nc">BaseOptions</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">Options</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base options included in all main and sub options menus.&quot;&quot;&quot;</span>
+
+    <span class="n">longdesc</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s">&quot;&quot;&quot;BridgeDB is a proxy distribution system for</span>
+<span class="s">    private relays acting as bridges into the Tor network. See `bridgedb</span>
+<span class="s">    &lt;command&gt; --help` for addition help.&quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">optParameters</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>
+         <span class="s">&#39;Configuration file [default: &lt;rundir&gt;/bridgedb.conf]&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>
+         <span class="sd">&quot;&quot;&quot;Change to this directory before running. [default: `os.getcwd()&#39;]</span>
+
+<span class="sd">         All other paths, if not absolute, should be relative to this path.</span>
+<span class="sd">         This includes the config file and any further files specified within</span>
+<span class="sd">         the config file.</span>
+<span class="sd">         &quot;&quot;&quot;</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an options parser. All flags, parameters, and attributes of</span>
+<span class="sd">        this base options parser are inherited by all child classes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseOptions</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_version</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s">&#39;verbosity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span>
+
+<div class="viewcode-block" id="BaseOptions.opt_quiet"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions.opt_quiet">[docs]</a>    <span class="k">def</span> <span class="nf">opt_quiet</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decrease verbosity&quot;&quot;&quot;</span>
+        <span class="c"># We use &#39;10&#39; because then it corresponds to the log levels</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s">&#39;verbosity&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">10</span>
+</div>
+<div class="viewcode-block" id="BaseOptions.opt_verbose"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions.opt_verbose">[docs]</a>    <span class="k">def</span> <span class="nf">opt_verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Increase verbosity&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s">&#39;verbosity&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
+</div>
+    <span class="n">opt_q</span> <span class="o">=</span> <span class="n">opt_quiet</span>
+    <span class="n">opt_v</span> <span class="o">=</span> <span class="n">opt_verbose</span>
+
+<div class="viewcode-block" id="BaseOptions.opt_version"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions.opt_version">[docs]</a>    <span class="k">def</span> <span class="nf">opt_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Display BridgeDB&#39;s version and exit.&quot;&quot;&quot;</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">__package__</span><span class="p">,</span> <span class="n">__version__</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BaseOptions.findRundirAndConfigFile"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions.findRundirAndConfigFile">[docs]</a>    <span class="k">def</span> <span class="nf">findRundirAndConfigFile</span><span class="p">(</span><span class="n">rundir</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find the abspath of the config file and runtime directory, or find</span>
+<span class="sd">        suitable defaults.</span>
+
+<span class="sd">        Attempts to set the absolute path of the runtime directory. If the</span>
+<span class="sd">        config path is relative, its absolute path is set relative to the</span>
+<span class="sd">        runtime directory path (unless it starts with &#39;.&#39; or &#39;..&#39;, then it is</span>
+<span class="sd">        interpreted relative to the current working directory). If the path to</span>
+<span class="sd">        the config file is absolute, it is left alone.</span>
+
+<span class="sd">        :type rundir: string or None</span>
+<span class="sd">        :param rundir: The user-supplied path to the runtime directory, from</span>
+<span class="sd">            the commandline options (i.e.</span>
+<span class="sd">            ``options = BaseOptions().parseOptions(); options[&#39;rundir&#39;];``).</span>
+<span class="sd">        :type config: string or None</span>
+<span class="sd">        :param config: The user-supplied path to the config file, from the</span>
+<span class="sd">            commandline options (i.e.</span>
+<span class="sd">            ``options = BaseOptions().parseOptions(); options[&#39;config&#39;];``).</span>
+<span class="sd">        :raises: :api:`twisted.python.usage.UsageError` if either the runtime</span>
+<span class="sd">            directory or the config file cannot be found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gRundir</span> <span class="o">=</span> <span class="n">getRundir</span><span class="p">()</span>
+        <span class="n">gConfig</span> <span class="o">=</span> <span class="n">getConfig</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">gRundir</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rundir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">gRundir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">rundir</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gRundir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwdu</span><span class="p">()</span>
+        <span class="n">setRundir</span><span class="p">(</span><span class="n">gRundir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">gRundir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">usage</span><span class="o">.</span><span class="n">UsageError</span><span class="p">(</span>
+                <span class="s">&quot;Could not change to runtime directory: `</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">gRundir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gConfig</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">config</span> <span class="o">=</span> <span class="s">&#39;bridgedb.conf&#39;</span>
+            <span class="n">gConfig</span> <span class="o">=</span> <span class="n">config</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">gConfig</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">gConfig</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">):</span> <span class="c"># also covers &#39;..&#39;</span>
+                    <span class="n">gConfig</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">gConfig</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gConfig</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gRundir</span><span class="p">,</span> <span class="n">gConfig</span><span class="p">)</span>
+        <span class="n">setConfig</span><span class="p">(</span><span class="n">gConfig</span><span class="p">)</span>
+
+        <span class="n">gConfig</span> <span class="o">=</span> <span class="n">getConfig</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">gConfig</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">usage</span><span class="o">.</span><span class="n">UsageError</span><span class="p">(</span>
+                <span class="s">&quot;Specified config file `</span><span class="si">%s</span><span class="s">&#39; doesn&#39;t exist!&quot;</span> <span class="o">%</span> <span class="n">gConfig</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaseOptions.postOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.BaseOptions.postOptions">[docs]</a>    <span class="k">def</span> <span class="nf">postOptions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Automatically called by :meth:`parseOptions`.</span>
+
+<span class="sd">        Determines appropriate values for the &#39;config&#39; and &#39;rundir&#39; settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseOptions</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">postOptions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">findRundirAndConfigFile</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">])</span>
+
+        <span class="n">gConfig</span> <span class="o">=</span> <span class="n">getConfig</span><span class="p">()</span>
+        <span class="n">gRundir</span> <span class="o">=</span> <span class="n">getRundir</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">gRundir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gRundir</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">gConfig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gConfig</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;verbosity&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">.postOptions():&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;  gCONFIG=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">gConfig</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;  self[&#39;config&#39;]=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;config&#39;</span><span class="p">])</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;  gRUNDIR=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">gRundir</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;  self[&#39;rundir&#39;]=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="p">[</span><span class="s">&#39;rundir&#39;</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="TestOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.TestOptions">[docs]</a><span class="k">class</span> <span class="nc">TestOptions</span><span class="p">(</span><span class="n">BaseOptions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Suboptions for running twisted.trial and unittest based tests.&quot;&quot;&quot;</span>
+
+    <span class="n">longdesc</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="s">&quot;&quot;&quot;BridgeDB testing commands.</span>
+<span class="s">    See the `bridgedb mock` command for generating testing environments.&quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">optFlags</span> <span class="o">=</span> <span class="p">[[</span><span class="s">&#39;coverage&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;Generate coverage statistics&#39;</span><span class="p">]]</span>
+    <span class="n">optParameters</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="s">&#39;file&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;Run tests in specific file(s) (trial only)&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">&#39;unittests&#39;</span><span class="p">,</span> <span class="s">&#39;u&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;Run unittests in bridgedb.Tests&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">&#39;trial&#39;</span><span class="p">,</span> <span class="s">&#39;t&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="s">&#39;Run twisted.trial tests in bridgedb.test&#39;</span><span class="p">]]</span>
+
+    <span class="n">completionData</span> <span class="o">=</span> <span class="n">usage</span><span class="o">.</span><span class="n">Completions</span><span class="p">(</span>
+        <span class="n">mutuallyExclusive</span><span class="o">=</span><span class="p">[(</span><span class="s">&#39;unittests&#39;</span><span class="p">,</span> <span class="s">&#39;coverage&#39;</span><span class="p">),</span>
+                           <span class="p">(</span><span class="s">&#39;unittests&#39;</span><span class="p">,</span> <span class="s">&#39;file&#39;</span><span class="p">)],</span>
+        <span class="n">optActions</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;file&#39;</span><span class="p">:</span> <span class="n">usage</span><span class="o">.</span><span class="n">CompleteFiles</span><span class="p">(</span><span class="s">&#39;lib/bridgedb/test/test_*.py&#39;</span><span class="p">,</span>
+                                                <span class="n">repeat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                                <span class="n">descr</span><span class="o">=</span><span class="s">&quot;test filename&quot;</span><span class="p">)},</span>
+        <span class="n">extraActions</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">usage</span><span class="o">.</span><span class="n">Completer</span><span class="p">(</span><span class="n">descr</span><span class="o">=</span><span class="s">&quot;extra arguments to pass to trial&quot;</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="TestOptions.parseArgs"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.TestOptions.parseArgs">[docs]</a>    <span class="k">def</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse any additional arguments after the options and flags.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="p">[</span><span class="s">&#39;test_args&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span>
+
+</div></div>
+<div class="viewcode-block" id="MockOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.MockOptions">[docs]</a><span class="k">class</span> <span class="nc">MockOptions</span><span class="p">(</span><span class="n">BaseOptions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Suboptions for creating necessary conditions for testing purposes.&quot;&quot;&quot;</span>
+
+    <span class="n">optParameters</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="s">&#39;descriptors&#39;</span><span class="p">,</span> <span class="s">&#39;n&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span>
+         <span class="sd">&#39;&#39;&#39;Generate &lt;n&gt; mock bridge descriptor sets</span>
+<span class="sd">          (types: netstatus, extrainfo, server)&#39;&#39;&#39;</span><span class="p">]]</span>
+
+</div>
+<div class="viewcode-block" id="MainOptions"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.options.MainOptions">[docs]</a><span class="k">class</span> <span class="nc">MainOptions</span><span class="p">(</span><span class="n">BaseOptions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Main commandline options parser for BridgeDB.&quot;&quot;&quot;</span>
+
+    <span class="n">optFlags</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="s">&#39;dump-bridges&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;Dump bridges by hashring assignment into files&#39;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">&#39;reload&#39;</span><span class="p">,</span> <span class="s">&#39;R&#39;</span><span class="p">,</span> <span class="s">&#39;Reload bridge descriptors into running servers&#39;</span><span class="p">]]</span>
+    <span class="n">subCommands</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="s">&#39;test&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">TestOptions</span><span class="p">,</span> <span class="s">&quot;Run twisted.trial tests or unittests&quot;</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">&#39;mock&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">MockOptions</span><span class="p">,</span> <span class="s">&quot;Generate a testing environment&quot;</span><span class="p">]]</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

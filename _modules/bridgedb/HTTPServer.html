@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.HTTPServer &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.HTTPServer</h1><div class="highlight"><pre>
+<span class="c"># BridgeDB by Nick Mathewson.</span>
+<span class="c"># Copyright (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements the web (http, https) interfaces to the bridge database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.error</span> <span class="kn">import</span> <span class="n">CannotListenError</span>
+<span class="kn">import</span> <span class="nn">twisted.web.resource</span>
+<span class="kn">from</span> <span class="nn">twisted.web.server</span> <span class="kn">import</span> <span class="n">Site</span>
+<span class="kn">from</span> <span class="nn">twisted.web</span> <span class="kn">import</span> <span class="n">static</span>
+<span class="kn">from</span> <span class="nn">twisted.web.util</span> <span class="kn">import</span> <span class="n">redirectTo</span>
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">filepath</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Dist</span>
+<span class="kn">import</span> <span class="nn">bridgedb.I18n</span> <span class="kn">as</span> <span class="nn">I18n</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Util</span> <span class="kn">as</span> <span class="nn">Util</span>
+
+<span class="kn">from</span> <span class="nn">recaptcha.client</span> <span class="kn">import</span> <span class="n">captcha</span> 
+<span class="kn">from</span> <span class="nn">bridgedb.Raptcha</span> <span class="kn">import</span> <span class="n">Raptcha</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByIP6</span><span class="p">,</span> <span class="n">filterBridgesByIP4</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByTransport</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByNotBlockedIn</span>
+<span class="kn">from</span> <span class="nn">bridgedb.parse</span> <span class="kn">import</span> <span class="n">headers</span>
+<span class="kn">from</span> <span class="nn">ipaddr</span> <span class="kn">import</span> <span class="n">IPv4Address</span><span class="p">,</span> <span class="n">IPv6Address</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">mako.template</span> <span class="kn">import</span> <span class="n">Template</span>
+<span class="kn">from</span> <span class="nn">mako.lookup</span> <span class="kn">import</span> <span class="n">TemplateLookup</span>
+<span class="kn">from</span> <span class="nn">zope.interface</span> <span class="kn">import</span> <span class="n">Interface</span><span class="p">,</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">implements</span>
+
+<span class="n">template_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span><span class="s">&#39;templates&#39;</span><span class="p">)</span>
+<span class="n">lookup</span> <span class="o">=</span> <span class="n">TemplateLookup</span><span class="p">(</span><span class="n">directories</span><span class="o">=</span><span class="p">[</span><span class="n">template_root</span><span class="p">],</span>
+                        <span class="n">output_encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="n">rtl_langs</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;ar&#39;</span><span class="p">,</span> <span class="s">&#39;he&#39;</span><span class="p">,</span> <span class="s">&#39;fa&#39;</span><span class="p">,</span> <span class="s">&#39;gu_IN&#39;</span><span class="p">,</span> <span class="s">&#39;ku&#39;</span><span class="p">)</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Set template root to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">template_root</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">GeoIP</span>
+    <span class="c"># GeoIP data object: choose database here</span>
+    <span class="c"># This is the same geoip implementation that pytorctl uses</span>
+    <span class="n">geoip</span> <span class="o">=</span> <span class="n">GeoIP</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">GeoIP</span><span class="o">.</span><span class="n">GEOIP_STANDARD</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;GeoIP database loaded&quot;</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">geoip</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;GeoIP database not found&quot;</span><span class="p">)</span> 
+
+<div class="viewcode-block" id="CaptchaProtectedResource"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.CaptchaProtectedResource">[docs]</a><span class="k">class</span> <span class="nc">CaptchaProtectedResource</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">useRecaptcha</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">recaptchaPrivKey</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">recaptchaPubKey</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">useForwardedHeader</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isLeaf</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">isLeaf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useForwardedHeader</span> <span class="o">=</span> <span class="n">useForwardedHeader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recaptchaPrivKey</span> <span class="o">=</span> <span class="n">recaptchaPrivKey</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recaptchaPubKey</span> <span class="o">=</span> <span class="n">recaptchaPubKey</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
+
+<div class="viewcode-block" id="CaptchaProtectedResource.getClientIP"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.CaptchaProtectedResource.getClientIP">[docs]</a>    <span class="k">def</span> <span class="nf">getClientIP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">useForwardedHeader</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">getHeader</span><span class="p">(</span><span class="s">&quot;X-Forwarded-For&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">:</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">is_valid_ip</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Got weird forwarded-for value </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span><span class="n">h</span><span class="p">)</span>
+                    <span class="n">ip</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">getClientIP</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ip</span>
+</div>
+<div class="viewcode-block" id="CaptchaProtectedResource.render_GET"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.CaptchaProtectedResource.render_GET">[docs]</a>    <span class="k">def</span> <span class="nf">render_GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="c"># get a captcha</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">Raptcha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recaptchaPubKey</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recaptchaPrivKey</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Connection to Recaptcha server failed.&quot;</span><span class="p">)</span>
+
+        <span class="c"># TODO: this does not work for versions of IE &lt; 8.0</span>
+        <span class="n">imgstr</span> <span class="o">=</span> <span class="s">&#39;data:image/jpeg;base64,</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lookup</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;captcha.html&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">imgstr</span><span class="o">=</span><span class="n">imgstr</span><span class="p">,</span> <span class="n">challenge_field</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">challenge</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CaptchaProtectedResource.render_POST"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.CaptchaProtectedResource.render_POST">[docs]</a>    <span class="k">def</span> <span class="nf">render_POST</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">challenge</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;recaptcha_challenge_field&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s">&#39;recaptcha_response_field&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">redirectTo</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">URLPath</span><span class="p">(),</span> <span class="n">request</span><span class="p">)</span>
+
+        <span class="c"># generate a random IP for the captcha submission</span>
+        <span class="n">remote_ip</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%d</span><span class="s">.</span><span class="si">%d</span><span class="s">.</span><span class="si">%d</span><span class="s">.</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span>
+                                     <span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">255</span><span class="p">))</span>
+
+        <span class="n">recaptcha_response</span> <span class="o">=</span> <span class="n">captcha</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">challenge</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">recaptchaPrivKey</span><span class="p">,</span> <span class="n">remote_ip</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recaptcha_response</span><span class="o">.</span><span class="n">is_valid</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Valid recaptcha from </span><span class="si">%s</span><span class="s">. Parameters were </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span>
+                    <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">remote_ip</span><span class="p">),</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Invalid recaptcha from </span><span class="si">%s</span><span class="s">. Parameters were </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span>
+                         <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">remote_ip</span><span class="p">),</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Recaptcha error code: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">recaptcha_response</span><span class="o">.</span><span class="n">error_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">redirectTo</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">URLPath</span><span class="p">(),</span> <span class="n">request</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="WebResource"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.WebResource">[docs]</a><span class="k">class</span> <span class="nc">WebResource</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This resource is used by Twisted Web to give a web page with some</span>
+<span class="sd">       bridges in response to a request.&quot;&quot;&quot;</span>
+    <span class="n">isLeaf</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distributor</span><span class="p">,</span> <span class="n">schedule</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">useForwardedHeader</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">includeFingerprints</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">domains</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;Create a new WebResource.</span>
+<span class="sd">             distributor -- an IPBasedDistributor object</span>
+<span class="sd">             schedule -- an IntervalSchedule object</span>
+<span class="sd">             N -- the number of bridges to hand out per query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gettext</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s">&quot;bridgedb&quot;</span><span class="p">,</span> <span class="nb">unicode</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">twisted</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distributor</span> <span class="o">=</span> <span class="n">distributor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">schedule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nBridgesToGive</span> <span class="o">=</span> <span class="n">N</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useForwardedHeader</span> <span class="o">=</span> <span class="n">useForwardedHeader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">includeFingerprints</span> <span class="o">=</span> <span class="n">includeFingerprints</span>
+
+        <span class="c"># do not use mutable types as __init__ defaults!</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">domains</span><span class="p">:</span> <span class="n">domains</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">domains</span> <span class="o">=</span> <span class="n">domains</span>
+
+<div class="viewcode-block" id="WebResource.render"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.WebResource.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBridgeRequestAnswer</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WebResource.getBridgeRequestAnswer"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgeRequestAnswer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; returns a response to a bridge request &quot;&quot;&quot;</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">getInterval</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="n">bridges</span> <span class="o">=</span> <span class="p">(</span> <span class="p">)</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">countryCode</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">useForwardedHeader</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">getHeader</span><span class="p">(</span><span class="s">&quot;X-Forwarded-For&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">:</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">is_valid_ip</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Got weird forwarded-for value </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span><span class="n">h</span><span class="p">)</span>
+                    <span class="n">ip</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">getClientIP</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">geoip</span><span class="p">:</span>
+            <span class="n">countryCode</span> <span class="o">=</span> <span class="n">geoip</span><span class="o">.</span><span class="n">country_code_by_addr</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+
+        <span class="c"># set locale</span>
+        <span class="n">rtl</span> <span class="o">=</span> <span class="n">usingRTLLang</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">format</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">format</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">format</span><span class="p">):</span> <span class="n">format</span> <span class="o">=</span> <span class="n">format</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># choose the first arg</span>
+
+        <span class="c"># do want any options?</span>
+        <span class="n">transport</span> <span class="o">=</span> <span class="n">ipv6</span> <span class="o">=</span> <span class="n">unblocked</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="n">ipv6</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;ipv6&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ipv6</span><span class="p">:</span> <span class="n">ipv6</span> <span class="o">=</span> <span class="bp">True</span> <span class="c"># if anything after ?ipv6=</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># validate method name</span>
+            <span class="n">transport</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;[_a-zA-Z][_a-zA-Z0-9]*&#39;</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;transport&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="n">transport</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">unblocked</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;[a-zA-Z]{2,4}&#39;</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;unblocked&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="n">unblocked</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="n">rules</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">ip</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ipv6</span><span class="p">:</span>
+                <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByIP6</span><span class="p">)</span>
+                <span class="n">addressClass</span> <span class="o">=</span> <span class="n">IPv6Address</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByIP4</span><span class="p">)</span>
+                <span class="n">addressClass</span> <span class="o">=</span> <span class="n">IPv4Address</span>
+
+            <span class="k">if</span> <span class="n">transport</span><span class="p">:</span>
+                <span class="c">#XXX: A cleaner solution would differentiate between</span>
+                <span class="c"># addresses by protocol rather than have separate lists</span>
+                <span class="c"># Tor to be a transport, and selecting between them.</span>
+                <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span><span class="n">filterBridgesByTransport</span><span class="p">(</span><span class="n">transport</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">unblocked</span><span class="p">:</span>
+                <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByNotBlockedIn</span><span class="p">(</span><span class="n">unblocked</span><span class="p">,</span>
+                    <span class="n">addressClass</span><span class="p">,</span> <span class="n">transport</span><span class="p">))</span>
+
+            <span class="n">bridges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributor</span><span class="o">.</span><span class="n">getBridgesForIP</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">nBridgesToGive</span><span class="p">,</span>
+                                                       <span class="n">countryCode</span><span class="p">,</span>
+                                                       <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="n">rules</span><span class="p">)</span>
+
+        <span class="n">answer</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">bridges</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;  </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">b</span><span class="o">.</span><span class="n">getConfigLine</span><span class="p">(</span>
+                <span class="n">includeFingerprint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">includeFingerprints</span><span class="p">,</span>
+                <span class="n">addressClass</span><span class="o">=</span><span class="n">addressClass</span><span class="p">,</span>
+                <span class="n">transport</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">=</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Dist</span><span class="o">.</span><span class="n">uniformMap</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+                <span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bridges</span><span class="p">)</span> 
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Replying to web request from </span><span class="si">%s</span><span class="s">.  Parameters were </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">ip</span><span class="p">),</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s">&#39;plain&#39;</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">setHeader</span><span class="p">(</span><span class="s">&quot;Content-Type&quot;</span><span class="p">,</span> <span class="s">&quot;text/plain&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">answer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">setHeader</span><span class="p">(</span><span class="s">&quot;Content-Type&quot;</span><span class="p">,</span> <span class="s">&quot;text/html; charset=utf-8&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">lookup</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;bridges.html&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">answer</span><span class="o">=</span><span class="n">answer</span><span class="p">,</span> <span class="n">rtl</span><span class="o">=</span><span class="n">rtl</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="WebRoot"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.WebRoot">[docs]</a><span class="k">class</span> <span class="nc">WebRoot</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="n">isLeaf</span> <span class="o">=</span> <span class="bp">True</span>
+<div class="viewcode-block" id="WebRoot.render_GET"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.WebRoot.render_GET">[docs]</a>    <span class="k">def</span> <span class="nf">render_GET</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">rtl</span> <span class="o">=</span> <span class="n">usingRTLLang</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lookup</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s">&#39;index.html&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">rtl</span><span class="o">=</span><span class="n">rtl</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="addWebServer"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.addWebServer">[docs]</a><span class="k">def</span> <span class="nf">addWebServer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">sched</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set up a web server.</span>
+<span class="sd">         cfg -- a configuration object from Main.  We use these options:</span>
+<span class="sd">                HTTPS_N_BRIDGES_PER_ANSWER</span>
+<span class="sd">                HTTP_UNENCRYPTED_PORT</span>
+<span class="sd">                HTTP_UNENCRYPTED_BIND_IP</span>
+<span class="sd">                HTTP_USE_IP_FROM_FORWARDED_HEADER</span>
+<span class="sd">                HTTPS_PORT</span>
+<span class="sd">                HTTPS_BIND_IP</span>
+<span class="sd">                HTTPS_USE_IP_FROM_FORWARDED_HEADER</span>
+<span class="sd">                RECAPTCHA_ENABLED</span>
+<span class="sd">                RECAPTCHA_PUB_KEY</span>
+<span class="sd">                RECAPTCHA_PRIV_KEY </span>
+<span class="sd">         dist -- an IPBasedDistributor object.</span>
+<span class="sd">         sched -- an IntervalSchedule object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">site</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">httpdist</span> <span class="o">=</span> <span class="n">twisted</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">Resource</span><span class="p">()</span>
+    <span class="n">httpdist</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">WebRoot</span><span class="p">())</span>
+    <span class="n">httpdist</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&#39;robots.txt&#39;</span><span class="p">,</span>
+                      <span class="n">static</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">template_root</span><span class="p">,</span> <span class="s">&#39;robots.txt&#39;</span><span class="p">)))</span>
+    <span class="n">httpdist</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&#39;assets&#39;</span><span class="p">,</span>
+                      <span class="n">static</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">template_root</span><span class="p">,</span> <span class="s">&#39;assets/&#39;</span><span class="p">)))</span>
+
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">WebResource</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">sched</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_N_BRIDGES_PER_ANSWER</span><span class="p">,</span>
+                   <span class="n">cfg</span><span class="o">.</span><span class="n">HTTP_USE_IP_FROM_FORWARDED_HEADER</span><span class="p">,</span>
+                   <span class="n">includeFingerprints</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_INCLUDE_FINGERPRINTS</span><span class="p">,</span>
+                   <span class="n">domains</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_DOMAINS</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">RECAPTCHA_ENABLED</span><span class="p">:</span>
+        <span class="n">protected</span> <span class="o">=</span> <span class="n">CaptchaProtectedResource</span><span class="p">(</span>
+                <span class="n">recaptchaPrivKey</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">RECAPTCHA_PRIV_KEY</span><span class="p">,</span>
+                <span class="n">recaptchaPubKey</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">RECAPTCHA_PUB_KEY</span><span class="p">,</span>
+                <span class="n">useForwardedHeader</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">HTTP_USE_IP_FROM_FORWARDED_HEADER</span><span class="p">,</span>
+                <span class="n">resource</span><span class="o">=</span><span class="n">resource</span><span class="p">)</span>
+        <span class="n">httpdist</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&#39;bridges&#39;</span><span class="p">,</span> <span class="n">protected</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">httpdist</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&#39;bridges&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+        
+    <span class="n">site</span> <span class="o">=</span> <span class="n">Site</span><span class="p">(</span><span class="n">httpdist</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">HTTP_UNENCRYPTED_PORT</span><span class="p">:</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">HTTP_UNENCRYPTED_BIND_IP</span> <span class="ow">or</span> <span class="s">&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">listenTCP</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">HTTP_UNENCRYPTED_PORT</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CannotListenError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_PORT</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">twisted.internet.ssl</span> <span class="kn">import</span> <span class="n">DefaultOpenSSLContextFactory</span>
+        <span class="c">#from OpenSSL.SSL import SSLv3_METHOD</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_BIND_IP</span> <span class="ow">or</span> <span class="s">&quot;&quot;</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">DefaultOpenSSLContextFactory</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_KEY_FILE</span><span class="p">,</span>
+                                               <span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_CERT_FILE</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">reactor</span><span class="o">.</span><span class="n">listenSSL</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">HTTPS_PORT</span><span class="p">,</span> <span class="n">site</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CannotListenError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">site</span>
+</div>
+<div class="viewcode-block" id="usingRTLLang"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.usingRTLLang">[docs]</a><span class="k">def</span> <span class="nf">usingRTLLang</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if we should translate the text into a RTL language</span>
+
+<span class="sd">    Retrieve the headers from the request. Obtain the Accept-Language header</span>
+<span class="sd">    and decide if we need to translate the text. Install the requisite</span>
+<span class="sd">    languages via gettext, if so. Then, manually check which languages we</span>
+<span class="sd">    support. Choose the first language from the header that we support and</span>
+<span class="sd">    return True if it is a RTL language, else return False.</span>
+
+<span class="sd">    :param request twisted.web.server.Request: Incoming request</span>
+<span class="sd">    :returns bool: Language is right-to-left</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">langs</span> <span class="o">=</span> <span class="n">setLocaleFromRequestHeader</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+    <span class="c"># Grab only the language (first two characters) so we know if the language</span>
+    <span class="c"># is read right-to-left</span>
+    <span class="c">#langs = [ lang[:2] for lang in langs ]</span>
+    <span class="n">lang</span> <span class="o">=</span> <span class="n">getAssumedChosenLang</span><span class="p">(</span><span class="n">langs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">rtl_langs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="getAssumedChosenLang"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.getAssumedChosenLang">[docs]</a><span class="k">def</span> <span class="nf">getAssumedChosenLang</span><span class="p">(</span><span class="n">langs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the first language in ``langs`` and we supprt</span>
+
+<span class="sd">    :param langs list: All requested languages</span>
+<span class="sd">    :returns string: Chosen language</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i18npath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;i18n&#39;</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">FilePath</span><span class="p">(</span><span class="n">i18npath</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">()</span>
+
+    <span class="n">lang</span> <span class="o">=</span> <span class="s">&#39;en-US&#39;</span>
+    <span class="n">supp_langs</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">listdir</span><span class="p">()</span> <span class="o">+</span> <span class="p">[</span><span class="s">&#39;en&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">langs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">supp_langs</span><span class="p">:</span>
+            <span class="n">lang</span> <span class="o">=</span> <span class="n">l</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">lang</span>
+</div>
+<div class="viewcode-block" id="setLocaleFromRequestHeader"><a class="viewcode-back" href="../../bridgedb.HTTPServer.html#bridgedb.HTTPServer.setLocaleFromRequestHeader">[docs]</a><span class="k">def</span> <span class="nf">setLocaleFromRequestHeader</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve the languages from the accept-language header and install them.</span>
+
+<span class="sd">    Parse the languages in the header, and attempt to install the first one in</span>
+<span class="sd">    the list. If that fails, we receive a :class:`gettext.NullTranslation`</span>
+<span class="sd">    object, if it worked then we have a :class:`gettext.GNUTranslation`</span>
+<span class="sd">    object. Whichever one we end up with, add the other get the other</span>
+<span class="sd">    languages and add them as fallbacks to the first. Lastly, install this</span>
+<span class="sd">    chain of translations.</span>
+
+<span class="sd">    :type request: :api:`twisted.web.server.Request`</span>
+<span class="sd">    :param request: An incoming request from a client.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :returns: All requested languages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Getting client &#39;Accept-Language&#39; header...&quot;</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">getHeader</span><span class="p">(</span><span class="s">&#39;accept-language&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Client sent no &#39;Accept-Language&#39; header. Using fallback.&quot;</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s">&#39;en,en-US&#39;</span>
+
+    <span class="n">localedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;i18n/&#39;</span><span class="p">)</span>
+    <span class="n">langs</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">parseAcceptLanguage</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+    <span class="c">## XXX the &#39;Accept-Language&#39; header is potentially identifying</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Client Accept-Language (top 5): </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">langs</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">language</span> <span class="o">=</span> <span class="n">gettext</span><span class="o">.</span><span class="n">translation</span><span class="p">(</span><span class="s">&quot;bridgedb&quot;</span><span class="p">,</span> <span class="n">localedir</span><span class="o">=</span><span class="n">localedir</span><span class="p">,</span>
+                                       <span class="n">languages</span><span class="o">=</span><span class="n">langs</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">langs</span><span class="p">:</span>
+            <span class="n">language</span><span class="o">.</span><span class="n">add_fallback</span><span class="p">(</span><span class="n">gettext</span><span class="o">.</span><span class="n">translation</span><span class="p">(</span><span class="s">&quot;bridgedb&quot;</span><span class="p">,</span>
+                                                      <span class="n">localedir</span><span class="o">=</span><span class="n">localedir</span><span class="p">,</span>
+                                                      <span class="n">languages</span><span class="o">=</span><span class="n">langs</span><span class="p">,</span>
+                                                      <span class="n">fallback</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="n">language</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="nb">unicode</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">langs</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

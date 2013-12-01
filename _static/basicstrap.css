@@ -1,0 +1,172 @@
+/*  Bootstrap
+    ------------------------------------------------------- */
+
+/*  apply font awesome
+    ------------------------------------------------------- */
+
+div.danger p.admonition-title:before,
+div.error p.admonition-title:before,
+div.warning p.admonition-title:before,
+div.caution p.admonition-title:before,
+div.attention p.admonition-title:before,
+div.important p.admonition-title:before,
+div.note p.admonition-title:before,
+div.hint p.admonition-title:before,
+div.tip p.admonition-title:before
+{
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
+  -webkit-font-smoothing: antialiased;
+  margin-right: 5px;
+}
+
+div.danger p.admonition-title:before,
+div.error p.admonition-title:before {
+  content: "\f06a";
+}
+div.warning p.admonition-title:before,
+div.caution p.admonition-title:before,
+div.attention p.admonition-title:before {
+  content: "\f071";
+}
+div.important p.admonition-title:before,
+div.note p.admonition-title:before {
+  content: "\f05a";
+}
+div.hint p.admonition-title:before,
+div.tip p.admonition-title:before {
+  content: "\f0eb";
+}
+h1 { font-size: 2.2em; line-height: 2.2em;}
+
+h2 { font-size: 2.0em; line-height: 2.0em;}
+
+h3 { font-size: 1.8em; line-height: 1.8em;}
+
+h4 { font-size: 1.4em; line-height: 1.4em;}
+
+h5 { font-size: 1.2em; line-height: 1.2em;}
+
+h6 { font-size: 1.1em; line-height: 1.1em;}
+
+
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+
+    
+    
+    
+
+
+table.docutils th,
+table.docutils td {
+  border-top: 1px solid #dddddd;
+}
+table.docutils tbody + tbody {
+  border-top: 2px solid #dddddd;
+}
+table.docutils {
+  border: none;
+  border-top: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+}
+table.docutils th,
+table.docutils td {
+  border-left: 1px solid #dddddd;
+}
+
+table.docutils tbody tr:nth-child(odd) td,
+table.docutils tbody tr:nth-child(odd) th {
+  background-color: #f9f9f9;
+}
+
+table.docutils tbody tr:hover td,
+table.docutils tbody tr:hover th {
+  background-color: #f5f5f5;
+}
+table.docutils.field-list {
+  border: none;
+}
+
+table.width-adjust {
+  width: 0;
+}
+
+/* -- admonition -- */
+div.admonition {
+  color: #ffffff;
+  background-color: #ec9B00;
+  border-color: #ec9B00;
+}
+
+/* -- danger, error -- */
+div.danger,
+div.error {
+  color: #ffffff;
+  background-color: #dd4838;
+  border-color: #dd4838;
+}
+
+/* -- warning, caution, attention -- */
+div.warning,
+div.caution,
+div.attention {
+  color: #ffffff;
+  background-color: #ec9B00;
+  border-color: #ec9B00;
+}
+
+/* -- note, important -- */
+div.note,
+div.important {
+  color: #ffffff;
+  background-color: #40bc9c;
+  border-color: #40bc9c;
+}
+
+/* -- hint, tip -- */
+div.hint,
+div.tip {
+  color: #ffffff;
+  background-color: #4b99dc;
+  border-color: #4b99dc;
+}
+
+div.topic {
+  background-color: #f9f9f9;
+  border-color: #dddddd;
+}
+
+
+
+/* for mobile */
+@media (max-width: 480px) {
+  a.brand {
+    width: 80%;
+  }
+  searchbox .search-query {
+    width: 60%;
+  }
+}
+
+/* for desktop */
+@media (min-width: 768px) {
+  
+  
+}

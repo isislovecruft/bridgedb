@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.EmailServer &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.Filters" href="bridgedb.Filters.html" />
+    <link rel="prev" title="bridgedb.Dist" href="bridgedb.Dist.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.Filters.html" title="bridgedb.Filters" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.Dist.html" title="bridgedb.Dist" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Dist.html"
+                        title="previous chapter">bridgedb.Dist</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Filters.html"
+                        title="next chapter">bridgedb.Filters</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.EmailServer.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Dist.html"
+                        title="previous chapter">bridgedb.Dist</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Filters.html"
+                        title="next chapter">bridgedb.Filters</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.EmailServer.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.EmailServer">
+<span id="bridgedb-emailserver"></span><h1>bridgedb.EmailServer<a class="headerlink" href="#module-bridgedb.EmailServer" title="Permalink to this headline">¶</a></h1>
+<p>This module implements the email interface to the bridge database.</p>
+<dl class="class">
+<dt id="bridgedb.EmailServer.MailFile">
+<em class="property">class </em><tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">MailFile</tt><big>(</big><em>lines</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A file-like object used to hand rfc822.Message a list of lines
+as though it were reading them from a file.</p>
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailFile.readline">
+<tt class="descname">readline</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailFile.readline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailFile.readline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.getBridgeDBEmailAddrFromList">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">getBridgeDBEmailAddrFromList</tt><big>(</big><em>ctx</em>, <em>address_list</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#getBridgeDBEmailAddrFromList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.getBridgeDBEmailAddrFromList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loop through a list of (full name, email address) pairs and look up our
+mail address. If our address isn&#8217;t found (which can&#8217;t happen), return
+the default ctx from address so we can keep on working.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.getMailResponse">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">getMailResponse</tt><big>(</big><em>lines</em>, <em>ctx</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#getMailResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.getMailResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a list of lines from an incoming email message, and a
+MailContext object, parse the email and decide what to do in response.
+If we want to answer, return a 2-tuple containing the address that
+will receive the response, and a readable filelike object containing
+the response.  Return None,None if we shouldn&#8217;t answer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.buildMessageTemplate">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">buildMessageTemplate</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#buildMessageTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.buildMessageTemplate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.buildSpamWarningTemplate">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">buildSpamWarningTemplate</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#buildSpamWarningTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.buildSpamWarningTemplate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.replyToMail">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">replyToMail</tt><big>(</big><em>lines</em>, <em>ctx</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#replyToMail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.replyToMail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a list of lines from an incoming email message, and a
+MailContext object, possibly send a reply.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.getLocaleFromPlusAddr">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">getLocaleFromPlusAddr</tt><big>(</big><em>address</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#getLocaleFromPlusAddr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.getLocaleFromPlusAddr" title="Permalink to this definition">¶</a></dt>
+<dd><p>See whether the user sent his email to a &#8216;plus&#8217; address, for 
+instance to <a class="reference external" href="mailto:bridgedb+fa&#37;&#52;&#48;tpo">bridgedb+fa<span>&#64;</span>tpo</a>. Plus addresses are the current 
+mechanism to set the reply language</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.getLocaleFromRequest">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">getLocaleFromRequest</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#getLocaleFromRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.getLocaleFromRequest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.EmailServer.MailContext">
+<em class="property">class </em><tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">MailContext</tt><big>(</big><em>cfg</em>, <em>dist</em>, <em>sched</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper object that holds information used by email subsystem.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.EmailServer.MailMessage">
+<em class="property">class </em><tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">MailMessage</tt><big>(</big><em>ctx</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailMessage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plugs into the Twisted Mail and receives an incoming message.
+Once the message is in, we reply or we don&#8217;t.</p>
+<p>Create a new MailMessage from a MailContext.</p>
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailMessage.lineReceived">
+<tt class="descname">lineReceived</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailMessage.lineReceived"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailMessage.lineReceived" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when we get another line of an incoming message.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailMessage.eomReceived">
+<tt class="descname">eomReceived</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailMessage.eomReceived"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailMessage.eomReceived" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when we receive the end of a message.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailMessage.connectionLost">
+<tt class="descname">connectionLost</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailMessage.connectionLost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailMessage.connectionLost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called if we die partway through reading a message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.EmailServer.MailDelivery">
+<em class="property">class </em><tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">MailDelivery</tt><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailDelivery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailDelivery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plugs into Twisted Mail and handles SMTP commands.</p>
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailDelivery.setBridgeDBContext">
+<tt class="descname">setBridgeDBContext</tt><big>(</big><em>ctx</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailDelivery.setBridgeDBContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailDelivery.setBridgeDBContext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailDelivery.receivedHeader">
+<tt class="descname">receivedHeader</tt><big>(</big><em>helo</em>, <em>origin</em>, <em>recipients</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailDelivery.receivedHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailDelivery.receivedHeader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailDelivery.validateFrom">
+<tt class="descname">validateFrom</tt><big>(</big><em>helo</em>, <em>origin</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailDelivery.validateFrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailDelivery.validateFrom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailDelivery.validateTo">
+<tt class="descname">validateTo</tt><big>(</big><em>user</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailDelivery.validateTo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailDelivery.validateTo" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the local user that was addressed isn&#8217;t our configured local 
+user or doesn&#8217;t contain a &#8216;+&#8217; with a prefix matching the local
+configured user: Yell</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.EmailServer.MailFactory">
+<em class="property">class </em><tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">MailFactory</tt><big>(</big><em>*a</em>, <em>**kw</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">twisted.mail.smtp.SMTPFactory</span></tt></p>
+<p>Plugs into Twisted Mail; creates a new MailDelivery whenever we get
+a connection on the SMTP port.</p>
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailFactory.setBridgeDBContext">
+<tt class="descname">setBridgeDBContext</tt><big>(</big><em>ctx</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailFactory.setBridgeDBContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailFactory.setBridgeDBContext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.EmailServer.MailFactory.buildProtocol">
+<tt class="descname">buildProtocol</tt><big>(</big><em>addr</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#MailFactory.buildProtocol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.MailFactory.buildProtocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.addSMTPServer">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">addSMTPServer</tt><big>(</big><em>cfg</em>, <em>dist</em>, <em>sched</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#addSMTPServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.addSMTPServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a smtp server.
+cfg &#8211; a configuration object from Main.  We use these options:</p>
+<blockquote>
+<div>EMAIL_BIND_IP
+EMAIL_PORT
+EMAIL_N_BRIDGES_PER_ANSWER
+EMAIL_DOMAIN_RULES</div></blockquote>
+<p>dist &#8211; an EmailBasedDistributor object.
+sched &#8211; an IntervalSchedule object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.composeEmail">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">composeEmail</tt><big>(</big><em>fromAddr</em>, <em>clientAddr</em>, <em>subject</em>, <em>body</em>, <em>msgID=False</em>, <em>gpgContext=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#composeEmail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.composeEmail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.EmailServer.getGPGContext">
+<tt class="descclassname">bridgedb.EmailServer.</tt><tt class="descname">getGPGContext</tt><big>(</big><em>cfg</em><big>)</big><a class="reference internal" href="_modules/bridgedb/EmailServer.html#getGPGContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.EmailServer.getGPGContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import a key from a file and initialise a context for GnuPG operations.</p>
+<p>The key should not be protected by a passphrase, and should have the
+signing flag enabled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cfg</strong> (<a class="reference internal" href="bridgedb.persistent.html#bridgedb.persistent.Conf" title="bridgedb.persistent.Conf"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.persistent.Conf</span></tt></a>) &#8211; The loaded config file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><tt class="xref py py-class docutils literal"><span class="pre">gpgme.Context</span></tt> or None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A GPGME context with the signers initialized by the keyfile
+specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or
+None if the option was not enabled, or was unable to initialize.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.Filters.html" title="bridgedb.Filters" >next</a></li>
+        <li><a href="bridgedb.Dist.html" title="bridgedb.Dist" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

@@ -1,0 +1,499 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Storage &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.Tests" href="bridgedb.Tests.html" />
+    <link rel="prev" title="bridgedb.Stability" href="bridgedb.Stability.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.Tests.html" title="bridgedb.Tests" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="bridgedb.Stability.html" title="bridgedb.Stability" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Stability.html"
+                        title="previous chapter">bridgedb.Stability</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Tests.html"
+                        title="next chapter">bridgedb.Tests</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Storage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bridges.html">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="bridgedb.Stability.html"
+                        title="previous chapter">bridgedb.Stability</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Tests.html"
+                        title="next chapter">bridgedb.Tests</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Storage.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.Storage">
+<span id="bridgedb-storage"></span><span id="storage"></span><h1>bridgedb.Storage<a class="headerlink" href="#module-bridgedb.Storage" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="bridgedb.Storage._escapeValue">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">_escapeValue</tt><big>(</big><em>v</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#_escapeValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage._escapeValue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.timeToStr">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">timeToStr</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#timeToStr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.timeToStr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.strToTime">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">strToTime</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#strToTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.strToTime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Storage.SqliteDict">
+<em class="property">class </em><tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">SqliteDict</tt><big>(</big><em>conn</em>, <em>cursor</em>, <em>table</em>, <em>fixedcolnames</em>, <em>fixedcolvalues</em>, <em>keycol</em>, <em>valcol</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A SqliteDict wraps a SQLite table and makes it look like a
+Python dictionary.  In addition to the single key and value
+columns, there can be a number of &#8220;fixed&#8221; columns, such that
+the dictionary only contains elements of the table where the
+fixed columns are set appropriately.</p>
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.has_key">
+<tt class="descname">has_key</tt><big>(</big><em>k</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.has_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.has_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.get">
+<tt class="descname">get</tt><big>(</big><em>k</em>, <em>v=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.setdefault">
+<tt class="descname">setdefault</tt><big>(</big><em>k</em>, <em>v</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.setdefault"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.setdefault" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.keys">
+<tt class="descname">keys</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.commit">
+<tt class="descname">commit</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.commit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.SqliteDict.rollback">
+<tt class="descname">rollback</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#SqliteDict.rollback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.SqliteDict.rollback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Storage.BridgeData">
+<em class="property">class </em><tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">BridgeData</tt><big>(</big><em>hex_key</em>, <em>address</em>, <em>or_port</em>, <em>distributor='unallocated'</em>, <em>first_seen=''</em>, <em>last_seen=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#BridgeData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.BridgeData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value class carrying bridge information:
+hex_key      - The unique hex key of the given bridge
+address      - Bridge IP address
+or_port      - Bridge TCP port
+distributor  - The distributor (or pseudo-distributor) through which</p>
+<blockquote>
+<div>this bridge is being announced</div></blockquote>
+<p>first_seen   - When did we first see this bridge online?
+last_seen    - When was the last time we saw this bridge online?</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Storage.Database">
+<em class="property">class </em><tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">Database</tt><big>(</big><em>sqlite_fname</em>, <em>db_fname=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="bridgedb.Storage.Database.commit">
+<tt class="descname">commit</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.commit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.rollback">
+<tt class="descname">rollback</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.rollback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.rollback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.close">
+<tt class="descname">close</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.insertBridgeAndGetRing">
+<tt class="descname">insertBridgeAndGetRing</tt><big>(</big><em>bridge</em>, <em>setRing</em>, <em>seenAt</em>, <em>validRings</em>, <em>defaultPool='unallocated'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.insertBridgeAndGetRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.insertBridgeAndGetRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates info about bridge, setting ring to setRing if none was set.
+Also sets distributor to <a href="#id1"><span class="problematic" id="id2">`</span></a>defaultPool&#8217; if the bridge was found in
+the database, but its distributor isn&#8217;t valid anymore.</p>
+<p>Returns the name of the distributor the bridge is assigned to.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.cleanEmailedBridges">
+<tt class="descname">cleanEmailedBridges</tt><big>(</big><em>expireBefore</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.cleanEmailedBridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.cleanEmailedBridges" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getEmailTime">
+<tt class="descname">getEmailTime</tt><big>(</big><em>addr</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getEmailTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getEmailTime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.setEmailTime">
+<tt class="descname">setEmailTime</tt><big>(</big><em>addr</em>, <em>whenMailed</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.setEmailTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.setEmailTime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getAllBridges">
+<tt class="descname">getAllBridges</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getAllBridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getAllBridges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of BridgeData value classes of all bridges in the
+database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getBridgesForDistributor">
+<tt class="descname">getBridgesForDistributor</tt><big>(</big><em>distributor</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getBridgesForDistributor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getBridgesForDistributor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of BridgeData value classes of all bridges in the
+database that are allocated to distributor &#8216;distributor&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.updateDistributorForHexKey">
+<tt class="descname">updateDistributorForHexKey</tt><big>(</big><em>distributor</em>, <em>hex_key</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.updateDistributorForHexKey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.updateDistributorForHexKey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.addBridgeBlock">
+<tt class="descname">addBridgeBlock</tt><big>(</big><em>fingerprint</em>, <em>countryCode</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.addBridgeBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.addBridgeBlock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.delBridgeBlock">
+<tt class="descname">delBridgeBlock</tt><big>(</big><em>fingerprint</em>, <em>countryCode</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.delBridgeBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.delBridgeBlock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.cleanBridgeBlocks">
+<tt class="descname">cleanBridgeBlocks</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.cleanBridgeBlocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.cleanBridgeBlocks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getBlockingCountries">
+<tt class="descname">getBlockingCountries</tt><big>(</big><em>fingerprint</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getBlockingCountries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getBlockingCountries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getBlockedBridges">
+<tt class="descname">getBlockedBridges</tt><big>(</big><em>countryCode</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getBlockedBridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getBlockedBridges" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.isBlocked">
+<tt class="descname">isBlocked</tt><big>(</big><em>fingerprint</em>, <em>countryCode</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.isBlocked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.isBlocked" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getWarnedEmail">
+<tt class="descname">getWarnedEmail</tt><big>(</big><em>addr</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getWarnedEmail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getWarnedEmail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.setWarnedEmail">
+<tt class="descname">setWarnedEmail</tt><big>(</big><em>addr</em>, <em>warned=True</em>, <em>whenWarned=1385940222.458174</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.setWarnedEmail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.setWarnedEmail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.cleanWarnedEmails">
+<tt class="descname">cleanWarnedEmails</tt><big>(</big><em>expireBefore</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.cleanWarnedEmails"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.cleanWarnedEmails" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.updateIntoBridgeHistory">
+<tt class="descname">updateIntoBridgeHistory</tt><big>(</big><em>bh</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.updateIntoBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.updateIntoBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.delBridgeHistory">
+<tt class="descname">delBridgeHistory</tt><big>(</big><em>fp</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.delBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.delBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getBridgeHistory">
+<tt class="descname">getBridgeHistory</tt><big>(</big><em>fp</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getAllBridgeHistory">
+<tt class="descname">getAllBridgeHistory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getAllBridgeHistory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getAllBridgeHistory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Storage.Database.getBridgesLastUpdatedBefore">
+<tt class="descname">getBridgesLastUpdatedBefore</tt><big>(</big><em>statusPublicationMillis</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#Database.getBridgesLastUpdatedBefore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.Database.getBridgesLastUpdatedBefore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.openDatabase">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">openDatabase</tt><big>(</big><em>sqlite_file</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#openDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.openDatabase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.openOrConvertDatabase">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">openOrConvertDatabase</tt><big>(</big><em>sqlite_file</em>, <em>db_file</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#openOrConvertDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.openOrConvertDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a sqlite database, converting it from a db file if needed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.setGlobalDB">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">setGlobalDB</tt><big>(</big><em>db</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#setGlobalDB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.setGlobalDB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Storage.getDB">
+<tt class="descclassname">bridgedb.Storage.</tt><tt class="descname">getDB</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Storage.html#getDB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Storage.getDB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.Tests.html" title="bridgedb.Tests" >next</a></li>
+        <li><a href="bridgedb.Stability.html" title="bridgedb.Stability" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

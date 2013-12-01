@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Stability &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Stability</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides functionality for tracking bridge stability metrics, using</span>
+<span class="sd">the model introduced in [1] and implemented in [2].</span>
+
+<span class="sd">[1] Karsten Loesing, An Analysis of Tor Bridge Stability. Technical Report.</span>
+<span class="sd">The Tor Project, October 2011.</span>
+<span class="sd">https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf</span>
+
+<span class="sd">[2] https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Storage</span>
+
+<span class="c"># tunables </span>
+<span class="n">weighting_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="mi">19</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">discountIntervalMillis</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">12</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BridgeHistory"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory">[docs]</a><span class="k">class</span> <span class="nc">BridgeHistory</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Record Class that tracks a single Bridge</span>
+<span class="sd">    The fields stored are:</span>
+
+<span class="sd">    fingerprint, ip, port, weightedUptime, weightedTime, weightedRunLength,</span>
+<span class="sd">    totalRunWeights, lastSeenWithDifferentAddressAndPort,</span>
+<span class="sd">    lastSeenWithThisAddressAndPort, lastDiscountedHistoryValues.</span>
+
+<span class="sd">    fingerprint         The Bridge Fingerprint (unicode)</span>
+<span class="sd">    ip                  The Bridge IP (unicode)</span>
+<span class="sd">    port                The Bridge orport (integer)</span>
+
+<span class="sd">    weightedUptime      Weighted uptime in seconds (long int)</span>
+<span class="sd">    weightedTime        Weighted time in seconds (long int)</span>
+<span class="sd">    weightedRunLength   Weighted run length of previous addresses or ports in</span>
+<span class="sd">                        seconds. (long int)</span>
+<span class="sd">    totalRunWeights     Total run weights of previously used addresses or</span>
+<span class="sd">                        ports. (float)</span>
+
+<span class="sd">    lastSeenWithDifferentAddressAndPort</span>
+<span class="sd">        Timestamp in milliseconds when this</span>
+<span class="sd">        bridge was last seen with a different address or port. (long int)</span>
+
+<span class="sd">    lastSeenWithThisAddressAndPort</span>
+<span class="sd">        Timestamp in milliseconds when this bridge was last seen</span>
+<span class="sd">        with this address and port. (long int)</span>
+
+<span class="sd">    lastDiscountedHistoryValues:</span>
+<span class="sd">        Timestamp in milliseconds when this bridge was last discounted. (long int)</span>
+
+<span class="sd">    lastUpdatedWeightedTime:</span>
+<span class="sd">        Timestamp in milliseconds when the weighted time was updated. (long int)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span>
+            <span class="n">weightedUptime</span><span class="p">,</span> <span class="n">weightedTime</span><span class="p">,</span> <span class="n">weightedRunLength</span><span class="p">,</span> <span class="n">totalRunWeights</span><span class="p">,</span>
+            <span class="n">lastSeenWithDifferentAddressAndPort</span><span class="p">,</span> <span class="n">lastSeenWithThisAddressAndPort</span><span class="p">,</span>
+            <span class="n">lastDiscountedHistoryValues</span><span class="p">,</span> <span class="n">lastUpdatedWeightedTime</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">fingerprint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightedUptime</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">weightedUptime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">weightedTime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightedRunLength</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">weightedRunLength</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">totalRunWeights</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">totalRunWeights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithDifferentAddressAndPort</span> <span class="o">=</span> \
+                <span class="nb">long</span><span class="p">(</span><span class="n">lastSeenWithDifferentAddressAndPort</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">lastSeenWithThisAddressAndPort</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">lastDiscountedHistoryValues</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastUpdatedWeightedTime</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">lastUpdatedWeightedTime</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BridgeHistory.discountWeightedFractionalUptimeAndWeightedTime"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.discountWeightedFractionalUptimeAndWeightedTime">[docs]</a>    <span class="k">def</span> <span class="nf">discountWeightedFractionalUptimeAndWeightedTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discountUntilMillis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; discount weighted times &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span> <span class="o">=</span> <span class="n">discountUntilMillis</span>
+        <span class="n">rounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numDiscountRounds</span><span class="p">(</span><span class="n">discountUntilMillis</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rounds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">discount</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">weighting_factor</span><span class="o">**</span><span class="n">rounds</span><span class="p">)</span><span class="o">*</span><span class="n">x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightedUptime</span> <span class="o">=</span> <span class="n">discount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightedUptime</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">=</span> <span class="n">discount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightedRunLength</span> <span class="o">=</span> <span class="n">discount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightedRunLength</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalRunWeights</span> <span class="o">=</span> <span class="n">discount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">totalRunWeights</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span> <span class="o">+=</span> <span class="n">discountIntervalMillis</span> <span class="o">*</span> <span class="n">rounds</span>
+        <span class="k">return</span> <span class="n">rounds</span>
+</div>
+<div class="viewcode-block" id="BridgeHistory.numDiscountRounds"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.numDiscountRounds">[docs]</a>    <span class="k">def</span> <span class="nf">numDiscountRounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">discountUntilMillis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; return the number of rounds of discounting needed to bring this</span>
+<span class="sd">        history element current &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">discountUntilMillis</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">result</span><span class="o">/</span><span class="n">discountIntervalMillis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BridgeHistory.weightedFractionalUptime"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.weightedFractionalUptime">[docs]</a>    <span class="k">def</span> <span class="nf">weightedFractionalUptime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Fractional Uptime&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">&lt;</span><span class="mf">0.0001</span><span class="p">:</span> <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedUptime</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BridgeHistory.tosa"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.tosa">[docs]</a>    <span class="k">def</span> <span class="nf">tosa</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the Time On Same Address (TOSA)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span> <span class="o">-</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithDifferentAddressAndPort</span> <span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BridgeHistory.familiar"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.familiar">[docs]</a>    <span class="k">def</span> <span class="nf">familiar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A bridge is &#39;familiar&#39; if 1/8 of all active bridges have appeared</span>
+<span class="sd">        more recently than it, or if it has been around for a Weighted Time of 8 days.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># if this bridge has been around longer than 8 days</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">&gt;=</span> <span class="nb">long</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="c"># return True if self.weightedTime is greater than the weightedTime</span>
+        <span class="c"># of the &gt; bottom 1/8 all bridges, sorted by weightedTime</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="n">allWeightedTimes</span> <span class="o">=</span> <span class="p">[</span> <span class="n">bh</span><span class="o">.</span><span class="n">weightedTime</span> <span class="k">for</span> <span class="n">bh</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">getAllBridgeHistory</span><span class="p">()]</span>
+        <span class="n">numBridges</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">allWeightedTimes</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Got </span><span class="si">%d</span><span class="s"> weightedTimes&quot;</span><span class="p">,</span> <span class="n">numBridges</span><span class="p">)</span>
+        <span class="n">allWeightedTimes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">&gt;=</span> <span class="n">allWeightedTimes</span><span class="p">[</span><span class="n">numBridges</span><span class="o">/</span><span class="mi">8</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BridgeHistory.wmtbac"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.BridgeHistory.wmtbac">[docs]</a>    <span class="k">def</span> <span class="nf">wmtbac</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Mean Time Between Address Change&quot;&quot;&quot;</span>
+        <span class="n">totalRunLength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightedRunLength</span> <span class="o">+</span> \
+                <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span> <span class="o">-</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenWithDifferentAddressAndPort</span><span class="p">)</span> <span class="o">/</span> <span class="nb">long</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+
+        <span class="n">totalWeights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalRunWeights</span> <span class="o">+</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="n">totalWeights</span> <span class="o">&lt;</span>  <span class="mf">0.0001</span><span class="p">:</span> <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">long</span><span class="p">,</span><span class="n">totalRunLength</span><span class="p">))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">long</span><span class="p">,</span><span class="n">totalWeights</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">totalRunlength</span> <span class="o">/</span> <span class="n">totalWeights</span>
+</div></div>
+<div class="viewcode-block" id="addOrUpdateBridgeHistory"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.addOrUpdateBridgeHistory">[docs]</a><span class="k">def</span> <span class="nf">addOrUpdateBridgeHistory</span><span class="p">(</span><span class="n">bridge</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+    <span class="n">bhe</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bhe</span><span class="p">:</span>
+        <span class="c"># This is the first status, assume 60 minutes.</span>
+        <span class="n">secondsSinceLastStatusPublication</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+        <span class="n">lastSeenWithDifferentAddressAndPort</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="o">*</span> <span class="nb">long</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">lastSeenWithThisAddressAndPort</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="o">*</span> <span class="nb">long</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+    
+        <span class="n">bhe</span> <span class="o">=</span> <span class="n">BridgeHistory</span><span class="p">(</span>
+                <span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">bridge</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span><span class="p">,</span> 
+                <span class="mi">0</span><span class="p">,</span><span class="c">#weightedUptime</span>
+                <span class="mi">0</span><span class="p">,</span><span class="c">#weightedTime</span>
+                <span class="mi">0</span><span class="p">,</span><span class="c">#weightedRunLength</span>
+                <span class="mi">0</span><span class="p">,</span><span class="c"># totalRunWeights</span>
+                <span class="n">lastSeenWithDifferentAddressAndPort</span><span class="p">,</span> <span class="c"># first timestamnp</span>
+                <span class="n">lastSeenWithThisAddressAndPort</span><span class="p">,</span>
+                <span class="mi">0</span><span class="p">,</span><span class="c">#lastDiscountedHistoryValues,</span>
+                <span class="mi">0</span><span class="p">,</span><span class="c">#lastUpdatedWeightedTime</span>
+                <span class="p">)</span>
+        <span class="c"># first time we have seen this descriptor</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">updateIntoBridgeHistory</span><span class="p">(</span><span class="n">bhe</span><span class="p">)</span>
+    <span class="c"># Calculate the seconds since the last parsed status.  If this is</span>
+    <span class="c"># the first status or we haven&#39;t seen a status for more than 60</span>
+    <span class="c"># minutes, assume 60 minutes.</span>
+    <span class="n">statusPublicationMillis</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">timestamp</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">statusPublicationMillis</span> <span class="o">-</span> <span class="n">bhe</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">1000</span><span class="p">:</span>
+        <span class="n">secondsSinceLastStatusPublication</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Capping secondsSinceLastStatusPublication to 1 hour&quot;</span><span class="p">)</span>    
+    <span class="c"># otherwise, roll with it</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">secondsSinceLastStatusPublication</span> <span class="o">=</span> \
+                <span class="p">(</span><span class="n">statusPublicationMillis</span> <span class="o">-</span> <span class="n">bhe</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span><span class="p">)</span><span class="o">/</span><span class="mi">1000</span>
+    <span class="k">if</span> <span class="n">secondsSinceLastStatusPublication</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">bhe</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c"># old descriptor, bail</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Received old descriptor for bridge </span><span class="si">%s</span><span class="s"> with timestamp </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span>
+                <span class="n">bhe</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">statusPublicationMillis</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bhe</span>
+    
+    <span class="c"># iterate over all known bridges and apply weighting factor</span>
+    <span class="n">discountAndPruneBridgeHistories</span><span class="p">(</span><span class="n">statusPublicationMillis</span><span class="p">)</span>
+    
+    <span class="c"># Update the weighted times of bridges</span>
+    <span class="n">updateWeightedTime</span><span class="p">(</span><span class="n">statusPublicationMillis</span><span class="p">)</span>
+
+    <span class="c"># For Running Bridges only:</span>
+    <span class="c"># compare the stored history against the descriptor and see if the</span>
+    <span class="c"># bridge has changed its address or port</span>
+    <span class="n">bhe</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bridge</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is not running&quot;</span> <span class="o">%</span> <span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bhe</span>
+
+    <span class="c"># Parse the descriptor and see if the address or port changed</span>
+    <span class="c"># If so, store the weighted run time</span>
+    <span class="k">if</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span> <span class="o">!=</span> <span class="n">bhe</span><span class="o">.</span><span class="n">port</span> <span class="ow">or</span> <span class="n">bridge</span><span class="o">.</span><span class="n">ip</span> <span class="o">!=</span> <span class="n">bhe</span><span class="o">.</span><span class="n">ip</span><span class="p">:</span>
+        <span class="n">bhe</span><span class="o">.</span><span class="n">totalRunWeights</span> <span class="o">+=</span> <span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">bhe</span><span class="o">.</span><span class="n">weightedRunLength</span> <span class="o">+=</span> <span class="n">bhe</span><span class="o">.</span><span class="n">tosa</span>
+        <span class="n">bhe</span><span class="o">.</span><span class="n">lastSeenWithDifferentAddressAndPort</span> <span class="o">=</span>\
+                <span class="n">bhe</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span>
+
+    <span class="c"># Regardless of whether the bridge is new, kept or changed</span>
+    <span class="c"># its address and port, raise its WFU times and note its</span>
+    <span class="c"># current address and port, and that we saw it using them.</span>
+    <span class="n">bhe</span><span class="o">.</span><span class="n">weightedUptime</span> <span class="o">+=</span> <span class="n">secondsSinceLastStatusPublication</span>
+    <span class="n">bhe</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span> <span class="o">=</span> <span class="n">statusPublicationMillis</span>
+    <span class="n">bhe</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+    <span class="n">bhe</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span>
+    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">updateIntoBridgeHistory</span><span class="p">(</span><span class="n">bhe</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="discountAndPruneBridgeHistories"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.discountAndPruneBridgeHistories">[docs]</a><span class="k">def</span> <span class="nf">discountAndPruneBridgeHistories</span><span class="p">(</span><span class="n">discountUntilMillis</span><span class="p">):</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+    <span class="n">bhToRemove</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">bhToUpdate</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">bh</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">getAllBridgeHistory</span><span class="p">():</span>
+        <span class="c"># discount previous values by factor of 0.95 every 12 hours</span>
+        <span class="n">bh</span><span class="o">.</span><span class="n">discountWeightedFractionalUptimeAndWeightedTime</span><span class="p">(</span><span class="n">discountUntilMillis</span><span class="p">)</span>
+        <span class="c"># give the thing at least 24 hours before pruning it</span>
+        <span class="k">if</span> <span class="n">bh</span><span class="o">.</span><span class="n">weightedFractionalUptime</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">bh</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">&gt;</span> <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Removing bridge from history: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">bh</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+            <span class="n">bhToRemove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bh</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bhToUpdate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bh</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bhToUpdate</span><span class="p">:</span> <span class="n">db</span><span class="o">.</span><span class="n">updateIntoBridgeHistory</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bhToRemove</span><span class="p">:</span> <span class="n">db</span><span class="o">.</span><span class="n">delBridgeHistory</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="updateWeightedTime"><a class="viewcode-back" href="../../bridgedb.Stability.html#bridgedb.Stability.updateWeightedTime">[docs]</a><span class="k">def</span> <span class="nf">updateWeightedTime</span><span class="p">(</span><span class="n">statusPublicationMillis</span><span class="p">):</span>
+    <span class="n">bhToUpdate</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">bh</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgesLastUpdatedBefore</span><span class="p">(</span><span class="n">statusPublicationMillis</span><span class="p">):</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">statusPublicationMillis</span> <span class="o">-</span> <span class="n">bh</span><span class="o">.</span><span class="n">lastUpdatedWeightedTime</span><span class="p">)</span><span class="o">/</span><span class="mi">1000</span>
+        <span class="k">if</span> <span class="n">interval</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">bh</span><span class="o">.</span><span class="n">weightedTime</span> <span class="o">+=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">3600</span><span class="p">,</span><span class="n">interval</span><span class="p">)</span> <span class="c"># cap to 1hr</span>
+            <span class="n">bh</span><span class="o">.</span><span class="n">lastUpdatedWeightedTime</span> <span class="o">=</span> <span class="n">statusPublicationMillis</span>
+            <span class="c">#db.updateIntoBridgeHistory(bh)</span>
+            <span class="n">bhToUpdate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bh</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">bh</span> <span class="ow">in</span> <span class="n">bhToUpdate</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">updateIntoBridgeHistory</span><span class="p">(</span><span class="n">bh</span><span class="p">)</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

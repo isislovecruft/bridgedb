@@ -1,0 +1,466 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Bucket &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Bucket</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module is responsible for everything concerning file bucket bridge </span>
+<span class="sd">distribution. File bucket bridge distribution means that unallocated bridges </span>
+<span class="sd">are allocated to a certain pseudo-distributor and later written to a file.</span>
+
+<span class="sd">For example, the following is a dict of pseudo-distributors (also called </span>
+<span class="sd">&#39;bucket identifiers&#39;) with numbers of bridges assigned to them:</span>
+
+<span class="sd">        FILE_BUCKETS = { &quot;name1&quot;: 10, &quot;name2&quot;: 15, &quot;foobar&quot;: 3 }</span>
+
+<span class="sd">This configuration for buckets would result in 3 files being created for bridge</span>
+<span class="sd">distribution: name1-2010-07-17.brdgs, name2-2010-07-17.brdgs and </span>
+<span class="sd">foobar-2010-07-17.brdgs. The first file would contain 10 bridges from BridgeDB&#39;s</span>
+<span class="sd">&#39;unallocated&#39; pool. The second file would contain 15 bridges from the same pool</span>
+<span class="sd">and the third one similarly 3 bridges. These files can then be handed out to </span>
+<span class="sd">trusted parties via mail or fed to other distribution mechanisms such as </span>
+<span class="sd">twitter.</span>
+
+<span class="sd">Note that in BridgeDB slang, the _distributor_ would still be &#39;unallocated&#39;,</span>
+<span class="sd">even though in the database, there would now by &#39;name1&#39;, &#39;name2&#39; or &#39;foobar&#39;</span>
+<span class="sd">instead of &#39;unallocated&#39;. This is why they are called pseudo-distributors.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Storage</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Bridges</span> 
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">from</span> <span class="nn">gettext</span> <span class="kn">import</span> <span class="n">gettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="n">toHex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">b2a_hex</span>
+
+
+<span class="c"># What should pseudo distributors be prefixed with in the database so we can</span>
+<span class="c"># distinguish them from real distributors?</span>
+<span class="n">PSEUDO_DISTRI_PREFIX</span> <span class="o">=</span> <span class="s">&quot;pseudo_&quot;</span>
+
+<div class="viewcode-block" id="BucketData"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketData">[docs]</a><span class="k">class</span> <span class="nc">BucketData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A file bucket value class.</span>
+<span class="sd">       name      - Name of the bucket (From config), prefixed by pseudo</span>
+<span class="sd">                   distributor prefix</span>
+<span class="sd">       needed    - Needed number of bridges for that bucket (From config)</span>
+<span class="sd">       allocated - Number of already allocated bridges for that bucket</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">needed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">needed</span> <span class="o">==</span> <span class="s">&quot;*&quot;</span><span class="p">:</span>
+            <span class="c"># Set to rediculously high number</span>
+            <span class="n">needed</span> <span class="o">=</span> <span class="mi">1000000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">needed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">needed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allocated</span> <span class="o">=</span> <span class="mi">0</span>
+</div>
+<div class="viewcode-block" id="BucketManager"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager">[docs]</a><span class="k">class</span> <span class="nc">BucketManager</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;BucketManager reads a number of file bucket identifiers from the config.</span>
+<span class="sd">       They&#39;re expected to be in the following format:</span>
+
+<span class="sd">       FILE_BUCKETS = { &quot;name1&quot;: 10, &quot;name2&quot;: 15, &quot;foobar&quot;: 3 }</span>
+
+<span class="sd">       This syntax means that certain buckets (&quot;name1&quot;, &quot;name2&quot; and so on)</span>
+<span class="sd">       are given a number of bridges (10, 15 and so on). Names can be anything.</span>
+<span class="sd">       The name will later be the prefix of the file that is written with the</span>
+<span class="sd">       assigned number of bridges in it. Instead of a number, a wildcard item</span>
+<span class="sd">       (&quot;*&quot;) is allowed, too. This means that the corresponsing bucket file </span>
+<span class="sd">       will get the maximum number of possible bridges (as many as are left in </span>
+<span class="sd">       the unallocated bucket).</span>
+
+<span class="sd">       The files will be written in ip:port format, one bridge per line.</span>
+
+<span class="sd">       The way this works internally is as follows:</span>
+
+<span class="sd">       First of all, the assignBridgesToBuckets() routine runs through</span>
+<span class="sd">       the database of bridges and looks up the &#39;distributor&#39; field of each </span>
+<span class="sd">       bridge. Unallocated bridges are sent to a pool for later assignement.</span>
+<span class="sd">       Already allocated bridges for file bucket distribution are sorted and </span>
+<span class="sd">       checked.</span>
+<span class="sd">       They&#39;re checked for whether their bucket identifier still exists in the </span>
+<span class="sd">       current config and also whether the number of assigned bridges is still </span>
+<span class="sd">       valid. If either the bucket identifier is not existing anymore or too </span>
+<span class="sd">       many bridges are currently assigned to it, bridges will go to the </span>
+<span class="sd">       unassigned pool.</span>
+
+<span class="sd">       In the second step, after bridges are sorted and the unassigned pool is</span>
+<span class="sd">       ready, the assignBridgesToBuckets() routine assigns one bridge</span>
+<span class="sd">       from the unassigned pool to a known bucket identifier at a time until it</span>
+<span class="sd">       either runs out of bridges in the unallocated pool or the number of</span>
+<span class="sd">       needed bridges for that bucket is reached.</span>
+
+<span class="sd">       When all bridges are assigned in this way, they can then be dumped into</span>
+<span class="sd">       files by calling the dumpBridges() routine.</span>
+
+<span class="sd">       cfg                      - The central configuration instance</span>
+<span class="sd">       bucketList               - A list of BucketData instances, holding all</span>
+<span class="sd">                                  configured (and thus requested) buckets with</span>
+<span class="sd">                                  their respective numbers</span>
+<span class="sd">       unallocatedList          - Holding all bridges from the &#39;unallocated&#39;</span>
+<span class="sd">                                  pool</span>
+<span class="sd">       unallocated_available    - Is at least one unallocated bridge</span>
+<span class="sd">                                  available?</span>
+<span class="sd">       distributor_prefix       - The &#39;distributor&#39; field in the database will</span>
+<span class="sd">                                  hold the name of our pseudo-distributor,</span>
+<span class="sd">                                  prefixed by this</span>
+<span class="sd">       db                       - The bridge database access instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unallocatedList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unallocated_available</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span> <span class="o">=</span> <span class="n">PSEUDO_DISTRI_PREFIX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">Database</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">DB_FILE</span><span class="o">+</span><span class="s">&quot;.sqlite&quot;</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">DB_FILE</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BucketManager.addToUnallocatedList"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.addToUnallocatedList">[docs]</a>    <span class="k">def</span> <span class="nf">addToUnallocatedList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a bridge by hex_key into the unallocated pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">updateDistributorForHexKey</span><span class="p">(</span><span class="s">&quot;unallocated&quot;</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unallocatedList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hex_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unallocated_available</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BucketManager.getBucketByIdent"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.getBucketByIdent">[docs]</a>    <span class="k">def</span> <span class="nf">getBucketByIdent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucketIdent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Do we know this bucket identifier? If yes, return the corresponding</span>
+<span class="sd">           BucketData object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">bucketIdent</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">d</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="BucketManager.assignUnallocatedBridge"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.assignUnallocatedBridge">[docs]</a>    <span class="k">def</span> <span class="nf">assignUnallocatedBridge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Assign an unallocated bridge to a certain bucket</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hex_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unallocatedList</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="c"># Mark pseudo-allocators in the database as such</span>
+        <span class="n">allocator_name</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">name</span>
+        <span class="c">#print &quot;KEY: %d NAME: %s&quot; % (hex_key, allocator_name)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">updateDistributorForHexKey</span><span class="p">(</span><span class="n">allocator_name</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="c"># Ok, this seems useless, but for consistancy&#39;s sake, we&#39;ll </span>
+            <span class="c"># re-assign the bridge from this missed db update attempt to the</span>
+            <span class="c"># unallocated list. Remember? We pop()&#39;d it before.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addToUnallocatedList</span><span class="p">(</span><span class="n">hex_key</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">bucket</span><span class="o">.</span><span class="n">allocated</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unallocatedList</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unallocated_available</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BucketManager.assignBridgesToBuckets"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.assignBridgesToBuckets">[docs]</a>    <span class="k">def</span> <span class="nf">assignBridgesToBuckets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read file bucket identifiers from the configuration, sort them and </span>
+<span class="sd">           write necessary changes to the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Build distributor list</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">FILE_BUCKETS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">prefixed_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span> <span class="o">+</span> <span class="n">k</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">BucketData</span><span class="p">(</span><span class="n">prefixed_key</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="c"># Loop through all bridges and sort out distributors</span>
+        <span class="n">allBridges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getAllBridges</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">bridge</span> <span class="ow">in</span> <span class="n">allBridges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bridge</span><span class="o">.</span><span class="n">distributor</span> <span class="o">==</span> <span class="s">&quot;unallocated&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addToUnallocatedList</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">hex_key</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c"># Filter non-pseudo distributors (like &#39;https&#39; and &#39;email&#39;) early,</span>
+            <span class="c"># too</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bridge</span><span class="o">.</span><span class="n">distributor</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c"># Return the bucket in case we know it already</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBucketByIdent</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">distributor</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="c"># Does this distributor need another bridge? If not, re-inject</span>
+                <span class="c"># it into the &#39;unallocated&#39; pool for for later assignment</span>
+                <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">allocated</span> <span class="o">&lt;</span> <span class="n">d</span><span class="o">.</span><span class="n">needed</span><span class="p">:</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">allocated</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># Bucket has enough members already, free this one</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addToUnallocatedList</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">hex_key</span><span class="p">)</span>
+            <span class="c"># We don&#39;t know it. Maybe an old entry. Free it.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addToUnallocatedList</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">hex_key</span><span class="p">)</span>
+
+        <span class="c"># Loop through bucketList while we have and need unallocated</span>
+        <span class="c"># bridges, assign one bridge at a time</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">unallocated_available</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">allocated</span> <span class="o">&lt;</span> <span class="n">d</span><span class="o">.</span><span class="n">needed</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignUnallocatedBridge</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                        <span class="n">dist</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+                        <span class="k">print</span> <span class="s">&quot;Couldn&#39;t assign unallocated bridge to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dist</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># When we have enough bridges, remove bucket identifier </span>
+                    <span class="c"># from list</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bucketList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BucketManager.dumpBridgesToFile"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.dumpBridgesToFile">[docs]</a>    <span class="k">def</span> <span class="nf">dumpBridgesToFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">bridges</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dump a list of given bridges into a file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># get the bridge histories and sort by Time On Same Address</span>
+        <span class="n">bridgeHistories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bridges</span><span class="p">:</span>
+            <span class="n">bh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">hex_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bh</span><span class="p">:</span> <span class="n">bridgeHistories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bh</span><span class="p">)</span>
+        <span class="n">bridgeHistories</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="nb">cmp</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">weightedFractionalUptime</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">.</span><span class="n">weightedFractionalUptime</span><span class="p">))</span>
+
+        <span class="c"># for a bridge, get the list of countries it might not work in</span>
+        <span class="n">blocklist</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="p">,</span> <span class="s">&quot;COUNTRY_BLOCK_FILE&quot;</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">COUNTRY_BLOCK_FILE</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ID</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">portlist</span><span class="p">,</span><span class="n">countries</span> <span class="ow">in</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Bridges</span><span class="o">.</span><span class="n">parseCountryBlockFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="n">blocklist</span><span class="p">[</span><span class="n">toHex</span><span class="p">(</span><span class="n">ID</span><span class="p">)]</span> <span class="o">=</span> <span class="n">countries</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">bh</span> <span class="ow">in</span> <span class="n">bridgeHistories</span><span class="p">:</span>
+                <span class="n">days</span> <span class="o">=</span> <span class="n">bh</span><span class="o">.</span><span class="n">tosa</span> <span class="o">/</span> <span class="nb">long</span><span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="p">)</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="se">\t</span><span class="s">(</span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span>  \
+                        <span class="p">(</span><span class="n">bh</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">bh</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">days</span><span class="p">,</span>  <span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;days at this address&quot;&quot;&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">bh</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blocklist</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;&quot;&quot;(Might be blocked)&quot;&quot;&quot;</span><span class="p">),</span>
+                            <span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">blocklist</span><span class="p">[</span><span class="n">bh</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">]),)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;I/O error: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span>
+</div>
+<div class="viewcode-block" id="BucketManager.dumpBridges"><a class="viewcode-back" href="../../bridgedb.Bucket.html#bridgedb.Bucket.BucketManager.dumpBridges">[docs]</a>    <span class="k">def</span> <span class="nf">dumpBridges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dump all known file distributors to files, sort by distributor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allBridges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getAllBridges</span><span class="p">()</span>
+        <span class="n">bridgeDict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c"># Sort returned bridges by distributor</span>
+        <span class="k">for</span> <span class="n">bridge</span> <span class="ow">in</span> <span class="n">allBridges</span><span class="p">:</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">distributor</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">bridgeDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">bridgeDict</span><span class="p">[</span><span class="n">dist</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bridgeDict</span><span class="p">[</span><span class="n">dist</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">bridge</span><span class="p">]</span>
+
+        <span class="c"># Now dump to file(s)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">bridgeDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span><span class="p">)):</span>
+                <span class="c"># Subtract the pseudo distributor prefix</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distributor_prefix</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+            <span class="c"># Be safe. Replace all &#39;/&#39; in distributor names</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="s">&quot;_&quot;</span><span class="p">)</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">+</span> <span class="s">&quot;-&quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;.brdgs&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dumpBridgesToFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bridgeDict</span><span class="p">[</span><span class="n">k</span><span class="p">])</span></div></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

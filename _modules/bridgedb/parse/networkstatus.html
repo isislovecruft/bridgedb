@@ -1,0 +1,462 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.parse.networkstatus &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.parse.networkstatus</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of BridgeDB, a Tor bridge distribution system.</span>
+<span class="c">#</span>
+<span class="c"># :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 &lt;isis@torproject.org&gt;</span>
+<span class="c">#           please also see AUTHORS file</span>
+<span class="c"># :copyright: (c) 2013 Isis Lovecruft</span>
+<span class="c">#             (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c">#             (c) 2007-2013, all entities within the AUTHORS file</span>
+<span class="c"># :license: 3-clause BSD, see included LICENSE for information</span>
+
+<span class="sd">&quot;&quot;&quot;Parsers for ``@type bridge-network-status 1.0`` descriptors.</span>
+
+<span class="sd">.. _descriptors: https://metrics.torproject.org/formats.html#descriptortypes</span>
+
+<span class="sd">**Module Overview:**</span>
+
+<span class="sd">..</span>
+<span class="sd">  parse</span>
+<span class="sd">   \_networkstatus     </span>
+<span class="sd">      |_ parseRLine - Parse an &#39;r&#39;-line from a networkstatus document</span>
+<span class="sd">      |_ parseALine - Parse an &#39;a&#39;-line from a networkstatus document</span>
+<span class="sd">      \_ parseSLine - Parse an &#39;s&#39;-line from a networkstatus document</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb.parse</span> <span class="kn">import</span> <span class="n">addr</span>
+<span class="kn">from</span> <span class="nn">bridgedb.parse</span> <span class="kn">import</span> <span class="n">padBase64</span>
+
+
+<div class="viewcode-block" id="NetworkstatusParsingError"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.NetworkstatusParsingError">[docs]</a><span class="k">class</span> <span class="nc">NetworkstatusParsingError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unable to parse networkstatus document line.&quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="InvalidNetworkstatusRouterIdentity"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.InvalidNetworkstatusRouterIdentity">[docs]</a><span class="k">class</span> <span class="nc">InvalidNetworkstatusRouterIdentity</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The ID field of a networkstatus document &#39;r&#39;-line is invalid.&quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="InvalidNetworkstatusDescriptorDigest"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.InvalidNetworkstatusDescriptorDigest">[docs]</a><span class="k">class</span> <span class="nc">InvalidNetworkstatusDescriptorDigest</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Descriptor digest of a networkstatus document &#39;r&#39;-line is invalid.&quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="InvalidRouterNickname"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.InvalidRouterNickname">[docs]</a><span class="k">class</span> <span class="nc">InvalidRouterNickname</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Router nickname doesn&#39;t follow tor-spec.&quot;&quot;&quot;</span>
+
+</div>
+<span class="n">ALPHANUMERIC</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">letters</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span>
+
+
+<div class="viewcode-block" id="isValidRouterNickname"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.isValidRouterNickname">[docs]</a><span class="k">def</span> <span class="nf">isValidRouterNickname</span><span class="p">(</span><span class="n">nickname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine if a router&#39;s given nickname meets the specification.</span>
+
+<span class="sd">    :param string nickname: An OR&#39;s nickname.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nickname</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">19</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidRouterNickname</span><span class="p">(</span>
+                <span class="s">&quot;Nicknames must be between 1 and 19 characters: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">nickname</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">nickname</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">ALPHANUMERIC</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidRouterNickname</span><span class="p">(</span>
+                    <span class="s">&quot;Nicknames must only use [A-Za-z0-9]: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">nickname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">raise</span> <span class="n">InvalidRouterNickname</span>
+</div>
+<div class="viewcode-block" id="parseRLine"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.parseRLine">[docs]</a><span class="k">def</span> <span class="nf">parseRLine</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an &#39;r&#39;-line from a networkstatus document.</span>
+
+<span class="sd">    From torspec.git/dir-spec.txt, commit 36761c7d553d L1499-1512:</span>
+<span class="sd">      |</span>
+<span class="sd">      |&quot;r&quot; SP nickname SP identity SP digest SP publication SP IP SP ORPort</span>
+<span class="sd">      |    SP DirPort NL</span>
+<span class="sd">      |</span>
+<span class="sd">      |    [At start, exactly once.]</span>
+<span class="sd">      |</span>
+<span class="sd">      |    &quot;Nickname&quot; is the OR&#39;s nickname.  &quot;Identity&quot; is a hash of its</span>
+<span class="sd">      |    identity key, encoded in base64, with trailing equals sign(s)</span>
+<span class="sd">      |    removed.  &quot;Digest&quot; is a hash of its most recent descriptor as</span>
+<span class="sd">      |    signed (that is, not including the signature), encoded in base64.</span>
+<span class="sd">      |    &quot;Publication&quot; is the</span>
+<span class="sd">      |    publication time of its most recent descriptor, in the form</span>
+<span class="sd">      |    YYYY-MM-DD HH:MM:SS, in UTC.  &quot;IP&quot; is its current IP address;</span>
+<span class="sd">      |    ORPort is its current OR port, &quot;DirPort&quot; is its current directory</span>
+<span class="sd">      |    port, or &quot;0&quot; for &quot;none&quot;.</span>
+<span class="sd">      |</span>
+
+<span class="sd">    :param string line: An &#39;r&#39;-line from an bridge-network-status descriptor.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">descDigest</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span>
+     <span class="n">ORaddr</span><span class="p">,</span> <span class="n">ORport</span><span class="p">,</span> <span class="n">dirport</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;r &#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">NetworkstatusParsingError</span><span class="p">(</span>
+            <span class="s">&quot;Networkstatus parser received non &#39;r&#39;-line: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+
+    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="c"># Chop of the &#39;r &#39;</span>
+
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NetworkstatusParsingError</span><span class="p">(</span>
+            <span class="s">&quot;Wrong number of fields in networkstatus &#39;r&#39;-line: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">isValidRouterNickname</span><span class="p">(</span><span class="n">nickname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ID</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidNetworkstatusRouterIdentity</span><span class="p">(</span>
+                <span class="s">&quot;Skipping networkstatus parsing for router with nickname </span><span class="si">%r</span><span class="s">:&quot;</span>\
+                <span class="s">&quot;</span><span class="se">\n\t</span><span class="s">Unpadded, base64-encoded networkstatus router identity &quot;</span>\
+                <span class="s">&quot;string ends with &#39;=&#39;: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ID</span> <span class="o">=</span> <span class="n">padBase64</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span> <span class="c"># Add the trailing equals sign back in</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidNetworkstatusRouterIdentity</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">ID</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">a2b_base64</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ID</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidNetworkstatusRouterIdentity</span><span class="p">(</span>
+                <span class="s">&quot;Skipping networkstatus parsing for router with nickname </span><span class="si">%r</span><span class="s">:&quot;</span>\
+                <span class="s">&quot;</span><span class="se">\n\t</span><span class="s">Base64-encoding for networkstatus router identity string&quot;</span>\
+                <span class="s">&quot;is invalid!</span><span class="se">\n\t</span><span class="s">Line: </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+
+    <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">InvalidRouterNickname</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">nickname</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">except</span> <span class="n">InvalidNetworkstatusRouterIdentity</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">ID</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">descDigest</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">a2b_base64</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">InvalidNetworkstatusDescriptorDigest</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">]),</span>
+                                              <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">))</span>
+        <span class="n">ORaddr</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">ORport</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+        <span class="n">dirport</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">descDigest</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">ORaddr</span><span class="p">,</span> <span class="n">ORport</span><span class="p">,</span> <span class="n">dirport</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="parseALine"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.parseALine">[docs]</a><span class="k">def</span> <span class="nf">parseALine</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fingerprint</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an &#39;a&#39;-line of a bridge networkstatus document.</span>
+
+<span class="sd">    From torspec.git/dir-spec.txt, commit 36761c7d553d L1499-1512:</span>
+<span class="sd">      |</span>
+<span class="sd">      | &quot;a&quot; SP address &quot;:&quot; port NL</span>
+<span class="sd">      |</span>
+<span class="sd">      |    [Any number.]</span>
+<span class="sd">      |</span>
+<span class="sd">      |    Present only if the OR has at least one IPv6 address.</span>
+<span class="sd">      |</span>
+<span class="sd">      |    Address and portlist are as for &quot;or-address&quot; as specified in</span>
+<span class="sd">      |    2.1.</span>
+<span class="sd">      |</span>
+<span class="sd">      |    (Only included when the vote or consensus is generated with</span>
+<span class="sd">      |    consensus-method 14 or later.)</span>
+
+<span class="sd">    :param string line: An &#39;a&#39;-line from an bridge-network-status descriptor.</span>
+<span class="sd">    :raises: :exc:`NetworkstatusParsingError`</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    :returns: A 2-tuple of a string respresenting the IP address and a</span>
+<span class="sd">        :class:`bridgedb.parse.addr.PortList`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">portlist</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;a &#39;</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Networkstatus parser received non &#39;a&#39;-line for </span><span class="si">%r</span><span class="s">:&quot;</span>
+                      <span class="o">%</span> <span class="p">(</span><span class="n">fingerprint</span> <span class="ow">or</span> <span class="s">&#39;Unknown&#39;</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">address</span><span class="p">,</span> <span class="n">portlist</span>
+
+    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="c"># Chop off the &#39;a &#39;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ip</span><span class="p">,</span> <span class="n">portlist</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="n">addr</span><span class="o">.</span><span class="n">InvalidPort</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">NetworkstatusParsingError</span><span class="p">(</span>
+            <span class="s">&quot;Parsing networkstatus &#39;a&#39;-line for </span><span class="si">%r</span><span class="s"> failed! Line: </span><span class="si">%r</span><span class="s">&quot;</span>
+            <span class="o">%</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;[]&#39;</span><span class="p">)</span> 
+        <span class="n">address</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">isIPAddress</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ip</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NetworkstatusParsingError</span><span class="p">(</span>
+                <span class="s">&quot;Got invalid IP Address in networkstatus &#39;a&#39;-line for </span><span class="si">%r</span><span class="s">: </span><span class="si">%r</span><span class="s">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">ip</span><span class="p">))</span>
+        
+        <span class="n">portlist</span> <span class="o">=</span> <span class="n">addr</span><span class="o">.</span><span class="n">PortList</span><span class="p">(</span><span class="n">portlist</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed networkstatus ORAddress line for </span><span class="si">%r</span><span class="s">:&quot;</span> <span class="o">%</span> <span class="n">fingerprint</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">Address: </span><span class="si">%s</span><span class="s">  </span><span class="se">\t</span><span class="s">Ports: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">portlist</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">address</span><span class="p">,</span> <span class="n">portlist</span>
+</div>
+<div class="viewcode-block" id="parseSLine"><a class="viewcode-back" href="../../../bridgedb.parse.html#bridgedb.parse.networkstatus.parseSLine">[docs]</a><span class="k">def</span> <span class="nf">parseSLine</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an &#39;s&#39;-line from a bridge networkstatus document.</span>
+
+<span class="sd">    The &#39;s&#39;-line contains all flags assigned to a bridge. The flags which may</span>
+<span class="sd">    be assigned to a bridge are as follows:</span>
+
+<span class="sd">    From torspec.git/dir-spec.txt, commit 36761c7d553d L1526-1554:</span>
+<span class="sd">      |</span>
+<span class="sd">      | &quot;s&quot; SP Flags NL</span>
+<span class="sd">      |</span>
+<span class="sd">      |    [Exactly once.]</span>
+<span class="sd">      |</span>
+<span class="sd">      |    A series of space-separated status flags, in lexical order (as ASCII</span>
+<span class="sd">      |    byte strings).  Currently documented flags are:</span>
+<span class="sd">      |</span>
+<span class="sd">      |      &quot;BadDirectory&quot; if the router is believed to be useless as a</span>
+<span class="sd">      |         directory cache (because its directory port isn&#39;t working,</span>
+<span class="sd">      |         its bandwidth is always throttled, or for some similar</span>
+<span class="sd">      |         reason).</span>
+<span class="sd">      |      &quot;Fast&quot; if the router is suitable for high-bandwidth circuits.</span>
+<span class="sd">      |      &quot;Guard&quot; if the router is suitable for use as an entry guard.</span>
+<span class="sd">      |      &quot;HSDir&quot; if the router is considered a v2 hidden service directory.</span>
+<span class="sd">      |      &quot;Named&quot; if the router&#39;s identity-nickname mapping is canonical,</span>
+<span class="sd">      |         and this authority binds names.</span>
+<span class="sd">      |      &quot;Stable&quot; if the router is suitable for long-lived circuits.</span>
+<span class="sd">      |      &quot;Running&quot; if the router is currently usable.</span>
+<span class="sd">      |      &quot;Valid&quot; if the router has been &#39;validated&#39;.</span>
+<span class="sd">      |      &quot;V2Dir&quot; if the router implements the v2 directory protocol.</span>
+
+<span class="sd">    :param string line: An &#39;s&#39;-line from an bridge-network-status descriptor.</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    :returns: A 2-tuple of booleans, the first is True if the bridge has the</span>
+<span class="sd">        &quot;Running&quot; flag, and the second is True if it has the &quot;Stable&quot; flag.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fast</span><span class="p">,</span> <span class="n">running</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="n">guard</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="bp">False</span>
+    
+    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+
+    <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+    <span class="n">fast</span>    <span class="o">=</span> <span class="s">&#39;Fast&#39;</span> <span class="ow">in</span> <span class="n">flags</span>
+    <span class="n">running</span> <span class="o">=</span> <span class="s">&#39;Running&#39;</span> <span class="ow">in</span> <span class="n">flags</span>
+    <span class="n">stable</span>  <span class="o">=</span> <span class="s">&#39;Stable&#39;</span> <span class="ow">in</span> <span class="n">flags</span>
+    <span class="n">guard</span>   <span class="o">=</span> <span class="s">&#39;Guard&#39;</span> <span class="ow">in</span> <span class="n">flags</span>
+    <span class="n">valid</span>   <span class="o">=</span> <span class="s">&#39;Valid&#39;</span> <span class="ow">in</span> <span class="n">flags</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed Flags: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="c"># Right now, we only care about &#39;Running&#39; and &#39;Stable&#39;</span>
+    <span class="k">return</span> <span class="n">running</span><span class="p">,</span> <span class="n">stable</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

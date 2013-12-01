@@ -1,0 +1,696 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.EmailServer &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.EmailServer</h1><div class="highlight"><pre>
+<span class="c"># BridgeDB by Nick Mathewson.</span>
+<span class="c"># Copyright (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements the email interface to the bridge database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">import</span> <span class="nn">MimeWriter</span>
+<span class="kn">import</span> <span class="nn">gettext</span>
+<span class="kn">import</span> <span class="nn">gpgme</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">rfc822</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">ipaddr</span> <span class="kn">import</span> <span class="n">IPv4Address</span><span class="p">,</span> <span class="n">IPv6Address</span>
+
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.defer</span> <span class="kn">import</span> <span class="n">Deferred</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.task</span> <span class="kn">import</span> <span class="n">LoopingCall</span>
+<span class="kn">import</span> <span class="nn">twisted.mail.smtp</span>
+
+<span class="kn">from</span> <span class="nn">zope.interface</span> <span class="kn">import</span> <span class="n">implements</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Dist</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Util</span> <span class="kn">as</span> <span class="nn">Util</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Dist</span> <span class="kn">import</span> <span class="n">BadEmail</span><span class="p">,</span> <span class="n">TooSoonEmail</span><span class="p">,</span> <span class="n">IgnoreEmail</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByIP6</span><span class="p">,</span> <span class="n">filterBridgesByIP4</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByTransport</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Filters</span> <span class="kn">import</span> <span class="n">filterBridgesByNotBlockedIn</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.I18n</span> <span class="kn">as</span> <span class="nn">I18n</span>
+
+<div class="viewcode-block" id="MailFile"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailFile">[docs]</a><span class="k">class</span> <span class="nc">MailFile</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A file-like object used to hand rfc822.Message a list of lines</span>
+<span class="sd">       as though it were reading them from a file.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="viewcode-block" id="MailFile.readline"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailFile.readline">[docs]</a>    <span class="k">def</span> <span class="nf">readline</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">idx</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">line</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;&quot;</span>
+</div></div>
+<div class="viewcode-block" id="getBridgeDBEmailAddrFromList"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.getBridgeDBEmailAddrFromList">[docs]</a><span class="k">def</span> <span class="nf">getBridgeDBEmailAddrFromList</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">address_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Loop through a list of (full name, email address) pairs and look up our</span>
+<span class="sd">       mail address. If our address isn&#39;t found (which can&#39;t happen), return</span>
+<span class="sd">       the default ctx from address so we can keep on working.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">fromAddr</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">address</span> <span class="ow">in</span> <span class="n">address_list</span><span class="p">:</span>
+        <span class="c"># Strip the @torproject.org part from the address</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">address</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">username</span> <span class="o">=</span> <span class="n">address</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+            <span class="c"># See if the user looks familiar. We do a &#39;find&#39; instead</span>
+            <span class="c"># of compare because we might have a &#39;+&#39; address here</span>
+            <span class="k">if</span> <span class="n">username</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">username</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">email</span> <span class="o">=</span> <span class="n">address</span>
+    <span class="k">return</span> <span class="n">email</span>
+</div>
+<div class="viewcode-block" id="getMailResponse"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.getMailResponse">[docs]</a><span class="k">def</span> <span class="nf">getMailResponse</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a list of lines from an incoming email message, and a</span>
+<span class="sd">       MailContext object, parse the email and decide what to do in response.</span>
+<span class="sd">       If we want to answer, return a 2-tuple containing the address that</span>
+<span class="sd">       will receive the response, and a readable filelike object containing</span>
+<span class="sd">       the response.  Return None,None if we shouldn&#39;t answer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># Extract data from the headers.</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">rfc822</span><span class="o">.</span><span class="n">Message</span><span class="p">(</span><span class="n">MailFile</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+    <span class="n">subject</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s">&quot;Subject&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">subject</span><span class="p">:</span> <span class="n">subject</span> <span class="o">=</span> <span class="s">&quot;[no subject]&quot;</span>
+    <span class="n">clientFromAddr</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getaddr</span><span class="p">(</span><span class="s">&quot;From&quot;</span><span class="p">)</span>
+    <span class="n">clientSenderAddr</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getaddr</span><span class="p">(</span><span class="s">&quot;Sender&quot;</span><span class="p">)</span>
+    <span class="c"># RFC822 requires at least one &#39;To&#39; address</span>
+    <span class="n">clientToList</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getaddrlist</span><span class="p">(</span><span class="s">&quot;To&quot;</span><span class="p">)</span>
+    <span class="n">clientToaddr</span> <span class="o">=</span> <span class="n">getBridgeDBEmailAddrFromList</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">clientToList</span><span class="p">)</span>
+    <span class="n">msgID</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s">&quot;Message-ID&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clientSenderAddr</span> <span class="ow">and</span> <span class="n">clientSenderAddr</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">clientAddr</span> <span class="o">=</span> <span class="n">clientSenderAddr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">clientFromAddr</span> <span class="ow">and</span> <span class="n">clientFromAddr</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">clientAddr</span> <span class="o">=</span> <span class="n">clientFromAddr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;No From or Sender header on incoming mail.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span><span class="bp">None</span>
+
+    <span class="c"># Look up the locale part in the &#39;To:&#39; address, if there is one and get</span>
+    <span class="c"># the appropriate Translation object</span>
+    <span class="n">lang</span> <span class="o">=</span> <span class="n">getLocaleFromPlusAddr</span><span class="p">(</span><span class="n">clientToaddr</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">I18n</span><span class="o">.</span><span class="n">getLang</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">addrdomain</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Dist</span><span class="o">.</span><span class="n">extractAddrSpec</span><span class="p">(</span><span class="n">clientAddr</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="k">except</span> <span class="n">BadEmail</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Ignoring bad address on incoming email.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span><span class="bp">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">addrdomain</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Couldn&#39;t parse domain from </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">clientAddr</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">addrdomain</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_MAP</span><span class="p">:</span>
+        <span class="n">addrdomain</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">addrdomain</span><span class="p">,</span> <span class="n">addrdomain</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">addrdomain</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_DOMAINS</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Unrecognized email domain </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">addrdomain</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span><span class="bp">None</span>
+    <span class="n">rules</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_DOMAIN_RULES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">addrdomain</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="s">&#39;dkim&#39;</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="c"># getheader() returns the last of a given kind of header; we want</span>
+        <span class="c"># to get the first, so we use getheaders() instead.</span>
+        <span class="n">dkimHeaders</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">getheaders</span><span class="p">(</span><span class="s">&quot;X-DKIM-Authentication-Results&quot;</span><span class="p">)</span>
+        <span class="n">dkimHeader</span> <span class="o">=</span> <span class="s">&quot;&lt;no header&gt;&quot;</span>
+        <span class="k">if</span> <span class="n">dkimHeaders</span><span class="p">:</span> <span class="n">dkimHeader</span> <span class="o">=</span> <span class="n">dkimHeaders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dkimHeader</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;pass&quot;</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a bad dkim header (</span><span class="si">%r</span><span class="s">) on an incoming mail; &quot;</span>
+                         <span class="s">&quot;rejecting it.&quot;</span><span class="p">,</span> <span class="n">dkimHeader</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="c"># Was the magic string included</span>
+    <span class="c">#for ln in lines:</span>
+    <span class="c">#    if ln.strip().lower() in (&quot;get bridges&quot;, &quot;subject: get bridges&quot;):</span>
+    <span class="c">#        break</span>
+    <span class="c">#else:</span>
+    <span class="c">#    logging.info(&quot;Got a mail from %r with no bridge request; dropping&quot;,</span>
+    <span class="c">#                 clientAddr)</span>
+    <span class="c">#    return None,None</span>
+
+    <span class="c"># Figure out which bridges to send</span>
+    <span class="n">unblocked</span> <span class="o">=</span> <span class="n">transport</span> <span class="o">=</span> <span class="n">ipv6</span> <span class="o">=</span> <span class="n">skippedheaders</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">bridgeFilterRules</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">addressClass</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="c"># ignore all lines before the subject header</span>
+        <span class="k">if</span> <span class="s">&quot;subject&quot;</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">skippedheaders</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">skippedheaders</span><span class="p">:</span> <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="s">&quot;ipv6&quot;</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">ipv6</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="s">&quot;transport&quot;</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">transport</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;transport ([_a-zA-Z][_a-zA-Z0-9]*)&quot;</span><span class="p">,</span>
+                        <span class="n">ln</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="n">transport</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Got request for transport: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">transport</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&quot;unblocked&quot;</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">unblocked</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;unblocked ([a-zA-Z]{2,4})&quot;</span><span class="p">,</span>
+                        <span class="n">ln</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="n">transport</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="n">ipv6</span><span class="p">:</span>
+        <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByIP6</span><span class="p">)</span>
+        <span class="n">addressClass</span> <span class="o">=</span> <span class="n">IPv6Address</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bridgeFilterRules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByIP4</span><span class="p">)</span>
+        <span class="n">addressClass</span> <span class="o">=</span> <span class="n">IPv4Address</span>
+
+    <span class="k">if</span> <span class="n">transport</span><span class="p">:</span>
+        <span class="n">bridgeFilterRules</span> <span class="o">=</span> <span class="p">[</span><span class="n">filterBridgesByTransport</span><span class="p">(</span><span class="n">transport</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">unblocked</span><span class="p">:</span>
+        <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filterBridgesByNotBlockedIn</span><span class="p">(</span><span class="n">unblocked</span><span class="p">,</span>
+            <span class="n">addressClass</span><span class="p">,</span> <span class="n">transport</span><span class="p">))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">schedule</span><span class="o">.</span><span class="n">getInterval</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="n">bridges</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">distributor</span><span class="o">.</span><span class="n">getBridgesForEmail</span><span class="p">(</span><span class="n">clientAddr</span><span class="p">,</span>
+            <span class="n">interval</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">N</span><span class="p">,</span>
+            <span class="n">countryCode</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">bridgeFilterRules</span><span class="o">=</span><span class="n">bridgeFilterRules</span><span class="p">)</span>
+
+    <span class="c"># Handle rate limited email</span>
+    <span class="k">except</span> <span class="n">TooSoonEmail</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a mail too frequently; warning </span><span class="si">%r</span><span class="s">: </span><span class="si">%s</span><span class="s">.&quot;</span><span class="p">,</span>
+                     <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">clientAddr</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+
+        <span class="c"># Compose a warning email</span>
+        <span class="c"># MAX_EMAIL_RATE is in seconds, convert to hours</span>
+        <span class="n">body</span>  <span class="o">=</span> <span class="n">buildSpamWarningTemplate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Dist</span><span class="o">.</span><span class="n">MAX_EMAIL_RATE</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">composeEmail</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">fromAddr</span><span class="p">,</span> <span class="n">clientAddr</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">msgID</span><span class="p">,</span>
+                <span class="n">gpgContext</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">gpgContext</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">IgnoreEmail</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a mail too frequently; ignoring </span><span class="si">%r</span><span class="s">: </span><span class="si">%s</span><span class="s">.&quot;</span><span class="p">,</span>
+                      <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">clientAddr</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span> 
+
+    <span class="k">except</span> <span class="n">BadEmail</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a mail from a bad email address </span><span class="si">%r</span><span class="s">: </span><span class="si">%s</span><span class="s">.&quot;</span><span class="p">,</span>
+                     <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">clientAddr</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span> 
+
+    <span class="k">if</span> <span class="n">bridges</span><span class="p">:</span>
+        <span class="n">with_fp</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_INCLUDE_FINGERPRINTS</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;  </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">b</span><span class="o">.</span><span class="n">getConfigLine</span><span class="p">(</span>
+            <span class="n">includeFingerprint</span><span class="o">=</span><span class="n">with_fp</span><span class="p">,</span>
+            <span class="n">addressClass</span><span class="o">=</span><span class="n">addressClass</span><span class="p">,</span>
+            <span class="n">transport</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">=</span><span class="n">clientAddr</span>
+            <span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bridges</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="s">&quot;(no bridges currently available)&quot;</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="n">buildMessageTemplate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="n">answer</span>
+    <span class="c"># Generate the message.</span>
+    <span class="k">return</span> <span class="n">composeEmail</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">fromAddr</span><span class="p">,</span> <span class="n">clientAddr</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">msgID</span><span class="p">,</span>
+            <span class="n">gpgContext</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">gpgContext</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="buildMessageTemplate"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.buildMessageTemplate">[docs]</a><span class="k">def</span> <span class="nf">buildMessageTemplate</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="n">msg_template</span> <span class="o">=</span>  <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">17</span><span class="p">])</span><span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span>
+                    <span class="c"># list supported commands, e.g. ipv6, transport</span>
+    <span class="n">msg_template</span> <span class="o">=</span> <span class="n">msg_template</span> \
+                    <span class="o">+</span> <span class="s">&quot;  &quot;</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">18</span><span class="p">])</span><span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="s">&quot;  &quot;</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">19</span><span class="p">])</span><span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span>
+    <span class="k">return</span> <span class="n">msg_template</span>
+</div>
+<div class="viewcode-block" id="buildSpamWarningTemplate"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.buildSpamWarningTemplate">[docs]</a><span class="k">def</span> <span class="nf">buildSpamWarningTemplate</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="n">msg_template</span> <span class="o">=</span>  <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> &quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">11</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> \
+                    <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">gettext</span><span class="p">(</span><span class="n">I18n</span><span class="o">.</span><span class="n">BRIDGEDB_TEXT</span><span class="p">[</span><span class="mi">12</span><span class="p">])</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span>
+    <span class="k">return</span> <span class="n">msg_template</span> 
+</div>
+<div class="viewcode-block" id="replyToMail"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.replyToMail">[docs]</a><span class="k">def</span> <span class="nf">replyToMail</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a list of lines from an incoming email message, and a</span>
+<span class="sd">       MailContext object, possibly send a reply.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Got a completed email; deciding whether to reply.&quot;</span><span class="p">)</span>
+    <span class="n">sendToUser</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">getMailResponse</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;getMailResponse said not to reply, so I won&#39;t.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">Deferred</span><span class="p">()</span>
+    <span class="n">factory</span> <span class="o">=</span> <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">SMTPSenderFactory</span><span class="p">(</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">smtpFromAddr</span><span class="p">,</span>
+        <span class="n">sendToUser</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">,</span>
+        <span class="n">d</span><span class="p">)</span>
+    <span class="n">reactor</span><span class="o">.</span><span class="n">connectTCP</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">smtpServer</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">smtpPort</span><span class="p">,</span> <span class="n">factory</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Sending reply to </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">Util</span><span class="o">.</span><span class="n">logSafely</span><span class="p">(</span><span class="n">sendToUser</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">d</span>
+</div>
+<div class="viewcode-block" id="getLocaleFromPlusAddr"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.getLocaleFromPlusAddr">[docs]</a><span class="k">def</span> <span class="nf">getLocaleFromPlusAddr</span><span class="p">(</span><span class="n">address</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;See whether the user sent his email to a &#39;plus&#39; address, for </span>
+<span class="sd">       instance to bridgedb+fa@tpo. Plus addresses are the current </span>
+<span class="sd">       mechanism to set the reply language</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">replyLocale</span> <span class="o">=</span> <span class="s">&quot;en&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;.*(&lt;)?(\w+\+(\w+)@\w+(?:\.\w+)+)(?(1)&gt;)&#39;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">replyLocale</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">replyLocale</span>
+</div>
+<div class="viewcode-block" id="getLocaleFromRequest"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.getLocaleFromRequest">[docs]</a><span class="k">def</span> <span class="nf">getLocaleFromRequest</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c"># See if we did get a request for a certain locale, otherwise fall back</span>
+    <span class="c"># to &#39;en&#39;:</span>
+    <span class="c"># Try evaluating the path /foo first, then check if we got a ?lang=foo</span>
+    <span class="n">default_lang</span> <span class="o">=</span> <span class="n">lang</span> <span class="o">=</span> <span class="s">&quot;en&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">lang</span> <span class="o">==</span> <span class="n">default_lang</span><span class="p">:</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;lang&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">default_lang</span><span class="p">])</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">lang</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">I18n</span><span class="o">.</span><span class="n">getLang</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span> 
+</div>
+<div class="viewcode-block" id="MailContext"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailContext">[docs]</a><span class="k">class</span> <span class="nc">MailContext</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper object that holds information used by email subsystem.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">sched</span><span class="p">):</span>
+        <span class="c"># Reject any RCPT TO lines that aren&#39;t to this user.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_USERNAME</span> <span class="ow">or</span>
+                         <span class="s">&quot;bridges&quot;</span><span class="p">)</span>
+        <span class="c"># Reject any mail longer than this.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maximumSize</span> <span class="o">=</span> <span class="mi">32</span><span class="o">*</span><span class="mi">1024</span>
+        <span class="c"># Use this server for outgoing mail.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smtpServer</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_SMTP_HOST</span> <span class="ow">or</span> <span class="s">&quot;127.0.0.1&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smtpPort</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_SMTP_PORT</span> <span class="ow">or</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="c"># Use this address in the MAIL FROM line for outgoing mail.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smtpFromAddr</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_SMTP_FROM_ADDR</span> <span class="ow">or</span>
+                             <span class="s">&quot;bridges@torproject.org&quot;</span><span class="p">)</span>
+        <span class="c"># Use this address in the &quot;From:&quot; header for outgoing mail.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fromAddr</span> <span class="o">=</span> <span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_FROM_ADDR</span> <span class="ow">or</span>
+                         <span class="s">&quot;bridges@torproject.org&quot;</span><span class="p">)</span>
+        <span class="c"># An EmailBasedDistributor object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distributor</span> <span class="o">=</span> <span class="n">dist</span>
+        <span class="c"># An IntervalSchedule object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">sched</span>
+        <span class="c"># The number of bridges to send for each email.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_N_BRIDGES_PER_ANSWER</span>
+
+        <span class="c"># Initialize a gpg context or set to None for backward compatibliity.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gpgContext</span> <span class="o">=</span> <span class="n">getGPGContext</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+</div>
+<div class="viewcode-block" id="MailMessage"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailMessage">[docs]</a><span class="k">class</span> <span class="nc">MailMessage</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plugs into the Twisted Mail and receives an incoming message.</span>
+<span class="sd">       Once the message is in, we reply or we don&#39;t. &quot;&quot;&quot;</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">IMessage</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new MailMessage from a MailContext.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nBytes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignoring</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="MailMessage.lineReceived"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailMessage.lineReceived">[docs]</a>    <span class="k">def</span> <span class="nf">lineReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when we get another line of an incoming message.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nBytes</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;&gt; </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nBytes</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">maximumSize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ignoring</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MailMessage.eomReceived"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailMessage.eomReceived">[docs]</a>    <span class="k">def</span> <span class="nf">eomReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called when we receive the end of a message.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignoring</span><span class="p">:</span>
+            <span class="n">replyToMail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">twisted</span><span class="o">.</span><span class="n">internet</span><span class="o">.</span><span class="n">defer</span><span class="o">.</span><span class="n">succeed</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MailMessage.connectionLost"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailMessage.connectionLost">[docs]</a>    <span class="k">def</span> <span class="nf">connectionLost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called if we die partway through reading a message.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div></div>
+<div class="viewcode-block" id="MailDelivery"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailDelivery">[docs]</a><span class="k">class</span> <span class="nc">MailDelivery</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plugs into Twisted Mail and handles SMTP commands.&quot;&quot;&quot;</span>
+    <span class="n">implements</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">IMessageDelivery</span><span class="p">)</span>
+<div class="viewcode-block" id="MailDelivery.setBridgeDBContext"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailDelivery.setBridgeDBContext">[docs]</a>    <span class="k">def</span> <span class="nf">setBridgeDBContext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span></div>
+<div class="viewcode-block" id="MailDelivery.receivedHeader"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailDelivery.receivedHeader">[docs]</a>    <span class="k">def</span> <span class="nf">receivedHeader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helo</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">recipients</span><span class="p">):</span>
+        <span class="c">#XXXX what is this for? what should it be?</span>
+        <span class="k">return</span> <span class="s">&quot;Received: BridgeDB&quot;</span></div>
+<div class="viewcode-block" id="MailDelivery.validateFrom"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailDelivery.validateFrom">[docs]</a>    <span class="k">def</span> <span class="nf">validateFrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">helo</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">origin</span></div>
+<div class="viewcode-block" id="MailDelivery.validateTo"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailDelivery.validateTo">[docs]</a>    <span class="k">def</span> <span class="nf">validateTo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;If the local user that was addressed isn&#39;t our configured local </span>
+<span class="sd">           user or doesn&#39;t contain a &#39;+&#39; with a prefix matching the local</span>
+<span class="sd">           configured user: Yell</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">dest</span><span class="o">.</span><span class="n">local</span>
+        <span class="c"># Hasplus? If yes, strip &#39;+foo&#39;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">u</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">SMTPBadRcpt</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">MailMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="MailFactory"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailFactory">[docs]</a><span class="k">class</span> <span class="nc">MailFactory</span><span class="p">(</span><span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">SMTPFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plugs into Twisted Mail; creates a new MailDelivery whenever we get</span>
+<span class="sd">       a connection on the SMTP port.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">SMTPFactory</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delivery</span> <span class="o">=</span> <span class="n">MailDelivery</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MailFactory.setBridgeDBContext"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailFactory.setBridgeDBContext">[docs]</a>    <span class="k">def</span> <span class="nf">setBridgeDBContext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delivery</span><span class="o">.</span><span class="n">setBridgeDBContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MailFactory.buildProtocol"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.MailFactory.buildProtocol">[docs]</a>    <span class="k">def</span> <span class="nf">buildProtocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">SMTPFactory</span><span class="o">.</span><span class="n">buildProtocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">delivery</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delivery</span>
+        <span class="k">return</span> <span class="n">p</span>
+</div></div>
+<div class="viewcode-block" id="addSMTPServer"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.addSMTPServer">[docs]</a><span class="k">def</span> <span class="nf">addSMTPServer</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">sched</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set up a smtp server.</span>
+<span class="sd">         cfg -- a configuration object from Main.  We use these options:</span>
+<span class="sd">                EMAIL_BIND_IP</span>
+<span class="sd">                EMAIL_PORT</span>
+<span class="sd">                EMAIL_N_BRIDGES_PER_ANSWER</span>
+<span class="sd">                EMAIL_DOMAIN_RULES</span>
+<span class="sd">         dist -- an EmailBasedDistributor object.</span>
+<span class="sd">         sched -- an IntervalSchedule object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">MailContext</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">sched</span><span class="p">)</span>
+    <span class="n">factory</span> <span class="o">=</span> <span class="n">MailFactory</span><span class="p">()</span>
+    <span class="n">factory</span><span class="o">.</span><span class="n">setBridgeDBContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_BIND_IP</span> <span class="ow">or</span> <span class="s">&quot;&quot;</span>
+    <span class="n">reactor</span><span class="o">.</span><span class="n">listenTCP</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_PORT</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="n">ip</span><span class="p">)</span>
+    <span class="c"># Set up a LoopingCall to run every 30 minutes and forget old email times.</span>
+    <span class="n">lc</span> <span class="o">=</span> <span class="n">LoopingCall</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">cleanDatabase</span><span class="p">)</span>
+    <span class="n">lc</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1800</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">factory</span>
+</div>
+<div class="viewcode-block" id="composeEmail"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.composeEmail">[docs]</a><span class="k">def</span> <span class="nf">composeEmail</span><span class="p">(</span><span class="n">fromAddr</span><span class="p">,</span> <span class="n">clientAddr</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">body</span><span class="p">,</span> <span class="n">msgID</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">gpgContext</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">MimeWriter</span><span class="o">.</span><span class="n">MimeWriter</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;From&quot;</span><span class="p">,</span> <span class="n">fromAddr</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;To&quot;</span><span class="p">,</span> <span class="n">clientAddr</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;Message-ID&quot;</span><span class="p">,</span> <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">messageid</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">subject</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;Re:&quot;</span><span class="p">):</span> <span class="n">subject</span> <span class="o">=</span> <span class="s">&quot;Re: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">subject</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;Subject&quot;</span><span class="p">,</span> <span class="n">subject</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">msgID</span><span class="p">:</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;In-Reply-To&quot;</span><span class="p">,</span> <span class="n">msgID</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">addheader</span><span class="p">(</span><span class="s">&quot;Date&quot;</span><span class="p">,</span> <span class="n">twisted</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">smtp</span><span class="o">.</span><span class="n">rfc822date</span><span class="p">())</span>
+    <span class="n">mailbody</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">startbody</span><span class="p">(</span><span class="s">&quot;text/plain&quot;</span><span class="p">)</span>
+
+    <span class="c"># gpg-clearsign messages</span>
+    <span class="k">if</span> <span class="n">gpgContext</span><span class="p">:</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">plaintext</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="n">sigs</span> <span class="o">=</span> <span class="n">gpgContext</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">plaintext</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">SIG_MODE_CLEAR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sigs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Failed to sign message!&#39;</span><span class="p">)</span>
+        <span class="n">signature</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">[</span><span class="n">mailbody</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">signature</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mailbody</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Email body:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">clientAddr</span><span class="p">,</span> <span class="n">f</span>
+</div>
+<div class="viewcode-block" id="getGPGContext"><a class="viewcode-back" href="../../bridgedb.EmailServer.html#bridgedb.EmailServer.getGPGContext">[docs]</a><span class="k">def</span> <span class="nf">getGPGContext</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Import a key from a file and initialise a context for GnuPG operations.</span>
+
+<span class="sd">    The key should not be protected by a passphrase, and should have the</span>
+<span class="sd">    signing flag enabled.</span>
+
+<span class="sd">    :type cfg: :class:`bridgedb.persistent.Conf`</span>
+<span class="sd">    :param cfg: The loaded config file.</span>
+<span class="sd">    :rtype: :class:`gpgme.Context` or None</span>
+<span class="sd">    :returns: A GPGME context with the signers initialized by the keyfile</span>
+<span class="sd">        specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or</span>
+<span class="sd">        None if the option was not enabled, or was unable to initialize.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># must have enabled signing and specified a key file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_ENABLED</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_KEY</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">keyfile</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Opening GPG keyfile </span><span class="si">%s</span><span class="s">...&quot;</span> <span class="o">%</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_KEY</span><span class="p">)</span>
+        <span class="n">keyfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_KEY</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="n">keyfile</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">imports</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s">&quot;Unexpected result from gpgme.Context.import_(): </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">GpgmeError</span><span class="p">(</span><span class="s">&quot;Could not import GnuPG key from file </span><span class="si">%r</span><span class="s">&quot;</span>
+                                   <span class="o">%</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_KEY</span><span class="p">)</span>
+
+        <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">imports</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;GPG Key with fingerprint </span><span class="si">%s</span><span class="s"> imported&quot;</span> <span class="o">%</span> <span class="n">fingerprint</span><span class="p">)</span>
+
+        <span class="n">ctx</span><span class="o">.</span><span class="n">armor</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">signers</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctx</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">)]</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Testing signature created with GnuPG key...&quot;</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="s">&#39;Test&#39;</span><span class="p">)</span>
+        <span class="n">new_sigs</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">StringIO</span><span class="p">(),</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">SIG_MODE_CLEAR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_sigs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">GpgmeError</span><span class="p">(</span>
+                <span class="s">&quot;Testing was unable to produce a signature with GnuPG key.&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Could not open or read from GnuPG key file </span><span class="si">%r</span><span class="s">!&quot;</span>
+                      <span class="o">%</span> <span class="n">cfg</span><span class="o">.</span><span class="n">EMAIL_GPG_SIGNING_KEY</span><span class="p">)</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">except</span> <span class="n">gpgme</span><span class="o">.</span><span class="n">GpgmeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keyfile</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keyfile</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="n">keyfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">ctx</span></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

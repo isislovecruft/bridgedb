@@ -1,0 +1,1293 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Bridges &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Bridges</h1><div class="highlight"><pre>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module has low-level functionality for parsing bridges and arranging</span>
+<span class="sd">them in rings.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">bisect</span>
+<span class="kn">import</span> <span class="nn">hmac</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sha</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">ipaddr</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Storage</span>
+<span class="kn">import</span> <span class="nn">bridgedb.Bucket</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb.parse</span> <span class="kn">import</span> <span class="n">networkstatus</span>
+
+
+<span class="n">HEX_FP_LEN</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">ID_LEN</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="n">DIGESTMOD</span> <span class="o">=</span> <span class="n">sha</span>
+<span class="n">HEX_DIGEST_LEN</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">DIGEST_LEN</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">PORTSPEC_LEN</span> <span class="o">=</span> <span class="mi">16</span>
+
+<div class="viewcode-block" id="is_valid_ip"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.is_valid_ip">[docs]</a><span class="k">def</span> <span class="nf">is_valid_ip</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return True if ip is the string encoding of a valid IPv4 address,</span>
+<span class="sd">       and False otherwise.</span>
+
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;1.2.3.4&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;1.2.3.255&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;1.2.3.256&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;1&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;1.2.3&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; is_valid_ip(&#39;xyzzy&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># ipaddr does not treat &quot;1.2&quot; as a synonym for &quot;0.0.1.2&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="c"># not a valid IPv4 or IPv6 address</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="is_valid_fingerprint"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.is_valid_fingerprint">[docs]</a><span class="k">def</span> <span class="nf">is_valid_fingerprint</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return true iff fp in the right format to be a hex fingerprint</span>
+<span class="sd">       of a Tor server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span> <span class="o">!=</span> <span class="n">HEX_FP_LEN</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fromHex</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<span class="n">toHex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">b2a_hex</span>
+<span class="n">fromHex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">a2b_hex</span>
+
+<div class="viewcode-block" id="get_hmac"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.get_hmac">[docs]</a><span class="k">def</span> <span class="nf">get_hmac</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the hmac of v using the key k.&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">digestmod</span><span class="o">=</span><span class="n">DIGESTMOD</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="get_hmac_fn"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.get_hmac_fn">[docs]</a><span class="k">def</span> <span class="nf">get_hmac_fn</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a function that computes the hmac of its input using the key k.</span>
+<span class="sd">       If &#39;hex&#39; is true, the output of the function will be hex-encoded.&quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">digestmod</span><span class="o">=</span><span class="n">DIGESTMOD</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">hmac_fn</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="n">h_tmp</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">h_tmp</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">h_tmp</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">h_tmp</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">hmac_fn</span>
+</div>
+<div class="viewcode-block" id="chopString"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.chopString">[docs]</a><span class="k">def</span> <span class="nf">chopString</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generator. Given a string and a length, divide the string into pieces</span>
+<span class="sd">       of no more than that length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">s</span><span class="p">[</span><span class="n">pos</span><span class="p">:</span><span class="n">pos</span><span class="o">+</span><span class="n">size</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Bridge"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge">[docs]</a><span class="k">class</span> <span class="nc">Bridge</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Holds information for a single bridge&quot;&quot;&quot;</span>
+    <span class="c">## Fields:</span>
+    <span class="c">##   nickname -- The bridge&#39;s nickname.  Not currently used.</span>
+    <span class="c">##   ip -- The bridge&#39;s IP address, as a dotted quad.</span>
+    <span class="c">##   orport -- The bridge&#39;s OR port.</span>
+    <span class="c">##   fingerprint -- The bridge&#39;s identity digest, in lowercase hex, with</span>
+    <span class="c">##       no spaces.</span>
+    <span class="c">##   running,stable -- DOCDOC</span>
+    <span class="c">##   blockingCountries -- list of country codes blocking this bridge</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nickname</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">orport</span><span class="p">,</span> <span class="n">fingerprint</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">id_digest</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">or_addresses</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">transports</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new Bridge.  One of fingerprint and id_digest must be</span>
+<span class="sd">           set.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span> <span class="o">=</span> <span class="n">nickname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orport</span> <span class="o">=</span> <span class="n">orport</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">or_addresses</span><span class="p">:</span> <span class="n">or_addresses</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span> <span class="o">=</span> <span class="n">or_addresses</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transports</span><span class="p">:</span> <span class="n">transports</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transports</span> <span class="o">=</span> <span class="n">transports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stable</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blockingCountries</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">id_digest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">fingerprint</span> <span class="ow">is</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_digest</span><span class="p">)</span> <span class="o">!=</span> <span class="n">DIGEST_LEN</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Bridge with invalid ID&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">toHex</span><span class="p">(</span><span class="n">id_digest</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fingerprint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_fingerprint</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Bridge with invalid fingerprint (</span><span class="si">%r</span><span class="s">)&quot;</span><span class="o">%</span>
+                                <span class="n">fingerprint</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">fingerprint</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Bridge with no ID&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bridge.getID"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.getID">[docs]</a>    <span class="k">def</span> <span class="nf">getID</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the bridge&#39;s identity digest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">fromHex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a piece of python that evaluates to this bridge.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;Bridge(</span><span class="si">%r</span><span class="s">,</span><span class="si">%r</span><span class="s">,</span><span class="si">%d</span><span class="s">,</span><span class="si">%r</span><span class="s">,or_addresses=</span><span class="si">%s</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orport</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s">&quot;Bridge(</span><span class="si">%r</span><span class="s">,</span><span class="si">%r</span><span class="s">,</span><span class="si">%d</span><span class="s">,</span><span class="si">%r</span><span class="s">)&quot;</span><span class="o">%</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nickname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orport</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bridge.getConfigLine"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.getConfigLine">[docs]</a>    <span class="k">def</span> <span class="nf">getConfigLine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">includeFingerprint</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">addressClass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">transport</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a valid bridge line for inclusion in a torrc&quot;&quot;&quot;</span>
+        <span class="c">#arguments:</span>
+        <span class="c">#    includeFingerprint</span>
+        <span class="c">#    addressClass - type of address to choose </span>
+        <span class="c">#    request - a string unique to this request</span>
+        <span class="c">#        e.g. email-address or uniformMap(ip)</span>
+        <span class="c">#    transport - a pluggable transport method name</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="p">:</span> <span class="n">request</span> <span class="o">=</span> <span class="s">&#39;default&#39;</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="n">get_hmac_fn</span><span class="p">(</span><span class="s">&#39;Order-Or-Addresses&#39;</span><span class="p">)(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span><span class="n">digest</span><span class="p">[:</span><span class="mi">8</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="c"># lower 8 bytes -&gt; long</span>
+
+        <span class="c"># default address type</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">addressClass</span><span class="p">:</span> <span class="n">addressClass</span> <span class="o">=</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv4Address</span>
+
+        <span class="c"># pluggable transports</span>
+        <span class="k">if</span> <span class="n">transport</span><span class="p">:</span>
+            <span class="c"># filter by &#39;methodname&#39;</span>
+            <span class="n">transports</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">transport</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">methodname</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transports</span><span class="p">)</span>
+            <span class="c"># filter by &#39;addressClass&#39; </span>
+            <span class="n">transports</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">),</span>
+                    <span class="n">transports</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transports</span><span class="p">:</span>
+                <span class="n">pt</span> <span class="o">=</span> <span class="n">transports</span><span class="p">[</span><span class="n">pos</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">transports</span><span class="p">)]</span>
+                <span class="k">return</span> <span class="n">pt</span><span class="o">.</span><span class="n">getTransportLine</span><span class="p">(</span><span class="n">includeFingerprint</span><span class="p">)</span>
+
+        <span class="c"># filter addresses by address class</span>
+        <span class="n">addresses</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">addressClass</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+        <span class="c"># default ip, orport should get a chance at being selected</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">):</span>
+            <span class="n">addresses</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">PortList</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orport</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">addresses</span><span class="p">:</span>
+            <span class="n">address</span><span class="p">,</span><span class="n">portlist</span> <span class="o">=</span> <span class="n">addresses</span><span class="p">[</span><span class="n">pos</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">addresses</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv6Address</span><span class="p">):</span> <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;[</span><span class="si">%s</span><span class="s">]&quot;</span><span class="o">%</span><span class="n">address</span>
+            <span class="k">else</span><span class="p">:</span> <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">address</span>
+            <span class="n">orport</span> <span class="o">=</span> <span class="n">portlist</span><span class="p">[</span><span class="n">pos</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">portlist</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="n">includeFingerprint</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">orport</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="n">orport</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Bridge.getAllConfigLines"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.getAllConfigLines">[docs]</a>    <span class="k">def</span> <span class="nf">getAllConfigLines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">includeFingerprint</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generator. Iterate over all valid config lines for this bridge.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">address</span><span class="p">,</span><span class="n">portlist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="ow">is</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv6Address</span><span class="p">:</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;[</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="n">address</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">address</span>
+
+            <span class="k">for</span> <span class="n">orport</span> <span class="ow">in</span> <span class="n">portlist</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">includeFingerprint</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="s">&quot;bridge </span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span><span class="n">orport</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="s">&quot;bridge </span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span><span class="n">orport</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transports</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">pt</span><span class="o">.</span><span class="n">getTransportLine</span><span class="p">(</span><span class="n">includeFingerprints</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Bridge.assertOK"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.assertOK">[docs]</a>    <span class="k">def</span> <span class="nf">assertOK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">is_valid_ip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">is_valid_fingerprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orport</span> <span class="o">&lt;=</span> <span class="mi">65535</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">address</span><span class="p">,</span> <span class="n">portlist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="n">is_valid_ip</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">portlist</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span>
+                    <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">port</span> <span class="o">&lt;=</span> <span class="mi">65535</span>
+</div>
+<div class="viewcode-block" id="Bridge.setStatus"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.setStatus">[docs]</a>    <span class="k">def</span> <span class="nf">setStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">running</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stable</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">running</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="n">running</span>
+        <span class="k">if</span> <span class="n">stable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stable</span> <span class="o">=</span> <span class="n">stable</span>
+</div>
+<div class="viewcode-block" id="Bridge.isBlocked"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.isBlocked">[docs]</a>    <span class="k">def</span> <span class="nf">isBlocked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">,</span> <span class="n">methodname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; if at least one address:port of the selected addressClass and</span>
+<span class="sd">        (optional) transport type is not blocked in countryCode, return True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># 1) transport is specified</span>
+        <span class="k">if</span> <span class="n">methodname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">transport</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transports</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">transport</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">transport</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">transport</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="n">transport</span><span class="o">.</span><span class="n">methodname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">methodname</span><span class="o">.</span><span class="n">lower</span><span class="p">()):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">countryCode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockingCountries</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                            <span class="k">return</span> <span class="bp">False</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="bp">False</span> <span class="c"># no blocklist</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="c"># 2) no transport specified (default)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># 3) check primary ip, port</span>
+            <span class="c"># XXX: could be more elegant if ip,orport were not special case</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">):</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orport</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">countryCode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockingCountries</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                        <span class="k">return</span> <span class="bp">False</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span> <span class="c"># no blocklist</span>
+
+            <span class="c"># 4) check or addresses</span>
+            <span class="k">for</span> <span class="n">address</span><span class="p">,</span><span class="n">portlist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_addresses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">addressClass</span><span class="p">):</span>
+                    <span class="c"># check each port</span>
+                    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">portlist</span><span class="p">:</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">countryCode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blockingCountries</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                                <span class="k">return</span> <span class="bp">False</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="k">return</span> <span class="bp">False</span> <span class="c"># no blocklist</span>
+            <span class="k">return</span> <span class="bp">True</span> 
+
+    <span class="c"># Bridge Stability (#5482) properties.</span></div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.familiar"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.familiar">[docs]</a>    <span class="k">def</span> <span class="nf">familiar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A bridge is &#39;familiar&#39; if 1/8 of all active bridges have appeared</span>
+<span class="sd">        more recently than it, or if it has been around for a Weighted Time of 8 days.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">familiar</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.wfu"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.wfu">[docs]</a>    <span class="k">def</span> <span class="nf">wfu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Fractional Uptime&quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">weightedFractionalUptime</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.weightedTime"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.weightedTime">[docs]</a>    <span class="k">def</span> <span class="nf">weightedTime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Time&quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">weightedTime</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.wmtbac"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.wmtbac">[docs]</a>    <span class="k">def</span> <span class="nf">wmtbac</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Mean Time Between Address Change&quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">wmtbac</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.tosa"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.tosa">[docs]</a>    <span class="k">def</span> <span class="nf">tosa</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the Time On Same Address (TOSA)&quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">tosa</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Bridge.weightedUptime"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.Bridge.weightedUptime">[docs]</a>    <span class="k">def</span> <span class="nf">weightedUptime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Weighted Uptime&quot;&quot;&quot;</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span><span class="o">.</span><span class="n">weightedUptime</span>
+</div></div>
+<div class="viewcode-block" id="parseDescFile"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.parseDescFile">[docs]</a><span class="k">def</span> <span class="nf">parseDescFile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">bridge_purpose</span><span class="o">=</span><span class="s">&#39;bridge&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generator. Parses a cached-descriptors file &#39;f&#39; and yeilds a Bridge object</span>
+<span class="sd">       for every entry whose purpose matches bridge_purpose.</span>
+<span class="sd">       This Generator understands the new descriptor format described in </span>
+<span class="sd">       186-multiple-orports.txt</span>
+
+<span class="sd">       The new specification provides for specifying multiple ORports as well</span>
+<span class="sd">       as supporting new address format for IPv6 addresses.</span>
+
+<span class="sd">       The router descriptor &quot;or-address&quot; may occur zero, one, or multiple times.</span>
+<span class="sd">       parseDescFile adds each ADDRESS:PORTSPEC to the Bridge.or_addresses list.</span>
+
+<span class="sd">       The &quot;or-address&quot; should not duplicate the address:port pair from the &quot;router&quot;</span>
+<span class="sd">       description. (Should we try to catch this case?)</span>
+
+<span class="sd">       A node may not list more than 8 or-address lines.</span>
+<span class="sd">         (should we try to enforce this too?)</span>
+
+<span class="sd">       Here is the new format:</span>
+
+<span class="sd">       or-address SP ADDRESS &quot;:&quot; PORTLIST NL</span>
+<span class="sd">       ADDRESS = IP6ADDR | IP4ADDR</span>
+<span class="sd">       IPV6ADDR = an ipv6 address, surrounded by square brackets.</span>
+<span class="sd">       IPV4ADDR = an ipv4 address, represented as a dotted quad.</span>
+<span class="sd">       PORTLIST = PORTSPEC | PORTSPEC &quot;,&quot; PORTLIST</span>
+<span class="sd">       PORTSPEC = PORT</span>
+<span class="sd">       PORT = a number between 1 and 65535 inclusive.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="n">nickname</span> <span class="o">=</span> <span class="n">ip</span> <span class="o">=</span> <span class="n">orport</span> <span class="o">=</span> <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">purpose</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">num_or_address_lines</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">or_addresses</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;opt &quot;</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;@purpose &quot;</span><span class="p">):</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">purpose</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;router &quot;</span><span class="p">):</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">nickname</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">ip</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;[]&#39;</span><span class="p">)</span>
+                <span class="n">orport</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;fingerprint &quot;</span><span class="p">):</span>
+            <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">12</span><span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;router-signature&quot;</span><span class="p">):</span>
+            <span class="n">purposeMatches</span> <span class="o">=</span> <span class="p">(</span><span class="n">purpose</span> <span class="o">==</span> <span class="n">bridge_purpose</span> <span class="ow">or</span> <span class="n">bridge_purpose</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">purposeMatches</span> <span class="ow">and</span> <span class="n">nickname</span> <span class="ow">and</span> <span class="n">ip</span> <span class="ow">and</span> <span class="n">orport</span> <span class="ow">and</span> <span class="n">fingerprint</span><span class="p">:</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">ip</span><span class="p">),</span> <span class="n">orport</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">)</span>
+                <span class="n">b</span><span class="o">.</span><span class="n">assertOK</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="n">b</span>
+            <span class="n">nickname</span> <span class="o">=</span> <span class="n">ip</span> <span class="o">=</span> <span class="n">orport</span> <span class="o">=</span> <span class="n">fingerprint</span> <span class="o">=</span> <span class="n">purpose</span> <span class="o">=</span> <span class="bp">None</span> 
+
+</div>
+<div class="viewcode-block" id="ParseORAddressError"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.ParseORAddressError">[docs]</a><span class="k">class</span> <span class="nc">ParseORAddressError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;Invalid or-address line&quot;</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+</div>
+<span class="n">re_ipv6</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;\[([a-fA-F0-9:]+)\]:(.*$)&quot;</span><span class="p">)</span>
+<span class="n">re_ipv4</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;((?:\d{1,3}\.?){4}):(.*$)&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PluggableTransport"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.PluggableTransport">[docs]</a><span class="k">class</span> <span class="nc">PluggableTransport</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    an object that represents a pluggable-transport method</span>
+<span class="sd">    and a reference to the relevant bridge </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">,</span> <span class="n">methodname</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">argdict</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="c">#XXX: assert are disabled with python -O</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bridge</span><span class="p">,</span> <span class="n">Bridge</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">address</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv4Address</span><span class="p">,</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv6Address</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">port</span> <span class="o">&lt;</span> <span class="mi">65536</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">methodname</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span> <span class="o">=</span> <span class="n">bridge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">methodname</span> <span class="o">=</span> <span class="n">methodname</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">argdict</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">argdict</span> <span class="o">=</span> <span class="n">argdict</span>
+        <span class="k">else</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">argdict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="PluggableTransport.getTransportLine"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.PluggableTransport.getTransportLine">[docs]</a>    <span class="k">def</span> <span class="nf">getTransportLine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">includeFingerprint</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns a torrc bridge line for this transport</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span><span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv6Address</span><span class="p">):</span>
+            <span class="n">address</span> <span class="o">=</span> <span class="s">&quot;[</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">methodname</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">includeFingerprint</span><span class="p">:</span> <span class="n">fp</span> <span class="o">=</span> <span class="s">&quot;keyid=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">argdict</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+</div></div>
+<div class="viewcode-block" id="parseExtraInfoFile"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.parseExtraInfoFile">[docs]</a><span class="k">def</span> <span class="nf">parseExtraInfoFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    parses lines in Bridges extra-info documents.</span>
+<span class="sd">    returns an object whose type corresponds to the</span>
+<span class="sd">    relevant set of extra-info lines.</span>
+
+<span class="sd">    presently supported lines and the accompanying type are:</span>
+<span class="sd">    </span>
+<span class="sd">        { &#39;transport&#39;: PluggableTransport, }</span>
+
+<span class="sd">    &#39;transport&#39; lines (torspec.git/proposals/180-pluggable-transport.txt)</span>
+
+<span class="sd">        Bridges put the &#39;transport&#39; lines in their extra-info documents.</span>
+<span class="sd">        the format is:</span>
+<span class="sd">    </span>
+<span class="sd">            transport SP &lt;methodname&gt; SP &lt;address:port&gt; [SP arglist] NL</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ID</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">argdict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c"># do we need to skip &#39;opt&#39; here?</span>
+        <span class="c"># if line.startswith(&quot;opt &quot;):</span>
+        <span class="c">#     line = line[4:]</span>
+
+        <span class="c"># get the bridge ID ?</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;extra-info &quot;</span><span class="p">):</span> <span class="c">#XXX: get the router ID</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">11</span><span class="p">:]</span>
+            <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsed Nickname: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">nickname</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_valid_fingerprint</span><span class="p">(</span><span class="n">ID</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsed fingerprint: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span>
+                <span class="n">ID</span> <span class="o">=</span> <span class="n">fromHex</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsed invalid fingerprint: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span>
+
+        <span class="c"># get the transport line</span>
+        <span class="k">if</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;transport &quot;</span><span class="p">):</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">10</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="c"># [ arglist ] field, optional</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">arglist</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+                <span class="c"># parse arglist [k=v,...k=v] as argdict {k:v,...,k:v} </span>
+                <span class="n">argdict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arglist</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="k">continue</span>
+                    <span class="n">argdict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsing Argument: </span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+            <span class="c"># get the required fields, method name and address</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c"># get the method name</span>
+                <span class="c"># Method names must be C identifiers</span>
+                <span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="p">[</span><span class="n">re_ipv4</span><span class="p">,</span> <span class="n">re_ipv6</span><span class="p">]:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">method_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;[_a-zA-Z][_a-zA-Z0-9]*&#39;</span><span class="p">,</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+                        <span class="n">m</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="n">address</span>  <span class="o">=</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                        <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsed Transport: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">method_name</span><span class="p">)</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  Parsed Transport Address: </span><span class="si">%s</span><span class="s">:</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+                        <span class="k">yield</span> <span class="n">ID</span><span class="p">,</span> <span class="n">method_name</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">argdict</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                        <span class="c"># skip this line</span>
+                        <span class="k">continue</span>
+
+        <span class="c"># end of descriptor is defined how? </span>
+        <span class="k">if</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;router-signature&quot;</span><span class="p">):</span>
+            <span class="n">ID</span> <span class="o">=</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="parseStatusFile"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.parseStatusFile">[docs]</a><span class="k">def</span> <span class="nf">parseStatusFile</span><span class="p">(</span><span class="n">networkstatusFile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse entries in a bridge networkstatus file.</span>
+
+<span class="sd">    :type networkstatusFile: A file-like object.</span>
+<span class="sd">    :param networkstatusFile: A file containing `@type bridge-networkstatus` documents.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">descDigest</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span>
+     <span class="n">ORaddr</span><span class="p">,</span> <span class="n">ORport</span><span class="p">,</span> <span class="n">dirport</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">portlist</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span>
+    <span class="n">running</span> <span class="o">=</span> <span class="n">stable</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">parsedORAddressLines</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">or_addresses</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">networkstatusFile</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;opt &quot;</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;r &quot;</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">descDigest</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span>
+             <span class="n">ORaddr</span><span class="p">,</span> <span class="n">ORport</span><span class="p">,</span> <span class="n">dirport</span><span class="p">)</span> <span class="o">=</span> <span class="n">networkstatus</span><span class="o">.</span><span class="n">parseRLine</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;a &quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">addr</span><span class="p">,</span> <span class="n">portlist</span> <span class="o">=</span> <span class="n">networkstatus</span><span class="o">.</span><span class="n">parseALine</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">toHex</span><span class="p">(</span><span class="n">ID</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">networkstatus</span><span class="o">.</span><span class="n">ParseNetstatusError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span> <span class="n">or_addresses</span><span class="p">[</span><span class="n">addr</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">portlist</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span> <span class="n">or_addresses</span><span class="p">[</span><span class="n">addr</span><span class="p">]</span> <span class="o">=</span> <span class="n">portlist</span>
+                <span class="n">parsedORAddressLines</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">elif</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">timestamp</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;s &quot;</span><span class="p">):</span>
+            <span class="n">running</span><span class="p">,</span> <span class="n">stable</span> <span class="o">=</span> <span class="n">networkstatus</span><span class="o">.</span><span class="n">parseSLine</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">ID</span><span class="p">,</span> <span class="n">running</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="n">or_addresses</span><span class="p">,</span> <span class="n">timestamp</span>
+
+            <span class="p">(</span><span class="n">nickname</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">descDigest</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">ORaddr</span><span class="p">,</span> <span class="n">ORport</span><span class="p">,</span> <span class="n">dirport</span><span class="p">,</span>
+             <span class="n">addr</span><span class="p">,</span> <span class="n">portlist</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="bp">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">9</span><span class="p">))</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="n">stable</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">or_addresses</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Total ORAddress lines parsed from &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%d</span><span class="s">&quot;</span>
+                  <span class="o">%</span> <span class="p">(</span><span class="n">networkstatusFile</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">parsedORAddressLines</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="parseCountryBlockFile"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.parseCountryBlockFile">[docs]</a><span class="k">def</span> <span class="nf">parseCountryBlockFile</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generator. Parses a blocked-bridges file &#39;f&#39;, and yields</span>
+<span class="sd">       a fingerprint (ID), address, a list of ports, and a list of country</span>
+<span class="sd">       codes where the bridge is blocked for each valid line:</span>
+<span class="sd">       address, port [], countrycode []&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">ID</span> <span class="o">=</span> <span class="n">address</span> <span class="o">=</span> <span class="n">fields</span> <span class="o">=</span> <span class="n">portlist</span> <span class="o">=</span> <span class="n">countries</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ID</span><span class="p">,</span> <span class="n">addrspec</span><span class="p">,</span> <span class="n">countries</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">is_valid_fingerprint</span><span class="p">(</span><span class="n">ID</span><span class="p">):</span>
+                <span class="n">ID</span> <span class="o">=</span> <span class="n">fromHex</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed ID: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;failed to parse ID!&quot;</span>
+                <span class="k">continue</span> <span class="c"># skip this line</span>
+
+            <span class="k">for</span> <span class="n">regex</span> <span class="ow">in</span> <span class="p">[</span><span class="n">re_ipv4</span><span class="p">,</span> <span class="n">re_ipv6</span><span class="p">]:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">addrspec</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                    <span class="n">portlist</span> <span class="o">=</span> <span class="n">PortList</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                    <span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed address: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed portlist: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">portlist</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Parsed countries: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">countries</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Skipping line&quot;</span><span class="p">)</span>
+            <span class="k">continue</span> <span class="c"># skip this line</span>
+        <span class="k">if</span> <span class="n">ID</span> <span class="ow">and</span> <span class="n">address</span> <span class="ow">and</span> <span class="n">portlist</span> <span class="ow">and</span> <span class="n">countries</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ID</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">portlist</span><span class="p">,</span> <span class="n">countries</span>
+</div>
+<div class="viewcode-block" id="BridgeHolder"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder">[docs]</a><span class="k">class</span> <span class="nc">BridgeHolder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract base class for all classes that hold bridges.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="BridgeHolder.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BridgeHolder.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BridgeHolder.assignmentsArePersistent"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder.assignmentsArePersistent">[docs]</a>    <span class="k">def</span> <span class="nf">assignmentsArePersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BridgeHolder.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeHolder.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">pass</span>
+</div></div>
+<div class="viewcode-block" id="BridgeRingParameters"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRingParameters">[docs]</a><span class="k">class</span> <span class="nc">BridgeRingParameters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store validated settings on minimum number of Bridges with certain</span>
+<span class="sd">    attributes which should be included in any generated subring of a</span>
+<span class="sd">    hashring.</span>
+
+<span class="sd">    :ivar list needPorts: List of two-tuples of desired port numbers and their</span>
+<span class="sd">        respective minimums.</span>
+<span class="sd">    :ivar list needFlags: List of two-tuples of desired flags_ assigned to a</span>
+<span class="sd">        Bridge by the Bridge DirAuth.</span>
+
+<span class="sd">    .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">needPorts</span><span class="o">=</span><span class="p">[],</span> <span class="n">needFlags</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;Control the creation of subrings by including a minimum number of</span>
+<span class="sd">        bridges which possess certain attributes.</span>
+
+<span class="sd">        XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which</span>
+<span class="sd">            reads: &quot;Only &#39;stable&#39; is now supported.&quot; Is this still the case?</span>
+<span class="sd">            Why?</span>
+
+<span class="sd">        :type needPorts: iterable</span>
+<span class="sd">        :param needPorts: An iterable of two-tuples. Each two tuple should</span>
+<span class="sd">            contain ``(port, minimum)``, where ``port`` is an integer</span>
+<span class="sd">            specifying a port number, and ``minimum`` is another integer</span>
+<span class="sd">            specifying the minimum number of Bridges running on that ``port``</span>
+<span class="sd">            to include in any new subring.</span>
+<span class="sd">        :type needFlags: iterable</span>
+<span class="sd">        :param needFlags: An iterable of two-tuples. Each two tuple should</span>
+<span class="sd">            contain ``(flag, minimum)``, where ``flag`` is a string specifying</span>
+<span class="sd">            an OR flag_, and ``minimum`` is an integer for the minimum number</span>
+<span class="sd">            of Bridges which have acquired that ``flag`` to include in any new</span>
+<span class="sd">            subring.</span>
+<span class="sd">        :raises: An :exc:`TypeError` if an invalid port number, a minimum less</span>
+<span class="sd">            than one, or an &quot;unsupported&quot; flag is given. &quot;Stable&quot; appears to</span>
+<span class="sd">            be the only currently &quot;supported&quot; flag.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">port</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">needPorts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">port</span> <span class="o">&lt;=</span> <span class="mi">65535</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Port </span><span class="si">%s</span><span class="s"> out of range.&quot;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Count </span><span class="si">%s</span><span class="s"> out of range.&quot;</span> <span class="o">%</span> <span class="n">count</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">needFlags</span><span class="p">:</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="n">flag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">flag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;stable&quot;</span><span class="p">,]:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Unsupported flag </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">flag</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Count </span><span class="si">%s</span><span class="s"> out of range.&quot;</span> <span class="o">%</span> <span class="n">count</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">needPorts</span> <span class="o">=</span> <span class="n">needPorts</span><span class="p">[:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">needFlags</span> <span class="o">=</span> <span class="p">[(</span><span class="n">flag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">count</span><span class="p">)</span> <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">needFlags</span><span class="p">[:]]</span>
+</div>
+<div class="viewcode-block" id="BridgeRing"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing">[docs]</a><span class="k">class</span> <span class="nc">BridgeRing</span><span class="p">(</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Arranges bridges in a ring based on an hmac function.&quot;&quot;&quot;</span>
+    <span class="c">## Fields:</span>
+    <span class="c">##   bridges: a map from hmac value to Bridge.</span>
+    <span class="c">##   bridgesByID: a map from bridge ID Digest to Bridge.</span>
+    <span class="c">##   isSorted: true iff sortedKeys is currently sorted.</span>
+    <span class="c">##   sortedKeys: a list of all the hmacs, in order.</span>
+    <span class="c">##   name: a string to represent this ring in the logs.</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">answerParameters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new BridgeRing, using key as its hmac key.</span>
+
+<span class="sd">        :ivar list subrings: XXX</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridgesByID</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span> <span class="o">=</span> <span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">answerParameters</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">answerParameters</span> <span class="o">=</span> <span class="n">BridgeRingParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span> <span class="o">=</span> <span class="n">answerParameters</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span> <span class="o">=</span> <span class="p">[]</span> <span class="c">#DOCDOC</span>
+        <span class="k">for</span> <span class="n">port</span><span class="p">,</span><span class="n">count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="o">.</span><span class="n">needPorts</span><span class="p">:</span>
+            <span class="c">#note that we really need to use the same key here, so that</span>
+            <span class="c"># the mapping is in the same order for all subrings.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="s">&#39;port&#39;</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">None</span><span class="p">))</span> <span class="p">)</span>
+        <span class="k">for</span> <span class="n">flag</span><span class="p">,</span><span class="n">count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">answerParameters</span><span class="o">.</span><span class="n">needFlags</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="s">&#39;flag&#39;</span><span class="p">,</span><span class="n">flag</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">BridgeRing</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">None</span><span class="p">))</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;Ring&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BridgeRing.setName"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.setName">[docs]</a>    <span class="k">def</span> <span class="nf">setName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tag a unique name to this hashring for identification.</span>
+
+<span class="sd">        :param string name: The name for this hashring.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">for</span> <span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tp</span> <span class="o">==</span> <span class="s">&#39;port&#39;</span><span class="p">:</span>
+                <span class="n">subring</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (port-</span><span class="si">%s</span><span class="s"> subring)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subring</span><span class="o">.</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s"> subring)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BridgeRing.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridgesByID</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">tp</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+            <span class="n">subring</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BridgeRing.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a bridge to the ring.  If the bridge is already there,</span>
+<span class="sd">           replace the old one.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tp</span> <span class="o">==</span> <span class="s">&#39;port&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span><span class="p">:</span>
+                    <span class="n">subring</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">tp</span> <span class="o">==</span> <span class="s">&#39;flag&#39;</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="s">&#39;stable&#39;</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="s">&#39;stable&#39;</span> <span class="ow">and</span> <span class="n">bridge</span><span class="o">.</span><span class="n">stable</span><span class="p">:</span>
+                    <span class="n">subring</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+
+        <span class="n">ident</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span><span class="p">(</span><span class="n">ident</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">pos</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">bridge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridgesByID</span><span class="p">[</span><span class="n">ident</span><span class="p">]</span> <span class="o">=</span> <span class="n">bridge</span>
+        <span class="c">#XXX: just use bridge.ip</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">ip</span><span class="p">,</span> <span class="n">ipaddr</span><span class="o">.</span><span class="n">IPv6Address</span><span class="p">):</span> <span class="n">ip</span> <span class="o">=</span> <span class="s">&quot;[</span><span class="si">%s</span><span class="s">]&quot;</span> <span class="o">%</span> <span class="n">bridge</span><span class="o">.</span><span class="n">ip</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">ip</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">ip</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding </span><span class="si">%s</span><span class="s"> to </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BridgeRing._sort"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing._sort">[docs]</a>    <span class="k">def</span> <span class="nf">_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper: put the keys in sorted order.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BridgeRing._getBridgeKeysAt"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing._getBridgeKeysAt">[docs]</a>    <span class="k">def</span> <span class="nf">_getBridgeKeysAt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper: return the N keys appearing in the ring after position</span>
+<span class="sd">           pos&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="o">==</span> <span class="n">DIGEST_LEN</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isSorted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sort</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">bisect</span><span class="o">.</span><span class="n">bisect_left</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">idx</span><span class="o">+</span><span class="n">N</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">:</span>
+            <span class="c"># wrap around as needed.</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sortedKeys</span><span class="p">[:</span><span class="n">N</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">==</span> <span class="n">N</span>
+        <span class="k">return</span> <span class="n">r</span>
+</div>
+<div class="viewcode-block" id="BridgeRing.getBridges"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.getBridges">[docs]</a>    <span class="k">def</span> <span class="nf">getBridges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">countryCode</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the N bridges appearing in the ring after position pos&quot;&quot;&quot;</span>
+        <span class="n">forced</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subring</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subring</span><span class="p">)</span>
+            <span class="n">forced</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">subring</span><span class="o">.</span><span class="n">_getBridgeKeysAt</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span> <span class="p">]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">forced</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getBridgeKeysAt</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="c">#Do not return bridges from the same /16</span>
+        <span class="n">bridges</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">bridges</span>
+</div>
+<div class="viewcode-block" id="BridgeRing.getBridgeByID"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.getBridgeByID">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgeByID</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the bridge whose identity digest is fp, or None if no such</span>
+<span class="sd">           bridge exists.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">subring</span><span class="o">.</span><span class="n">getBridgeByID</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">b</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridgesByID</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BridgeRing.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeRing.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="p">[</span> <span class="n">description</span> <span class="p">]</span>
+            <span class="n">ident</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">getID</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">subring</span><span class="o">.</span><span class="n">getBridgeByID</span><span class="p">(</span><span class="n">ident</span><span class="p">):</span>
+                    <span class="n">desc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span> <span class="n">toHex</span><span class="p">(</span><span class="n">ident</span><span class="p">),</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+</div></div>
+<div class="viewcode-block" id="FixedBridgeSplitter"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FixedBridgeSplitter">[docs]</a><span class="k">class</span> <span class="nc">FixedBridgeSplitter</span><span class="p">(</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A bridgeholder that splits bridges up based on an hmac and assigns</span>
+<span class="sd">       them to several sub-bridgeholders with equal probability.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">rings</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span> <span class="o">=</span> <span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rings</span> <span class="o">=</span> <span class="n">rings</span><span class="p">[:]</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">:</span>
+            <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">BridgeHolder</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FixedBridgeSplitter.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FixedBridgeSplitter.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="c"># Grab the first 4 bytes</span>
+        <span class="n">digest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">())</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">long</span><span class="p">(</span> <span class="n">digest</span><span class="p">[:</span><span class="mi">8</span><span class="p">],</span> <span class="mi">16</span> <span class="p">)</span>
+        <span class="n">which</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">[</span><span class="n">which</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FixedBridgeSplitter.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FixedBridgeSplitter.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear all bridges from every ring in ``rings``.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">:</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the total number of bridges in all ``rings``.&quot;&quot;&quot;</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">ring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ring</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+<div class="viewcode-block" id="FixedBridgeSplitter.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FixedBridgeSplitter.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write all bridges assigned to this hashring to ``filename``.</span>
+
+<span class="sd">        :param string description: If given, include a description next to the</span>
+<span class="sd">            index number of the ring from :attr:`FilteredBridgeHolder.rings`</span>
+<span class="sd">            the following bridges were assigned to. For example, if the</span>
+<span class="sd">            description is ``&quot;IPv6 obfs2 bridges&quot;`` the line would read:</span>
+<span class="sd">            ``&quot;IPv6 obfs2 bridges ring=3&quot;``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">ring</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">):</span>
+            <span class="n">ring</span><span class="o">.</span><span class="n">dumpAssignments</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> ring=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">index</span><span class="p">))</span>
+</div></div>
+<div class="viewcode-block" id="UnallocatedHolder"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.UnallocatedHolder">[docs]</a><span class="k">class</span> <span class="nc">UnallocatedHolder</span><span class="p">(</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A pseudo-bridgeholder that ignores its bridges and leaves them</span>
+<span class="sd">       unassigned.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="UnallocatedHolder.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.UnallocatedHolder.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Leaving </span><span class="si">%s</span><span class="s"> unallocated&quot;</span><span class="p">,</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getConfigLine</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UnallocatedHolder.assignmentsArePersistent"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.UnallocatedHolder.assignmentsArePersistent">[docs]</a>    <span class="k">def</span> <span class="nf">assignmentsArePersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UnallocatedHolder.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.UnallocatedHolder.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span> <span class="o">=</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="UnallocatedHolder.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.UnallocatedHolder.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+        <span class="n">allBridges</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getAllBridges</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">bridge</span> <span class="ow">in</span> <span class="n">allBridges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bridge</span><span class="o">.</span><span class="n">hex_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fingerprints</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">distributor</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="p">[</span> <span class="n">description</span> <span class="p">]</span>
+            <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Bucket</span><span class="o">.</span><span class="n">PSEUDO_DISTRI_PREFIX</span><span class="p">):</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Bucket</span><span class="o">.</span><span class="n">PSEUDO_DISTRI_PREFIX</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">desc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;bucket=</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">dist</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">dist</span> <span class="o">!=</span> <span class="s">&quot;unallocated&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">hex_key</span><span class="p">,</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+</div></div>
+<div class="viewcode-block" id="BridgeSplitter"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter">[docs]</a><span class="k">class</span> <span class="nc">BridgeSplitter</span><span class="p">(</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A BridgeHolder that splits incoming bridges up based on an hmac,</span>
+<span class="sd">       and assigns them to sub-bridgeholders with different probabilities.</span>
+<span class="sd">       Bridge-to-bridgeholder associations are recorded in a store.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span> <span class="o">=</span> <span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">totalP</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pValues</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pseudoRings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statsHolders</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span>
+
+<div class="viewcode-block" id="BridgeSplitter.addRing"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.addRing">[docs]</a>    <span class="k">def</span> <span class="nf">addRing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ring</span><span class="p">,</span> <span class="n">ringname</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a new bridgeholder.</span>
+<span class="sd">           ring -- the bridgeholder to add.</span>
+<span class="sd">           ringname -- a string representing the bridgeholder.  This is used</span>
+<span class="sd">               to record which bridges have been assigned where in the store.</span>
+<span class="sd">           p -- the relative proportion of bridges to assign to this</span>
+<span class="sd">               bridgeholder.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">BridgeHolder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span><span class="p">[</span><span class="n">ringname</span><span class="p">]</span> <span class="o">=</span> <span class="n">ring</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pValues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">totalP</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ringname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">totalP</span> <span class="o">+=</span> <span class="n">p</span>
+</div>
+<div class="viewcode-block" id="BridgeSplitter.addPseudoRing"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.addPseudoRing">[docs]</a>    <span class="k">def</span> <span class="nf">addPseudoRing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ringname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a pseudo ring to the list of pseudo rings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pseudoRings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridgedb</span><span class="o">.</span><span class="n">Bucket</span><span class="o">.</span><span class="n">PSEUDO_DISTRI_PREFIX</span> <span class="o">+</span> <span class="n">ringname</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BridgeSplitter.addTracker"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.addTracker">[docs]</a>    <span class="k">def</span> <span class="nf">addTracker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds a statistics tracker that gets told about every bridge we see.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statsHolders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BridgeSplitter.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">r</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BridgeSplitter.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">statsHolders</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bridge</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">bridgeID</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">()</span>
+
+        <span class="c"># Determine which ring to put this bridge in if we haven&#39;t seen it</span>
+        <span class="c"># before.</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span><span class="p">(</span><span class="n">bridgeID</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pos</span><span class="p">[:</span><span class="mi">8</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalP</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">bisect</span><span class="o">.</span><span class="n">bisect_right</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pValues</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">)</span>
+        <span class="n">ringname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+
+        <span class="n">validRings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rings</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pseudoRings</span>
+
+        <span class="n">ringname</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">insertBridgeAndGetRing</span><span class="p">(</span><span class="n">bridge</span><span class="p">,</span> <span class="n">ringname</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> 
+                                             <span class="n">validRings</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="c"># Pseudo distributors are always held in the &quot;unallocated&quot; ring</span>
+        <span class="k">if</span> <span class="n">ringname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pseudoRings</span><span class="p">:</span>
+            <span class="n">ringname</span> <span class="o">=</span> <span class="s">&quot;unallocated&quot;</span>
+
+        <span class="n">ring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ringname</span><span class="p">)</span>
+        <span class="n">ring</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BridgeSplitter.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeSplitter.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">ring</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ringsByName</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">ring</span><span class="o">.</span><span class="n">dumpAssignments</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+</div></div>
+<div class="viewcode-block" id="FilteredBridgeSplitter"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter">[docs]</a><span class="k">class</span> <span class="nc">FilteredBridgeSplitter</span><span class="p">(</span><span class="n">BridgeHolder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A configurable BridgeHolder that filters bridges</span>
+<span class="sd">    into subrings.</span>
+<span class="sd">    The set of subrings and conditions used to assign Bridges</span>
+<span class="sd">    are passed to the constructor as a list of (filterFn, ringName)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">max_cached_rings</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmac</span> <span class="o">=</span> <span class="n">get_hmac_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">hex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c">#XXX: unused</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_cached_rings</span> <span class="o">=</span> <span class="n">max_cached_rings</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilteredBridgeSplitter.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span> <span class="o">=</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="FilteredBridgeSplitter.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Insert a bridge into all appropriate sub-hashrings.</span>
+
+<span class="sd">        For all sub-hashrings, the ``bridge`` will only be added iff it passes</span>
+<span class="sd">        the filter functions for that sub-hashring.</span>
+
+<span class="sd">        :type bridge: :class:`~bridgedb.Bridges.Bridge`</span>
+<span class="sd">        :param bridge: The bridge to add.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bridge</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s">&quot;Skipping hashring insertion for non-running bridge: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
+                <span class="o">%</span> <span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">())</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ringname</span><span class="p">,</span> <span class="p">(</span><span class="n">filterFn</span><span class="p">,</span> <span class="n">subring</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">filterFn</span><span class="p">(</span><span class="n">bridge</span><span class="p">):</span>
+                <span class="n">subring</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Inserted bridge &#39;</span><span class="si">%s</span><span class="s">&#39; into &#39;</span><span class="si">%s</span><span class="s">&#39; sub hashring&quot;</span>
+                              <span class="o">%</span> <span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">getID</span><span class="p">(),</span> <span class="n">ringname</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="FilteredBridgeSplitter.addRing"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter.addRing">[docs]</a>    <span class="k">def</span> <span class="nf">addRing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subring</span><span class="p">,</span> <span class="n">ringname</span><span class="p">,</span> <span class="n">filterFn</span><span class="p">,</span> <span class="n">populate_from</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a subring to this hashring.</span>
+
+<span class="sd">        :type subring: :class:`BridgeHolder`</span>
+<span class="sd">        :param subring: The subring to add.</span>
+<span class="sd">        :param string ringname: A unique name for identifying the new</span>
+<span class="sd">            subring.</span>
+<span class="sd">        :param filterFn: A function whose input is a :class:`Bridge`, and</span>
+<span class="sd">            returns True/False based on some filtration criteria.</span>
+<span class="sd">        :type populate_from: iterable or None</span>
+<span class="sd">        :param populate_from: A group of :class:`Bridge`s. If given, the newly</span>
+<span class="sd">            added subring will be populated with these bridges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subring</span><span class="p">,</span> <span class="n">BridgeHolder</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="s">&quot;Can&#39;t add &#39;</span><span class="si">%s</span><span class="s">&#39; to </span><span class="si">%s</span><span class="s"> because &#39;</span><span class="si">%s</span><span class="s">&#39; isn&#39;t a hashring.&quot;</span>
+                          <span class="o">%</span> <span class="p">(</span><span class="n">ringname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="n">ringname</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">ringname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="s">&quot;Hashring </span><span class="si">%s</span><span class="s"> already has a subring named &#39;</span><span class="si">%s</span><span class="s">&#39;!&quot;</span>
+                          <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="n">ringname</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Adding subring &#39;</span><span class="si">%s</span><span class="s">&#39; to hashring </span><span class="si">%s</span><span class="s">...&quot;</span>
+                      <span class="o">%</span> <span class="p">(</span><span class="n">ringname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">))</span>
+
+        <span class="c">#TODO: drop LRU ring if len(self.filterRings) &gt; self.max_cached_rings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span><span class="p">[</span><span class="n">ringname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">filterFn</span><span class="p">,</span> <span class="n">subring</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">populate_from</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Populating hashring </span><span class="si">%s</span><span class="s">...&quot;</span> <span class="o">%</span> <span class="n">ringname</span><span class="p">)</span>
+            <span class="n">inserted</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">bridge</span> <span class="ow">in</span> <span class="n">populate_from</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bridge</span><span class="p">,</span> <span class="n">Bridge</span><span class="p">)</span> <span class="ow">and</span> <span class="n">filterFn</span><span class="p">(</span><span class="n">bridge</span><span class="p">):</span>
+                    <span class="n">subring</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+                    <span class="n">inserted</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Inserted </span><span class="si">%d</span><span class="s"> bridges into hashring </span><span class="si">%s</span><span class="s">!&quot;</span>
+                         <span class="o">%</span> <span class="p">(</span><span class="n">inserted</span><span class="p">,</span> <span class="n">ringname</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="FilteredBridgeSplitter.dumpAssignments"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter.dumpAssignments">[docs]</a>    <span class="k">def</span> <span class="nf">dumpAssignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="c"># one ring per filter set</span>
+        <span class="c"># bridges may be present in multiple filter sets</span>
+        <span class="c"># only one line should be dumped per bridge</span>
+
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridges</span><span class="p">:</span>
+            <span class="c"># gather all the filter descriptions</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">n</span><span class="p">,(</span><span class="n">g</span><span class="p">,</span><span class="n">r</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filterRings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">g</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+                    <span class="c"># ghetto. get subring flags, ports</span>
+                    <span class="k">for</span> <span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">subring</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">subrings</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">subring</span><span class="o">.</span><span class="n">getBridgeByID</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">getID</span><span class="p">()):</span>
+                            <span class="n">desc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span><span class="n">val</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">desc</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+                    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                        <span class="n">desc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+            <span class="c"># add transports</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> supports </span><span class="si">%d</span><span class="s"> transports&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">toHex</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span>
+                                                         <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">transports</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">transport</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">transports</span><span class="p">:</span>
+                <span class="n">desc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;transport=</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">transport</span><span class="o">.</span><span class="n">methodname</span><span class="p">))</span>
+
+            <span class="c"># dedupe and group</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+            <span class="n">grouped</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">desc</span><span class="p">:</span>
+                <span class="n">l</span><span class="p">,</span><span class="n">r</span> <span class="o">=</span> <span class="n">kw</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">grouped</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">grouped</span><span class="p">[</span><span class="n">l</span><span class="p">],</span><span class="n">r</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">grouped</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">kw</span>
+
+            <span class="c"># add to assignments</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">description</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+                    <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">grouped</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span> <span class="n">toHex</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">getID</span><span class="p">()),</span> <span class="n">desc</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="FilteredBridgeSplitter.assignmentsArePersistent"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.FilteredBridgeSplitter.assignmentsArePersistent">[docs]</a>    <span class="k">def</span> <span class="nf">assignmentsArePersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+ </div></div>
+<div class="viewcode-block" id="BridgeBlock"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeBlock">[docs]</a><span class="k">class</span> <span class="nc">BridgeBlock</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Base class that abstracts bridge blocking&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="BridgeBlock.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeBlock.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">blockingRule</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="BridgeBlock.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeBlock.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BridgeBlock.assignmentsArePersistent"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.BridgeBlock.assignmentsArePersistent">[docs]</a>    <span class="k">def</span> <span class="nf">assignmentsArePersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div></div>
+<div class="viewcode-block" id="CountryBlock"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.CountryBlock">[docs]</a><span class="k">class</span> <span class="nc">CountryBlock</span><span class="p">(</span><span class="n">BridgeBlock</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Countrywide bridge blocking&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">bridgedb</span><span class="o">.</span><span class="n">Storage</span><span class="o">.</span><span class="n">getDB</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CountryBlock.clear"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.CountryBlock.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">cleanBridgeBlocks</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CountryBlock.insert"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.CountryBlock.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">blockingRule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; insert a country based blocking rule &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span>
+        <span class="n">countryCode</span> <span class="o">=</span> <span class="n">blockingRule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">addBridgeBlock</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="CountryBlock.getBlockingCountries"><a class="viewcode-back" href="../../bridgedb.Bridges.html#bridgedb.Bridges.CountryBlock.getBlockingCountries">[docs]</a>    <span class="k">def</span> <span class="nf">getBlockingCountries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; returns a list of country codes where this fingerprint is blocked&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span>
+        <span class="k">if</span> <span class="n">fingerprint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">getBlockingCountries</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">)</span> </div></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

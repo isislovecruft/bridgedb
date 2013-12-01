@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.persistent &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.persistent</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 ; test-case-name: bridgedb.test.test_persistent -*-</span>
+<span class="c">#</span>
+<span class="c"># This file is part of BridgeDB, a Tor bridge distribution system.</span>
+<span class="c">#</span>
+<span class="c"># :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 &lt;isis@torproject.org&gt;</span>
+<span class="c">#           please also see AUTHORS file</span>
+<span class="c"># :copyright: (c) 2013 Isis Lovecruft</span>
+<span class="c">#             (c) 2007-2013, The Tor Project, Inc.</span>
+<span class="c">#             (c) 2007-2013, all entities within the AUTHORS file</span>
+<span class="c"># :license: 3-clause BSD, see included LICENSE for information</span>
+
+<span class="sd">&quot;&quot;&quot;Module for functionality to persistently storing state.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">cPickle</span> <span class="kn">as</span> <span class="nn">pickle</span>
+<span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">NameError</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">from</span> <span class="nn">twisted.spread</span> <span class="kn">import</span> <span class="n">jelly</span>
+
+<span class="kn">from</span> <span class="nn">bridgedb</span> <span class="kn">import</span> <span class="n">Filters</span><span class="p">,</span> <span class="n">Bridges</span><span class="p">,</span> <span class="n">Dist</span>
+<span class="c">#from bridgedb.proxy import ProxySet</span>
+
+<span class="n">_state</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="c">#: Types and classes which are allowed to be jellied:</span>
+<span class="n">_security</span> <span class="o">=</span> <span class="n">jelly</span><span class="o">.</span><span class="n">SecurityOptions</span><span class="p">()</span>
+<span class="c">#_security.allowInstancesOf(ProxySet)</span>
+<span class="n">_security</span><span class="o">.</span><span class="n">allowModules</span><span class="p">(</span><span class="n">Filters</span><span class="p">,</span> <span class="n">Bridges</span><span class="p">,</span> <span class="n">Dist</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MissingState"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.MissingState">[docs]</a><span class="k">class</span> <span class="nc">MissingState</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when the file or class storing global state is missing.&quot;&quot;&quot;</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_getState</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve the global state instance.</span>
+
+<span class="sd">    :rtype: :class:`~bridgedb.persistent.State`</span>
+<span class="sd">    :returns: An unpickled de-sexp&#39;ed state object, which may contain just</span>
+<span class="sd">        about anything, but should contain things like options, loaded config</span>
+<span class="sd">        settings, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_state</span>
+
+<span class="k">def</span> <span class="nf">_setState</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the global state.</span>
+
+<span class="sd">    :type state: :class:`~bridgedb.persistent.State`</span>
+<span class="sd">    :param state: The state instance to save.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_state</span>
+    <span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">stateCls</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a :class:`State`, try to unpickle it&#39;s ``statefile``.</span>
+
+<span class="sd">    :param string stateCls: An instance of :class:`~bridgedb.persistent.State`. If</span>
+<span class="sd">        not given, try loading from ``_statefile`` if that file exists.</span>
+<span class="sd">    :rtype: None or :class:`State`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">statefile</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">stateCls</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stateCls</span><span class="p">,</span> <span class="n">State</span><span class="p">):</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="n">stateCls</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="n">_getState</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cls</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MissingState</span><span class="p">(</span><span class="s">&quot;Could not find a state instance to load.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">loaded</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loaded</span>
+
+</div>
+<div class="viewcode-block" id="Conf"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.Conf">[docs]</a><span class="k">class</span> <span class="nc">Conf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A configuration object.  Holds unvalidated attributes.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">key</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+</div>
+<div class="viewcode-block" id="State"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.State">[docs]</a><span class="k">class</span> <span class="nc">State</span><span class="p">(</span><span class="n">jelly</span><span class="o">.</span><span class="n">Jellyable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pickled, jellied storage container for persistent state.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a persistent state storage mechanism.</span>
+
+<span class="sd">        Serialisation of certain classes in BridgeDB doesn&#39;t work. Classes and</span>
+<span class="sd">        modules which are known to be unjelliable/unpicklable so far are:</span>
+
+<span class="sd">          - bridgedb.Dist</span>
+<span class="sd">          - bridgedb.Bridges.BridgeHolder and all other ``splitter`` classes</span>
+
+<span class="sd">        :property statefile: The filename to retrieve a pickled, jellied</span>
+<span class="sd">            :class:`~bridgedb.persistent.State` instance from. (default:</span>
+<span class="sd">            :attr:`bridgedb.persistent.State._statefile`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">__package__</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.state&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxyList</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="s">&#39;STATEFILE&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">statefile</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;STATEFILE&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="n">_setState</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_statefile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve the filename of the global statefile.</span>
+
+<span class="sd">        :rtype: string</span>
+<span class="sd">        :returns: The filename of the statefile.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span>
+
+    <span class="k">def</span> <span class="nf">_set_statefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the global statefile.</span>
+
+<span class="sd">        :param string statefile: The filename of the statefile.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;~&#39;</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Setting statefile to &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="c"># Create the parent directory if it doesn&#39;t exist:</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+
+        <span class="c"># Create the statefile if it doesn&#39;t exist:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_del_statefile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the file containing previously saved state.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;There was an error deleting the statefile: &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span>
+                          <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span><span class="p">)</span>
+
+    <span class="n">statefile</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_statefile</span><span class="p">,</span> <span class="n">_set_statefile</span><span class="p">,</span> <span class="n">_del_statefile</span><span class="p">,</span>
+                         <span class="sd">&quot;&quot;&quot;Filename property of a persisent.State.&quot;&quot;&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="State.load"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.State.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statefile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load a previously saved statefile.</span>
+
+<span class="sd">        :rtype: :class:`State` or None</span>
+<span class="sd">        :returns: The state, loaded from :attr:`State.STATEFILE`, or None if</span>
+<span class="sd">            an error occurred.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">statefile</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">statefile</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MissingState</span><span class="p">(</span><span class="s">&quot;Could not find a state file to load.&quot;</span><span class="p">)</span>
+            <span class="n">statefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statefile</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Retrieving state from: </span><span class="se">\t</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">statefile</span><span class="p">)</span>
+
+        <span class="n">quo</span><span class="o">=</span> <span class="n">fh</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statefile</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">statefile</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">statefile</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+                <span class="n">fh</span> <span class="o">=</span> <span class="n">statefile</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Nothing worked.&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="s">&quot;There was an error reading statefile &quot;</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="s">&quot;&#39;{0}&#39;:</span><span class="se">\n</span><span class="s">{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">statefile</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="s">&quot;Failed statefile.open() and statefile.closed:&quot;</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n\t</span><span class="s">{0}</span><span class="se">\n</span><span class="s">statefile type = &#39;{1}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">statefile</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+            <span class="n">quo</span> <span class="o">=</span> <span class="n">jelly</span><span class="o">.</span><span class="n">unjelly</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">quo</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">quo</span>
+
+        <span class="k">raise</span> <span class="n">MissingState</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="State.save"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.State.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statefile</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save state as a pickled jelly to a file on disk.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">statefile</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MissingState</span><span class="p">(</span><span class="s">&quot;Could not find a state file to load.&quot;</span><span class="p">)</span>
+            <span class="n">statefile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_statefile</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Saving state to: </span><span class="se">\t</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">statefile</span><span class="p">)</span>
+
+        <span class="n">fh</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">statefile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">MissingState</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="n">error</span><span class="o">.</span><span class="n">message</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">+=</span> <span class="s">&quot;Error writing state file to &#39;</span><span class="si">%s</span><span class="s">&#39;: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">statefile</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">jelly</span><span class="o">.</span><span class="n">jelly</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">fh</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Tried jellying an unjelliable object: </span><span class="si">%s</span><span class="s">&quot;</span>
+                              <span class="o">%</span> <span class="n">error</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="State.useChangedSettings"><a class="viewcode-back" href="../../bridgedb.persistent.html#bridgedb.persistent.State.useChangedSettings">[docs]</a>    <span class="k">def</span> <span class="nf">useChangedSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Take a new config, compare it to the last one, and update settings.</span>
+
+<span class="sd">        Given a ``config`` object created from the configuration file, compare</span>
+<span class="sd">        it to the last :class:`~bridgedb.Main.Conf` that was stored, and apply</span>
+<span class="sd">        any settings which were changed to be attributes of the :class:`State`</span>
+<span class="sd">        instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">updated</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c"># If state.config doesn&#39;t have the same value as the new</span>
+                <span class="c"># config, then update the state setting.</span>
+                <span class="c">#</span>
+                <span class="c"># Be sure, when updating settings while parsing the config</span>
+                <span class="c"># file, to assign the new settings as attributes of the</span>
+                <span class="c"># :class:`bridgedb.Main.Conf` instance.</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                    <span class="n">updated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Updated </span><span class="si">%s</span><span class="s"> setting: </span><span class="si">%r</span><span class="s"> → </span><span class="si">%r</span><span class="s">&quot;</span>
+                                  <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">))</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="n">new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;New setting: </span><span class="si">%s</span><span class="s"> = </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Updated setting(s): </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">updated</span><span class="p">]))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;New setting(s): </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new</span><span class="p">]))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s">&quot;Saving newer config as `state.config` for later comparison&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span></div></div>
+</pre></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

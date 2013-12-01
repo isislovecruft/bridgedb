@@ -1,0 +1,872 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Bridges &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="_static/underscore.js"></script>
+<script type="text/javascript" src="_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="index.html" />
+    <link rel="up" title="bridgedb" href="bridgedb.html" />
+    <link rel="next" title="bridgedb.Bucket" href="bridgedb.Bucket.html" />
+    <link rel="prev" title="gen_bridge_descriptors" href="gen_bridge_descriptors.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="bridgedb.Bucket.html" title="bridgedb.Bucket" accesskey="N">next</a>
+                </li>
+                <li>
+                <a href="gen_bridge_descriptors.html" title="gen_bridge_descriptors" accesskey="P">previous</a>
+                </li>
+                <li>
+                <a href="bridgedb.html" accesskey="U">bridgedb</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gen_bridge_descriptors.html"
+                        title="previous chapter">gen_bridge_descriptors</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Bucket.html"
+                        title="next chapter">bridgedb.Bucket</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Bridges.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="bridgedb.html">bridgedb</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">bridgedb.Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Bucket.html">bridgedb.Bucket</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.crypto.html">bridgedb.crypto</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Dist.html">bridgedb.Dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.EmailServer.html">bridgedb.EmailServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Filters.html">bridgedb.Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.HTTPServer.html">bridgedb.HTTPServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.I18n.html">bridgedb.I18n</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Main.html">bridgedb.Main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.parse.html">bridgedb.parse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.persistent.html">bridgedb.persistent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Raptcha.html">bridgedb.Raptcha</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.runner.html">bridgedb.runner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Stability.html">bridgedb.Stability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Storage.html">bridgedb.Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Tests.html">bridgedb.Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bridgedb.Util.html">bridgedb.Util</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gen_bridge_descriptors.html">gen_bridge_descriptors</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gen_bridge_descriptors.html"
+                        title="previous chapter">gen_bridge_descriptors</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bridgedb.Bucket.html"
+                        title="next chapter">bridgedb.Bucket</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bridgedb.Bridges.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <div class="section" id="module-bridgedb.Bridges">
+<span id="bridgedb-bridges"></span><h1>bridgedb.Bridges<a class="headerlink" href="#module-bridgedb.Bridges" title="Permalink to this headline">¶</a></h1>
+<p>This module has low-level functionality for parsing bridges and arranging
+them in rings.</p>
+<dl class="function">
+<dt id="bridgedb.Bridges.is_valid_ip">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">is_valid_ip</tt><big>(</big><em>ip</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#is_valid_ip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.is_valid_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if ip is the string encoding of a valid IPv4 address,
+and False otherwise.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;1.2.3.4&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;1.2.3.255&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;1.2.3.256&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;1.2.3&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_valid_ip</span><span class="p">(</span><span class="s">&#39;xyzzy&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.is_valid_fingerprint">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">is_valid_fingerprint</tt><big>(</big><em>fp</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#is_valid_fingerprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.is_valid_fingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true iff fp in the right format to be a hex fingerprint
+of a Tor server.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.get_hmac">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">get_hmac</tt><big>(</big><em>k</em>, <em>v</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#get_hmac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.get_hmac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the hmac of v using the key k.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.get_hmac_fn">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">get_hmac_fn</tt><big>(</big><em>k</em>, <em>hex=True</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#get_hmac_fn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.get_hmac_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a function that computes the hmac of its input using the key k.
+If &#8216;hex&#8217; is true, the output of the function will be hex-encoded.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.chopString">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">chopString</tt><big>(</big><em>s</em>, <em>size</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#chopString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.chopString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator. Given a string and a length, divide the string into pieces
+of no more than that length.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.Bridge">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">Bridge</tt><big>(</big><em>nickname</em>, <em>ip</em>, <em>orport</em>, <em>fingerprint=None</em>, <em>id_digest=None</em>, <em>or_addresses=None</em>, <em>transports=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds information for a single bridge</p>
+<p>Create a new Bridge.  One of fingerprint and id_digest must be
+set.</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.getID">
+<tt class="descname">getID</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.getID"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.getID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the bridge&#8217;s identity digest.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.getConfigLine">
+<tt class="descname">getConfigLine</tt><big>(</big><em>includeFingerprint=False</em>, <em>addressClass=None</em>, <em>request=None</em>, <em>transport=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.getConfigLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.getConfigLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a valid bridge line for inclusion in a torrc</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.getAllConfigLines">
+<tt class="descname">getAllConfigLines</tt><big>(</big><em>includeFingerprint=False</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.getAllConfigLines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.getAllConfigLines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator. Iterate over all valid config lines for this bridge.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.assertOK">
+<tt class="descname">assertOK</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.assertOK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.assertOK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.setStatus">
+<tt class="descname">setStatus</tt><big>(</big><em>running=None</em>, <em>stable=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.setStatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.setStatus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.Bridge.isBlocked">
+<tt class="descname">isBlocked</tt><big>(</big><em>countryCode</em>, <em>addressClass</em>, <em>methodname=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.isBlocked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.isBlocked" title="Permalink to this definition">¶</a></dt>
+<dd><p>if at least one address:port of the selected addressClass and
+(optional) transport type is not blocked in countryCode, return True</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.familiar">
+<tt class="descname">familiar</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.familiar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.familiar" title="Permalink to this definition">¶</a></dt>
+<dd><p>A bridge is &#8216;familiar&#8217; if 1/8 of all active bridges have appeared
+more recently than it, or if it has been around for a Weighted Time of 8 days.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.wfu">
+<tt class="descname">wfu</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.wfu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.wfu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted Fractional Uptime</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.weightedTime">
+<tt class="descname">weightedTime</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.weightedTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.weightedTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted Time</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.wmtbac">
+<tt class="descname">wmtbac</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.wmtbac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.wmtbac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted Mean Time Between Address Change</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.tosa">
+<tt class="descname">tosa</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.tosa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.tosa" title="Permalink to this definition">¶</a></dt>
+<dd><p>the Time On Same Address (TOSA)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="bridgedb.Bridges.Bridge.weightedUptime">
+<tt class="descname">weightedUptime</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#Bridge.weightedUptime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.Bridge.weightedUptime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted Uptime</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.parseDescFile">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">parseDescFile</tt><big>(</big><em>f</em>, <em>bridge_purpose='bridge'</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#parseDescFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.parseDescFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator. Parses a cached-descriptors file &#8216;f&#8217; and yeilds a Bridge object
+for every entry whose purpose matches bridge_purpose.
+This Generator understands the new descriptor format described in 
+186-multiple-orports.txt</p>
+<p>The new specification provides for specifying multiple ORports as well
+as supporting new address format for IPv6 addresses.</p>
+<p>The router descriptor &#8220;or-address&#8221; may occur zero, one, or multiple times.
+parseDescFile adds each ADDRESS:PORTSPEC to the Bridge.or_addresses list.</p>
+<p>The &#8220;or-address&#8221; should not duplicate the address:port pair from the &#8220;router&#8221;
+description. (Should we try to catch this case?)</p>
+<dl class="docutils">
+<dt>A node may not list more than 8 or-address lines.</dt>
+<dd>(should we try to enforce this too?)</dd>
+</dl>
+<p>Here is the new format:</p>
+<p>or-address SP ADDRESS &#8221;:&#8221; PORTLIST NL
+ADDRESS = IP6ADDR | IP4ADDR
+IPV6ADDR = an ipv6 address, surrounded by square brackets.
+IPV4ADDR = an ipv4 address, represented as a dotted quad.
+PORTLIST = PORTSPEC | PORTSPEC &#8221;,&#8221; PORTLIST
+PORTSPEC = PORT
+PORT = a number between 1 and 65535 inclusive.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="bridgedb.Bridges.ParseORAddressError">
+<em class="property">exception </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">ParseORAddressError</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#ParseORAddressError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.ParseORAddressError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.PluggableTransport">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">PluggableTransport</tt><big>(</big><em>bridge</em>, <em>methodname</em>, <em>address</em>, <em>port</em>, <em>argdict=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#PluggableTransport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.PluggableTransport" title="Permalink to this definition">¶</a></dt>
+<dd><p>an object that represents a pluggable-transport method
+and a reference to the relevant bridge</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.PluggableTransport.getTransportLine">
+<tt class="descname">getTransportLine</tt><big>(</big><em>includeFingerprint=False</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#PluggableTransport.getTransportLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.PluggableTransport.getTransportLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a torrc bridge line for this transport</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.parseExtraInfoFile">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">parseExtraInfoFile</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#parseExtraInfoFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.parseExtraInfoFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>parses lines in Bridges extra-info documents.
+returns an object whose type corresponds to the
+relevant set of extra-info lines.</p>
+<p>presently supported lines and the accompanying type are:</p>
+<blockquote>
+<div>{ &#8216;transport&#8217;: PluggableTransport, }</div></blockquote>
+<p>&#8216;transport&#8217; lines (torspec.git/proposals/180-pluggable-transport.txt)</p>
+<blockquote>
+<div><p>Bridges put the &#8216;transport&#8217; lines in their extra-info documents.
+the format is:</p>
+<blockquote>
+<div>transport SP &lt;methodname&gt; SP &lt;address:port&gt; [SP arglist] NL</div></blockquote>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.parseStatusFile">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">parseStatusFile</tt><big>(</big><em>networkstatusFile</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#parseStatusFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.parseStatusFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse entries in a bridge networkstatus file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>networkstatusFile</strong> (<em>A file-like object.</em>) &#8211; A file containing <cite>&#64;type bridge-networkstatus</cite> documents.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="bridgedb.Bridges.parseCountryBlockFile">
+<tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">parseCountryBlockFile</tt><big>(</big><em>f</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#parseCountryBlockFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.parseCountryBlockFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator. Parses a blocked-bridges file &#8216;f&#8217;, and yields
+a fingerprint (ID), address, a list of ports, and a list of country
+codes where the bridge is blocked for each valid line:
+address, port [], countrycode []</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.BridgeHolder">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">BridgeHolder</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeHolder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeHolder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Abstract base class for all classes that hold bridges.</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeHolder.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeHolder.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeHolder.insert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeHolder.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeHolder.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeHolder.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeHolder.assignmentsArePersistent">
+<tt class="descname">assignmentsArePersistent</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeHolder.assignmentsArePersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeHolder.assignmentsArePersistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeHolder.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>f</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeHolder.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeHolder.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.BridgeRingParameters">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">BridgeRingParameters</tt><big>(</big><em>needPorts=</em><span class="optional">[</span><span class="optional">]</span>, <em>needFlags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRingParameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRingParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Store validated settings on minimum number of Bridges with certain
+attributes which should be included in any generated subring of a
+hashring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
+<li><strong>needPorts</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of two-tuples of desired port numbers and their
+respective minimums.</li>
+<li><strong>needFlags</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; List of two-tuples of desired <a class="reference external" href="https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696">flags</a> assigned to a
+Bridge by the Bridge DirAuth.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Control the creation of subrings by including a minimum number of
+bridges which possess certain attributes.</p>
+<dl class="docutils">
+<dt>XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which</dt>
+<dd>reads: &#8220;Only &#8216;stable&#8217; is now supported.&#8221; Is this still the case?
+Why?</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>needPorts</strong> (<em>iterable</em>) &#8211; An iterable of two-tuples. Each two tuple should
+contain <tt class="docutils literal"><span class="pre">(port,</span> <span class="pre">minimum)</span></tt>, where <tt class="docutils literal"><span class="pre">port</span></tt> is an integer
+specifying a port number, and <tt class="docutils literal"><span class="pre">minimum</span></tt> is another integer
+specifying the minimum number of Bridges running on that <tt class="docutils literal"><span class="pre">port</span></tt>
+to include in any new subring.</li>
+<li><strong>needFlags</strong> (<em>iterable</em>) &#8211; An iterable of two-tuples. Each two tuple should
+contain <tt class="docutils literal"><span class="pre">(flag,</span> <span class="pre">minimum)</span></tt>, where <tt class="docutils literal"><span class="pre">flag</span></tt> is a string specifying
+an OR <a href="#id3"><span class="problematic" id="id4">flag_</span></a>, and <tt class="docutils literal"><span class="pre">minimum</span></tt> is an integer for the minimum number
+of Bridges which have acquired that <tt class="docutils literal"><span class="pre">flag</span></tt> to include in any new
+subring.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises :</th><td class="field-body"><p class="first last">An <tt class="xref py py-exc docutils literal"><span class="pre">TypeError</span></tt> if an invalid port number, a minimum less
+than one, or an &#8220;unsupported&#8221; flag is given. &#8220;Stable&#8221; appears to
+be the only currently &#8220;supported&#8221; flag.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.BridgeRing">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">BridgeRing</tt><big>(</big><em>key</em>, <em>answerParameters=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeHolder</span></tt></a></p>
+<p>Arranges bridges in a ring based on an hmac function.</p>
+<p>Create a new BridgeRing, using key as its hmac key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><strong>subrings</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; XXX</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.setName">
+<tt class="descname">setName</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.setName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.setName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tag a unique name to this hashring for identification.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; The name for this hashring.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a bridge to the ring.  If the bridge is already there,
+replace the old one.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing._sort">
+<tt class="descname">_sort</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing._sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing._sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper: put the keys in sorted order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing._getBridgeKeysAt">
+<tt class="descname">_getBridgeKeysAt</tt><big>(</big><em>pos</em>, <em>N=1</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing._getBridgeKeysAt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing._getBridgeKeysAt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper: return the N keys appearing in the ring after position
+pos</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.getBridges">
+<tt class="descname">getBridges</tt><big>(</big><em>pos</em>, <em>N=1</em>, <em>countryCode=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.getBridges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.getBridges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the N bridges appearing in the ring after position pos</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.getBridgeByID">
+<tt class="descname">getBridgeByID</tt><big>(</big><em>fp</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.getBridgeByID"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.getBridgeByID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the bridge whose identity digest is fp, or None if no such
+bridge exists.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeRing.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>f</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeRing.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeRing.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.FixedBridgeSplitter">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">FixedBridgeSplitter</tt><big>(</big><em>key</em>, <em>rings</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FixedBridgeSplitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FixedBridgeSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeHolder</span></tt></a></p>
+<p>A bridgeholder that splits bridges up based on an hmac and assigns
+them to several sub-bridgeholders with equal probability.</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.FixedBridgeSplitter.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FixedBridgeSplitter.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FixedBridgeSplitter.insert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FixedBridgeSplitter.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FixedBridgeSplitter.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FixedBridgeSplitter.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear all bridges from every ring in <tt class="docutils literal"><span class="pre">rings</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FixedBridgeSplitter.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>filename</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FixedBridgeSplitter.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FixedBridgeSplitter.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write all bridges assigned to this hashring to <tt class="docutils literal"><span class="pre">filename</span></tt>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>description</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; If given, include a description next to the
+index number of the ring from <tt class="xref py py-attr docutils literal"><span class="pre">FilteredBridgeHolder.rings</span></tt>
+the following bridges were assigned to. For example, if the
+description is <tt class="docutils literal"><span class="pre">&quot;IPv6</span> <span class="pre">obfs2</span> <span class="pre">bridges&quot;</span></tt> the line would read:
+<tt class="docutils literal"><span class="pre">&quot;IPv6</span> <span class="pre">obfs2</span> <span class="pre">bridges</span> <span class="pre">ring=3&quot;</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.UnallocatedHolder">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">UnallocatedHolder</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#UnallocatedHolder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.UnallocatedHolder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeHolder</span></tt></a></p>
+<p>A pseudo-bridgeholder that ignores its bridges and leaves them
+unassigned.</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.UnallocatedHolder.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#UnallocatedHolder.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.UnallocatedHolder.insert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.UnallocatedHolder.assignmentsArePersistent">
+<tt class="descname">assignmentsArePersistent</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#UnallocatedHolder.assignmentsArePersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.UnallocatedHolder.assignmentsArePersistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.UnallocatedHolder.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#UnallocatedHolder.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.UnallocatedHolder.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.UnallocatedHolder.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>f</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#UnallocatedHolder.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.UnallocatedHolder.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.BridgeSplitter">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">BridgeSplitter</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeHolder</span></tt></a></p>
+<p>A BridgeHolder that splits incoming bridges up based on an hmac,
+and assigns them to sub-bridgeholders with different probabilities.
+Bridge-to-bridgeholder associations are recorded in a store.</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.addRing">
+<tt class="descname">addRing</tt><big>(</big><em>ring</em>, <em>ringname</em>, <em>p=1</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.addRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.addRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new bridgeholder.
+ring &#8211; the bridgeholder to add.
+ringname &#8211; a string representing the bridgeholder.  This is used</p>
+<blockquote>
+<div>to record which bridges have been assigned where in the store.</div></blockquote>
+<dl class="docutils">
+<dt>p &#8211; the relative proportion of bridges to assign to this</dt>
+<dd>bridgeholder.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.addPseudoRing">
+<tt class="descname">addPseudoRing</tt><big>(</big><em>ringname</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.addPseudoRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.addPseudoRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a pseudo ring to the list of pseudo rings.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.addTracker">
+<tt class="descname">addTracker</tt><big>(</big><em>t</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.addTracker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.addTracker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a statistics tracker that gets told about every bridge we see.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.insert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeSplitter.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>f</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeSplitter.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeSplitter.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">FilteredBridgeSplitter</tt><big>(</big><em>key</em>, <em>max_cached_rings=3</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeHolder</span></tt></a></p>
+<p>A configurable BridgeHolder that filters bridges
+into subrings.
+The set of subrings and conditions used to assign Bridges
+are passed to the constructor as a list of (filterFn, ringName)</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter.insert">
+<tt class="descname">insert</tt><big>(</big><em>bridge</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a bridge into all appropriate sub-hashrings.</p>
+<p>For all sub-hashrings, the <tt class="docutils literal"><span class="pre">bridge</span></tt> will only be added iff it passes
+the filter functions for that sub-hashring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bridge</strong> (<a class="reference internal" href="#bridgedb.Bridges.Bridge" title="bridgedb.Bridges.Bridge"><tt class="xref py py-class docutils literal"><span class="pre">Bridge</span></tt></a>) &#8211; The bridge to add.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter.addRing">
+<tt class="descname">addRing</tt><big>(</big><em>subring</em>, <em>ringname</em>, <em>filterFn</em>, <em>populate_from=None</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter.addRing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter.addRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a subring to this hashring.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>subring</strong> (<a class="reference internal" href="#bridgedb.Bridges.BridgeHolder" title="bridgedb.Bridges.BridgeHolder"><tt class="xref py py-class docutils literal"><span class="pre">BridgeHolder</span></tt></a>) &#8211; The subring to add.</li>
+<li><strong>ringname</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#string" title="(in Python v2.7)"><em>string</em></a>) &#8211; A unique name for identifying the new
+subring.</li>
+<li><strong>filterFn</strong> &#8211; A function whose input is a <a class="reference internal" href="#bridgedb.Bridges.Bridge" title="bridgedb.Bridges.Bridge"><tt class="xref py py-class docutils literal"><span class="pre">Bridge</span></tt></a>, and
+returns True/False based on some filtration criteria.</li>
+<li><strong>populate_from</strong> (<em>iterable or None</em>) &#8211; A group of :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>Bridge`s. If given, the newly
+added subring will be populated with these bridges.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter.dumpAssignments">
+<tt class="descname">dumpAssignments</tt><big>(</big><em>f</em>, <em>description=''</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter.dumpAssignments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter.dumpAssignments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.FilteredBridgeSplitter.assignmentsArePersistent">
+<tt class="descname">assignmentsArePersistent</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#FilteredBridgeSplitter.assignmentsArePersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.FilteredBridgeSplitter.assignmentsArePersistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.BridgeBlock">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">BridgeBlock</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class that abstracts bridge blocking</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeBlock.insert">
+<tt class="descname">insert</tt><big>(</big><em>fingerprint</em>, <em>blockingRule</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeBlock.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeBlock.insert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeBlock.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeBlock.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeBlock.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.BridgeBlock.assignmentsArePersistent">
+<tt class="descname">assignmentsArePersistent</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#BridgeBlock.assignmentsArePersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.BridgeBlock.assignmentsArePersistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bridgedb.Bridges.CountryBlock">
+<em class="property">class </em><tt class="descclassname">bridgedb.Bridges.</tt><tt class="descname">CountryBlock</tt><a class="reference internal" href="_modules/bridgedb/Bridges.html#CountryBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.CountryBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bridgedb.Bridges.BridgeBlock" title="bridgedb.Bridges.BridgeBlock"><tt class="xref py py-class docutils literal"><span class="pre">bridgedb.Bridges.BridgeBlock</span></tt></a></p>
+<p>Countrywide bridge blocking</p>
+<dl class="method">
+<dt id="bridgedb.Bridges.CountryBlock.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#CountryBlock.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.CountryBlock.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.CountryBlock.insert">
+<tt class="descname">insert</tt><big>(</big><em>fingerprint</em>, <em>blockingRule</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#CountryBlock.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.CountryBlock.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>insert a country based blocking rule</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="bridgedb.Bridges.CountryBlock.getBlockingCountries">
+<tt class="descname">getBlockingCountries</tt><big>(</big><em>fingerprint</em><big>)</big><a class="reference internal" href="_modules/bridgedb/Bridges.html#CountryBlock.getBlockingCountries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bridgedb.Bridges.CountryBlock.getBlockingCountries" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a list of country codes where this fingerprint is blocked</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="genindex.html" title="General Index" >index</a></li>
+        <li><a href="py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="bridgedb.Bucket.html" title="bridgedb.Bucket" >next</a></li>
+        <li><a href="gen_bridge_descriptors.html" title="gen_bridge_descriptors" >previous</a></li>
+        <li><a href="index.html">BridgeDB Documentation</a></li>
+        <li><a href="bridgedb.html" >bridgedb</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>

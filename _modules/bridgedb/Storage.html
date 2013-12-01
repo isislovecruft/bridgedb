@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    
+    <title>bridgedb.Storage &mdash; BridgeDB Documentation</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    
+<link rel="stylesheet" href="../../_static/css/basicstrap-base.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootswatch-flatly.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../../_static/css/font-awesome-ie7.min.css">
+<![endif]-->
+<style type="text/css">
+  body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}
+</style>
+<link rel="stylesheet" href="../../_static/basicstrap.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/css/bootstrap-responsive.min.css" type="text/css" />
+    
+<script type="text/javascript">
+  var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:    '../../',
+            VERSION:     '0.0.1-247-g58c46c5',
+            COLLAPSE_INDEX: false,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE:  true
+  };
+</script>
+<script type="text/javascript" src="../../_static/js/jquery.min.js"></script>
+<script type="text/javascript" src="../../_static/underscore.js"></script>
+<script type="text/javascript" src="../../_static/doctools.js"></script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/javascript" src="../../_static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.show-sidebar').click(function(e) {
+       e.preventDefault();
+       if ($(".show-sidebar").html() == "Open Table Of Contents") {
+          $('.for-mobile').removeClass('hidden-phone');
+          $(".show-sidebar").html("Close Table Of Contents");
+       } else {
+          $(".show-sidebar").html("Open Table Of Contents");
+       }
+    });
+  });
+</script>
+    <link rel="top" title="BridgeDB Documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top ">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="../../index.html">BridgeDB Documentation</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav pull-right">
+              
+                <li>
+                <a href="../../genindex.html" title="General Index" accesskey="I">index</a>
+                </li>
+                <li>
+                <a href="../../py-modindex.html" title="Python Module Index" >modules</a>
+                </li>
+                <li>
+                <a href="../index.html" accesskey="U">Module code</a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- container -->
+    <div class="container-fluid">
+
+
+      
+      <div class="row-fluid hidden-desktop hidden-tablet">
+      
+<div class="span3 ">
+  <a class="visible-phone btn btn-small show-sidebar" data-toggle="collapse" data-target=".for-mobile">Open Table Of Contents</a>
+  <div class="for-mobile sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div>
+      </div>
+      
+
+      <!-- row -->
+      <div class="row-fluid">
+         
+<div class="span3 visible-desktop visible-tablet">
+  <div class=" sidebar hidden-phone">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bridgedb.html">bridgedb</a></li>
+</ul>
+
+<div id="searchbox">
+  <h3>Quick search</h3>
+  <form class="search form-search" action="../../search.html" method="get">
+      <div class="input-append">
+        <input type="text" class="search-query" name="q">
+        <input type="submit" class="btn" value="Go" />
+      </div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+  </div>
+</div> 
+        
+
+        <div class="span9">
+          <div class="document">
+            <div class="documentwrapper">
+              <div class="bodywrapper">
+                <div class="body">
+                  
+  <h1>Source code for bridgedb.Storage</h1><div class="highlight"><pre>
+<span class="c"># BridgeDB by Nick Mathewson.</span>
+<span class="c"># Copyright (c) 2007-2009, The Tor Project, Inc.</span>
+<span class="c"># See LICENSE for licensing information</span>
+
+<span class="kn">import</span> <span class="nn">calendar</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sha</span>
+<span class="kn">from</span> <span class="nn">ipaddr</span> <span class="kn">import</span> <span class="n">IPAddress</span><span class="p">,</span> <span class="n">IPv6Address</span><span class="p">,</span> <span class="n">IPv4Address</span>
+
+<span class="kn">import</span> <span class="nn">bridgedb.Stability</span> <span class="kn">as</span> <span class="nn">Stability</span>
+<span class="kn">from</span> <span class="nn">bridgedb.Stability</span> <span class="kn">import</span> <span class="n">BridgeHistory</span>
+
+<span class="n">toHex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">b2a_hex</span>
+<span class="n">fromHex</span> <span class="o">=</span> <span class="n">binascii</span><span class="o">.</span><span class="n">a2b_hex</span>
+<span class="n">HEX_ID_LEN</span> <span class="o">=</span> <span class="mi">40</span>
+
+<div class="viewcode-block" id="_escapeValue"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage._escapeValue">[docs]</a><span class="k">def</span> <span class="nf">_escapeValue</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s">&quot;&#39;&#39;&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="timeToStr"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.timeToStr">[docs]</a><span class="k">def</span> <span class="nf">timeToStr</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
+<div class="viewcode-block" id="strToTime"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.strToTime">[docs]</a><span class="k">def</span> <span class="nf">strToTime</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">calendar</span><span class="o">.</span><span class="n">timegm</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M&quot;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="SqliteDict"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict">[docs]</a><span class="k">class</span> <span class="nc">SqliteDict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       A SqliteDict wraps a SQLite table and makes it look like a</span>
+<span class="sd">       Python dictionary.  In addition to the single key and value</span>
+<span class="sd">       columns, there can be a number of &quot;fixed&quot; columns, such that</span>
+<span class="sd">       the dictionary only contains elements of the table where the</span>
+<span class="sd">       fixed columns are set appropriately.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">fixedcolnames</span><span class="p">,</span> <span class="n">fixedcolvalues</span><span class="p">,</span>
+                 <span class="n">keycol</span><span class="p">,</span> <span class="n">valcol</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">fixedcolnames</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">fixedcolvalues</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="n">conn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span> <span class="o">=</span> <span class="n">cursor</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fixedcolnames</span><span class="o">+</span><span class="p">(</span><span class="n">keycol</span><span class="p">,</span><span class="n">valcol</span><span class="p">))</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">, &quot;</span><span class="o">%</span><span class="n">_escapeValue</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fixedcolvalues</span><span class="p">)</span>
+        <span class="n">constraint</span> <span class="o">=</span> <span class="s">&quot;WHERE </span><span class="si">%s</span><span class="s"> = ?&quot;</span><span class="o">%</span><span class="n">keycol</span>
+        <span class="k">if</span> <span class="n">fixedcolnames</span><span class="p">:</span>
+            <span class="n">constraint</span> <span class="o">+=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="s">&quot; AND </span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">_escapeValue</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fixedcolnames</span><span class="p">,</span> <span class="n">fixedcolvalues</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_getStmt</span> <span class="o">=</span> <span class="s">&quot;SELECT </span><span class="si">%s</span><span class="s"> FROM </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">valcol</span><span class="p">,</span><span class="n">table</span><span class="p">,</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delStmt</span> <span class="o">=</span> <span class="s">&quot;DELETE FROM </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setStmt</span> <span class="o">=</span> <span class="s">&quot;INSERT OR REPLACE INTO </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">) VALUES (</span><span class="si">%s</span><span class="s">?, ?)&quot;</span><span class="o">%</span><span class="p">(</span>
+            <span class="n">table</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="n">constraint</span> <span class="o">=</span> <span class="s">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> = </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">_escapeValue</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fixedcolnames</span><span class="p">,</span> <span class="n">fixedcolvalues</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">constraint</span><span class="p">:</span>
+            <span class="n">whereClause</span> <span class="o">=</span> <span class="s">&quot; WHERE </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">constraint</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">whereClause</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keysStmt</span> <span class="o">=</span> <span class="s">&quot;SELECT </span><span class="si">%s</span><span class="s"> FROM </span><span class="si">%s%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">keycol</span><span class="p">,</span><span class="n">table</span><span class="p">,</span><span class="n">whereClause</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_setStmt</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_delStmt</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getStmt</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="viewcode-block" id="SqliteDict.has_key"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.has_key">[docs]</a>    <span class="k">def</span> <span class="nf">has_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getStmt</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">!=</span> <span class="mi">0</span></div>
+<div class="viewcode-block" id="SqliteDict.get"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_getStmt</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+<div class="viewcode-block" id="SqliteDict.setdefault"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.setdefault">[docs]</a>    <span class="k">def</span> <span class="nf">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">r</span></div>
+<div class="viewcode-block" id="SqliteDict.keys"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keysStmt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="n">key</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span> <span class="p">]</span>
+</div>
+<div class="viewcode-block" id="SqliteDict.commit"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+<div class="viewcode-block" id="SqliteDict.rollback"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.SqliteDict.rollback">[docs]</a>    <span class="k">def</span> <span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+
+<span class="c">#  The old DB system was just a key-&gt;value mapping DB, with special key</span>
+<span class="c">#  prefixes to indicate which database they fell into.</span>
+<span class="c">#</span>
+<span class="c">#     sp|&lt;ID&gt; -- given to bridgesplitter; maps bridgeID to ring name.</span>
+<span class="c">#     em|&lt;emailaddr&gt; -- given to emailbaseddistributor; maps email address</span>
+<span class="c">#            to concatenated ID.</span>
+<span class="c">#     fs|&lt;ID&gt; -- Given to BridgeTracker, maps to time when a router was</span>
+<span class="c">#            first seen (YYYY-MM-DD HH:MM)</span>
+<span class="c">#     ls|&lt;ID&gt; -- given to bridgetracker, maps to time when a router was</span>
+<span class="c">#            last seen (YYYY-MM-DD HH:MM)</span>
+<span class="c">#</span>
+<span class="c"># We no longer want to use em| at all, since we&#39;re not doing that kind</span>
+<span class="c"># of persistence any more.</span>
+
+<span class="c"># Here is the SQL schema.</span>
+
+
+</div></div>
+<span class="n">SCHEMA2_SCRIPT</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s"> CREATE TABLE Config (</span>
+<span class="s">     key PRIMARY KEY NOT NULL,</span>
+<span class="s">     value</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE TABLE Bridges (</span>
+<span class="s">     id INTEGER PRIMARY KEY NOT NULL,</span>
+<span class="s">     hex_key,</span>
+<span class="s">     address,</span>
+<span class="s">     or_port,</span>
+<span class="s">     distributor,</span>
+<span class="s">     first_seen,</span>
+<span class="s">     last_seen</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE UNIQUE INDEX BridgesKeyIndex ON Bridges ( hex_key );</span>
+
+<span class="s"> CREATE TABLE EmailedBridges (</span>
+<span class="s">     email PRIMARY KEY NOT NULL,</span>
+<span class="s">     when_mailed</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE INDEX EmailedBridgesWhenMailed on EmailedBridges ( email );</span>
+
+<span class="s"> CREATE TABLE BlockedBridges (</span>
+<span class="s">     id INTEGER PRIMARY KEY NOT NULL,</span>
+<span class="s">     hex_key,</span>
+<span class="s">     blocking_country</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);</span>
+
+<span class="s"> CREATE TABLE WarnedEmails (</span>
+<span class="s">     email PRIMARY KEY NOT NULL,</span>
+<span class="s">     when_warned</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE INDEX WarnedEmailsWasWarned on WarnedEmails ( email );</span>
+
+<span class="s"> INSERT INTO Config VALUES ( &#39;schema-version&#39;, 2 ); </span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">SCHEMA_2TO3_SCRIPT</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s"> CREATE TABLE BridgeHistory (</span>
+<span class="s">     fingerprint PRIMARY KEY NOT NULL,</span>
+<span class="s">     address,</span>
+<span class="s">     port INT,</span>
+<span class="s">     weightedUptime LONG,</span>
+<span class="s">     weightedTime LONG,</span>
+<span class="s">     weightedRunLength LONG,</span>
+<span class="s">     totalRunWeights DOUBLE,</span>
+<span class="s">     lastSeenWithDifferentAddressAndPort LONG,</span>
+<span class="s">     lastSeenWithThisAddressAndPort LONG,</span>
+<span class="s">     lastDiscountedHistoryValues LONG,</span>
+<span class="s">     lastUpdatedWeightedTime LONG</span>
+<span class="s"> );</span>
+
+<span class="s"> CREATE INDEX BridgeHistoryIndex on BridgeHistory ( fingerprint );</span>
+
+<span class="s"> INSERT OR REPLACE INTO Config VALUES ( &#39;schema-version&#39;, 3 ); </span>
+<span class="s"> &quot;&quot;&quot;</span>
+<span class="n">SCHEMA3_SCRIPT</span> <span class="o">=</span> <span class="n">SCHEMA2_SCRIPT</span> <span class="o">+</span> <span class="n">SCHEMA_2TO3_SCRIPT</span>
+
+<div class="viewcode-block" id="BridgeData"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.BridgeData">[docs]</a><span class="k">class</span> <span class="nc">BridgeData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Value class carrying bridge information:</span>
+<span class="sd">       hex_key      - The unique hex key of the given bridge</span>
+<span class="sd">       address      - Bridge IP address</span>
+<span class="sd">       or_port      - Bridge TCP port</span>
+<span class="sd">       distributor  - The distributor (or pseudo-distributor) through which </span>
+<span class="sd">                      this bridge is being announced</span>
+<span class="sd">       first_seen   - When did we first see this bridge online?</span>
+<span class="sd">       last_seen    - When was the last time we saw this bridge online?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">or_port</span><span class="p">,</span> <span class="n">distributor</span><span class="o">=</span><span class="s">&quot;unallocated&quot;</span><span class="p">,</span> 
+                 <span class="n">first_seen</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">last_seen</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hex_key</span> <span class="o">=</span> <span class="n">hex_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">or_port</span> <span class="o">=</span> <span class="n">or_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distributor</span> <span class="o">=</span> <span class="n">distributor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_seen</span> <span class="o">=</span> <span class="n">first_seen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_seen</span> <span class="o">=</span> <span class="n">last_seen</span>
+</div>
+<div class="viewcode-block" id="Database"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database">[docs]</a><span class="k">class</span> <span class="nc">Database</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sqlite_fname</span><span class="p">,</span> <span class="n">db_fname</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">db_fname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="n">openDatabase</span><span class="p">(</span><span class="n">sqlite_fname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span> <span class="o">=</span> <span class="n">openOrConvertDatabase</span><span class="p">(</span><span class="n">sqlite_fname</span><span class="p">,</span> <span class="n">db_fname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Database.commit"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.rollback"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.rollback">[docs]</a>    <span class="k">def</span> <span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.close"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Database.insertBridgeAndGetRing"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.insertBridgeAndGetRing">[docs]</a>    <span class="k">def</span> <span class="nf">insertBridgeAndGetRing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bridge</span><span class="p">,</span> <span class="n">setRing</span><span class="p">,</span> <span class="n">seenAt</span><span class="p">,</span> <span class="n">validRings</span><span class="p">,</span>
+                               <span class="n">defaultPool</span><span class="o">=</span><span class="s">&quot;unallocated&quot;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Updates info about bridge, setting ring to setRing if none was set.</span>
+<span class="sd">           Also sets distributor to `defaultPool&#39; if the bridge was found in</span>
+<span class="sd">           the database, but its distributor isn&#39;t valid anymore.</span>
+
+<span class="sd">           Returns the name of the distributor the bridge is assigned to.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">seenAt</span><span class="p">)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">fingerprint</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">==</span> <span class="n">HEX_ID_LEN</span>
+
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT id, distributor &quot;</span>
+                    <span class="s">&quot;FROM Bridges WHERE hex_key = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">ring</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="c"># Check if this is currently a valid ring name. If not, move back</span>
+            <span class="c"># into default pool.</span>
+            <span class="k">if</span> <span class="n">ring</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">validRings</span><span class="p">:</span>
+                <span class="n">ring</span> <span class="o">=</span> <span class="n">defaultPool</span>
+            <span class="c"># Update last_seen, address, port and (possibly) distributor.</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;UPDATE Bridges SET address = ?, or_port = ?, &quot;</span>
+                        <span class="s">&quot;distributor = ?, last_seen = ? WHERE id = ?&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span><span class="p">,</span> <span class="n">ring</span><span class="p">,</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">seenAt</span><span class="p">),</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">ring</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Insert it.</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT INTO Bridges (hex_key, address, or_port, &quot;</span>
+                        <span class="s">&quot;distributor, first_seen, last_seen) &quot;</span>
+                        <span class="s">&quot;VALUES (?, ?, ?, ?, ?, ?)&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span> <span class="n">bridge</span><span class="o">.</span><span class="n">orport</span><span class="p">,</span> <span class="n">setRing</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">setRing</span>
+</div>
+<div class="viewcode-block" id="Database.cleanEmailedBridges"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.cleanEmailedBridges">[docs]</a>    <span class="k">def</span> <span class="nf">cleanEmailedBridges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expireBefore</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">expireBefore</span><span class="p">)</span>
+
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM EmailedBridges WHERE when_mailed &lt; ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,))</span>
+</div>
+<div class="viewcode-block" id="Database.getEmailTime"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getEmailTime">[docs]</a>    <span class="k">def</span> <span class="nf">getEmailTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">sha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT when_mailed FROM EmailedBridges WHERE &quot;</span>
+                    <span class="s">&quot;email = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">addr</span><span class="p">,))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">strToTime</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Database.setEmailTime"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.setEmailTime">[docs]</a>    <span class="k">def</span> <span class="nf">setEmailTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">whenMailed</span><span class="p">):</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">sha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">whenMailed</span><span class="p">)</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT OR REPLACE INTO EmailedBridges &quot;</span>
+                    <span class="s">&quot;(email,when_mailed) VALUES (?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Database.getAllBridges"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getAllBridges">[docs]</a>    <span class="k">def</span> <span class="nf">getAllBridges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of BridgeData value classes of all bridges in the</span>
+<span class="sd">           database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">retBridges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT hex_key, address, or_port, distributor, &quot;</span>
+                    <span class="s">&quot;first_seen, last_seen  FROM Bridges&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+            <span class="n">bridge</span> <span class="o">=</span> <span class="n">BridgeData</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">retBridges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">retBridges</span>
+</div>
+<div class="viewcode-block" id="Database.getBridgesForDistributor"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getBridgesForDistributor">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgesForDistributor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distributor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of BridgeData value classes of all bridges in the</span>
+<span class="sd">           database that are allocated to distributor &#39;distributor&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">retBridges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT hex_key, address, or_port, distributor, &quot;</span>
+                    <span class="s">&quot;first_seen, last_seen FROM Bridges WHERE &quot;</span>
+                    <span class="s">&quot;distributor = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">distributor</span><span class="p">,</span> <span class="p">))</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+            <span class="n">bridge</span> <span class="o">=</span> <span class="n">BridgeData</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">retBridges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">retBridges</span>
+</div>
+<div class="viewcode-block" id="Database.updateDistributorForHexKey"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.updateDistributorForHexKey">[docs]</a>    <span class="k">def</span> <span class="nf">updateDistributorForHexKey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distributor</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;UPDATE Bridges SET distributor = ? WHERE hex_key = ?&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">distributor</span><span class="p">,</span> <span class="n">hex_key</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Database.addBridgeBlock"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.addBridgeBlock">[docs]</a>    <span class="k">def</span> <span class="nf">addBridgeBlock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT OR REPLACE INTO BlockedBridges &quot;</span>
+                    <span class="s">&quot;(hex_key,blocking_country) VALUES (?,?)&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Database.delBridgeBlock"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.delBridgeBlock">[docs]</a>    <span class="k">def</span> <span class="nf">delBridgeBlock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM BlockedBridges WHERE hex_key = ? &quot;</span>
+                    <span class="s">&quot;AND blocking_country = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Database.cleanBridgeBlocks"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.cleanBridgeBlocks">[docs]</a>    <span class="k">def</span> <span class="nf">cleanBridgeBlocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM BlockedBridges&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Database.getBlockingCountries"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getBlockingCountries">[docs]</a>    <span class="k">def</span> <span class="nf">getBlockingCountries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT hex_key, blocking_country FROM BlockedBridges WHERE hex_key = ? &quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">fingerprint</span><span class="p">,))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c"># return list of country-codes</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span> <span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Database.getBlockedBridges"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getBlockedBridges">[docs]</a>    <span class="k">def</span> <span class="nf">getBlockedBridges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT hex_key, blocking_country FROM BlockedBridges WHERE blocking_country = ? &quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">countryCode</span><span class="p">,))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="c"># return list of fingerprints</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="ow">in</span> <span class="n">v</span> <span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Database.isBlocked"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.isBlocked">[docs]</a>    <span class="k">def</span> <span class="nf">isBlocked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT hex_key, blocking_country FROM BlockedBridges WHERE &quot;</span>
+                    <span class="s">&quot;hex_key = ? AND blocking_country = ?&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="n">countryCode</span><span class="p">))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span> 
+</div>
+<div class="viewcode-block" id="Database.getWarnedEmail"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getWarnedEmail">[docs]</a>    <span class="k">def</span> <span class="nf">getWarnedEmail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">sha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT * FROM WarnedEmails WHERE &quot;</span>
+                    <span class="s">&quot; email = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">addr</span><span class="p">,))</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Database.setWarnedEmail"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.setWarnedEmail">[docs]</a>    <span class="k">def</span> <span class="nf">setWarnedEmail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">warned</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">whenWarned</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()):</span>
+        <span class="n">addr</span> <span class="o">=</span> <span class="n">sha</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">whenWarned</span><span class="p">)</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="k">if</span> <span class="n">warned</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT INTO WarnedEmails&quot;</span>
+                        <span class="s">&quot;(email,when_warned) VALUES (?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">t</span><span class="p">,))</span>
+        <span class="k">elif</span> <span class="n">warned</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM WarnedEmails WHERE &quot;</span>
+                        <span class="s">&quot;email = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">addr</span><span class="p">,))</span>
+</div>
+<div class="viewcode-block" id="Database.cleanWarnedEmails"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.cleanWarnedEmails">[docs]</a>    <span class="k">def</span> <span class="nf">cleanWarnedEmails</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expireBefore</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">timeToStr</span><span class="p">(</span><span class="n">expireBefore</span><span class="p">)</span>
+
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM WarnedEmails WHERE when_warned &lt; ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,))</span>
+</div>
+<div class="viewcode-block" id="Database.updateIntoBridgeHistory"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.updateIntoBridgeHistory">[docs]</a>    <span class="k">def</span> <span class="nf">updateIntoBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bh</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT OR REPLACE INTO BridgeHistory values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">bh</span><span class="o">.</span><span class="n">fingerprint</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">bh</span><span class="o">.</span><span class="n">ip</span><span class="p">),</span> <span class="n">bh</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+                <span class="n">bh</span><span class="o">.</span><span class="n">weightedUptime</span><span class="p">,</span> <span class="n">bh</span><span class="o">.</span><span class="n">weightedTime</span><span class="p">,</span> <span class="n">bh</span><span class="o">.</span><span class="n">weightedRunLength</span><span class="p">,</span>
+                <span class="n">bh</span><span class="o">.</span><span class="n">totalRunWeights</span><span class="p">,</span> <span class="n">bh</span><span class="o">.</span><span class="n">lastSeenWithDifferentAddressAndPort</span><span class="p">,</span>
+                <span class="n">bh</span><span class="o">.</span><span class="n">lastSeenWithThisAddressAndPort</span><span class="p">,</span> <span class="n">bh</span><span class="o">.</span><span class="n">lastDiscountedHistoryValues</span><span class="p">,</span>
+                <span class="n">bh</span><span class="o">.</span><span class="n">lastUpdatedWeightedTime</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">bh</span>
+</div>
+<div class="viewcode-block" id="Database.delBridgeHistory"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.delBridgeHistory">[docs]</a>    <span class="k">def</span> <span class="nf">delBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;DELETE FROM BridgeHistory WHERE fingerprint = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">fp</span><span class="p">,))</span>
+</div>
+<div class="viewcode-block" id="Database.getBridgeHistory"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getBridgeHistory">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT * FROM BridgeHistory WHERE fingerprint = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">fp</span><span class="p">,))</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">h</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> 
+            <span class="k">return</span>
+        <span class="k">return</span> <span class="n">BridgeHistory</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Database.getAllBridgeHistory"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getAllBridgeHistory">[docs]</a>    <span class="k">def</span> <span class="nf">getAllBridgeHistory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT * FROM BridgeHistory&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">BridgeHistory</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Database.getBridgesLastUpdatedBefore"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.Database.getBridgesLastUpdatedBefore">[docs]</a>    <span class="k">def</span> <span class="nf">getBridgesLastUpdatedBefore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">statusPublicationMillis</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime &lt; ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">statusPublicationMillis</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">BridgeHistory</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span><span class="n">h</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span></div></div>
+<div class="viewcode-block" id="openDatabase"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.openDatabase">[docs]</a><span class="k">def</span> <span class="nf">openDatabase</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT value FROM Config WHERE key = &#39;schema-version&#39;&quot;</span><span class="p">)</span>
+            <span class="n">val</span><span class="p">,</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Adding new table BridgeHistory&quot;</span><span class="p">)</span>
+                <span class="n">cur</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">SCHEMA_2TO3_SCRIPT</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Unknown schema version </span><span class="si">%s</span><span class="s"> in database.&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">OperationalError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;No Config table found in DB; creating tables&quot;</span><span class="p">)</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">SCHEMA3_SCRIPT</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">conn</span>
+
+</div>
+<div class="viewcode-block" id="openOrConvertDatabase"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.openOrConvertDatabase">[docs]</a><span class="k">def</span> <span class="nf">openOrConvertDatabase</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">,</span> <span class="n">db_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Open a sqlite database, converting it from a db file if needed.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">openDatabase</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">)</span>
+
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">SCHEMA3_SCRIPT</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="kn">import</span> <span class="nn">anydbm</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">anydbm</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">db_file</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">anydbm</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">conn</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># We handle all the sp| keys first, since other tables have</span>
+        <span class="c"># dependencies on Bridges.</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;sp|&quot;</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">==</span> <span class="mi">23</span>
+                <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;INSERT INTO Bridges ( hex_key, distributor ) &quot;</span>
+                            <span class="s">&quot;VALUES (?, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">toHex</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">3</span><span class="p">:]),</span><span class="n">v</span><span class="p">))</span>
+        <span class="c"># Now we handle the other key types.</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;fs|&quot;</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">==</span> <span class="mi">23</span>
+                <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;UPDATE Bridges SET first_seen = ? &quot;</span>
+                            <span class="s">&quot;WHERE hex_key = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">toHex</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">3</span><span class="p">:])))</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;ls|&quot;</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">==</span> <span class="mi">23</span>
+                <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;UPDATE Bridges SET last_seen = ? &quot;</span>
+                            <span class="s">&quot;WHERE hex_key = ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">toHex</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">3</span><span class="p">:])))</span>
+            <span class="c">#elif k.startswith(&quot;em|&quot;):</span>
+            <span class="c">#    keys = list(toHex(i) for i in</span>
+            <span class="c">#        bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))</span>
+            <span class="c">#    cur.executemany(&quot;INSERT INTO EmailedBridges ( email, id ) &quot;</span>
+            <span class="c">#                    &quot;SELECT ?, id FROM Bridges WHERE hex_key = ?&quot;,</span>
+            <span class="c">#                    [(k[3:],i) for i in keys])</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;sp|&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;em|&quot;</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Unrecognized key </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">sqlite_file</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">conn</span>
+</div>
+<span class="n">_THE_DB</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="setGlobalDB"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.setGlobalDB">[docs]</a><span class="k">def</span> <span class="nf">setGlobalDB</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">_THE_DB</span>
+    <span class="n">_THE_DB</span> <span class="o">=</span> <span class="n">db</span>
+</div>
+<div class="viewcode-block" id="getDB"><a class="viewcode-back" href="../../bridgedb.Storage.html#bridgedb.Storage.getDB">[docs]</a><span class="k">def</span> <span class="nf">getDB</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">_THE_DB</span>
+</pre></div></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+      </div><!-- /row -->
+
+      <!-- row -->
+      <div class="row-fluid">
+<div class="related navbar ">
+  <div class="navbar-inner">
+    <ul class="nav pull-right">
+      
+        <li><a href="../../genindex.html" title="General Index" >index</a></li>
+        <li><a href="../../py-modindex.html" title="Python Module Index" >modules</a></li>
+        <li><a href="../../index.html">BridgeDB Documentation</a></li>
+        <li><a href="../index.html" >Module code</a></li> 
+      
+    </ul>
+  </div>
+</div>
+      </div><!-- /row -->
+
+      <!-- footer -->
+      <footer>
+          &copy; Copyright 2013, The Tor Project, Inc.
+        Last updated on 01 December 2013.
+      </footer>
+      <!-- /footer -->
+
+    </div>
+    <!-- /container -->
+
+  </body>
+</html>
