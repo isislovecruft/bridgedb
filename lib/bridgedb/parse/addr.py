@@ -338,8 +338,6 @@ class PortList(object):
                     self.add(list(arg.ports))
             except ValueError:
                 raise InvalidPort("%s is not a valid port number!" % arg)
-            except InvalidPort:
-                raise
 
             self.ports.update(set(portlist))
 
