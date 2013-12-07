@@ -41,9 +41,6 @@ class NetworkstatusParsingError(Exception):
 class InvalidNetworkstatusRouterIdentity(ValueError):
     """The ID field of a networkstatus document 'r'-line is invalid."""
 
-class InvalidNetworkstatusDescriptorDigest(ValueError):
-    """Descriptor digest of a networkstatus document 'r'-line is invalid."""
-
 class InvalidRouterNickname(ValueError):
     """Router nickname doesn't follow tor-spec."""
 
@@ -139,18 +136,11 @@ def parseRLine(line):
     else:
         try:
             descDigest = binascii.a2b_base64(fields[2])
-            if not (len(descDigest) > 0):
-                raise InvalidNetworkstatusDescriptorDigest(
-                    "Could not base64 decode descriptor digest %r" % fields[2])
-
             timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
                                                   "%Y-%m-%d %H:%M:%S"))
             ORaddr = fields[5]
             ORport = fields[6]
             dirport = fields[7]
-        except InvalidNetworkstatusDescriptorDigest as error:
-            logging.error(error)
-            descDigest = None
         except (AttributeError, ValueError, IndexError) as error:
             logging.error(error)
     finally:
