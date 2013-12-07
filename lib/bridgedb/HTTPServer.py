@@ -345,7 +345,7 @@ def setLocaleFromRequestHeader(request):
     languages and add them as fallbacks to the first. Lastly, install this
     chain of translations.
 
-    :type request: :class:`twisted.web.server.Request`
+    :type request: :api:`twisted.web.server.Request`
     :param request: An incoming request from a client.
     :rtype: list
     :returns: All requested languages.

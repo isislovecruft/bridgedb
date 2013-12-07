@@ -10,8 +10,9 @@
 from ._version import get_versions
 from ._langs import get_langs
 
+#__version__ = get_versions()['version']
+#__version_full__ = get_versions()['full']
 __version__ = get_versions()['version']
-__version_full__ = get_versions()['full']
 __langs__ = get_langs()
 
 del get_versions
