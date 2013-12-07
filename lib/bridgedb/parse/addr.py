@@ -220,7 +220,7 @@ def isIPv6(ip):
     """
     return _isIPv(6, ip)
 
-def isValidIP(ipaddress):
+def isValidIP(ip):
     """Check that an IP (v4 or v6) is valid.
 
     The IP address, **ip**, must not be any of the following:
@@ -244,14 +244,30 @@ def isValidIP(ipaddress):
     :rtype: boolean
     :returns: ``True``, if **ip** passes the checks; False otherwise.
     """
-    if not (ipaddress.is_link_local or ipaddress.is_loopback
-            or ipaddress.is_multicast or ipaddress.is_private
-            or ipaddress.is_unspecified):
-        if (ipaddress.version == 6) and (not ipaddress.is_site_local):
-            return True
-        elif (ipaddress.version == 4) and (not ipaddress.is_reserved):
-            return True
-    return False
+    reasons  = []
+
+    if ip.is_link_local:
+        reasons.append('link local')
+    if ip.is_loopback:
+        reasons.append('loopback')
+    if ip.is_multicast:
+        reasons.append('multicast')
+    if ip.is_private:
+        reasons.append('private')
+    if ip.is_unspecified:
+        reasons.append('unspecified')
+
+    if (ip.version == 6) and ip.is_site_local:
+        reasons.append('site local')
+    elif (ip.version == 4) and ip.is_reserved:
+        reasons.append('reserved')
+
+    if reasons:
+        explain = ', '.join([r for r in reasons]).strip(', ')
+        logging.debug("IPv%d address %s is invalid! Reason(s): %s"
+                      % (ip.version, ip, explain))
+        return False
+    return True
 
 
 class PortList(object):
