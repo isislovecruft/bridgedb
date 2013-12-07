@@ -240,3 +240,83 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
 
         the(ts).should.be.a(float)
         the(ip).should.be(None)
+
+
+class ParseNetworkStatusALineTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.parse.networkstatus.parseALine`.
+
+    The documentation for all class variables, e.g. 'pre' or 'oraddr', refers
+    to what said value should be in a *valid* descriptor.
+    """
+    #: The prefix for the 'a'-line. Should be an 'a', unless testing that
+    #: lines with unknown prefixes are dropped.
+    pre = 'a '
+    #: An ORAddress. As of tor-0.2.5.1-alpha, there is only one and it is an
+    #: IPv6 address.
+    oraddr = '[b8d:48ae:5185:dad:5c2a:4e75:8394:f5f8]'
+
+    def tearDown(self):
+        self.line = ''
+
+    def assertAllFieldsAreNone(self, fields):
+        """Assert that every field in the iterable ``fields`` is None."""
+        for field in fields:
+            self.assertTrue(field is None)
+
+    def test_missingPrefix(self):
+        self.line = '%s:1234' % self.oraddr
+        fields = networkstatus.parseALine(self.line)
+        self.assertAllFieldsAreNone(fields)
+
+    def test_IPv4(self):
+        self.line = 'a 48.32.199.45:9001'
+        ip, port = networkstatus.parseALine(self.line)
+        ip, port = self.assertWarns(
+            FutureWarning,
+            "Got IPv4 address in networkstatus 'a'-line! "\
+            "Networkstatus document format may have changed!",
+            networkstatus.__file__,
+            networkstatus.parseALine,
+            self.line)
+        this(ip).should.be.a(basestring)
+        this(port).should.be.ok
+        this(port).should.be.a(networkstatus.addr.PortList)
+
+    def test_IPv4BadPortSeparator(self):
+        self.line = 'a 1.1.1.1 9001'
+        fields = networkstatus.parseALine(self.line)
+        self.assertAllFieldsAreNone(fields)
+
+    def test_IPv6BadPortlist(self):
+        self.line = 'a 23.23.23.23:1111,2222,badportlist'
+        ip, port = networkstatus.parseALine(self.line)
+        this(ip).should.be.a(basestring)
+        this(port).should.be(None)
+
+    def test_IPv4MissingPort(self):
+        self.line = 'a 1.1.1.1'
+        fields = networkstatus.parseALine(self.line)
+        self.assertAllFieldsAreNone(fields)
+
+    def test_IPv4InvalidAddress(self):
+        self.line = 'a 127.0.0.1:5555'
+        fields = networkstatus.parseALine(self.line)
+        self.assertAllFieldsAreNone(fields)
+
+    def test_IPv6BadPortSeparator(self):
+        self.line = 'a %s missingcolon' % self.oraddr
+        fields = networkstatus.parseALine(self.line)
+        self.assertAllFieldsAreNone(fields)
+
+    def test_IPv6BadPortlist(self):
+        self.line = 'a %s:1111,2222,badportlist' % self.oraddr
+        ip, port = networkstatus.parseALine(self.line)
+        this(ip).should.be.a(basestring)
+        this(port).should.be(None)
+
+    def test_IPv6(self):
+        self.line = 'a %s:6004' % self.oraddr
+        ip, port = networkstatus.parseALine(self.line)
+        this(ip).should.be.a(basestring)
+        this(port).should.be.ok
+        this(port).should.be.a(networkstatus.addr.PortList)
