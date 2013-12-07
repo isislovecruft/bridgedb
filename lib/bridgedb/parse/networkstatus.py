@@ -45,14 +45,12 @@ class InvalidRouterNickname(ValueError):
     """Router nickname doesn't follow tor-spec."""
 
 
-ALPHANUMERIC = string.letters + string.digits
-
-
 def isValidRouterNickname(nickname):
     """Determine if a router's given nickname meets the specification.
 
     :param string nickname: An OR's nickname.
     """
+    ALPHANUMERIC = string.letters + string.digits
 
     if not (1 <= len(nickname) <= 19):
         raise InvalidRouterNickname(
