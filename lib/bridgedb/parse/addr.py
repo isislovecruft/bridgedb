@@ -179,14 +179,14 @@ def isIPAddress(ip, compressed=True):
     return False
 
 def _isIPv(version, ip):
-    """Check if an address is a certain ``version``, either IPv4 or IPv6.
+    """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
     :param integer version: The IPv[4|6] version to check; must be either
         ``4`` or ``6``.
-    :type ip: basestring or int
-    :param ip: The IP address to check.
+    :param ip: The IP address to check. May be an any type which
+               :class:`ipaddr.IPAddress` will accept.
     :rtype: boolean
-    :returns: True if the address is an IPv4 address.
+    :returns: ``True``, if the address is an IPv4 address.
     """
     ip = isIPAddress(ip, compressed=False)
     if ip and (ip.version == version):
@@ -195,6 +195,8 @@ def _isIPv(version, ip):
 
 def isIPv4(ip):
     """Check if an address is IPv4.
+
+    .. attention:: This does *not* check validity. See :func:`isValidIP`.
 
     :type ip: basestring or int
     :param ip: The IP address to check.
@@ -206,6 +208,8 @@ def isIPv4(ip):
 def isIPv6(ip):
     """Check if an address is IPv6.
 
+    .. attention:: This does *not* check validity. See :func:`isValidIP`.
+
     :type ip: basestring or int
     :param ip: The IP address to check.
     :rtype: boolean
@@ -214,36 +218,28 @@ def isIPv6(ip):
     return _isIPv(6, ip)
 
 def isValidIP(ipaddress):
-    """Check that an IP (v4 or v6) is public and not reserved.
+    """Check that an IP (v4 or v6) is valid.
 
-    The IP address, ``ip``, must not be any of the following:
-      * A link-local address, such as ``169.254.0.0/16`` or ``fe80::/64``.
-      * The address of a loopback interface, i.e. ``127.0.0.1`` or ``::1``.
-      * A multicast address, for example, ``255.255.255.0``.
-      * An unspecified address, for example ``0.0.0.0/32`` in IPv4 or
-        ``::/128`` in IPv6.
-      * A default route address, for example ``0.0.0.0/0`` or ``::/0``.
-      * Any other address within a private networks, such as the IANA
-        reserved Shared Address Space, defined in RFC6598_ as
-        ``100.64.0.0/10``.
+    The IP address, **ip**, must not be any of the following:
 
-    If it is an IPv4 address, it also must not be:
-      *  A reserved address vis-á-vis RFC1918_
+      * A :term:`Link-Local Address`,
+      * A :term:`Loopback Address` or :term:`Localhost Address`,
+      * A :term:`Multicast Address`,
+      * An :term:`Unspecified Address` or :term:`Default Route`,
+      * Any other :term:`Private Address`, or address within a privately
+        allocated space, such as the IANA-reserved
+        :term:`Shared Address Space`.
 
     If it is an IPv6 address, it also must not be:
-      *  A "site-local", or Unique Local Address (ULA_), address vis-á-vis
-         RFC4193_ (i.e. within the ``fc00::/7`` netblock)
 
-    .. _RFC6598: https://tools.ietf.org/htmłrfc6598
-    .. _RFC1918: https://tools.ietf.org/html/rfc1918
-    .. _ULA: https://en.wikipedia.org/wiki/Unique_local_address
-    .. _RFC4193: https://tools.ietf.org/html/rfc4193
+      * A :term:`Site-Local Address` or an :term:`Unique Local Address`.
 
-    :type ipaddress: An :class:`ipaddr.IPAddress`,
-        :class:`ipaddr.IPv4Address`, or :class:`ipaddr.IPv6Address`.
-    :param ipaddress: An IPAddress class.
+    :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`, or
+              :class:`ipaddr.IPv6Address`.
+
+    :param ip: An ``ipaddr.IPAddress`` class.
     :rtype: boolean
-    :returns: True if the address passes the checks, False otherwise.
+    :returns: ``True``, if **ip** passes the checks; False otherwise.
     """
     if not (ipaddress.is_link_local or ipaddress.is_loopback
             or ipaddress.is_multicast or ipaddress.is_private
@@ -256,25 +252,59 @@ def isValidIP(ipaddress):
 
 
 class PortList(object):
-    """ container class for port ranges
+    """A container class for validated port ranges.
+
+    From torspec.git/dir-spec.txt §2.3:
+      |
+      | portspec ::= "*" | port | port "-" port
+      | port ::= an integer between 1 and 65535, inclusive.
+      |
+      |    [Some implementations incorrectly generate ports with value 0.
+      |     Implementations SHOULD accept this, and SHOULD NOT generate it.
+      |     Connections to port 0 are never permitted.]
+      |
+
+    :ivar set ports: All ports which have been added to this ``PortList``.
     """
 
     #: The maximum number of allowed ports per IP address.
     PORTSPEC_LEN = 16
 
     def __init__(self, *args, **kwargs):
+        """Create a :class:`~bridgedb.parse.addr.PortList`.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         self.ports = set()
         self.add(*args)
 
     def _sanitycheck(self, port):
+        """Check that ``port`` is in the range [1, 65535] inclusive.
+
+        :raises: InvalidPort, if ``port`` doesn't match ``port`` as defined
+            in the excert from torspec above.
+        :rtype: int
+        :returns: The **port**, if no exceptions were raised.
+        """
         if (not isinstance(port, int)) or not (0 < port <= 65535):
             raise InvalidPort("%s is not a valid port number!" % port)
 
     def __contains__(self, port):
+        """Determine whether ``port`` is already in this ``PortList``.
+
+        :returns: True if ``port`` is in this ``PortList``; False otherwise.
+        """
         return port in self.ports
 
     def add(self, *args):
-        """Add a port (or ports) to this PortList."""
+        """Add a port (or ports) to this ``PortList``.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         for arg in args:
             portlist = []
             try:
