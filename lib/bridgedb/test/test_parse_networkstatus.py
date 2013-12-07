@@ -320,3 +320,31 @@ class ParseNetworkStatusALineTests(unittest.TestCase):
         this(ip).should.be.a(basestring)
         this(port).should.be.ok
         this(port).should.be.a(networkstatus.addr.PortList)
+
+
+class ParseNetworkStatusSLineTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.parse.networkstatus.parseSLine`."""
+
+    def tearDown(self):
+        """Automatically called after each test_* method to run cleanups."""
+        self.line = ''
+
+    def test_missingPrefix(self):
+        self.line = 'Stable'
+        running, stable = networkstatus.parseSLine(self.line)
+        self.assertFalse(running)
+        self.assertFalse(stable)
+
+    def test_makeBelieveFlag(self):
+        """Test that 's'-parser should ignore a 'MakeBelieve' flag."""
+        self.line = 's Stable Running MakeBelieve BadExit'
+        running, stable = networkstatus.parseSLine(self.line)
+        self.assertTrue(running)
+        self.assertTrue(stable)
+
+    def test_noFlags(self):
+        """Test that an 's'-line with no flags returns False for everything."""
+        self.line = ''
+        running, stable = networkstatus.parseSLine(self.line)
+        self.assertFalse(running)
+        self.assertFalse(stable)
