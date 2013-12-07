@@ -188,8 +188,12 @@ def _isIPv(version, ip):
     :rtype: boolean
     :returns: ``True``, if the address is an IPv4 address.
     """
-    ip = isIPAddress(ip, compressed=False)
-    if ip and (ip.version == version):
+    try:
+        ip = ipaddr.IPAddress(ip, version=version)
+    except ipaddr.AddressValueError:
+        logging.debug("Address %s seems not to be IPv%d." % (ip, version))
+        return False
+    else:
         return True
     return False
 
