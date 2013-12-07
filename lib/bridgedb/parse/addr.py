@@ -309,6 +309,7 @@ class PortList(object):
         """
         if (not isinstance(port, int)) or not (0 < port <= 65535):
             raise InvalidPort("%s is not a valid port number!" % port)
+        return port
 
     def __contains__(self, port):
         """Determine whether ``port`` is already in this ``PortList``.
