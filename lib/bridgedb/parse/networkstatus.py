@@ -136,6 +136,7 @@ def parseRLine(line):
             dirport = fields[7]
         except (AttributeError, ValueError, IndexError) as error:
             logging.error(error)
+            descDigest = None
     finally:
         return (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport)
 
