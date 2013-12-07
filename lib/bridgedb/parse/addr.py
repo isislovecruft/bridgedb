@@ -142,8 +142,11 @@ Reserved and Special Use Addresses:
 .. _redefined: https://en.wikipedia.org/wiki/Unique_local_address
 """
 
-import logging
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
+import logging
 import ipaddr
 
 
