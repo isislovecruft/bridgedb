@@ -168,52 +168,53 @@ def parseALine(line, fingerprint=None):
         :class:`bridgedb.parse.addr.PortList`.
     """
     ip = None
-    address = None
     portlist = None
 
     if not line.startswith('a '):
         logging.error("Networkstatus parser received non 'a'-line for %r:"\
                       "  %r" % (fingerprint or 'Unknown', line))
-        return address, portlist
+        return ip, portlist
 
     line = line[2:] # Chop off the 'a '
 
     try:
         ip, portlist = line.rsplit(':', 1)
-        address = addr.isIPAddress(ip.strip('[]'))
-        portlist = addr.PortList(portlist)
+    except ValueError as error:
+        logging.error("Bad separator in networkstatus 'a'-line: %r" % line)
+        return (None, None)
 
-        if not address:
-            address = None
+    if ip.startswith('[') and ip.endswith(']'):
+        ip = ip.strip('[]')
+
+    try:
+        if not addr.isIPAddress(ip):
             raise NetworkstatusParsingError(
                 "Got invalid IP Address in networkstatus 'a'-line for %r: %r"
-                % (fingerprint, ip))
+                % (fingerprint or 'Unknown', line))
 
-        if not portlist:
-            portlist = None
-            raise NetworkstatusParsingError(
-                "Got invalid portlist in 'a'-line for %r!\n  Line: %r"
-                % (fingerprint, line))
-
-        if addr.isIPv4(address):
-            showwarning(warnings.warn(FutureWarning(
+        if addr.isIPv4(ip):
+            warnings.warn(FutureWarning(
                 "Got IPv4 address in networkstatus 'a'-line! "\
-                "Networkstatus document format may have changed!")))
-
-    except ValueError as error:
-        logging.error(error)
-        address, portlist = None, None
-    except addr.InvalidPort as error:
-        logging.exception(error)
-        portlist = None
+                "Networkstatus document format may have changed!"))
     except NetworkstatusParsingError as error:
         logging.error(error)
+        ip, portlist = None, None
+
+    try:
+        portlist = addr.PortList(portlist)
+        if not portlist:
+            raise NetworkstatusParsingError(
+                "Got invalid portlist in 'a'-line for %r!\n  Line: %r"
+                % (fingerprint or 'Unknown', line))
+    except (addr.InvalidPort, NetworkstatusParsingError) as error:
+        logging.exception(error)
+        portlist = None
     else:
         logging.debug("Parsed networkstatus ORAddress line for %r:"\
                       "\n  Address: %s  \tPorts: %s"
-                      % (fingerprint, address, portlist))
+                      % (fingerprint or 'Unknown', ip, portlist))
     finally:
-        return (address, portlist)
+        return (ip, portlist)
 
 def parseSLine(line):
     """Parse an 's'-line from a bridge networkstatus document.
