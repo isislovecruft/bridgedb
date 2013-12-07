@@ -331,9 +331,9 @@ class PortList(object):
                 if isinstance(arg, basestring):
                     ports = set([int(p)
                                  for p in arg.split(',')][:self.PORTSPEC_LEN])
-                    portlist.extend([p for p in ports])
+                    portlist.extend([self._sanitycheck(p) for p in ports])
                 if isinstance(arg, int):
-                    portlist.extend(arg)
+                    portlist.append(self._sanitycheck(arg))
                 if isinstance(arg, PortList):
                     self.add(list(arg.ports))
             except ValueError:
@@ -341,7 +341,6 @@ class PortList(object):
             except InvalidPort:
                 raise
 
-            [self._sanitycheck(port) for port in portlist]
             self.ports.update(portlist)
 
     def __iter__(self):
