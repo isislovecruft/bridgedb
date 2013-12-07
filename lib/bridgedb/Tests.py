@@ -30,6 +30,9 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 from bridgedb.Stability import BridgeHistory
+
+from bridgedb.parse import networkstatus
+
 from math import log
 
 def suppressWarnings():
@@ -107,8 +110,8 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
 
     if or_addresses:
         for i in xrange(8):
-            address,portlist = bridgedb.Bridges.parseORAddressLine(
-                    "%s:%s" % (randomIPString(),randomPortSpec()))
+            address,portlist = networkstatus.parseALine(
+                "%s:%s" % (randomIPString(), randomPortSpec()))
             try:
                 portlist.add(b.or_addresses[address])
             except KeyError:
@@ -133,8 +136,12 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
 
     if or_addresses:
         for i in xrange(0,8):
-            address,portlist = bridgedb.Bridges.parseORAddressLine(
-                    "%s:%s" % (randomIPString(),randomPortSpec()))
+            address, portlist = networkstatus.parseALine("a %s:%s" % (
+                randomIPString(), randomPortSpec()))
+
+            self.assertIsNotNone(address, "fakeBridge6(): Got null address!")
+            self.assertIsNotNone(address, "fakeBridge6(): Got null portlist!")
+
             try:
                 portlist.add(b.or_addresses[address])
             except KeyError:
@@ -286,7 +293,7 @@ class IPBridgeDistTests(unittest.TestCase):
                                         bridgeFilterRules=[filterBridgesByIP6])
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv6Address)
-            address, portlist = bridgedb.Bridges.parseORAddressLine(bridge_line)
+            address, portlist = networkstatus.parseALine(bridge_line)
             assert type(address) is ipaddr.IPv6Address
             assert filterBridgesByIP6(random.choice(bridges))
 
@@ -302,7 +309,7 @@ class IPBridgeDistTests(unittest.TestCase):
                                         bridgeFilterRules=[filterBridgesByIP4])
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
-            address, portlist = bridgedb.Bridges.parseORAddressLine(bridge_line)
+            address, portlist = networkstatus.parseALine(bridge_line)
             assert type(address) is ipaddr.IPv4Address
             assert filterBridgesByIP4(random.choice(bridges))
 
@@ -322,10 +329,10 @@ class IPBridgeDistTests(unittest.TestCase):
                 t = bridges.pop()
                 assert filterBridgesByIP4(t)
                 assert filterBridgesByIP6(t)
-                address, portlist = bridgedb.Bridges.parseORAddressLine(
+                address, portlist = networkstatus.parseALine(
                     t.getConfigLine(addressClass=ipaddr.IPv4Address))
                 assert type(address) is ipaddr.IPv4Address
-                address, portlist = bridgedb.Bridges.parseORAddressLine(
+                address, portlist = networkstatus.parseALine(
                     t.getConfigLine(addressClass=ipaddr.IPv6Address))
                 assert type(address) is ipaddr.IPv6Address
 
