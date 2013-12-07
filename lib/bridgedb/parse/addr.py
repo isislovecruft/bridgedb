@@ -361,12 +361,12 @@ class PortList(object):
         """Returns the total number of ports in this PortList."""
         return len(self.ports)
 
-    def __getitem__(self, x):
-        """Get a port if it is in this PortList.
+    def __getitem__(self, port):
+        """Get the value of ``port`` if it is in this PortList.
 
-        :raises: ValueError if ``x`` isn't in this PortList.
+        :raises: ValueError, if ``port`` isn't in this PortList.
         :rtype: integer
-        :returns: The port ``x``, if it is in this PortList.
+        :returns: The ``port``, if it is in this PortList.
         """
         portlist = list(self.ports)
-        return portlist[portlist.index(x)]
+        return portlist[portlist.index(port)]
