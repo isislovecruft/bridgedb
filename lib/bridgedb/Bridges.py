@@ -365,11 +365,6 @@ def parseDescFile(f, bridge_purpose='bridge'):
             nickname = ip = orport = fingerprint = purpose = None 
 
 
-class ParseORAddressError(Exception):
-    def __init__(self):
-        msg = "Invalid or-address line"
-        Exception.__init__(self, msg)
-
 re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
