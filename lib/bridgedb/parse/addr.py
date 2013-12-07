@@ -170,8 +170,6 @@ def isIPAddress(ip, compressed=True):
         ip = ipaddr.IPAddress(ip)
     except ValueError:
         return False
-    except Exception as error:
-        logging.exception(error)
     else:
         if isValidIP(ip):
             if compressed:
