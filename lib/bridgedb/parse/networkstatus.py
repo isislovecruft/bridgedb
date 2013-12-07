@@ -53,20 +53,15 @@ def isValidRouterNickname(nickname):
 
     :param string nickname: An OR's nickname.
     """
-    try:
-        if not (1 <= len(nickname) <= 19):
-            raise InvalidRouterNickname(
-                "Nicknames must be between 1 and 19 characters: %r" % nickname)
-        for letter in nickname:
-            if not letter in ALPHANUMERIC:
-                raise InvalidRouterNickname(
-                    "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
-    except Exception as error:
-        logging.exception(error)
-    else:
-        return True
 
-    raise InvalidRouterNickname
+    if not (1 <= len(nickname) <= 19):
+        raise InvalidRouterNickname(
+            "Nicknames must be between 1 and 19 characters: %r" % nickname)
+    for letter in nickname:
+        if not letter in ALPHANUMERIC:
+            raise InvalidRouterNickname(
+                "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
+    return True
 
 def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
