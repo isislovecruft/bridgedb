@@ -341,7 +341,7 @@ class PortList(object):
             except InvalidPort:
                 raise
 
-            self.ports.update(portlist)
+            self.ports.update(set(portlist))
 
     def __iter__(self):
         """Iterate through all ports in this PortList."""
