@@ -195,7 +195,6 @@ def _isIPv(version, ip):
         return False
     else:
         return True
-    return False
 
 def isIPv4(ip):
     """Check if an address is IPv4.
