@@ -37,15 +37,33 @@ networkstatus.logging.basicConfig(
 
 
 class ParseNetworkStatusRLineTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.parse.networkstatus.parseRLine`."""
+    """Tests for :func:`bridgedb.parse.networkstatus.parseRLine`.
 
+    The documentation for all class variables, e.g. 'pre' or 'ident', refers
+    to what said value should be in a *valid* descriptor.
+    """
+    #: The prefix for the 'r'-line. Should be an 'r', unless testing that
+    #: lines with unknown prefixes are dropped.
     pre   = 'r '
+    #: An OR nickname string. To be valid, it should be 1-19 alphanumeric
+    #: upper or lower cased characters.
     nick  = 'Testing'
+    #: A base64-encoded SHA-1 digest of the DER-formatted ASN.1-encoded public
+    #: portion of an OR identity key, with any trailing base64 padding (any
+    #: '=' characters) removed.
     ident = 'bXw2N1K9AAKR5undPaTgNUySNxI'
+    #: A base64-encoded SHA-1 digest of the OR [bridge-]server-descriptor
+    #: document (the whole thing, up until the 'router signature' line, but not
+    #: included the signature thereafter).
     desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAwXQ='
+    #: An ISO-8661 formatted timestamp, with a space separator (rather than a
+    #: 'T' character).
     ts    = '2013-10-31 15:15:15'
+    #: An IPv4 address.
     ip    = '221.251.0.42'
+    #: An ORPort number.
     port  = '9001'
+    #: A DirPort number.
     dirp  = '0'
 
     def makeRLine(self, *args, **kwargs):
