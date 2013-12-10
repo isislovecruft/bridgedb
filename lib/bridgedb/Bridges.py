@@ -502,6 +502,14 @@ def parseStatusFile(networkstatusFile):
         if line.startswith("r "):
             (nickname, ID, descDigest, timestamp,
              ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            logging.debug("Parsed networkstatus line:")
+            logging.debug("  Nickname:   %s" % nickname)
+            logging.debug("  Identity:   %s" % toHex(ID))
+            logging.debug("  Descriptor: %s" % descDigest)
+            logging.debug("  Timestamp:  %s" % timestamp)
+            logging.debug("  ORAddress:  %s" % ORaddr)
+            logging.debug("  ORport:     %s" % ORport)
+            logging.debug("  dirport:    %s" % dirport)
 
         elif ID and line.startswith("a "):
             try:
@@ -515,7 +523,9 @@ def parseStatusFile(networkstatusFile):
 
         elif ID and timestamp and line.startswith("s "):
             running, stable = networkstatus.parseSLine(line)
-
+            logging.debug("Bridges.parseStatusFile(): "\
+                          "yielding %s running=%s stable=%s oraddrs=%s ts=%s"
+                          % (toHex(ID), running, stable, or_addresses, timestamp))
             yield ID, running, stable, or_addresses, timestamp
 
             (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
