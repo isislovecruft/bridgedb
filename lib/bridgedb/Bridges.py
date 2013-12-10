@@ -19,6 +19,7 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
+from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
 
 
@@ -182,7 +183,7 @@ class Bridge:
 
         # default ip, orport should get a chance at being selected
         if isinstance(self.ip, addressClass):
-            addresses.insert(0,(self.ip, PortList(self.orport)))
+            addresses.insert(0,(self.ip, addr.PortList(self.orport)))
 
         if addresses:
             address,portlist = addresses[pos % len(addresses)]
@@ -543,7 +544,7 @@ def parseCountryBlockFile(f):
                 m = regex.match(addrspec)
                 if m:
                     address = ipaddr.IPAddress(m.group(1))
-                    portlist = PortList(m.group(2))
+                    portlist = addr.PortList(m.group(2))
                     countries = countries.split(',')
                     logging.debug("Parsed address: %s", address)
                     logging.debug("Parsed portlist: %s", portlist)
