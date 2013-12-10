@@ -141,7 +141,7 @@ def load(state, splitter, clear=False):
                     ts.sort()
                     for timestamp in ts:
                         logging.debug(
-                            "Adding/updating timestamps in BridgeHistory for ",
+                            "Adding/updating timestamps in BridgeHistory for "\
                             "'%s' in database: %s"
                             % (bridge.getID(), timestamp))
                         bridgedb.Stability.addOrUpdateBridgeHistory(
