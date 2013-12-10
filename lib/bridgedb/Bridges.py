@@ -471,8 +471,8 @@ def parseExtraInfoFile(f):
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
-                        logging.debug("  Parsed Transport: %s", method_name)
-                        logging.debug("  Parsed Transport Address: %s:%d", address, port)
+                        logging.debug("  Parsed Transport: %s %s:%d"
+                                      % (method_name, address, port))
                         yield ID, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
