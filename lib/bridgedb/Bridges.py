@@ -150,13 +150,16 @@ class Bridge:
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
             request=None, transport=None):
-        """Returns a valid bridge line for inclusion in a torrc"""
-        #arguments:
-        #    includeFingerprint
-        #    addressClass - type of address to choose 
-        #    request - a string unique to this request
-        #        e.g. email-address or uniformMap(ip)
-        #    transport - a pluggable transport method name
+        """Returns a valid bridge line for inclusion in a torrc.
+
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param DOCDOC addressClass: Type of address to choose.
+        :param str request: A string unique to this request e.g. email-address
+            or ``uniformMap(ip)`` or ``'default'``.
+        :param str transport: A pluggable transport method name.
+        """
 
         if not request: request = 'default'
         digest = get_hmac_fn('Order-Or-Addresses')(request)
