@@ -368,5 +368,4 @@ class PortList(object):
         :rtype: integer
         :returns: The ``port``, if it is in this PortList.
         """
-        portlist = list(self.ports)
-        return portlist[portlist.index(port)]
+        return list(self.ports)[port]
