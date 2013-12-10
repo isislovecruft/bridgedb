@@ -143,7 +143,7 @@ def load(state, splitter, clear=False):
                         logging.debug(
                             "Adding/updating timestamps in BridgeHistory for "\
                             "'%s' in database: %s"
-                            % (bridge.getID(), timestamp))
+                            % (bridge.fingerprint, timestamp))
                         bridgedb.Stability.addOrUpdateBridgeHistory(
                             bridge, timestamp)
         logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
