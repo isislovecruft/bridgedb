@@ -55,7 +55,7 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
     #: A base64-encoded SHA-1 digest of the OR [bridge-]server-descriptor
     #: document (the whole thing, up until the 'router signature' line, but not
     #: included the signature thereafter).
-    desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAwXQ='
+    desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAwXQ'
     #: An ISO-8661 formatted timestamp, with a space separator (rather than a
     #: 'T' character).
     ts    = '2013-10-31 15:15:15'
@@ -181,10 +181,8 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(nick).should.be.a(basestring)
         the(nick).should.be.equal(str(self.nick))
 
-        b64ident = binascii.b2a_base64(ident).strip().rstrip('==')
         the(ident).should.be.a(basestring)
-        this(b64ident).should.be.a(basestring)
-        this(b64ident).should.be.equal(self.ident)
+        the(ident).should.be.equal(self.ident)
 
         the(desc).should.be.equal(None)
         the(ts).should.be.equal(None)
@@ -200,10 +198,8 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(nick).should.be.a(basestring)
         the(nick).should.be.equal(str(self.nick))
 
-        b64ident = binascii.b2a_base64(ident).strip().rstrip('==')
         the(ident).should.be.a(basestring)
-        this(b64ident).should.be.a(basestring)
-        this(b64ident).should.be.equal(self.ident)
+        the(ident).should.be.equal(self.ident)
 
         the(desc).should.be.equal(None)
         the(ts).should.be.equal(None)
@@ -246,15 +242,11 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
 
         the(nick).should.be.equal(self.nick)
 
-        b64ident = binascii.b2a_base64(ident).strip().strip('==')
         the(ident).should.be.a(basestring)
-        this(b64ident).should.be.a(basestring)
-        this(b64ident).should.be.equal(self.ident)
+        the(ident).should.be.equal(self.ident)
 
-        b64desc = binascii.b2a_base64(desc).strip()
         the(desc).should.be.a(basestring)
-        this(b64desc).should.be.a(basestring)
-        this(b64desc).should.be.equal(self.desc)
+        the(b64desc).should.be.equal(self.desc)
 
         the(ts).should.be.a(float)
         the(ip).should.be(None)
