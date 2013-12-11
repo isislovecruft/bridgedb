@@ -583,7 +583,7 @@ class PortListTest(unittest.TestCase):
         """Test ``__getitem__`` with a port number in the PortList."""
         ports = (443, 9001, 9030)
         portList = addr.PortList(*ports)
-        self.assertTrue(portList.__getitem__(0))
+        self.assertEqual(portList.__getitem__(0), 9001)
 
     def test_getitem_shouldNotContain(self):
         """Test ``__getitem__`` with a port number not in the PortList."""
