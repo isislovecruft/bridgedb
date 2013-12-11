@@ -26,6 +26,16 @@
    \__ :mod:`bridgedb.parse.versions`
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import binascii
+
+
+class InvalidBase64(ValueError):
+    """Cannot decode base64 value."""
+
 
 def padBase64(b64string):
     """Re-add any stripped equals sign character padding to a b64 string.
@@ -50,3 +60,31 @@ def padBase64(b64string):
         b64string += '=' * addchars
 
     return b64string
+
+def parseUnpaddedBase64(field):
+    """Parse an unpadded, base64-encoded field.
+
+    The **field** will be re-padded, if need be, and then base64 decoded.
+
+    :param str field: Should be some base64-encoded thing, with any trailing
+                      '=' characters removed.
+    :raises: :exc:`InvalidBase64`, if there is an error in either unpadding or
+             decoding **field**.
+    :rtype: str
+    :returns: The base64-decoded **field**.
+    """
+    if field.endswith('='):
+        raise InvalidBase64("Unpadded, base64-encoded networkstatus field "\
+                            "must not end with '=': %r" % field)
+
+    try:
+        paddedField = padBase64(field)  # Add the trailing equals sign back in
+    except ValueError as error:
+        raise InvalidBase64(error)
+
+    debasedField = binascii.a2b_base64(paddedField)
+    if not debasedField:
+        raise InvalidBase64("Base64-encoded networkstatus field %r is invalid!"
+                            % field)
+
+    return debasedField

@@ -32,7 +32,8 @@ import warnings
 from twisted.python.log import showwarning
 
 from bridgedb.parse import addr
-from bridgedb.parse import padBase64
+from bridgedb.parse import parseUnpaddedBase64
+from bridgedb.parse import InvalidBase64
 
 
 class NetworkstatusParsingError(Exception):
@@ -103,19 +104,10 @@ def parseRLine(line):
         nickname, ID = fields[:2]
         isValidRouterNickname(nickname)
 
-        if ID.endswith('='):
-            raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname "\
-                "'%s':\n  Unpadded, base64-encoded networkstatus router identity "\
-                "string ends with '=': %r" % (nickname, ID))
-        paddedID = padBase64(ID) # Add the trailing equals sign back in
-        debasedID = binascii.a2b_base64(paddedID)
-        if not debasedID:
-            raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname "\
-                "'%s':\n  Base64-encoding for networkstatus router identity "\
-                "string is invalid!\n  Line: %r" % (nickname, line))
-        ID = debasedID
+        try:
+            ID = parseUnpaddedBase64(ID)
+        except InvalidBase64 as error:
+            raise InvalidNetworkstatusRouterIdentity(error)
 
     except NetworkstatusParsingError as error:
         logging.error(error)
@@ -128,16 +120,18 @@ def parseRLine(line):
         ID = None
     else:
         try:
-            paddedDigest = padBase64(fields[2])
-            descDigest = binascii.b2a_base64(paddedDigest)
+            descDigest = parseUnpaddedBase64(fields[2])
             timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
                                                   "%Y-%m-%d %H:%M:%S"))
             ORaddr = fields[5]
             ORport = fields[6]
             dirport = fields[7]
-        except (AttributeError, ValueError, IndexError) as error:
+        except InvalidBase64 as error:
             logging.error(error)
             descDigest = None
+        except (AttributeError, ValueError, IndexError) as error:
+            logging.error(error)
+            timestamp = None
     finally:
         return (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport)
 
