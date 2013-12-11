@@ -32,17 +32,20 @@ def padBase64(b64string):
 
     :param string b64string: A base64-encoded string which might have had its
         trailing equals sign padding removed.
+    :raises: :exc:`ValueError` if there was any error while manipulating the
+        string.
+    :returns: A properly-padded (according to base64) string.
     """
+    addchars  = 0
     try:
         b64string = b64string.strip()
-    except AttributeError:
-        logging.error("Cannot pad base64 string %r: not a string." % b64string)
-    else:
-        addchars  = 0
         remainder = len(b64string) % 4
         if 2 <= remainder <= 3:
             addchars = 4 - remainder
-        else:
+    except AttributeError as error:
+        raise ValueError(error)
+    else:
+        if not addchars:
             raise ValueError("Invalid base64-encoded string: %r" % b64string)
         b64string += '=' * addchars
     finally:
