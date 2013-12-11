@@ -51,12 +51,12 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
     #: A base64-encoded, SHA-1 digest of the DER-formatted, ASN.1-encoded,
     #: public portion of an OR identity key, with any trailing base64 padding
     #: (any '=' characters) removed.
-    ident = 'bXw2N1K9AAKR5undPaTgNUySNxI'
+    ident = 'bXw2N1K9AAKR5undPaTgNUySN'
     #: A base64-encoded, SHA-1 digest of the OR
     #: `@type-[bridge-]server-descriptor` document (the whole thing, up until
     #: the 'router signature' line, but not including the signature thereafter),
     #: with any trailing base64 padding (any '=' characters) removed.
-    desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAwXQ'
+    desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAw'
     #: An ISO-8661 formatted timestamp, with a space separator (rather than a
     #: 'T' character).
     ts    = '2013-10-31 15:15:15'
