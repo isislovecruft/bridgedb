@@ -42,6 +42,9 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
     The documentation for all class variables, e.g. 'pre' or 'ident', refers
     to what said value should be in a *valid* descriptor.
     """
+    rawIdent = 'identdigestidentdig'
+    rawDesc  = 'descdigestdescdiges'
+
     #: The prefix for the 'r'-line. Should be an 'r', unless testing that
     #: lines with unknown prefixes are dropped.
     pre   = 'r '
@@ -51,12 +54,12 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
     #: A base64-encoded, SHA-1 digest of the DER-formatted, ASN.1-encoded,
     #: public portion of an OR identity key, with any trailing base64 padding
     #: (any '=' characters) removed.
-    ident = 'bXw2N1K9AAKR5undPaTgNUySN'
+    ident = binascii.b2a_base64(rawIdent).strip().rstrip('==')
     #: A base64-encoded, SHA-1 digest of the OR
     #: `@type-[bridge-]server-descriptor` document (the whole thing, up until
     #: the 'router signature' line, but not including the signature thereafter),
     #: with any trailing base64 padding (any '=' characters) removed.
-    desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAw'
+    desc  = binascii.b2a_base64(rawDesc).strip().rstrip('==')
     #: An ISO-8661 formatted timestamp, with a space separator (rather than a
     #: 'T' character).
     ts    = '2013-10-31 15:15:15'
@@ -168,7 +171,7 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
 
         the(nick).should.be.ok
         the(nick).should.be.a(basestring)
-        the(nick).should.be.equal(str(self.nick))
+        the(nick).should.be.equal(self.nick)
         the(ident).should.be.equal(None)
         the(desc).should.be.equal(None)
 
@@ -180,27 +183,27 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
 
         the(nick).should.be.ok
         the(nick).should.be.a(basestring)
-        the(nick).should.be.equal(str(self.nick))
+        the(nick).should.be.equal(self.nick)
 
         the(ident).should.be.a(basestring)
-        the(ident).should.be.equal(self.ident)
+        the(ident).should.be.equal(self.rawIdent)
 
         the(desc).should.be.equal(None)
         the(ts).should.be.equal(None)
         the(ip).should.be.equal(None)
 
-    def test_invalidDescriptorDigest_missingBase64padding(self):
+    def test_invalidDescriptorDigest_withBase64padding(self):
         """Test a line with invalid base64 (no padding) descriptor digest."""
-        self.makeRLine(desc=self.desc.rstrip('=='))
+        self.makeRLine(desc=self.desc + '==')
         fields = networkstatus.parseRLine(self.line)
         nick, ident, desc, ts, ip = fields[:5]
 
         the(nick).should.be.ok
         the(nick).should.be.a(basestring)
-        the(nick).should.be.equal(str(self.nick))
+        the(nick).should.be.equal(self.nick)
 
         the(ident).should.be.a(basestring)
-        the(ident).should.be.equal(self.ident)
+        the(ident).should.be.equal(self.rawIdent)
 
         the(desc).should.be.equal(None)
         the(ts).should.be.equal(None)
@@ -242,14 +245,11 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         nick, ident, desc, ts, ip, port = fields[:6]
 
         the(nick).should.be.equal(self.nick)
+        the(ident).should.be.equal(self.rawIdent)
 
-        the(ident).should.be.a(basestring)
-        the(ident).should.be.equal(self.ident)
-
-        the(desc).should.be.a(basestring)
-        the(b64desc).should.be.equal(self.desc)
-
-        the(ts).should.be.a(float)
+        # descDigest is set to `None` if there is an error while parsing:
+        the(desc).should.be(None)
+        the(ts).should.be(None)
         the(ip).should.be(None)
 
 
