@@ -48,13 +48,14 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
     #: An OR nickname string. To be valid, it should be 1-19 alphanumeric
     #: upper or lower cased characters.
     nick  = 'Testing'
-    #: A base64-encoded SHA-1 digest of the DER-formatted ASN.1-encoded public
-    #: portion of an OR identity key, with any trailing base64 padding (any
-    #: '=' characters) removed.
+    #: A base64-encoded, SHA-1 digest of the DER-formatted, ASN.1-encoded,
+    #: public portion of an OR identity key, with any trailing base64 padding
+    #: (any '=' characters) removed.
     ident = 'bXw2N1K9AAKR5undPaTgNUySNxI'
-    #: A base64-encoded SHA-1 digest of the OR [bridge-]server-descriptor
-    #: document (the whole thing, up until the 'router signature' line, but not
-    #: included the signature thereafter).
+    #: A base64-encoded, SHA-1 digest of the OR
+    #: `@type-[bridge-]server-descriptor` document (the whole thing, up until
+    #: the 'router signature' line, but not including the signature thereafter),
+    #: with any trailing base64 padding (any '=' characters) removed.
     desc  = 'Z6cisoPT9s6hEd4JkHFAlIWAwXQ'
     #: An ISO-8661 formatted timestamp, with a space separator (rather than a
     #: 'T' character).
