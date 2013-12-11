@@ -128,7 +128,8 @@ def parseRLine(line):
         ID = None
     else:
         try:
-            descDigest = binascii.a2b_base64(fields[2])
+            paddedDigest = padBase64(fields[2])
+            descDigest = binascii.b2a_base64(paddedDigest)
             timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
                                                   "%Y-%m-%d %H:%M:%S"))
             ORaddr = fields[5]
