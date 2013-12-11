@@ -48,5 +48,5 @@ def padBase64(b64string):
         if not addchars:
             raise ValueError("Invalid base64-encoded string: %r" % b64string)
         b64string += '=' * addchars
-    finally:
-        return b64string
+
+    return b64string
