@@ -583,13 +583,25 @@ class PortListTest(unittest.TestCase):
         """Test ``__getitem__`` with a port number in the PortList."""
         ports = (443, 9001, 9030)
         portList = addr.PortList(*ports)
-        self.assertTrue(portList.__getitem__(443))
+        self.assertEqual(portList.__getitem__(0), 9001)
 
     def test_getitem_shouldNotContain(self):
         """Test ``__getitem__`` with a port number not in the PortList."""
         ports = (443, 9001, 9030)
         portList = addr.PortList(*ports)
-        self.assertRaises(ValueError, portList.__getitem__, 555)
+        self.assertRaises(IndexError, portList.__getitem__, 555)
+
+    def test_getitem_string(self):
+        """Test ``__getitem__`` with a string."""
+        ports = (443, 9001, 9030)
+        portList = addr.PortList(*ports)
+        self.assertRaises(TypeError, portList.__getitem__, '443')
+
+    def test_getitem_long(self):
+        """Test ``__getitem__`` with a string."""
+        ports = (443, 9001, 9030)
+        portList = addr.PortList(*ports)
+        self.assertEqual(portList.__getitem__(long(0)), 9001)
 
     def test_mixedArgs(self):
         """Create a :class:`addr.PortList` with mixed type parameters."""
