@@ -175,6 +175,18 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(ident).should.be.equal(None)
         the(desc).should.be.equal(None)
 
+    def test_invalidIdent_withBase64padding(self):
+        """Test a line with invalid base64 (no padding) identity digest."""
+        self.makeRLine(ident=self.ident + '==')
+        fields = networkstatus.parseRLine(self.line)
+        nick, ident, desc = fields[:3]
+
+        the(nick).should.be.ok
+        the(nick).should.be.a(basestring)
+        the(nick).should.be.equal(self.nick)
+        the(ident).should.be.equal(None)
+        the(desc).should.be.equal(None)
+
     def test_invalidDescriptorDigest(self):
         """Test an 'r'-line with invalid base64 descriptor digest."""
         self.makeRLine(desc='敃噸襶')
@@ -192,6 +204,18 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(ts).should.be.equal(None)
         the(ip).should.be.equal(None)
 
+    def test_invalidDescriptorDigest_invalidBase64(self):
+        """Test line with '%$>@,<' for an identity digest."""
+        self.makeRLine(desc='%$>#@,<')
+        fields =  networkstatus.parseRLine(self.line)
+        nick, ident, desc, ts, ip = fields[:5]
+
+        the(nick).should.be.ok
+        the(nick).should.be.a(basestring)
+        the(nick).should.equal(self.nick)
+        the(ident).should.be(None)
+        the(desc).should.be(None)
+
     def test_invalidDescriptorDigest_withBase64padding(self):
         """Test a line with invalid base64 (no padding) descriptor digest."""
         self.makeRLine(desc=self.desc + '==')
@@ -208,6 +232,18 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(desc).should.be.equal(None)
         the(ts).should.be.equal(None)
         the(ip).should.be.equal(None)
+
+    def test_invalidDescriptorDigest_singleQuoteChar(self):
+        """Test with a single quote character for the descriptor digest."""
+        self.makeRLine(desc=chr(0x27))
+        fields = networkstatus.parseRLine(self.line)
+        nick, ident, desc = fields[:3]
+
+        the(nick).should.be.ok
+        the(nick).should.be.a(basestring)
+        the(nick).should.be.equal(self.nick)
+        the(ident).should.be.equal(self.rawIdent)
+        the(desc).should.be.equal(None)
 
     def test_missingAfterDesc(self):
         """Test a line that has a valid descriptor digest, and is missing
@@ -231,6 +267,15 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         """Test line with two large integers for the timestamp."""
         self.makeRLine(ts='123456789 987654321')
         fields = networkstatus.parseRLine(self.line)
+        nick, ident, desc, ts, ip, port = fields[:6]
+
+        the(nick).should.be.equal(self.nick)
+        the(ident).should.be.equal(self.rawIdent)
+
+        # descDigest is set to `None` if there is an error while parsing:
+        the(desc).should.be(None)
+        the(ts).should.be(None)
+        the(ip).should.be(None)
 
     def test_invalidTimestampMissingDate(self):
         """Test a line where the timestamp is missing the date portion."""
@@ -251,6 +296,17 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         the(desc).should.be(None)
         the(ts).should.be(None)
         the(ip).should.be(None)
+
+    def test_valid(self):
+        """Test a valid 'r'-line."""
+        self.makeRLine()
+        fields = networkstatus.parseRLine(self.line)
+        nick, ident, desc, ts, ip, port = fields[:6]
+        the(nick).should.be.equal(self.nick)
+        the(ident).should.be.equal(self.rawIdent)
+        the(desc).should.be.equal(self.rawDesc)
+        the(ts).should.be.ok
+        the(ip).should.be.ok
 
 
 class ParseNetworkStatusALineTests(unittest.TestCase):
