@@ -93,7 +93,7 @@ def parseRLine(line):
             raise NetworkstatusParsingError(
                 "Networkstatus parser received non 'r'-line: %r" % line)
 
-        line = line[2:] # Chop of the 'r '
+        line = line[2:] # Chop off the 'r '
         fields = line.split()
 
         if len(fields) != 8:
