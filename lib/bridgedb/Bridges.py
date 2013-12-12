@@ -19,6 +19,7 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
+from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
 
 
@@ -149,13 +150,16 @@ class Bridge:
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
             request=None, transport=None):
-        """Returns a valid bridge line for inclusion in a torrc"""
-        #arguments:
-        #    includeFingerprint
-        #    addressClass - type of address to choose 
-        #    request - a string unique to this request
-        #        e.g. email-address or uniformMap(ip)
-        #    transport - a pluggable transport method name
+        """Returns a valid bridge line for inclusion in a torrc.
+
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param DOCDOC addressClass: Type of address to choose.
+        :param str request: A string unique to this request e.g. email-address
+            or ``uniformMap(ip)`` or ``'default'``.
+        :param str transport: A pluggable transport method name.
+        """
 
         if not request: request = 'default'
         digest = get_hmac_fn('Order-Or-Addresses')(request)
@@ -182,7 +186,7 @@ class Bridge:
 
         # default ip, orport should get a chance at being selected
         if isinstance(self.ip, addressClass):
-            addresses.insert(0,(self.ip, PortList(self.orport)))
+            addresses.insert(0,(self.ip, addr.PortList(self.orport)))
 
         if addresses:
             address,portlist = addresses[pos % len(addresses)]
@@ -365,11 +369,6 @@ def parseDescFile(f, bridge_purpose='bridge'):
             nickname = ip = orport = fingerprint = purpose = None 
 
 
-class ParseORAddressError(Exception):
-    def __init__(self):
-        msg = "Invalid or-address line"
-        Exception.__init__(self, msg)
-
 re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
@@ -472,8 +471,8 @@ def parseExtraInfoFile(f):
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
-                        logging.debug("  Parsed Transport: %s", method_name)
-                        logging.debug("  Parsed Transport Address: %s:%d", address, port)
+                        logging.debug("  Parsed Transport: %s %s:%d"
+                                      % (method_name, address, port))
                         yield ID, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
@@ -503,6 +502,14 @@ def parseStatusFile(networkstatusFile):
         if line.startswith("r "):
             (nickname, ID, descDigest, timestamp,
              ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            logging.debug("Parsed networkstatus line:")
+            logging.debug("  Nickname:   %s" % nickname)
+            logging.debug("  Identity:   %s" % toHex(ID))
+            logging.debug("  Descriptor: %s" % descDigest)
+            logging.debug("  Timestamp:  %s" % timestamp)
+            logging.debug("  ORAddress:  %s" % ORaddr)
+            logging.debug("  ORport:     %s" % ORport)
+            logging.debug("  dirport:    %s" % dirport)
 
         elif ID and line.startswith("a "):
             try:
@@ -516,7 +523,9 @@ def parseStatusFile(networkstatusFile):
 
         elif ID and timestamp and line.startswith("s "):
             running, stable = networkstatus.parseSLine(line)
-
+            logging.debug("Bridges.parseStatusFile(): "\
+                          "yielding %s running=%s stable=%s oraddrs=%s ts=%s"
+                          % (toHex(ID), running, stable, or_addresses, timestamp))
             yield ID, running, stable, or_addresses, timestamp
 
             (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
@@ -548,7 +557,7 @@ def parseCountryBlockFile(f):
                 m = regex.match(addrspec)
                 if m:
                     address = ipaddr.IPAddress(m.group(1))
-                    portlist = PortList(m.group(2))
+                    portlist = addr.PortList(m.group(2))
                     countries = countries.split(',')
                     logging.debug("Parsed address: %s", address)
                     logging.debug("Parsed portlist: %s", portlist)

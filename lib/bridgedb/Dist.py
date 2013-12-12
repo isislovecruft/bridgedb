@@ -89,6 +89,10 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.nClusters = nClusters
         self.answerParameters = answerParameters
 
+        if not ipCategories:
+            ipCategories = []
+        if not answerParameters:
+            answerParameters = []
         self.rings = []
 
         self.categories = []

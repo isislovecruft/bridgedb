@@ -17,7 +17,7 @@
 
 ..
   parse
-   \_networkstatus     
+   \_networkstatus
       |_ parseRLine - Parse an 'r'-line from a networkstatus document
       |_ parseALine - Parse an 'a'-line from a networkstatus document
       \_ parseSLine - Parse an 's'-line from a networkstatus document
@@ -27,9 +27,13 @@ import binascii
 import logging
 import string
 import time
+import warnings
+
+from twisted.python.log import showwarning
 
 from bridgedb.parse import addr
-from bridgedb.parse import padBase64
+from bridgedb.parse import parseUnpaddedBase64
+from bridgedb.parse import InvalidBase64
 
 
 class NetworkstatusParsingError(Exception):
@@ -38,14 +42,8 @@ class NetworkstatusParsingError(Exception):
 class InvalidNetworkstatusRouterIdentity(ValueError):
     """The ID field of a networkstatus document 'r'-line is invalid."""
 
-class InvalidNetworkstatusDescriptorDigest(ValueError):
-    """Descriptor digest of a networkstatus document 'r'-line is invalid."""
-
 class InvalidRouterNickname(ValueError):
     """Router nickname doesn't follow tor-spec."""
-
-
-ALPHANUMERIC = string.letters + string.digits
 
 
 def isValidRouterNickname(nickname):
@@ -53,20 +51,16 @@ def isValidRouterNickname(nickname):
 
     :param string nickname: An OR's nickname.
     """
-    try:
-        if not (1 <= len(nickname) <= 19):
-            raise InvalidRouterNickname(
-                "Nicknames must be between 1 and 19 characters: %r" % nickname)
-        for letter in nickname:
-            if not letter in ALPHANUMERIC:
-                raise InvalidRouterNickname(
-                    "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
-    except Exception as error:
-        logging.exception(error)
-    else:
-        return True
+    ALPHANUMERIC = string.letters + string.digits
 
-    raise InvalidRouterNickname
+    if not (1 <= len(nickname) <= 19):
+        raise InvalidRouterNickname(
+            "Nicknames must be between 1 and 19 characters: %r" % nickname)
+    for letter in nickname:
+        if not letter in ALPHANUMERIC:
+            raise InvalidRouterNickname(
+                "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
+    return True
 
 def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
@@ -95,60 +89,49 @@ def parseRLine(line):
     (nickname, ID, descDigest, timestamp,
      ORaddr, ORport, dirport) = (None for x in xrange(7))
 
-    if not line.startswith('r '):
-        raise NetworkstatusParsingError(
-            "Networkstatus parser received non 'r'-line: %r" % line)
-
-    line = line[2:] # Chop of the 'r '
-
-    fields = line.split()
-    if len(fields) != 8:
-        raise NetworkstatusParsingError(
-            "Wrong number of fields in networkstatus 'r'-line: %r" % line)
-
     try:
-        nickname, ID = fields[:2]
+        if not line.startswith('r '):
+            raise NetworkstatusParsingError(
+                "Networkstatus parser received non 'r'-line: %r" % line)
 
+        line = line[2:] # Chop off the 'r '
+        fields = line.split()
+
+        if len(fields) != 8:
+            raise NetworkstatusParsingError(
+                "Wrong number of fields in networkstatus 'r'-line: %r" % line)
+
+        nickname, ID = fields[:2]
         isValidRouterNickname(nickname)
 
-        if ID.endswith('='):
-            raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r:"\
-                "\n\tUnpadded, base64-encoded networkstatus router identity "\
-                "string ends with '=': %r" % (nickname, ID))
         try:
-            ID = padBase64(ID) # Add the trailing equals sign back in
-        except (AttributeError, ValueError) as error:
-            raise InvalidNetworkstatusRouterIdentity(error.message)
+            ID = parseUnpaddedBase64(ID)
+        except InvalidBase64 as error:
+            raise InvalidNetworkstatusRouterIdentity(error)
 
-        ID = binascii.a2b_base64(ID) 
-        if not ID:
-            raise InvalidNetworkstatusRouterIdentity(
-                "Skipping networkstatus parsing for router with nickname %r:"\
-                "\n\tBase64-encoding for networkstatus router identity string"\
-                "is invalid!\n\tLine: %r" % (nickname, line))
-
-    except IndexError as error:
-        logging.error(error.message)
+    except NetworkstatusParsingError as error:
+        logging.error(error)
+        nickname, ID = None, None
     except InvalidRouterNickname as error:
-        logging.error(error.message)
+        logging.error(error)
         nickname = None
     except InvalidNetworkstatusRouterIdentity as error:
-        logging.error(error.message)
+        logging.error(error)
         ID = None
-
-    try:
-        descDigest = binascii.a2b_base64(fields[2])
-    except (AttributeError, ValueError) as error:
-        raise InvalidNetworkstatusDescriptorDigest(error.message)
-
-
-        timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
-                                              "%Y-%m-%d %H:%M:%S"))
-        ORaddr = fields[5]
-        ORport = fields[6]
-        dirport = fields[7]
-
+    else:
+        try:
+            descDigest = parseUnpaddedBase64(fields[2])
+            timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
+                                                  "%Y-%m-%d %H:%M:%S"))
+            ORaddr = fields[5]
+            ORport = fields[6]
+            dirport = fields[7]
+        except InvalidBase64 as error:
+            logging.error(error)
+            descDigest = None
+        except (AttributeError, ValueError, IndexError) as error:
+            logging.error(error)
+            timestamp = None
     finally:
         return (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport)
 
@@ -170,44 +153,63 @@ def parseALine(line, fingerprint=None):
       |    consensus-method 14 or later.)
 
     :param string line: An 'a'-line from an bridge-network-status descriptor.
+    :type fingerprint: string or None
+    :param fingerprint: A string which identifies which OR the descriptor
+        we're parsing came from (since the 'a'-line doesn't tell us, this can
+        help make the log messages clearer).
     :raises: :exc:`NetworkstatusParsingError`
     :rtype: tuple
     :returns: A 2-tuple of a string respresenting the IP address and a
         :class:`bridgedb.parse.addr.PortList`.
     """
     ip = None
-    address = None
     portlist = None
 
     if not line.startswith('a '):
-        logging.error("Networkstatus parser received non 'a'-line for %r:"
-                      % (fingerprint or 'Unknown'))
-        logging.error("\t%r" % line)
-        return address, portlist
+        logging.error("Networkstatus parser received non 'a'-line for %r:"\
+                      "  %r" % (fingerprint or 'Unknown', line))
+        return ip, portlist
 
     line = line[2:] # Chop off the 'a '
 
     try:
         ip, portlist = line.rsplit(':', 1)
-    except (IndexError, ValueError, addr.InvalidPort) as error:
-        logging.exception(error)
-        raise NetworkstatusParsingError(
-            "Parsing networkstatus 'a'-line for %r failed! Line: %r"
-            %(fingerprint, line))
-    else:
-        ip = ip.strip('[]') 
-        address = addr.isIPAddress(ip)
-        if not ip:
+    except ValueError as error:
+        logging.error("Bad separator in networkstatus 'a'-line: %r" % line)
+        return (None, None)
+
+    if ip.startswith('[') and ip.endswith(']'):
+        ip = ip.strip('[]')
+
+    try:
+        if not addr.isIPAddress(ip):
             raise NetworkstatusParsingError(
                 "Got invalid IP Address in networkstatus 'a'-line for %r: %r"
-                % (fingerprint, ip))
-        
+                % (fingerprint or 'Unknown', line))
+
+        if addr.isIPv4(ip):
+            warnings.warn(FutureWarning(
+                "Got IPv4 address in networkstatus 'a'-line! "\
+                "Networkstatus document format may have changed!"))
+    except NetworkstatusParsingError as error:
+        logging.error(error)
+        ip, portlist = None, None
+
+    try:
         portlist = addr.PortList(portlist)
-
-    logging.debug("Parsed networkstatus ORAddress line for %r:" % fingerprint)
-    logging.debug("\tAddress: %s  \tPorts: %s" % (address, portlist))
-
-    return address, portlist
+        if not portlist:
+            raise NetworkstatusParsingError(
+                "Got invalid portlist in 'a'-line for %r!\n  Line: %r"
+                % (fingerprint or 'Unknown', line))
+    except (addr.InvalidPort, NetworkstatusParsingError) as error:
+        logging.exception(error)
+        portlist = None
+    else:
+        logging.debug("Parsed networkstatus ORAddress line for %r:"\
+                      "\n  Address: %s  \tPorts: %s"
+                      % (fingerprint or 'Unknown', ip, portlist))
+    finally:
+        return (ip, portlist)
 
 def parseSLine(line):
     """Parse an 's'-line from a bridge networkstatus document.
@@ -243,8 +245,6 @@ def parseSLine(line):
     :returns: A 2-tuple of booleans, the first is True if the bridge has the
         "Running" flag, and the second is True if it has the "Stable" flag.
     """
-    fast, running, stable, guard, valid = False
-    
     line = line[2:]
 
     flags = [x.capitalize() for x in line.split()]
@@ -253,8 +253,14 @@ def parseSLine(line):
     stable  = 'Stable' in flags
     guard   = 'Guard' in flags
     valid   = 'Valid' in flags
-    
-    logging.debug("Parsed Flags: %s" % flags)
+
+    if (fast or running or stable or guard or valid):
+        logging.debug("Parsed Flags: %s%s%s%s%s"
+                      % ('Fast ' if fast else '',
+                         'Running ' if running else '',
+                         'Stable ' if stable else '',
+                         'Guard ' if guard else '',
+                         'Valid ' if valid else ''))
 
     # Right now, we only care about 'Running' and 'Stable'
     return running, stable

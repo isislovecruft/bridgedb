@@ -24,10 +24,129 @@
    |__ :mod:`bridgedbparse.headers`
    |__ :mod:`bridgedb.parse.options`
    \__ :mod:`bridgedb.parse.versions`
+
+..
+
+Private IP Address Ranges:
+''''''''''''''''''''''''''
+.. glossary::
+
+   10.0.0.0    - 10.255.255.255  (10.0.0.0/8 prefix)
+   172.16.0.0  - 172.31.255.255  (172.16.0.0/12 prefix)
+   192.168.0.0 - 192.168.255.255 (192.168.0.0/16 prefix)
+      These Address ranges are reserved by IANA for private intranets, and not
+      routable to the Internet.  For additional information, see :rfc:`1918`.
+
+Reserved and Special Use Addresses:
+'''''''''''''''''''''''''''''''''''
+.. glossary::
+
+   Unspecified Address
+   Default Route
+      ex. ``0.0.0.0/8``
+      ex. ``::/128``
+      Current network (only valid as source address). See :rfc:`1122`. An
+      **Unspecified Address** in the context of firewalls means "all addresses
+      of the local machine". In a routing context, it is usually termed the
+      **Default Route**, and it means the default route (to "the rest of" the
+      internet). See :rfc:`1700`.
+
+   Loopback Address
+      ex. ``127.0.0.0``
+      Reserved for loopback and IPC on the localhost. See :rfc:`1122`.
+
+   Localhost Address
+      ex. ``127.0.0.1 - 127.255.255.254`` (``127.0.0.0/8``)
+      ex. ``::1``
+      Loopback IP addresses (refers to self). See :rfc:`5735`.
+
+   Link-Local Address
+      ex. ``169.254.0.0/16``
+      ex. ``fe80::/64``
+      These are the link-local blocks, used for communication between hosts on
+      a single link. See :rfc:`3927`.
+
+   Multicast Address
+      ex. ``224.0.0.0 - 239.255.255.255`` (``224.0.0.0/4``)
+      Reserved for multicast addresses. See :rfc:`3171`.
+
+   Private Address
+      ex. ``10.0.0.0/8``
+      ex. ``172.16.0.0/12``
+      ex. ``192.168.0.0/16``
+      Reserved for private networks. See :rfc:`1918`.
+
+   Reserved Address
+      ex. ``240.0.0.0 - 255.255.255.255`` (``240.0.0.0/4``)
+      Reserved (former Class E network). See :rfc:`1700`, :rfc:`3232`, and
+      :rfc:`5735`. The one exception to this rule is the :term:`Limited
+      Broadcast Address`, ``255.255.255.255`` for which packets at the IP
+      layer are not forwarded to the public internet.
+
+   Limited Broadcast Address
+      ex. ``255.255.255.255``
+      Limited broadcast address (limited to all other nodes on the LAN). See
+      :rfc:`919`. For IPv4, ``255`` in any part of the IP is reserved for
+      broadcast addressing to the local LAN.
+
+
+.. warning:: The :mod:`ipaddr` module (as of version 2.1.10) does not
+             understand the following reserved_ addresses:
+
+.. _reserved: https://tools.ietf.org/html/rfc5735#page-4
+
+.. glossary::
+
+   Reserved Address (Protocol Assignments)
+      ex. ``192.0.0.0/24``
+      Reserved for IETF protocol assignments. See :rfc:`5735`.
+
+   Reserved Address (6to4 Relay Anycast)
+      ex. ``192.88.99.0/24``
+      IPv6 to IPv4 relay. See :rfc:`3068`.
+
+   Reserved Address (Network Benchmark)
+      ex. ``198.18.0.0/15``
+      Network benchmark tests. See :rfc:`2544`.
+
+   Reserved Address (TEST-NET-1)
+      ex. ``192.0.2.0/24``
+      Reserved for use in documentation and example code. It is often used in
+      conjunction with domain names ``example.com`` or ``example.net`` in
+      vendor and protocol documentation. See :rfc:`1166`.
+
+   Reserved Address (TEST-NET-2)
+      ex. ``198.51.100.0/24``
+      TEST-NET-2. See :rfc:`5737`.
+
+   Reserved Address (TEST-NET-3)
+      ex. ``203.0.113.0/24``
+      TEST-NET-3. See :rfc:`5737`.
+
+   Shared Address Space
+      ex. ``100.64.0.0/10``
+      See :rfc:`6598`.
+
+   Site-Local Address
+   Unique Local Address
+      ex. ``ff00::0/8``
+      ex. ``fec0::/10`` (:rfc:`3513` §2.5.6)
+      Similar uses to :term:`Limited Broadcast Address`. For IPv6, everything
+      becomes convoluted_ and complicated_, and then redefined_. See
+      :rfc:`4193`, :rfc:`3879`, and :rfc:`3513`. The
+      :meth:`ipaddr.IPAddress.is_site_local` method *only* checks to see if
+      the address is a **Unique Local Address** vis-á-vis :rfc:`3513` §2.5.6.
+
+.. _convoluted: https://en.wikipedia.org/wiki/IPv6_address#Multicast_addresses
+.. _complicated: https://en.wikipedia.org/wiki/IPv6_address#IPv6_address_scopes
+.. _redefined: https://en.wikipedia.org/wiki/Unique_local_address
 """
 
-import logging
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
+import logging
 import ipaddr
 
 
@@ -51,8 +170,6 @@ def isIPAddress(ip, compressed=True):
         ip = ipaddr.IPAddress(ip)
     except ValueError:
         return False
-    except Exception as error:
-        logging.exception(error)
     else:
         if isValidIP(ip):
             if compressed:
@@ -62,22 +179,27 @@ def isIPAddress(ip, compressed=True):
     return False
 
 def _isIPv(version, ip):
-    """Check if an address is a certain ``version``, either IPv4 or IPv6.
+    """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
     :param integer version: The IPv[4|6] version to check; must be either
         ``4`` or ``6``.
-    :type ip: basestring or int
-    :param ip: The IP address to check.
+    :param ip: The IP address to check. May be an any type which
+               :class:`ipaddr.IPAddress` will accept.
     :rtype: boolean
-    :returns: True if the address is an IPv4 address.
+    :returns: ``True``, if the address is an IPv4 address.
     """
-    ip = isIPAddress(ip, compressed=False)
-    if ip and (ip.version == version):
+    try:
+        ip = ipaddr.IPAddress(ip, version=version)
+    except ipaddr.AddressValueError:
+        logging.debug("Address %s seems not to be IPv%d." % (ip, version))
+        return False
+    else:
         return True
-    return False
 
 def isIPv4(ip):
     """Check if an address is IPv4.
+
+    .. attention:: This does *not* check validity. See :func:`isValidIP`.
 
     :type ip: basestring or int
     :param ip: The IP address to check.
@@ -89,6 +211,8 @@ def isIPv4(ip):
 def isIPv6(ip):
     """Check if an address is IPv6.
 
+    .. attention:: This does *not* check validity. See :func:`isValidIP`.
+
     :type ip: basestring or int
     :param ip: The IP address to check.
     :rtype: boolean
@@ -96,86 +220,126 @@ def isIPv6(ip):
     """
     return _isIPv(6, ip)
 
-def isValidIP(ipaddress):
-    """Check that an IP (v4 or v6) is public and not reserved.
+def isValidIP(ip):
+    """Check that an IP (v4 or v6) is valid.
 
-    The IP address, ``ip``, must not be any of the following:
-      * A link-local address, such as ``169.254.0.0/16`` or ``fe80::/64``.
-      * The address of a loopback interface, i.e. ``127.0.0.1`` or ``::1``.
-      * A multicast address, for example, ``255.255.255.0``.
-      * An unspecified address, for example ``0.0.0.0/32`` in IPv4 or
-        ``::/128`` in IPv6.
-      * A default route address, for example ``0.0.0.0/0`` or ``::/0``.
-      * Any other address within a private networks, such as the IANA
-        reserved Shared Address Space, defined in RFC6598_ as
-        ``100.64.0.0/10``.
+    The IP address, **ip**, must not be any of the following:
 
-    If it is an IPv4 address, it also must not be:
-      *  A reserved address vis-á-vis RFC1918_
+      * A :term:`Link-Local Address`,
+      * A :term:`Loopback Address` or :term:`Localhost Address`,
+      * A :term:`Multicast Address`,
+      * An :term:`Unspecified Address` or :term:`Default Route`,
+      * Any other :term:`Private Address`, or address within a privately
+        allocated space, such as the IANA-reserved
+        :term:`Shared Address Space`.
 
     If it is an IPv6 address, it also must not be:
-      *  A "site-local", or Unique Local Address (ULA_), address vis-á-vis
-         RFC4193_ (i.e. within the ``fc00::/7`` netblock)
 
-    .. _RFC6598: https://tools.ietf.org/htmłrfc6598
-    .. _RFC1918: https://tools.ietf.org/html/rfc1918
-    .. _ULA: https://en.wikipedia.org/wiki/Unique_local_address
-    .. _RFC4193: https://tools.ietf.org/html/rfc4193
+      * A :term:`Site-Local Address` or an :term:`Unique Local Address`.
 
-    :type ipaddress: An :class:`ipaddr.IPAddress`,
-        :class:`ipaddr.IPv4Address`, or :class:`ipaddr.IPv6Address`.
-    :param ipaddress: An IPAddress class.
+    :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`, or
+              :class:`ipaddr.IPv6Address`.
+
+    :param ip: An ``ipaddr.IPAddress`` class.
     :rtype: boolean
-    :returns: True if the address passes the checks, False otherwise.
+    :returns: ``True``, if **ip** passes the checks; False otherwise.
     """
-    if not (ipaddress.is_link_local or ipaddress.is_loopback
-            or ipaddress.is_multicast or ipaddress.is_private
-            or ipaddress.is_unspecified):
-        if (ipaddress.version == 6) and (not ipaddress.is_site_local):
-            return True
-        elif (ipaddress.version == 4) and (not ipaddress.is_reserved):
-            return True
-    return False
+    reasons  = []
+
+    if ip.is_link_local:
+        reasons.append('link local')
+    if ip.is_loopback:
+        reasons.append('loopback')
+    if ip.is_multicast:
+        reasons.append('multicast')
+    if ip.is_private:
+        reasons.append('private')
+    if ip.is_unspecified:
+        reasons.append('unspecified')
+
+    if (ip.version == 6) and ip.is_site_local:
+        reasons.append('site local')
+    elif (ip.version == 4) and ip.is_reserved:
+        reasons.append('reserved')
+
+    if reasons:
+        explain = ', '.join([r for r in reasons]).strip(', ')
+        logging.debug("IPv%d address %s is invalid! Reason(s): %s"
+                      % (ip.version, ip, explain))
+        return False
+    return True
 
 
 class PortList(object):
-    """ container class for port ranges
+    """A container class for validated port ranges.
+
+    From torspec.git/dir-spec.txt §2.3:
+      |
+      | portspec ::= "*" | port | port "-" port
+      | port ::= an integer between 1 and 65535, inclusive.
+      |
+      |    [Some implementations incorrectly generate ports with value 0.
+      |     Implementations SHOULD accept this, and SHOULD NOT generate it.
+      |     Connections to port 0 are never permitted.]
+      |
+
+    :ivar set ports: All ports which have been added to this ``PortList``.
     """
 
     #: The maximum number of allowed ports per IP address.
     PORTSPEC_LEN = 16
 
     def __init__(self, *args, **kwargs):
+        """Create a :class:`~bridgedb.parse.addr.PortList`.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         self.ports = set()
         self.add(*args)
 
     def _sanitycheck(self, port):
+        """Check that ``port`` is in the range [1, 65535] inclusive.
+
+        :raises: InvalidPort, if ``port`` doesn't match ``port`` as defined
+            in the excert from torspec above.
+        :rtype: int
+        :returns: The **port**, if no exceptions were raised.
+        """
         if (not isinstance(port, int)) or not (0 < port <= 65535):
             raise InvalidPort("%s is not a valid port number!" % port)
+        return port
 
     def __contains__(self, port):
+        """Determine whether ``port`` is already in this ``PortList``.
+
+        :returns: True if ``port`` is in this ``PortList``; False otherwise.
+        """
         return port in self.ports
 
     def add(self, *args):
-        """Add a port (or ports) to this PortList."""
+        """Add a port (or ports) to this ``PortList``.
+
+        :param args: Should match the ``portspec`` defined above.
+        :raises: InvalidPort, if one of ``args`` doesn't match ``port`` as
+            defined above.
+        """
         for arg in args:
             portlist = []
             try:
                 if isinstance(arg, basestring):
                     ports = set([int(p)
                                  for p in arg.split(',')][:self.PORTSPEC_LEN])
-                    portlist.extend([p for p in ports])
+                    portlist.extend([self._sanitycheck(p) for p in ports])
                 if isinstance(arg, int):
-                    portlist.extend(arg)
+                    portlist.append(self._sanitycheck(arg))
                 if isinstance(arg, PortList):
                     self.add(list(arg.ports))
             except ValueError:
                 raise InvalidPort("%s is not a valid port number!" % arg)
-            except InvalidPort:
-                raise
 
-            [self._sanitycheck(port) for port in portlist]
-            self.ports.update(portlist)
+            self.ports.update(set(portlist))
 
     def __iter__(self):
         """Iterate through all ports in this PortList."""
@@ -197,12 +361,11 @@ class PortList(object):
         """Returns the total number of ports in this PortList."""
         return len(self.ports)
 
-    def __getitem__(self, x):
-        """Get a port if it is in this PortList.
+    def __getitem__(self, port):
+        """Get the value of ``port`` if it is in this PortList.
 
-        :raises: ValueError if ``x`` isn't in this PortList.
+        :raises: ValueError, if ``port`` isn't in this PortList.
         :rtype: integer
-        :returns: The port ``x``, if it is in this PortList.
+        :returns: The ``port``, if it is in this PortList.
         """
-        portlist = list(self.ports)
-        return portlist[portlist.index(x)]
+        return list(self.ports)[port]
