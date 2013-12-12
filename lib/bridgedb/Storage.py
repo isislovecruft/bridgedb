@@ -18,7 +18,7 @@ toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 HEX_ID_LEN = 40
 
-db_filename = None
+db_filename = ""
 
 def _escapeValue(v):
     return "'%s'" % v.replace("'", "''")
@@ -509,4 +509,5 @@ def setGlobalDB(db):
     _THE_DB = db
 
 def getDB(newHandle=False):
+    global db_filename
     return Database(db_filename) if newHandle else _THE_DB
