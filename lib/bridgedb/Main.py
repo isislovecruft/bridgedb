@@ -129,23 +129,8 @@ def load(state, splitter, clear=False):
                     running, stable = s
                     bridge.setStatus(running=running, stable=stable)
                 # XXX: what do we do with all these or_addresses?
-                #
-                # The bridge stability metrics are only concerned with a
-                # single ip:port So for now, we will only consider the bridges
-                # primary IP:port
                 bridge.or_addresses = addresses.get(bridge.getID())
                 splitter.insert(bridge)
-
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                            "Adding/updating timestamps in BridgeHistory for "\
-                            "'%s' in database: %s"
-                            % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                            bridge, timestamp)
         logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
         f.close()
 
@@ -192,9 +177,40 @@ def load(state, splitter, clear=False):
         logging.debug("Closing blocking-countries document")
         f.close()
 
+    reactor.callInThread(updateBridgeHistory, bridges, timestamps)
     bridges = None
     state.save()
     return
+
+
+def updateBridgeHistory(bridges, timestamps):
+    """After new descriptors are parsed, update our stability DB
+
+    For each bridge in ``bridges``, if the bridge's fingerprint is in
+    ``timestamp`s` then update the stability tracker using the new
+    timestamps.
+
+    :param list bridges: List of bridges recently parsed from
+        descriptors
+    :param list timestamps: List of timestamps obtained from the
+        networkstatus document
+    """
+
+    # The bridge stability metrics are only concerned with a
+    # single ip:port so for now we will only consider the bridges
+    # primary IP:port
+    for bridge in bridges.values():
+        if bridge.getID() in timestamps.keys():
+            ts = timestamps[bridge.getID()][:]
+            ts.sort()
+            for timestamp in ts:
+                logging.debug(
+                    "Adding/updating timestamps in BridgeHistory for "\
+                    "'%s' in database: %s"
+                    % (bridge.fingerprint, timestamp))
+                bridgedb.Stability.addOrUpdateBridgeHistory(
+                    bridge, timestamp)
+    logging.debug("Updated stability of bridges")
 
 def loadConfig(configFile=None, configCls=None):
     """Load configuration settings on top of the current settings.

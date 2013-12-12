@@ -111,7 +111,7 @@ class BridgeHistory(object):
 
         # return True if self.weightedTime is greater than the weightedTime
         # of the > bottom 1/8 all bridges, sorted by weightedTime
-        db = bridgedb.Storage.getDB()
+	db = bridgedb.Storage.getDB(True)
         allWeightedTimes = [ bh.weightedTime for bh in db.getAllBridgeHistory()]
         numBridges = len(allWeightedTimes)
         logging.debug("Got %d weightedTimes", numBridges)
@@ -133,8 +133,8 @@ class BridgeHistory(object):
         assert(isinstance(long,totalWeights))
         return totalRunlength / totalWeights
 
-def addOrUpdateBridgeHistory(bridge, timestamp):
-    db = bridgedb.Storage.getDB()
+def addOrUpdateBridgeHistory(bridge, timestamp, db=None):
+    if not db: db = bridgedb.Storage.getDB(True)
     bhe = db.getBridgeHistory(bridge.fingerprint)
     if not bhe:
         # This is the first status, assume 60 minutes.
@@ -173,7 +173,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
         return bhe
     
     # iterate over all known bridges and apply weighting factor
-    discountAndPruneBridgeHistories(statusPublicationMillis)
+    discountAndPruneBridgeHistories(statusPublicationMillis, db)
     
     # Update the weighted times of bridges
     updateWeightedTime(statusPublicationMillis)
@@ -204,8 +204,8 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
     bhe.port = bridge.orport
     return db.updateIntoBridgeHistory(bhe)
 
-def discountAndPruneBridgeHistories(discountUntilMillis):
-    db = bridgedb.Storage.getDB()
+def discountAndPruneBridgeHistories(discountUntilMillis, db=None):
+    if not db: db = bridgedb.Storage.getDB(True)
     bhToRemove = []
     bhToUpdate = []
 
@@ -222,9 +222,9 @@ def discountAndPruneBridgeHistories(discountUntilMillis):
     for k in bhToUpdate: db.updateIntoBridgeHistory(k)
     for k in bhToRemove: db.delBridgeHistory(k)
 
-def updateWeightedTime(statusPublicationMillis):
+def updateWeightedTime(statusPublicationMillis, db=None):
     bhToUpdate = []
-    db = bridgedb.Storage.getDB()
+    if not db: db = bridgedb.Storage.getDB(True)
     for bh in db.getBridgesLastUpdatedBefore(statusPublicationMillis):
         interval = (statusPublicationMillis - bh.lastUpdatedWeightedTime)/1000
         if interval > 0:
