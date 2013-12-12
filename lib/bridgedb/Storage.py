@@ -18,6 +18,8 @@ toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 HEX_ID_LEN = 40
 
+db_filename = None
+
 def _escapeValue(v):
     return "'%s'" % v.replace("'", "''")
 
@@ -422,6 +424,7 @@ class Database:
         for h in v:
             yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
 def openDatabase(sqlite_file):
+    global db_filename
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
     try:
@@ -433,6 +436,7 @@ def openDatabase(sqlite_file):
                 cur.executescript(SCHEMA_2TO3_SCRIPT)
             elif val != 3:
                 logging.warn("Unknown schema version %s in database.", val)
+            db_filename = sqlite_file
         except sqlite3.OperationalError:
             logging.warn("No Config table found in DB; creating tables")
             cur.executescript(SCHEMA3_SCRIPT)
@@ -504,6 +508,5 @@ def setGlobalDB(db):
     global _THE_DB
     _THE_DB = db
 
-def getDB():
-    return _THE_DB
-
+def getDB(newHandle=False):
+    return Database(db_filename) if newHandle else _THE_DB
