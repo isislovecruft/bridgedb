@@ -108,11 +108,10 @@
 
    BridgeDB parses the fingerprint, transport type, IP address, port and any
    arguments that are specified on these lines. BridgeDB skips the name. If
-   the fingerprint is invalid, BridgeDB skips the entry.
-   BridgeDB memorizes the transport type, IP address, port number, and any
-   arguments that are be provided and then it assigns them to the
-   corresponding bridge based on the fingerprint. Arguments are space
-   separated and are of the form k=v.
+   the fingerprint is invalid, BridgeDB skips the entry.  BridgeDB memorizes
+   the transport type, IP address, port number, and any arguments that are be
+   provided and then it assigns them to the corresponding bridge based on the
+   fingerprint. Arguments are comma-separated and are of the form k=v,k=v.
    Bridges that do not have an associated extra-info entry are not invalid.
 
 2. Assigning bridges to distributors
