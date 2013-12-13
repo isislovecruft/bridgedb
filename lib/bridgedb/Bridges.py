@@ -405,7 +405,7 @@ class PluggableTransport:
         host = "%s %s:%d" % (self.methodname, address, self.port)
         fp = ''
         if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
-        args = " ".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
+        args = ",".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
         return "%s %s %s" % (host, fp, args)
 
 def parseExtraInfoFile(f):
