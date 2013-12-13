@@ -69,6 +69,7 @@
 
       "@purpose" SP purpose NL
       "router" SP nickname SP IP SP ORPort SP SOCKSPort SP DirPort NL
+      "published" SP timestamp
       ["opt" SP] "fingerprint" SP fingerprint NL
       "router-signature" NL Signature NL
 
