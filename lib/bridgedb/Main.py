@@ -134,6 +134,10 @@ def load(state, splitter, clear=False):
                 # single ip:port So for now, we will only consider the bridges
                 # primary IP:port
                 bridge.or_addresses = addresses.get(bridge.getID())
+                # We attempt to insert all bridges. If the bridge is not
+                # running, then it is skipped during the insertion process. Also,
+                # if we have a descriptor for the bridge but it was not in the
+                # ns, then we skip it there, too.
                 splitter.insert(bridge)
 
                 if bridge.getID() in timestamps.keys():
