@@ -29,6 +29,7 @@ installed-files.txt
 .tox
 *.prof
 nosetests.xml
+doc/coverage-html/*
 
 # Translations
 *.mo
