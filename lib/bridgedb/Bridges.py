@@ -515,11 +515,14 @@ def parseStatusFile(networkstatusFile):
             try:
                 addr, portlist = networkstatus.parseALine(line, toHex(ID))
             except networkstatus.ParseNetstatusError as error:
-                logging.error(error.message)
+                logging.error(error)
             else:
-                try: or_addresses[addr].add(portlist)
-                except KeyError: or_addresses[addr] = portlist
-                parsedORAddressLines += 1
+                if (addr is not None) and (portlist is not None):
+                    try:
+                        or_addresses[addr].add(portlist)
+                    except (KeyError, AttributeError):
+                        or_addresses[addr] = portlist
+                    parsedORAddressLines += 1
 
         elif ID and timestamp and line.startswith("s "):
             running, stable = networkstatus.parseSLine(line)
