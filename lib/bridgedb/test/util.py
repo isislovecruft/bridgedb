@@ -47,15 +47,13 @@ def fileCheckDecorator(func):
     """
     @wraps(func)
     def wrapper(self, src, dst, description):
-        print("Copying %s:\n  %r\n\t\t↓ ↓ ↓\n  %r\n"
-              % (str(description), src, dst))
         self.assertTrue(os.path.isfile(src),
                         "Couldn't find original %s file: %r"
                         % (str(description), src))
         func(self, src, dst, description)
         self.assertTrue(os.path.isfile(dst),
-                        "Couldn't find new %s file: %r"
-                        % (str(description), dst))
+                        "Couldn't find new %s file: %r. Original: %r"
+                        % (str(description), dst, src))
     return wrapper
 
 if __name__ == "__main__":
