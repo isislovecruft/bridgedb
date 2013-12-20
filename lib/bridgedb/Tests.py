@@ -757,8 +757,8 @@ class BridgeStabilityTests(unittest.TestCase):
 
     def testDiscountAndPruneBridgeHistory(self):
         """ Test pruning of old Bridge History """
-        if os.environ.get('TRAVIS_CI'):
-            unittest.skip("Hangs on Travis-CI.")
+        if os.environ.get('TRAVIS'):
+            self.skipTest("Hangs on Travis-CI.")
             
         db = self.db
 
