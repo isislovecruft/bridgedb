@@ -45,8 +45,9 @@ BridgeDB requires the following OS-level dependencies:
  - libgpgme11-dev
  - OpenSSL>=1.0.1e
  - [SQLite3](http://www.maxmind.com/app/python)
- - [MaxMind GeoIP](https://www.maxmind.com/en/geolocation_landing) (packaged
-   in Debian as tor-geoipdb)
+ - [MaxMind GeoIP](https://www.maxmind.com/en/geolocation_landing)
+   - libgeoip-dev
+   - geoip-database
  - [python-setuptools](https://pypi.python.org/pypi/setuptools)
 
 As well as any Python dependencies in requirements.txt.
@@ -58,7 +59,8 @@ BridgeDB should work with or without a Python virtualenv.
  - Install Python 2.7, and other OS-level dependencies. On Debian, you can do:
 
         sudo apt-get install build-essential openssl python python-dev \
-            python-setuptools sqlite3 tor-geoip libgpgme11 libgpgme11-dev
+            python-setuptools sqlite3 libgpgme11 libgpgme11-dev libgeoip-dev \
+            geoip-database
 
  - Install Pip 1.3.1 or later. Debian has this version, but if for some reason
    that or a newer version isn't available, the easiest way to install a newer

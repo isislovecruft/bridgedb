@@ -46,14 +46,25 @@ rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 logging.debug("Set template root to %s" % template_root)
 
 try:
-    import GeoIP
-    # GeoIP data object: choose database here
-    # This is the same geoip implementation that pytorctl uses
-    geoip = GeoIP.new(GeoIP.GEOIP_STANDARD)
-    logging.info("GeoIP database loaded")
-except:
-    geoip = None
+    # Make sure we have the database before trying to import the module:
+    geoipdb = '/usr/share/GeoIP/GeoIP.dat'
+    if not os.path.isfile(geoipdb):
+        raise EnvironmentError("Could not find %r. On Debian-based systems, "\
+                               "please install the geoip-database package."
+                               % geoipdb)
+    # This is a "pure" python version which interacts with the Maxmind GeoIP
+    # API (version 1). It require, in Debian, the libgeoip-dev and
+    # geoip-database packages.
+    import pygeoip
+    geoip = pygeoip.GeoIP(geoipdb, flags=pygeoip.MEMORY_CACHE)
+
+except Exception as err:
+    logging.debug("Error while loading geoip module: %r" % err)
     logging.warn("GeoIP database not found") 
+    geoip = None
+else:
+    logging.info("GeoIP database loaded")
+
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
