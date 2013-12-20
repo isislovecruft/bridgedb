@@ -23,39 +23,43 @@ from functools import wraps
 def fileCheckDecorator(func):
     """Method decorator for a t.t.unittest.TestCase test_* method.
 
-    >>> import shutil
-    >>> from twisted.trial import unittest
-    >>> pyunit = __import__('unittest')
-    >>> class TestTests(unittest.TestCase):
-    ...     @fileCheckDecorator
-    ...     def doCopyFile(src, dst, description=None):
-    ...         shutil.copy(src, dst)
-    ...     def test_doCopyFile(self):
-    ...         srcfile = self.mktemp()
-    ...         dstfile = self.mktemp()
-    ...         with open(srcfile, 'wb') as fh:
-    ...             fh.write('testing TestCase method decorator utility')
-    ...             fh.flush()
-    ...         self.doCopyFile(srcfile, dstfile, 'asparagus')
-    ...
-    >>> testtest = TestTests()
-    >>> testtest.runTest()
+    .. codeblock:: python
+
+        import shutil
+        from twisted.trial import unittest
+
+        pyunit = __import__('unittest')
+
+        class TestTests(unittest.TestCase):
+            @fileCheckDecorator
+            def doCopyFile(src, dst, description=None):
+                shutil.copy(src, dst)
+            def test_doCopyFile(self):
+                srcfile = self.mktemp()
+                dstfile = self.mktemp()
+                with open(srcfile, 'wb') as fh:
+                    fh.write('testing TestCase method decorator utility')
+                    fh.flush()
+                self.doCopyFile(srcfile, dstfile, 'asparagus')
+
+        testtest = TestTests()
+        testtest.runTest()
+
+    ..
 
     :type func: callable
     :param func: The ``test_*`` method, from a
-        :api:`twisted.trial.unittest.TestCase` instance, to wrap.
+                 :api:`twisted.trial.unittest.TestCase` instance, to wrap.
     """
     @wraps(func)
     def wrapper(self, src, dst, description):
-        print("Copying %s:\n  %r\n\t\t↓ ↓ ↓\n  %r\n"
-              % (str(description), src, dst))
         self.assertTrue(os.path.isfile(src),
                         "Couldn't find original %s file: %r"
                         % (str(description), src))
         func(self, src, dst, description)
         self.assertTrue(os.path.isfile(dst),
-                        "Couldn't find new %s file: %r"
-                        % (str(description), dst))
+                        "Couldn't find new %s file: %r. Original: %r"
+                        % (str(description), dst, src))
     return wrapper
 
 if __name__ == "__main__":

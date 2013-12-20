@@ -25,15 +25,17 @@ def getKey(filename):
     If ``filename`` does not exist, create a new 32-byte key and store it in
     ``filename``.
 
-    >>> name = os.tmpnam()
+    >>> import os
+    >>> from bridgedb import crypto
+    >>> name = 'doctest_getKey'
     >>> os.path.exists(name)
     False
-    >>> k1 = getKey(name)
+    >>> k1 = crypto.getKey(name)
     >>> os.path.exists(name)
     True
     >>> open(name).read() == k1
     True
-    >>> k2 = getKey(name)
+    >>> k2 = crypto.getKey(name)
     >>> k1 == k2
     True
 

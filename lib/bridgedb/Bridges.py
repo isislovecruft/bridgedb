@@ -35,18 +35,21 @@ def is_valid_ip(ip):
     """Return True if ip is the string encoding of a valid IPv4 address,
        and False otherwise.
 
-    >>> is_valid_ip('1.2.3.4')
+    >>> from bridgedb import Bridges
+    >>> Bridges.is_valid_ip('1.2.3.4')
     True
-    >>> is_valid_ip('1.2.3.255')
+    >>> Bridges.is_valid_ip('1.2.3.255')
     True
-    >>> is_valid_ip('1.2.3.256')
+    >>> Bridges.is_valid_ip('1.2.3.256')
     False
-    >>> is_valid_ip('1')
+    >>> Bridges.is_valid_ip('1')
     False
-    >>> is_valid_ip('1.2.3')
+    >>> Bridges.is_valid_ip('1.2.3')
     False
-    >>> is_valid_ip('xyzzy')
+    >>> Bridges.is_valid_ip('xyzzy')
     False
+
+    :param str ip: A string representing an IPv4 or IPv6 address.
     """
 
     # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"

@@ -74,15 +74,10 @@ class ParseNetworkStatusRLineTests(unittest.TestCase):
         """Concatenate parameters into an 'r'-line and store the result as
         ``self.line``.
 
-        To create an invalid networkstatus 'r'-line, for example with an
-        invalid IP address, use me like this:
-
-        >>> makeRLine(ip='0.0.0.0')
-
         :keywords: The keyword arguments may be any of the class variables,
-            i.e. 'nick' or 'ident', and the variables should be similar to the
-            defaults in the class variables. If not given as parameters, the
-            class variables will be used.
+                   i.e. 'nick' or 'ident', and the variables should be similar
+                   to the defaults in the class variables. If not given as
+                   parameters, the class variables will be used.
         """
         line = []
         for kw in ('pre', 'nick', 'ident', 'desc', 'ts', 'ip', 'port', 'dirp'):
