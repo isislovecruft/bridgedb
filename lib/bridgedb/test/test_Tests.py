@@ -16,7 +16,10 @@ be compatible with the newer :mod:`twisted.trial` unittests in this directory.
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import doctest
+import glob
 import logging
+import os
 import warnings
 
 from twisted.trial import unittest
@@ -25,6 +28,34 @@ from bridgedb import Tests
 
 logging.warnings.filterwarnings('ignore', module="Tests")
 pyunit = __import__('unittest')
+
+
+def generateTrialAdaptedDoctestsSuite():
+    """Dynamically generates a :class:`unittest.TestSuite` all containing
+    discovered doctests within the installed ``bridgedb`` package.
+    """
+    bridgedb     = __import__('bridgedb')
+    fakedGlobals = globals().update({'bridgedb': bridgedb})
+    modulePath   = bridgedb.__path__[0]
+
+    #: The package directories to search for source code with doctests.
+    packagePaths = [modulePath,
+                    os.path.join(modulePath, 'parse'),
+                    os.path.join(modulePath, 'test')]
+    #: The source code files which will be searched for doctests.
+    files = []
+    #: The cls.testSuites which the test methods will be generated from.
+    testSuites = []
+
+    packages = [os.path.join(pkg, '*.py') for pkg in packagePaths]
+    [files.extend(glob.glob(pkg)) for pkg in packages]
+
+    for filename in files:
+        testSuites.append(
+            doctest.DocFileSuite(filename,
+                                 module_relative=False,
+                                 globs=fakedGlobals))
+    return testSuites
 
 
 class OldUnittests(unittest.TestCase):
