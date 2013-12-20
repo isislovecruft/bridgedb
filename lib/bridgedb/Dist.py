@@ -22,11 +22,13 @@ from bridgedb.Filters import filterBridgesByIP6
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
-       get the same string.
+    get the same string.
 
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
     '1.2.3'
+
+    :param str ip: A string representing an IPv4 or IPv6 address.
     """
     if type(IPAddress(ip)) is IPv6Address:
         return ":".join(IPv6Address(ip).exploded.split(':')[:4])
