@@ -22,12 +22,6 @@ import warnings
 from twisted.trial import unittest
 
 from bridgedb import Tests
-from bridgedb.Tests import EmailBridgeDistTests
-from bridgedb.Tests import IPBridgeDistTests
-from bridgedb.Tests import DictStorageTests
-from bridgedb.Tests import SQLStorageTests
-from bridgedb.Tests import ParseDescFileTests
-from bridgedb.Tests import BridgeStabilityTests
 
 logging.warnings.filterwarnings('ignore', module="Tests")
 pyunit = __import__('unittest')
