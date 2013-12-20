@@ -47,19 +47,22 @@ def randomIP4():
     return ipaddr.IPv4Address(random.getrandbits(32))
 
 def randomIP4String():
-    return str(ipaddr.IPAddress(random.getrandbits(32)))
+    return randomIP4().compressed
 
 def randomIP6():
     return ipaddr.IPv6Address(random.getrandbits(128))
 
 def randomIP6String():
-    # as used by Tor, with enclosing []
-    return "[%s]" % randomIP6()
+    return bracketIP6(randomIP6().compressed)
 
 def randomIPString():
-    # as used by Tor, with enclosing [] for IPv6 addresses
-    if random.choice(xrange(2)): return randomIP4String()
+    if random.choice(xrange(2)):
+        return randomIP4String()
     return randomIP6String()
+
+def bracketIP6(ip):
+    """Put brackets around an IPv6 address, just as tor does."""
+    return "[%s]" % ip
 
 def random16IP():
     upper = "123.123." # same 16
