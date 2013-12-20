@@ -32,9 +32,6 @@ install:
   - pip install coverage==3.7 coveralls==0.3 sure==1.2.2 --use-mirrors
   - make install
 
-env:
-  - TRAVIS_CI=true
-
 before_script:
   - bridgedb mock -n 250
 
