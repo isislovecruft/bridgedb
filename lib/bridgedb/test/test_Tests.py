@@ -27,7 +27,7 @@ logging.warnings.filterwarnings('ignore', module="Tests")
 pyunit = __import__('unittest')
 
 
-class TrialAdaptedOldUnittests(unittest.TestCase):
+class OldUnittests(unittest.TestCase):
     """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
     compatible output.
     """
