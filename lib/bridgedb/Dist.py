@@ -24,7 +24,8 @@ def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
        get the same string.
 
-    >>> uniformMap('1.2.3.4')
+    >>> from bridgedb import Dist
+    >>> Dist.uniformMap('1.2.3.4')
     '1.2.3'
     """
     if type(IPAddress(ip)) is IPv6Address:
