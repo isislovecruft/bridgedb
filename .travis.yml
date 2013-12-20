@@ -9,18 +9,17 @@ notifications:
     #use_notice: true
   template:
     - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
-    #- "Change view : %{compare_url}"
     - "Build details : %{build_url}"
   email:
     recipients:
       - isis@torproject.org
-    on_success: change
+    on_success: never
     on_failure: change
 
 before_install:
   - sudo apt-get update
   # Distro development header/library/resource/buildtime dependencies
-  - sudo apt-get install --no-install-suggests --no-install-recommends tor-geoipdb build-essential openssl sqlite3 libgpgme11 libgpgme11-dev
+  - sudo apt-get install --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev libgeoip-dev geoip-database
   # Distro python dependencies
   - sudo apt-get install --no-install-suggests --no-install-recommends python-dev python-setuptools
 
@@ -44,9 +43,8 @@ script:
   - bridgedb mock -n 250
   # Normally, we would do 'bridgedb test' here, but to run with coverage we
   # have to do this instead:
-  - coverage run $(which trial) ./lib/bridgedb/test/test_*
+  - coverage run $(which trial) ./lib/bridgedb/test/test_*.py
   - coverage report
-  - echo "Build successful."
 
 after_success:
   - coveralls
