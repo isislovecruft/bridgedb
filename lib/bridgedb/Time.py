@@ -65,8 +65,8 @@ class IntervalSchedule(Schedule):
             assert False
 
     def getInterval(self, when):
-        """Return a string representing the interval that contains
-           the time 'when'.
+        """Return a string representing the interval that contains the time
+        **when**.
 
         >>> import calendar
         >>> from bridgedb.Time import IntervalSchedule
@@ -74,6 +74,14 @@ class IntervalSchedule(Schedule):
         >>> I = IntervalSchedule('month', 1)
         >>> I.getInterval(t)
         '2007-12'
+
+        :param int when: The time which we're trying to find the corresponding
+                         interval for.
+        :rtype: str
+        :returns: A timestamp in the form ``YEAR-MONTH[-DAY[-HOUR]]``. It's
+                  specificity depends on what type of interval we're
+                  using. For example, if using ``"month"``, the return value
+                  would be something like ``"2013-12"``.
         """
         if self.itype == 'month':
             tm = time.gmtime(when)
