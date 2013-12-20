@@ -27,22 +27,18 @@ python:
   - "2.6"
   - "2.7"
 
-#services:
-#  - couchdb
-
 install:
   - pip install -r requirements.txt --use-mirrors
   - pip install coverage==3.7 coveralls==0.3 sure==1.2.2 --use-mirrors
   - make install
 
-#before_script:
-#  # For testing with CouchDB
-#  - curl -X PUT localhost:5984/myapp_test
+env:
+  - TRAVIS_CI=true
+
+before_script:
+  - bridgedb mock -n 250
 
 script:
-  - bridgedb mock -n 250
-  # Normally, we would do 'bridgedb test' here, but to run with coverage we
-  # have to do this instead:
   - coverage run $(which trial) ./lib/bridgedb/test/test_*.py
   - coverage report
 
