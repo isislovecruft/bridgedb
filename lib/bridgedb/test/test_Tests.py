@@ -92,7 +92,7 @@ def monkeypatchTests():
 
 
 class DynamicTestCaseMeta(type):
-    """You how scary the seemingly-arbitrary constants in elliptic curve
+    """You know how scary the seemingly-arbitrary constants in elliptic curve
     cryptography seem? Well, I am over nine thousand times more scary. Dynamic
     warez… beware! Be afraid; be very afraid.
 
