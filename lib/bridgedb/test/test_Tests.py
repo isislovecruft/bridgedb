@@ -29,7 +29,7 @@ from bridgedb import Tests
 from bridgedb.test import deprecated
 
 
-logging.warnings.filterwarnings('ignore', module="Tests")
+warnings.filterwarnings('ignore', module="bridgedb\.Tests")
 pyunit = __import__('unittest')
 
 
