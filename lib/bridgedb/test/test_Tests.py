@@ -235,3 +235,15 @@ class MonkeypatchedOldUnittests(unittest.TestCase):
 
     def __init__(self, methodName='runWithPatches'):
         super(MonkeypatchedOldUnittests, self).__init__(methodName=methodName)
+
+
+class TrialAdaptedDoctests(unittest.TestCase):
+    """Discovers and runs all doctests within the ``bridgedb`` package.
+
+    Finds all doctests from the directory that BridgeDB was installed in, in
+    all Python modules and packages, and runs them with :mod:`twisted.trial`.
+    """
+    __metaclass__ = DynamicTestCaseMeta
+    testSuites    = generateTrialAdaptedDoctestsSuite()
+    testResult    = unittest.PyUnitResultAdapter(pyunit.TestResult())
+    methodPrefix  = 'test_doctestsIn_'
