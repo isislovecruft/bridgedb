@@ -57,7 +57,7 @@ def parseORAddressLine(line):
     bridgedb-0.1.0, in commit 1f111e5.
 
     This function and the newer parsers from :mod:`bridgedb.parse.netstatus`
-    are alternately :meth:`~twisted.python.monkey.MonkeyPatcher.patch`ed into
+    are alternately :api:`~twisted.python.monkey.MonkeyPatcher.patch`ed into
     the :mod:`old unittests <bridgedb.Tests>`, so that the later functions as
     a suite of regression tests.
     """
@@ -98,7 +98,7 @@ class PortList:
     :class:`bridgedb.parse.addr.PortList`.
 
     This class and the newer class from :mod:`bridgedb.parse.addr` are
-    alternately :meth:`~twisted.python.monkey.MonkeyPatcher.patch`ed into the
+    alternately :api:`~twisted.python.monkey.MonkeyPatcher.patch`ed into the
     :mod:`old unittests <bridgedb.Tests>`, so that the later functions as a
     suite of regression tests.
     """

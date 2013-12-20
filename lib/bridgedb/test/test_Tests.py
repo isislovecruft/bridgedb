@@ -10,7 +10,7 @@
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """Class wrappers to adapt BridgeDB old unittests in :mod:`bridgedb.Tests` to
-be compatible with the newer :mod:`twisted.trial` unittests in this directory.
+be compatible with the newer :api:`twisted.trial` unittests in this directory.
 """
 
 from __future__ import print_function
@@ -77,8 +77,8 @@ def monkeypatchTests():
     The third, forth, and fifth monkeypatches add some module-level attributes
     back into :mod:`bridgedb.Bridges`.
 
-    :rtype: :class:`~twisted.python.monkey.MonkeyPatcher`
-    :returns: A :class:`~twisted.python.monkey.MonkeyPatcher`, preloaded with
+    :rtype: :api:`~twisted.python.monkey.MonkeyPatcher`
+    :returns: A :api:`~twisted.python.monkey.MonkeyPatcher`, preloaded with
               patches from :mod:`bridgedb.test.deprecated`.
     """
     patcher = monkey.MonkeyPatcher()
@@ -97,14 +97,14 @@ class DynamicTestCaseMeta(type):
     warez… beware! Be afraid; be very afraid.
 
     :ivar testResult: An :class:`unittest.TestResult` adapted with
-                      :class:`twisted.trial.unittest.PyUnitResultAdapter`, for
+                      :api:`twisted.trial.unittest.PyUnitResultAdapter`, for
                       storing test failures and successes in.
 
     A base class which uses this metaclass should define the following class
     attributes:
 
     :ivar testSuites: A list of :class:`unittest.TestSuite`s (or their
-                      :mod:`doctest` or :mod:`twisted.trial` equivalents).
+                      :mod:`doctest` or :api:`twisted.trial` equivalents).
     :ivar methodPrefix: A string to prefix the generated method names
                         with. (default: 'test_')
     """
@@ -113,8 +113,7 @@ class DynamicTestCaseMeta(type):
 
     def __new__(cls, name, bases, attrs):
         """Construct the initialiser for a new
-        :class:`twisted.trial.unittest.TestCase`.
-
+        :api:`twisted.trial.unittest.TestCase`.
         """
         logging.debug("Metaclass __new__ constructor called for %r" % name)
 
@@ -137,10 +136,10 @@ class DynamicTestCaseMeta(type):
     @classmethod
     def generateTestMethods(cls, testSuites, methodPrefix='test_'):
         """Dynamically generate methods and their names for a
-        :class:`twisted.trial.unittest.TestCase`.
+        :api:`twisted.trial.unittest.TestCase`.
 
         :param list testSuites: A list of :class:`unittest.TestSuite`s (or
-                                their :mod:`doctest` or :mod:`twisted.trial`
+                                their :mod:`doctest` or :api:`twisted.trial`
                                 equivalents).
         :param str methodPrefix: A string to prefix the generated method names
                                  with. (default: 'test_')
@@ -157,7 +156,7 @@ class DynamicTestCaseMeta(type):
                     with whatever **methodPrefix** was set to) will also be
                     generated, and the (methodname, method) pair will be
                     assigned as attributes of the generated
-                    :class:`~twisted.trial.unittest.TestCase`.
+                    :api:`~twisted.trial.unittest.TestCase`.
                     """
                     # Get the number of failures before test.run():
                     origFails = len(cls.testResult.original.failures)
@@ -190,18 +189,18 @@ class DynamicTestCaseMeta(type):
 
 
 class OldUnittests(unittest.TestCase):
-    """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
+    """A wrapper around :mod:`bridgedb.Tests` to produce :api:`~twisted.trial`
     compatible output.
 
-    Generates a :class:`twisted.trial.unittest.TestCase` containing a
+    Generates a :api:`twisted.trial.unittest.TestCase` containing a
     test for each of the individual tests in :mod:`bridgedb.Tests`.
 
-    Each test in this :class:`~twisted.trial.unittest.TestCase`` is
-    dynamically generated from one of the old unittests in
-    :mod:`bridgedb.Tests`. Then, the class is wrapped to cause the results
-    reporting mechanisms to be :mod:`~twisted.trial` compatible.
+    Each test in this :api:`~twisted.trial.unittest.TestCase`` is dynamically
+    generated from one of the old unittests in :mod:`bridgedb.Tests`. Then,
+    the class is wrapped to cause the results reporting mechanisms to be
+    :api:`~twisted.trial` compatible.
 
-    :returns: A :class:`twisted.trial.unittest.TestCase`.
+    :returns: A :api:`twisted.trial.unittest.TestCase`.
     """
     __metaclass__ = DynamicTestCaseMeta
     testSuites    = Tests.testSuite()
@@ -210,14 +209,14 @@ class OldUnittests(unittest.TestCase):
 
 
 class MonkeypatchedOldUnittests(unittest.TestCase):
-    """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
+    """A wrapper around :mod:`bridgedb.Tests` to produce :api:`~twisted.trial`
     compatible output.
 
     For each test in this ``TestCase``, one of the old unittests in
     bridgedb/Tests.py is run. For all of the tests, some functions and classes
-    are :func:`monkey.MonkeyPatcher.patch`ed with old, deprecated code from
-    :mod:`bridgedb.test.deprecated` to ensure that any new code has not caused
-    any regressions.
+    are :api:`twisted.python.monkey.MonkeyPatcher.patch`ed with old,
+    deprecated code from :mod:`bridgedb.test.deprecated` to ensure that any
+    new code has not caused any regressions.
     """
     __metaclass__ = DynamicTestCaseMeta
     testSuites    = Tests.testSuite()
@@ -226,7 +225,7 @@ class MonkeypatchedOldUnittests(unittest.TestCase):
     patcher       = monkeypatchTests()
 
     def runWithPatches(self, *args):
-        """Replaces :meth:`~twisted.trial.unittest.TestCase.run` as the default
+        """Replaces :api:`~twisted.trial.unittest.TestCase.run` as the default
         methodName to run. This method calls ``run()`` though
         ``self.patcher.runWithPatches``, using the class **testResult** object.
         """
@@ -241,7 +240,7 @@ class TrialAdaptedDoctests(unittest.TestCase):
     """Discovers and runs all doctests within the ``bridgedb`` package.
 
     Finds all doctests from the directory that BridgeDB was installed in, in
-    all Python modules and packages, and runs them with :mod:`twisted.trial`.
+    all Python modules and packages, and runs them with :api:`twisted.trial`.
     """
     __metaclass__ = DynamicTestCaseMeta
     testSuites    = generateTrialAdaptedDoctestsSuite()
