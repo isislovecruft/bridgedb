@@ -68,6 +68,8 @@ class IntervalSchedule(Schedule):
         """Return a string representing the interval that contains
            the time 'when'.
 
+        >>> import calendar
+        >>> from bridgedb.Time import IntervalSchedule
         >>> t = calendar.timegm((2007, 12, 12, 0, 0, 0))
         >>> I = IntervalSchedule('month', 1)
         >>> I.getInterval(t)
