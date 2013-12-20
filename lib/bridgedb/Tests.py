@@ -39,7 +39,8 @@ def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
 
 def randomIP():
-    if random.choice(xrange(2)): return randomIP4()
+    if random.choice(xrange(2)):
+        return randomIP4()
     return randomIP6()
 
 def randomIP4():
