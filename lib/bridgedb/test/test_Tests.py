@@ -192,10 +192,19 @@ class DynamicTestCaseMeta(type):
 class OldUnittests(unittest.TestCase):
     """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
     compatible output.
-    """
 
-    def test_allOldUnittests(self):
-        testSuite = Tests.testSuite()
-        testResult = pyunit.TestResult()
-        testSuite.run(testResult, debug=True)
-        return unittest.PyUnitResultAdapter(testResult)
+    Generates a :class:`twisted.trial.unittest.TestCase` containing a
+    test for each of the individual tests in :mod:`bridgedb.Tests`.
+
+    Each test in this :class:`~twisted.trial.unittest.TestCase`` is
+    dynamically generated from one of the old unittests in
+    :mod:`bridgedb.Tests`. Then, the class is wrapped to cause the results
+    reporting mechanisms to be :mod:`~twisted.trial` compatible.
+
+    :returns: A :class:`twisted.trial.unittest.TestCase`.
+    """
+    __metaclass__ = DynamicTestCaseMeta
+    testSuites    = Tests.testSuite()
+    testResult    = unittest.PyUnitResultAdapter(pyunit.TestResult())
+    methodPrefix  = 'test_regressionsNewCode_'
+
