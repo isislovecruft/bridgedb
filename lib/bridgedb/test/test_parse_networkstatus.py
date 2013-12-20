@@ -335,7 +335,7 @@ class ParseNetworkStatusALineTests(unittest.TestCase):
         ``hotfix/9462B-netstatus-returns-None``.
         """
         self.line = '%s:1234' % self.oraddr
-        fields = networkstatus.parseALine(self.line)
+        ip, port = networkstatus.parseALine(self.line)
         this(ip).should.be.a(basestring)
         this(port).should.be(None)
 
