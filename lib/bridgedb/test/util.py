@@ -23,7 +23,7 @@ from functools import wraps
 def fileCheckDecorator(func):
     """Method decorator for a t.t.unittest.TestCase test_* method.
 
-    >>> import shutil
+    >>> import shutil  # doctest: +SKIP
     >>> from twisted.trial import unittest
     >>> pyunit = __import__('unittest')
     >>> class TestTests(unittest.TestCase):
@@ -43,7 +43,7 @@ def fileCheckDecorator(func):
 
     :type func: callable
     :param func: The ``test_*`` method, from a
-        :api:`twisted.trial.unittest.TestCase` instance, to wrap.
+                 :api:`twisted.trial.unittest.TestCase` instance, to wrap.
     """
     @wraps(func)
     def wrapper(self, src, dst, description):
