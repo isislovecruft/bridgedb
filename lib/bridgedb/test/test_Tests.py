@@ -14,6 +14,7 @@ be compatible with the newer :mod:`twisted.trial` unittests in this directory.
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import logging
 import warnings
