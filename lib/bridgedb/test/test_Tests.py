@@ -208,3 +208,30 @@ class OldUnittests(unittest.TestCase):
     testResult    = unittest.PyUnitResultAdapter(pyunit.TestResult())
     methodPrefix  = 'test_regressionsNewCode_'
 
+
+class MonkeypatchedOldUnittests(unittest.TestCase):
+    """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
+    compatible output.
+
+    For each test in this ``TestCase``, one of the old unittests in
+    bridgedb/Tests.py is run. For all of the tests, some functions and classes
+    are :func:`monkey.MonkeyPatcher.patch`ed with old, deprecated code from
+    :mod:`bridgedb.test.deprecated` to ensure that any new code has not caused
+    any regressions.
+    """
+    __metaclass__ = DynamicTestCaseMeta
+    testSuites    = Tests.testSuite()
+    testResult    = unittest.PyUnitResultAdapter(pyunit.TestResult())
+    methodPrefix  = 'test_regressionsOldCode_'
+    patcher       = monkeypatchTests()
+
+    def runWithPatches(self, *args):
+        """Replaces :meth:`~twisted.trial.unittest.TestCase.run` as the default
+        methodName to run. This method calls ``run()`` though
+        ``self.patcher.runWithPatches``, using the class **testResult** object.
+        """
+        self.patcher.runWithPatches(self.run, self.testResult)
+        self.patcher.restore()
+
+    def __init__(self, methodName='runWithPatches'):
+        super(MonkeypatchedOldUnittests, self).__init__(methodName=methodName)
