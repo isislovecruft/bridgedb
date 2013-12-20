@@ -44,13 +44,13 @@ def randomIP():
     return randomIP6()
 
 def randomIP4():
-    return ipaddr.IPAddress(random.getrandbits(32))
+    return ipaddr.IPv4Address(random.getrandbits(32))
 
 def randomIP4String():
     return str(ipaddr.IPAddress(random.getrandbits(32)))
 
 def randomIP6():
-    return ipaddr.IPAddress(random.getrandbits(128))
+    return ipaddr.IPv6Address(random.getrandbits(128))
 
 def randomIP6String():
     # as used by Tor, with enclosing []
