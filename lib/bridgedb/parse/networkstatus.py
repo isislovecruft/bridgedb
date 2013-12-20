@@ -165,12 +165,11 @@ def parseALine(line, fingerprint=None):
     ip = None
     portlist = None
 
-    if not line.startswith('a '):
-        logging.error("Networkstatus parser received non 'a'-line for %r:"\
-                      "  %r" % (fingerprint or 'Unknown', line))
-        return ip, portlist
-
-    line = line[2:] # Chop off the 'a '
+    if line.startswith('a '):
+        line = line[2:] # Chop off the 'a '
+    else:
+        logging.warn("Networkstatus parser received non 'a'-line for %r:"\
+                     "  %r" % (fingerprint or 'Unknown', line))
 
     try:
         ip, portlist = line.rsplit(':', 1)
