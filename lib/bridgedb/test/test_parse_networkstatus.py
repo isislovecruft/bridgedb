@@ -331,9 +331,13 @@ class ParseNetworkStatusALineTests(unittest.TestCase):
             self.assertTrue(field is None)
 
     def test_missingPrefix(self):
+        """Changed to allow a missing 'a' prefix in branch
+        ``hotfix/9462B-netstatus-returns-None``.
+        """
         self.line = '%s:1234' % self.oraddr
         fields = networkstatus.parseALine(self.line)
-        self.assertAllFieldsAreNone(fields)
+        this(ip).should.be.a(basestring)
+        this(port).should.be(None)
 
     def test_IPv4(self):
         self.line = 'a 48.32.199.45:9001'
