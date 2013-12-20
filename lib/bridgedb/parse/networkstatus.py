@@ -201,7 +201,7 @@ def parseALine(line, fingerprint=None):
                 "Got invalid portlist in 'a'-line for %r!\n  Line: %r"
                 % (fingerprint or 'Unknown', line))
     except (addr.InvalidPort, NetworkstatusParsingError) as error:
-        logging.exception(error)
+        logging.error(error)
         portlist = None
     else:
         logging.debug("Parsed networkstatus ORAddress line for %r:"\
