@@ -659,7 +659,7 @@ class ParseDescFileTests(unittest.TestCase):
 
         for a,p,c in bridgedb.Bridges.parseCountryBlockFile(test.split('\n')):
             assert type(a) in (ipaddr.IPv6Address, ipaddr.IPv4Address)
-            assert isinstance(p, bridgedb.Bridges.PortList)
+            assert isinstance(p, addr.PortList)
             assert isinstance(c, list)
             assert len(c) > 0
             for y in c:
