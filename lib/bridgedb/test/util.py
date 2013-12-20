@@ -23,23 +23,29 @@ from functools import wraps
 def fileCheckDecorator(func):
     """Method decorator for a t.t.unittest.TestCase test_* method.
 
-    >>> import shutil  # doctest: +SKIP
-    >>> from twisted.trial import unittest
-    >>> pyunit = __import__('unittest')
-    >>> class TestTests(unittest.TestCase):
-    ...     @fileCheckDecorator
-    ...     def doCopyFile(src, dst, description=None):
-    ...         shutil.copy(src, dst)
-    ...     def test_doCopyFile(self):
-    ...         srcfile = self.mktemp()
-    ...         dstfile = self.mktemp()
-    ...         with open(srcfile, 'wb') as fh:
-    ...             fh.write('testing TestCase method decorator utility')
-    ...             fh.flush()
-    ...         self.doCopyFile(srcfile, dstfile, 'asparagus')
-    ...
-    >>> testtest = TestTests()
-    >>> testtest.runTest()
+    .. codeblock:: python
+
+        import shutil
+        from twisted.trial import unittest
+
+        pyunit = __import__('unittest')
+
+        class TestTests(unittest.TestCase):
+            @fileCheckDecorator
+            def doCopyFile(src, dst, description=None):
+                shutil.copy(src, dst)
+            def test_doCopyFile(self):
+                srcfile = self.mktemp()
+                dstfile = self.mktemp()
+                with open(srcfile, 'wb') as fh:
+                    fh.write('testing TestCase method decorator utility')
+                    fh.flush()
+                self.doCopyFile(srcfile, dstfile, 'asparagus')
+
+        testtest = TestTests()
+        testtest.runTest()
+
+    ..
 
     :type func: callable
     :param func: The ``test_*`` method, from a
