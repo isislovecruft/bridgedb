@@ -48,6 +48,8 @@ def is_valid_ip(ip):
     False
     >>> Bridges.is_valid_ip('xyzzy')
     False
+
+    :param str ip: A string representing an IPv4 or IPv6 address.
     """
 
     # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"
