@@ -91,6 +91,104 @@ def monkeypatchTests():
     return patcher
 
 
+class DynamicTestCaseMeta(type):
+    """You how scary the seemingly-arbitrary constants in elliptic curve
+    cryptography seem? Well, I am over nine thousand times more scary. Dynamic
+    warez… beware! Be afraid; be very afraid.
+
+    :ivar testResult: An :class:`unittest.TestResult` adapted with
+                      :class:`twisted.trial.unittest.PyUnitResultAdapter`, for
+                      storing test failures and successes in.
+
+    A base class which uses this metaclass should define the following class
+    attributes:
+
+    :ivar testSuites: A list of :class:`unittest.TestSuite`s (or their
+                      :mod:`doctest` or :mod:`twisted.trial` equivalents).
+    :ivar methodPrefix: A string to prefix the generated method names
+                        with. (default: 'test_')
+    """
+
+    testResult = unittest.PyUnitResultAdapter(pyunit.TestResult())
+
+    def __new__(cls, name, bases, attrs):
+        """Construct the initialiser for a new
+        :class:`twisted.trial.unittest.TestCase`.
+
+        """
+        logging.debug("Metaclass __new__ constructor called for %r" % name)
+
+        if not 'testSuites' in attrs:
+            attrs['testSuites'] = list()
+        if not 'methodPrefix' in attrs:
+            attrs['methodPrefix'] = 'test_'
+
+        testSuites   = attrs['testSuites']
+        methodPrefix = attrs['methodPrefix']
+        logging.debug(
+            "Metaclass __new__() class %r(testSuites=%r, methodPrefix=%r)" %
+            (name, '\n\t'.join([str(ts) for ts in testSuites]), methodPrefix))
+
+        generatedMethods = cls.generateTestMethods(testSuites, methodPrefix)
+        attrs.update(generatedMethods)
+        #attrs['init'] = cls.__init__  # call the standard initialiser
+        return super(DynamicTestCaseMeta, cls).__new__(cls, name, bases, attrs)
+
+    @classmethod
+    def generateTestMethods(cls, testSuites, methodPrefix='test_'):
+        """Dynamically generate methods and their names for a
+        :class:`twisted.trial.unittest.TestCase`.
+
+        :param list testSuites: A list of :class:`unittest.TestSuite`s (or
+                                their :mod:`doctest` or :mod:`twisted.trial`
+                                equivalents).
+        :param str methodPrefix: A string to prefix the generated method names
+                                 with. (default: 'test_')
+        :rtype: dict
+        :returns: A dictionary of class attributes whose keys are dynamically
+                  generated method names (prefixed with **methodPrefix**), and
+                  whose corresponding values are dynamically generated methods
+                  (taken out of the class attribute ``testSuites``).
+        """
+        def testMethodFactory(test, name):
+            def createTestMethod(test):
+                def testMethod(*args, **kwargs):
+                    """When this function is generated, a methodname (beginning
+                    with whatever **methodPrefix** was set to) will also be
+                    generated, and the (methodname, method) pair will be
+                    assigned as attributes of the generated
+                    :class:`~twisted.trial.unittest.TestCase`.
+                    """
+                    # Get the number of failures before test.run():
+                    origFails = len(cls.testResult.original.failures)
+                    test.run(cls.testResult)
+                    # Fail the generated testMethod if the underlying failure
+                    # count has increased:
+                    if (len(cls.testResult.original.failures) > origFails):
+                        fail = cls.testResult.original.failures[origFails:][0]
+                        raise unittest.FailTest(''.join([str(fail[0]),
+                                                         str(fail[1])]))
+                    return cls.testResult
+                testMethod.__name__ = str(name)
+                return testMethod
+            return createTestMethod(test)
+
+        newAttrs = {}
+        for testSuite in testSuites:
+            for test in testSuite:
+                origName = test.id()
+                if origName.find('.') > 0:
+                    origFunc = origName.split('.')[-2:]
+                    origName = '_'.join(origFunc)
+                if origName.endswith('_py'):  # this happens with doctests
+                    origName = origName.strip('_py')
+                methName = str(methodPrefix + origName).replace('.', '_')
+                meth = testMethodFactory(test, methName)
+                logging.debug("Set %s.%s=%r" % (cls.__name__, methName, meth))
+                newAttrs[methName] = meth
+        return newAttrs
+
+
 class OldUnittests(unittest.TestCase):
     """A wrapper around :mod:`bridgedb.Tests` to produce :mod:`~twisted.trial`
     compatible output.
