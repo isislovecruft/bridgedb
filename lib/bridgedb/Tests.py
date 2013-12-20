@@ -31,6 +31,7 @@ from bridgedb.Filters import filterBridgesByNotBlockedIn
 
 from bridgedb.Stability import BridgeHistory
 
+from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
 
 from math import log
@@ -112,16 +113,24 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
 
+    oraddrs = []
     if or_addresses:
         for i in xrange(8):
-            address,portlist = networkstatus.parseALine(
-                "%s:%s" % (randomIPString(), randomPortSpec()))
-            try:
-                portlist.add(b.or_addresses[address])
-            except KeyError:
-                pass
-            finally:
-                b.or_addresses[address] = portlist
+            # Only add or_addresses if they are valid. Otherwise, the test
+            # will randomly fail if an invalid address is chosen:
+            address = randomIP4String()
+            portlist = addr.PortList(randomPortSpec())
+            if addr.isValidIP(address):
+                oraddrs.append((address, portlist,))
+
+    for address, portlist in oraddrs:
+        networkstatus.parseALine("{0}:{1}".format(address, portlist))
+        try:
+            portlist.add(b.or_addresses[address])
+        except KeyError:
+            pass
+        finally:
+            b.or_addresses[address] = portlist
 
     if transports:
         for i in xrange(0,8):
@@ -138,13 +147,25 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
 
+    oraddrs = []
     if or_addresses:
-        for i in xrange(0,8):
-            address, portlist = networkstatus.parseALine("a %s:%s" % (
-                randomIPString(), randomPortSpec()))
+        for i in xrange(8):
+            # Only add or_addresses if they are valid. Otherwise, the test
+            # will randomly fail if an invalid address is chosen:
+            address = randomIP6()
+            portlist = addr.PortList(randomPortSpec())
+            if addr.isValidIP(address):
+                address = bracketIP6(address)
+                oraddrs.append((address, portlist,))
 
-            self.assertIsNotNone(address, "fakeBridge6(): Got null address!")
-            self.assertIsNotNone(address, "fakeBridge6(): Got null portlist!")
+    for address, portlist in oraddrs:
+        networkstatus.parseALine("{0}:{1}".format(address, portlist))
+        try:
+            portlist.add(b.or_addresses[address])
+        except KeyError:
+            pass
+        finally:
+            b.or_addresses[address] = portlist
 
             try:
                 portlist.add(b.or_addresses[address])
