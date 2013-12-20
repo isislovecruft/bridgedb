@@ -22,9 +22,12 @@ import logging
 import os
 import warnings
 
+from twisted.python import monkey
 from twisted.trial import unittest
 
 from bridgedb import Tests
+from bridgedb.test import deprecated
+
 
 logging.warnings.filterwarnings('ignore', module="Tests")
 pyunit = __import__('unittest')
@@ -56,6 +59,36 @@ def generateTrialAdaptedDoctestsSuite():
                                  module_relative=False,
                                  globs=fakedGlobals))
     return testSuites
+
+def monkeypatchTests():
+    """Monkeypatch the old unittests, replacing new, refactored code with their
+    original equivalents from :mod:`bridgedb.test.deprecated`.
+
+    The first patch replaces the newer parsing function,
+    :func:`~bridgedb.parse.networkstatus.parseALine`, with the older,
+    :func:`deprecated one <bridgedb.test.deprecated.parseORAddressLine>` (the
+    old function was previously located at
+    ``bridgedb.Bridges.parseORAddressLine``).
+
+    The second patch replaces the new :class:`~bridgedb.parse.addr.PortList`,
+    with the :class:`older one <bridgedb.test.deprecated.PortList>` (which
+    was previously located at ``bridgedb.Bridges.PortList``).
+
+    The third, forth, and fifth monkeypatches add some module-level attributes
+    back into :mod:`bridgedb.Bridges`.
+
+    :rtype: :class:`~twisted.python.monkey.MonkeyPatcher`
+    :returns: A :class:`~twisted.python.monkey.MonkeyPatcher`, preloaded with
+              patches from :mod:`bridgedb.test.deprecated`.
+    """
+    patcher = monkey.MonkeyPatcher()
+    patcher.addPatch(Tests.networkstatus, 'parseALine',
+                     deprecated.parseORAddressLine)
+    patcher.addPatch(Tests.addr, 'PortList', deprecated.PortList)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'PORTSPEC_LEN', 16)
+    patcher.addPatch(Tests.bridgedb.Bridges, 're_ipv4', deprecated.re_ipv4)
+    patcher.addPatch(Tests.bridgedb.Bridges, 're_ipv6', deprecated.re_ipv6)
+    return patcher
 
 
 class OldUnittests(unittest.TestCase):
