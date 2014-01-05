@@ -1026,6 +1026,8 @@ class FilteredBridgeSplitter(BridgeHolder):
             logging.info("Inserted %d bridges into hashring %s!"
                          % (inserted, ringname))
 
+        return True
+
     def dumpAssignments(self, f, description=""):
         # one ring per filter set
         # bridges may be present in multiple filter sets
