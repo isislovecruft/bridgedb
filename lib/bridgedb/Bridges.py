@@ -993,13 +993,16 @@ class FilteredBridgeSplitter(BridgeHolder):
 
         :type subring: :class:`BridgeHolder`
         :param subring: The subring to add.
-        :param string ringname: A unique name for identifying the new
-            subring.
+        :param str ringname: A unique name for identifying the new subring.
         :param filterFn: A function whose input is a :class:`Bridge`, and
-            returns True/False based on some filtration criteria.
+                         returns True/False based on some filtration criteria.
         :type populate_from: iterable or None
         :param populate_from: A group of :class:`Bridge`s. If given, the newly
-            added subring will be populated with these bridges.
+                              added subring will be populated with these
+                              bridges.
+        :rtype: bool
+        :returns: False if there was a problem adding the subring, True
+                  otherwise.
         """
         if not isinstance(subring, BridgeHolder):
             logging.fatal("Can't add '%s' to %s because '%s' isn't a hashring."
