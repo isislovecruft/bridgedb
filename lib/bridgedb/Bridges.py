@@ -1004,30 +1004,57 @@ class FilteredBridgeSplitter(BridgeHolder):
         :returns: False if there was a problem adding the subring, True
                   otherwise.
         """
+        # XXX I think subring and ringname are switched in this function, or
+        # at least that whatever is passed into this function as as the
+        # `ringname` parameter from somewhere else is odd; for example, with
+        # the original code, which was `log.debug("Inserted %d bridges into
+        # hashring '%s'!" % (inserted, ringname))`, this log message appears:
+        #
+        # Jan 04 23:18:37 [INFO] Inserted 12 bridges into hashring
+        # frozenset([<function filterBridgesByIP4 at 0x2d67cf8>, <function
+        # filterAssignBridgesToRing(<function hmac_fn at 0x3778398>, 4, 0) at
+        # 0x37de578>])!
+        #
+        # I suppose since it contains memory addresses, it *is* technically
+        # likely to be a unique string, but it is messy.
+
+        hashringName = self.__class__.__name__
+        subringName  = subring.__class__
+        filterNames  = []
+
         if not isinstance(subring, BridgeHolder):
-            logging.fatal("Can't add '%s' to %s because '%s' isn't a hashring."
-                          % (ringname, self.__class__, ringname))
+            logging.fatal("Can't add %r to %s because %r isn't a hashring."
+                          % (ringname, hashringName, ringname))
             return False
         if ringname in self.filterRings.keys():
             logging.fatal("Hashring %s already has a subring named '%s'!"
                           % (self.__class__, ringname))
             return False
 
-        logging.debug("Adding subring '%s' to hashring %s..."
-                      % (ringname, self.__class__))
+        for filterName in [x.func_name for x in list(ringname)]:
+            # Using `filterAssignBridgesToRing.func_name` gives us a messy
+            # string which includes all parameters and memory addresses. Get
+            # rid of this by partitioning at the first `(`:
+            realFilterName = filterName.partition('(')[0]
+            filterNames.append(realFilterName)
+        filterNames = ' '.join(filterNames)
+
+        logging.debug("Adding subring to %s hashring:" % hashringName)
+        logging.debug("    Subring class: %r" % subringName)
+        logging.debug("    Subring filters: %s" % filterNames)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
         self.filterRings[ringname] = (filterFn, subring)
 
         if populate_from:
-            logging.info("Populating hashring %s..." % ringname)
+            logging.info("Populating hashring %s..." % subringName)
             inserted = 0
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     subring.insert(bridge)
                     inserted += 1
-            logging.info("Inserted %d bridges into hashring %s!"
-                         % (inserted, ringname))
+            logging.info("Inserted %d bridges into hashring with filters: %s"
+                         % (inserted, filterNames))
 
         return True
 
