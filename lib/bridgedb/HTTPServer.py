@@ -148,10 +148,19 @@ class WebResource(twisted.web.resource.Resource):
         self.domains = domains
 
     def render(self, request):
+        """Render a response for a client HTTP request.
+
+        Presently, this method merely returns :meth:`getBridgeRequestAnswer`.
+        """
         return self.getBridgeRequestAnswer(request)
 
     def getBridgeRequestAnswer(self, request):
-        """ returns a response to a bridge request """
+        """Respond to a client HTTP request for bridges.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the HTTP method, full
+                        URI, and any URL/POST arguments and headers present.
+        """
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None
