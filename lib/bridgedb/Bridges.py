@@ -508,11 +508,12 @@ def parseStatusFile(networkstatusFile):
             logging.debug("Parsed networkstatus line:")
             logging.debug("  Nickname:   %s" % nickname)
             logging.debug("  Identity:   %s" % toHex(ID))
-            logging.debug("  Descriptor: %s" % descDigest)
-            logging.debug("  Timestamp:  %s" % timestamp)
-            logging.debug("  ORAddress:  %s" % ORaddr)
-            logging.debug("  ORport:     %s" % ORport)
-            logging.debug("  dirport:    %s" % dirport)
+            if descDigest:
+                logging.debug("  Descriptor: {0}".format(toHex(descDigest)))
+                logging.debug("  Timestamp:  {0}".format(timestamp))
+                logging.debug("  ORAddress:  {0}".format(ORaddr))
+                logging.debug("  ORport:     {0}".format(ORport))
+                logging.debug("  dirport:    {0}".format(dirport))
 
         elif ID and line.startswith("a "):
             try:
