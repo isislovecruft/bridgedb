@@ -33,7 +33,7 @@ def uniformMap(ip):
     if type(IPAddress(ip)) is IPv6Address:
         return ":".join(IPv6Address(ip).exploded.split(':')[:4])
     else:
-        return ".".join( ip.split(".")[:3] )
+        return ".".join(ip.split(".")[:3])
 
 def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     if len(ring) < 20: n_bridges_per_answer = 1
@@ -125,15 +125,16 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             n = self.nClusters
             for category in self.categories:
                 g = filterAssignBridgesToRing(self.splitter.hmac,
-                        self.nClusters +
-                        len(self.categories),
-                        n)
+                                              self.nClusters +
+                                              len(self.categories),
+                                              n)
                 bridgeFilterRules = [g]
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                        "Order-Bridges-In-Ring-%d"%n) 
+                                                 "Order-Bridges-In-Ring-%d"
+                                                 % n)
                 n += 1
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
@@ -145,13 +146,14 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                 g = filterAssignBridgesToRing(self.splitter.hmac,
                                               self.nClusters +
                                               len(self.categories),
-                                              clusterNum) 
+                                              clusterNum)
                 bridgeFilterRules = [g]
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 "Order-Bridges-In-Ring-%d"%clusterNum) 
+                                                 "Order-Bridges-In-Ring-%d"
+                                                 % clusterNum)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
                                       populate_from=self.splitter.bridges)
@@ -198,14 +200,15 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             # IP Categories
             if category.contains(ip):
                 g = filterAssignBridgesToRing(self.splitter.hmac,
-                                                      self.nClusters +
-                                                      len(self.categories),
-                                                      n)
+                                              self.nClusters +
+                                              len(self.categories),
+                                              n)
                 bridgeFilterRules.append(g)
                 logging.info("category<%s>%s", epoch, Util.logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             "Order-Bridges-In-Ring-%d"%n) 
+                                                 "Order-Bridges-In-Ring-%d"
+                                                 % n)
                 break;
             n += 1
 
@@ -215,15 +218,16 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             h = int( self.areaClusterHmac(area)[:8], 16)
             # length of numClusters
             clusterNum = h % self.nClusters
- 
+
             g = filterAssignBridgesToRing(self.splitter.hmac,
                                           self.nClusters +
                                           len(self.categories),
-                                          clusterNum) 
+                                          clusterNum)
             bridgeFilterRules.append(g)
             pos = self.areaOrderHmac("<%s>%s" % (epoch, area))
             key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             "Order-Bridges-In-Ring-%d"%clusterNum) 
+                                             "Order-Bridges-In-Ring-%d"
+                                             % clusterNum)
 
         logging.debug("bridgeFilterRules: %s" % bridgeFilterRules)
 
@@ -260,9 +264,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
 ASPECIAL = '-_+/=_~'
 
 ACHAR = r'[\w%s]' % "".join("\\%s"%c for c in ASPECIAL)
-DOTATOM = r'%s+(?:\.%s+)*'%(ACHAR,ACHAR)
+DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR,ACHAR)
 DOMAIN = r'\w+(?:\.\w+)*'
-ADDRSPEC = r'(%s)\@(%s)'%(DOTATOM, DOMAIN)
+ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
 
 SPACE_PAT = re.compile(r'\s+')
 ADDRSPEC_PAT = re.compile(ADDRSPEC)
@@ -286,7 +290,7 @@ class TooSoonEmail(BadEmail):
 
 class IgnoreEmail(BadEmail):
     """Raised when we get requests from this address after rate warning."""
-    pass 
+    pass
 
 def extractAddrSpec(addr):
     """Given an email From line, try to extract and parse the addrspec
@@ -416,7 +420,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                 raise IgnoreEmail("Client was warned", Util.logSafely(emailaddress))
             else:
                 db.setWarnedEmail(emailaddress, True, now)
-                db.commit() 
+                db.commit()
 
             logging.info("Got a request for bridges from %r; we already "
                          "answered one within the last %d seconds. Warning.",
@@ -425,7 +429,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         # warning period is over
         elif wasWarned:
-            db.setWarnedEmail(emailaddress, False) 
+            db.setWarnedEmail(emailaddress, False)
 
         pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
 
@@ -438,11 +442,11 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
             # cache miss, add new ring
             logging.debug("Cache miss %s" % ruleset)
 
-            # add new ring 
+            # add new ring
             key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                    "Order-Bridges-In-Ring")
+                                             "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            # debug log: cache miss 
+            # debug log: cache miss
             self.splitter.addRing(ring, ruleset,
                                   filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
@@ -475,7 +479,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
             ruleset = frozenset([filterFn])
             key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                    "Order-Bridges-In-Ring")
+                                             "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, ruleset,
                                   filterBridgesByRules([filterFn]),
