@@ -301,15 +301,12 @@ class BadEmail(Exception):
 class UnsupportedDomain(BadEmail):
     """Exception raised when we get an email address from a domain we
        don't know."""
-    pass
 
 class TooSoonEmail(BadEmail):
     """Raised when we got a request from this address too recently."""
-    pass
 
 class IgnoreEmail(BadEmail):
     """Raised when we get requests from this address after rate warning."""
-    pass
 
 def extractAddrSpec(addr):
     """Given an email From line, try to extract and parse the addrspec
