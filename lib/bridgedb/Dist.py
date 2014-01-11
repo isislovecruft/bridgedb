@@ -141,7 +141,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                  % n)
                 n += 1
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                self.splitter.addRing(ring,
+                                      ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
                                       populate_from=self.splitter.bridges)
 
 
@@ -159,7 +161,9 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                  "Order-Bridges-In-Ring-%d"
                                                  % clusterNum)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+                self.splitter.addRing(ring,
+                                      ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
                                       populate_from=self.splitter.bridges)
 
     def clear(self):
@@ -183,9 +187,11 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                        bridges returned in the response to the
                                        client. See :mod:`~bridgedb.Filters`.
         """
-        if not bridgeFilterRules: bridgeFilterRules=[]
+        if not bridgeFilterRules:
+            bridgeFilterRules=[]
         logging.debug("getBridgesForIP(%s, %s, %s, %s",
                 Util.logSafely(ip), epoch, N, bridgeFilterRules)
+
         if not len(self.splitter):
             logging.debug("bailing without splitter")
             return []
@@ -213,7 +219,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                 key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                                  "Order-Bridges-In-Ring-%d"
                                                  % n)
-                break;
+                break
             n += 1
 
         # if no category matches, use area clustering
@@ -248,11 +254,16 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         else:
             logging.debug("Cache miss %s" % ruleset)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.splitter.addRing(ring, ruleset, filterBridgesByRules(bridgeFilterRules),
+            self.splitter.addRing(ring,
+                                  ruleset,
+                                  filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
 
         # get an appropriate number of bridges
-        return ring.getBridges(pos, getNumBridgesPerAnswer(ring, max_bridges_per_answer=N))
+        numBridgesToReturn = getNumBridgesPerAnswer(ring,
+                                                    max_bridges_per_answer=N)
+        answer = ring.getBridges(pos, numBridgesToReturn)
+        return answer
 
     def __len__(self):
         return len(self.splitter)
