@@ -36,12 +36,16 @@ def uniformMap(ip):
         return ".".join(ip.split(".")[:3])
 
 def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
-    if len(ring) < 20: n_bridges_per_answer = 1
-    if 20 <= len(ring) < 100: n_bridges_per_answer = min(2, max_bridges_per_answer)
-    if len(ring) >= 100: n_bridges_per_answer = max_bridges_per_answer
+    if len(ring) < 20:
+        n_bridges_per_answer = 1
+    if 20 <= len(ring) < 100:
+        n_bridges_per_answer = min(2, max_bridges_per_answer)
+    if len(ring) >= 100:
+        n_bridges_per_answer = max_bridges_per_answer
 
-    logging.debug("Returning %d bridges from ring of len: %d" % \
-            (n_bridges_per_answer, len(ring)))
+    logging.debug("Returning %d bridges from ring of len: %d" %
+                  (n_bridges_per_answer, len(ring)))
+
     return n_bridges_per_answer
 
 class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
