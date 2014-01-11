@@ -166,10 +166,16 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
     def getBridgesForIP(self, ip, epoch, N=1, countryCode=None,
                         bridgeFilterRules=None):
         """Return a list of bridges to give to a user.
-           ip -- the user's IP address, as a dotted quad.
-           epoch -- the time period when we got this request.  This can
-               be any string, so long as it changes with every period.
-           N -- the number of bridges to try to give back.
+
+        :param str ip: The user's IP address, as a dotted quad.
+        :param str epoch: The time period when we got this request.  This can
+                          be any string, so long as it changes with every
+                          period.
+        :param int N: The number of bridges to try to give back. (default: 1)
+        :param str countryCode: DOCDOC (default: None)
+        :param list bridgeFilterRules: A list of callables used filter the
+                                       bridges returned in the response to the
+                                       client. See :mod:`~bridgedb.Filters`.
         """
         if not bridgeFilterRules: bridgeFilterRules=[]
         logging.debug("getBridgesForIP(%s, %s, %s, %s",
