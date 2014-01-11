@@ -48,7 +48,38 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
 
     return n_bridges_per_answer
 
-class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
+class Distributor(bridgedb.Bridges.BridgeHolder):
+    """Distributes bridges to clients."""
+
+    def __init__(self):
+        super(Distributor, self).__init__()
+
+    def setDistributorName(self, name):
+        """Set a **name** for identifying this distributor.
+
+        This is used to identify the distributor in the logs; the **name**
+        doesn't necessarily need to be unique. The hashrings created for this
+        distributor will be named after this distributor's name in
+        :meth:`propopulateRings`, and any sub hashrings of each of those
+        hashrings will also carry that name.
+
+        >>> from bridgedb import Dist
+        >>> ipDist = Dist.IPBasedDistributor(Dist.uniformMap,
+        ...                                  5,
+        ...                                  'fake-hmac-key')
+        >>> ipDist.setDistributorName('HTTPS Distributor')
+        >>> ipDist.prepopulateRings()
+        >>> hashrings = ipDist.splitter.filterRings
+        >>> for (ringname, (filterFn, subring)) in hashrings.items():
+        ...     print subring.name
+
+        :param str name: A name for this distributor.
+        """
+        self.name = name
+        self.splitter.distributorName = name
+
+
+class IPBasedDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
 
@@ -123,6 +154,8 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
         logging.debug("Added splitter %s to IPBasedDistributor."
                       % self.splitter.__class__)
 
+        self.setDistributorName(self.__class__.__name__)
+
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
         for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
@@ -141,6 +174,7 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                                  % n)
                 n += 1
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                ring.setName('{0} Ring'.format(self.name))
                 self.splitter.addRing(ring,
                                       ruleset,
                                       filterBridgesByRules(bridgeFilterRules),
@@ -372,7 +406,7 @@ def normalizeEmail(addr, domainmap, domainrules):
 
     return "%s@%s"%(localpart, domain)
 
-class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
+class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
        request and the current time period.
     """
