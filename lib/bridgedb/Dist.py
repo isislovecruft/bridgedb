@@ -395,8 +395,8 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         self.answerParameters = answerParameters
 
         #XXX cache options not implemented
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(key2,
-                                                            max_cached_rings=5)
+        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
+            key2, max_cached_rings=5)
 
     def clear(self):
         self.splitter.clear()
@@ -427,7 +427,6 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
 
         db = bridgedb.Storage.getDB()
         wasWarned = db.getWarnedEmail(emailaddress)
-
         lastSaw = db.getEmailTime(emailaddress)
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
             if wasWarned:
@@ -453,7 +452,7 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         ruleset = frozenset(bridgeFilterRules)
         if ruleset in self.splitter.filterRings.keys():
             logging.debug("Cache hit %s" % ruleset)
-            _,ring = self.splitter.filterRings[ruleset]
+            _, ring = self.splitter.filterRings[ruleset]
         else:
             # cache miss, add new ring
             logging.debug("Cache miss %s" % ruleset)
@@ -467,10 +466,13 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                   filterBridgesByRules(bridgeFilterRules),
                                   populate_from=self.splitter.bridges)
 
-        result = ring.getBridges(pos, getNumBridgesPerAnswer(ring, max_bridges_per_answer=N))
+        numBridgesToReturn = getNumBridgesPerAnswer(ring,
+                                                    max_bridges_per_answer=N)
+        result = ring.getBridges(pos, numBridgesToReturn)
 
         db.setEmailTime(emailaddress, now)
         db.commit()
+
         return result
 
     def __len__(self):
