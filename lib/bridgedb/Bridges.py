@@ -399,8 +399,19 @@ class PluggableTransport:
         else: self.argdict = {}
 
     def getTransportLine(self, includeFingerprint=False):
-        """
-        returns a torrc bridge line for this transport
+        """Get a torrc line for this pluggable transport.
+
+        This method does not return lines which are prefixed with the word
+        'bridge', as they would be in a torrc file. Instead, lines returned
+        look like this:
+
+        obfs3 245.102.100.252:23619 59ca743e89b508e16b8c7c6d2290efdfd14eea98
+
+        :param bool includeFingerprints: If ``True``, include the digest of
+            this bridges public identity key in the torrc line.
+        :rtype: str
+        :returns: A configuration line for adding this pluggable transport
+            into a torrc file.
         """
         if isinstance(self.address,ipaddr.IPv6Address):
             address = "[%s]" % self.address
