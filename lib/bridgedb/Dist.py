@@ -428,18 +428,24 @@ class EmailBasedDistributor(bridgedb.Bridges.BridgeHolder):
         db = bridgedb.Storage.getDB()
         wasWarned = db.getWarnedEmail(emailaddress)
         lastSaw = db.getEmailTime(emailaddress)
+
+        logging.info("Attempting to return for %d bridges for %s..."
+                     % (N, Util.logSafely(emailaddress)))
+
         if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
+            logging.info("Client %s sent duplicate request within %d seconds."
+                         % (Util.logSafely(emailaddress), MAX_EMAIL_RATE))
             if wasWarned:
-                logging.info("Got a request for bridges from %r; we already "
-                             "sent a warning. Ignoring.", Util.logSafely(emailaddress))
-                raise IgnoreEmail("Client was warned", Util.logSafely(emailaddress))
+                logging.info(
+                    "Client was already warned about duplicate requests.")
+                raise IgnoreEmail("Client was warned",
+                                  Util.logSafely(emailaddress))
             else:
+                logging.info("Sending duplicate request warning to %s..."
+                             % Util.logSafely(emailaddress))
                 db.setWarnedEmail(emailaddress, True, now)
                 db.commit()
 
-            logging.info("Got a request for bridges from %r; we already "
-                         "answered one within the last %d seconds. Warning.",
-                         Util.logSafely(emailaddress), MAX_EMAIL_RATE)
             raise TooSoonEmail("Too many emails; wait till later", emailaddress)
 
         # warning period is over
