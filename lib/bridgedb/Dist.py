@@ -187,19 +187,25 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
                                        bridges returned in the response to the
                                        client. See :mod:`~bridgedb.Filters`.
         """
+        logging.info("Attempting to return %d bridges to client %s..."
+                     % (N, Util.logSafely(ip)))
+
         if not bridgeFilterRules:
             bridgeFilterRules=[]
-        logging.debug("getBridgesForIP(%s, %s, %s, %s",
-                Util.logSafely(ip), epoch, N, bridgeFilterRules)
 
         if not len(self.splitter):
-            logging.debug("bailing without splitter")
+            logging.warn("Bailing! Splitter has zero bridges!")
             return []
 
-        area = self.areaMapper(ip)
+        logging.debug("Bridges in splitter:\t%d" % len(self.splitter))
+        logging.debug("Client request epoch:\t%s" % epoch)
+        logging.debug("Active bridge filters:\t%s"
+                      % ' '.join([x.func_name for x in bridgeFilterRules]))
 
-        logging.info("area is %s", Util.logSafely(area))
-        
+        area = self.areaMapper(ip)
+        logging.debug("IP mapped to area:\t%s"
+                      % Util.logSafely("{0}.0/24".format(area)))
+
         key1 = ''
         pos = 0
         n = self.nClusters
@@ -238,8 +244,6 @@ class IPBasedDistributor(bridgedb.Bridges.BridgeHolder):
             key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
                                              "Order-Bridges-In-Ring-%d"
                                              % clusterNum)
-
-        logging.debug("bridgeFilterRules: %s" % bridgeFilterRules)
 
         # try to find a cached copy
         ruleset = frozenset(bridgeFilterRules)
