@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 This module is responsible for everything concerning file bucket bridge 
 distribution. File bucket bridge distribution means that unallocated bridges 
@@ -209,6 +211,7 @@ class BucketManager:
     def dumpBridgesToFile(self, filename, bridges):
         """Dump a list of given bridges into a file
         """
+        logging.debug("Dumping bridge assignments to file: %r" % filename)
         # get the bridge histories and sort by Time On Same Address
         bridgeHistories = []
         for b in bridges:
@@ -219,7 +222,7 @@ class BucketManager:
 
         # for a bridge, get the list of countries it might not work in
         blocklist = dict()
-        if hasattr(self.cfg, "COUNTRY_BLOCK_FILE"):
+        if getattr(self.cfg, "COUNTRY_BLOCK_FILE", None) is not None:
             f = open(self.cfg.COUNTRY_BLOCK_FILE, 'r')
             for ID,address,portlist,countries in bridgedb.Bridges.parseCountryBlockFile(f):
                 blocklist[toHex(ID)] = countries

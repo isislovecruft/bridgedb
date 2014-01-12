@@ -433,11 +433,17 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
     return clientAddr, f
 
 def getGPGContext(cfg):
-    """ Returns a gpgme Context() with the signers initialized by the keyfile 
-    specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or None
-    if the option was not enabled or unable to initialize.
+    """Import a key from a file and initialise a context for GnuPG operations.
 
-    The key should not be protected by a passphrase.
+    The key should not be protected by a passphrase, and should have the
+    signing flag enabled.
+
+    :type cfg: :class:`bridgedb.persistent.Conf`
+    :param cfg: The loaded config file.
+    :rtype: :class:`gpgme.Context` or None
+    :returns: A GPGME context with the signers initialized by the keyfile
+        specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or
+        None if the option was not enabled, or was unable to initialize.
     """
     try:
         # must have enabled signing and specified a key file
@@ -446,34 +452,43 @@ def getGPGContext(cfg):
     except AttributeError:
         return None
 
-    try:
-        # import the key
-        keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
-        logging.debug("Opened GPG Keyfile %s" % cfg.EMAIL_GPG_SIGNING_KEY)
-        ctx = gpgme.Context()
-        result = ctx.import_(keyfile)
+    keyfile = None
+    ctx = gpgme.Context()
 
-        assert len(result.imports) == 1
-        fingerprint = result.imports[0][0]
-        keyfile.close()
-        logging.debug("GPG Key with fingerprint %s imported" % fingerprint)
+    try:
+        logging.debug("Opening GPG keyfile %s..." % cfg.EMAIL_GPG_SIGNING_KEY)
+        keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
+        key = ctx.import_(keyfile)
+
+        if not (len(key.imports) > 0):
+            logging.debug(
+                "Unexpected result from gpgme.Context.import_(): %r" % key)
+            raise gpgme.GpgmeError("Could not import GnuPG key from file %r"
+                                   % cfg.EMAIL_GPG_SIGNING_KEY)
+
+        fingerprint = key.imports[0][0]
+        logging.info("GPG Key with fingerprint %s imported" % fingerprint)
 
         ctx.armor = True
         ctx.signers = [ctx.get_key(fingerprint)]
-        assert len(ctx.signers) == 1
 
-        # make sure we can sign
+        logging.info("Testing signature created with GnuPG key...")
         message = StringIO('Test')
-        signature = StringIO()
-        new_sigs = ctx.sign(message, signature, gpgme.SIG_MODE_CLEAR)
-        assert len(new_sigs) == 1
+        new_sigs = ctx.sign(message, StringIO(), gpgme.SIG_MODE_CLEAR)
+        if not len(new_sigs) == 1:
+            raise gpgme.GpgmeError(
+                "Testing was unable to produce a signature with GnuPG key.")
 
-        # return the ctx
-        return ctx
+    except (IOError, OSError) as error:
+        logging.debug(error)
+        logging.error("Could not open or read from GnuPG key file %r!"
+                      % cfg.EMAIL_GPG_SIGNING_KEY)
+        ctx = None
+    except gpgme.GpgmeError as error:
+        logging.exception(error)
+        ctx = None
+    finally:
+        if keyfile and not keyfile.closed:
+            keyfile.close()
 
-    except IOError, e:
-        # exit noisily if keyfile not found
-        exit(e)
-    except AssertionError:
-        # exit noisily if key does not pass tests
-        exit('Invalid GPG Signing Key')
+    return ctx

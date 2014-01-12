@@ -1,7 +1,7 @@
-# Translations template for BridgeDB.
+# Russian translations for BridgeDB.
 # Copyright (C) 2013 ORGANIZATION
 # This file is distributed under the same license as the BridgeDB project.
-# 
+#
 # Translators:
 # varnav <varnavruz@gmail.com>, 2013
 # liquixis <liquixis@gmail.com>, 2012
@@ -12,13 +12,14 @@ msgstr ""
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
 "PO-Revision-Date: 2013-05-23 07:20+0000\n"
 "Last-Translator: varnav <varnavruz@gmail.com>\n"
-"Language-Team: Russian (http://www.transifex.com/projects/p/torproject/language/ru/)\n"
+"Language-Team: Russian "
+"(http://www.transifex.com/projects/p/torproject/language/ru/)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"Language: ru\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: lib/bridgedb/templates/base.html:33
 msgid "What are bridges?"
@@ -26,8 +27,7 @@ msgstr "Что такое ретранслятор типа мост?"
 
 #: lib/bridgedb/templates/base.html:34
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgid "%s Bridge relays %s are Tor relays that help you circumvent censorship."
 msgstr "%s Мосты %s это ретрансляторы Tor которые помогают обойти цензуру."
 
 #: lib/bridgedb/templates/base.html:39
@@ -37,10 +37,12 @@ msgstr "Мне нужен альтернативный способ получе
 #: lib/bridgedb/templates/base.html:40
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Другой способо найти публичный мост - послать письмо (с адреса %s или %s) на %s с одной строчкой 'get bridges' в теле письма."
+"Another way to find public bridge addresses is to send an email (from a "
+"%s or a %s address) to %s with the line 'get bridges' by itself in the "
+"body of the mail."
+msgstr ""
+"Другой способо найти публичный мост - послать письмо (с адреса %s или %s)"
+" на %s с одной строчкой 'get bridges' в теле письма."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -49,17 +51,25 @@ msgstr "Мои мосты не работают! Помогите!"
 #: lib/bridgedb/templates/base.html:49
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
+"If your Tor doesn't work, you should email %s. Try including as much info"
+" about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Если Tor не работает - напишите %s. Опишите проблему как можно более подробно, Введите список использованных мостов, имя файла/версию, которую вы использовали, сообщения об ошибках и прочее."
+msgstr ""
+"Если Tor не работает - напишите %s. Опишите проблему как можно более "
+"подробно, Введите список использованных мостов, имя файла/версию, которую"
+" вы использовали, сообщения об ошибках и прочее."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Для использования строк выше, откройте страницу Vidalia настройки Сети, и нажмите\n\"Мой провайдер Интернет блокирует соединения с сетью Tor\". Затем добавьте каждый адрес моста\nза раз."
+msgstr ""
+"Для использования строк выше, откройте страницу Vidalia настройки Сети, и"
+" нажмите\n"
+"\"Мой провайдер Интернет блокирует соединения с сетью Tor\". Затем "
+"добавьте каждый адрес моста\n"
+"за раз."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -99,3 +109,4 @@ msgstr "Шаг 3"
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
 msgstr "Теперь %s добавьте мосты в Tor %s"
+

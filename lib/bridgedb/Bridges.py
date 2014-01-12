@@ -18,6 +18,11 @@ import random
 
 import bridgedb.Storage
 import bridgedb.Bucket
+import bridgedb.Util as Util
+
+from bridgedb.parse import addr
+from bridgedb.parse import networkstatus
+
 
 HEX_FP_LEN = 40
 ID_LEN = 20
@@ -31,18 +36,21 @@ def is_valid_ip(ip):
     """Return True if ip is the string encoding of a valid IPv4 address,
        and False otherwise.
 
-    >>> is_valid_ip('1.2.3.4')
+    >>> from bridgedb import Bridges
+    >>> Bridges.is_valid_ip('1.2.3.4')
     True
-    >>> is_valid_ip('1.2.3.255')
+    >>> Bridges.is_valid_ip('1.2.3.255')
     True
-    >>> is_valid_ip('1.2.3.256')
+    >>> Bridges.is_valid_ip('1.2.3.256')
     False
-    >>> is_valid_ip('1')
+    >>> Bridges.is_valid_ip('1')
     False
-    >>> is_valid_ip('1.2.3')
+    >>> Bridges.is_valid_ip('1.2.3')
     False
-    >>> is_valid_ip('xyzzy')
+    >>> Bridges.is_valid_ip('xyzzy')
     False
+
+    :param str ip: A string representing an IPv4 or IPv6 address.
     """
 
     # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"
@@ -146,13 +154,16 @@ class Bridge:
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
             request=None, transport=None):
-        """Returns a valid bridge line for inclusion in a torrc"""
-        #arguments:
-        #    includeFingerprint
-        #    addressClass - type of address to choose 
-        #    request - a string unique to this request
-        #        e.g. email-address or uniformMap(ip)
-        #    transport - a pluggable transport method name
+        """Returns a valid bridge line for inclusion in a torrc.
+
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param DOCDOC addressClass: Type of address to choose.
+        :param str request: A string unique to this request e.g. email-address
+            or ``uniformMap(ip)`` or ``'default'``.
+        :param str transport: A pluggable transport method name.
+        """
 
         if not request: request = 'default'
         digest = get_hmac_fn('Order-Or-Addresses')(request)
@@ -179,7 +190,7 @@ class Bridge:
 
         # default ip, orport should get a chance at being selected
         if isinstance(self.ip, addressClass):
-            addresses.insert(0,(self.ip, PortList(self.orport)))
+            addresses.insert(0,(self.ip, addr.PortList(self.orport)))
 
         if addresses:
             address,portlist = addresses[pos % len(addresses)]
@@ -361,79 +372,10 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 yield b
             nickname = ip = orport = fingerprint = purpose = None 
 
-class PortList:
-    """ container class for port ranges
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.ports = set()
-        self.add(*args)
-
-    def _sanitycheck(self, val):
-        #XXX: if debug=False this is disabled. bad!
-        assert type(val) is int
-        assert(0 < val <= 65535) 
-
-    def __contains__(self, val1):
-        return val1 in self.ports
-
-    def add(self, *args):
-        for arg in args:
-            try:
-                if type(arg) is str:
-                    ports = set([int(p) for p in arg.split(',')][:PORTSPEC_LEN])
-                    [self._sanitycheck(p) for p in ports]
-                    self.ports.update(ports)
-                if type(arg) is int:
-                    self._sanitycheck(arg)
-                    self.ports.update([arg])
-                if type(arg) is PortList:
-                    self.add(list(arg.ports))
-            except AssertionError: raise ValueError
-            except ValueError: raise
-
-    def __iter__(self):
-        return self.ports.__iter__()
-
-    def __str__(self):
-        s = ""
-        for p in self.ports:
-            s += "".join(",%s"%p)
-        return s.lstrip(",")
-
-    def __repr__(self):
-        return "PortList('%s')" % self.__str__()
-
-    def __len__(self):
-        return len(self.ports)
-
-    def __getitem__(self, x):
-        return list(self.ports)[x]
-
-class ParseORAddressError(Exception):
-    def __init__(self):
-        msg = "Invalid or-address line"
-        Exception.__init__(self, msg)
 
 re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
-def parseORAddressLine(line):
-    address = None
-    portlist = None
-    # try regexp to discover ip version
-    for regex in [re_ipv4, re_ipv6]:
-        m = regex.match(line)
-        if m:
-            # get an address and portspec, or raise ParseError
-            try:
-                address  = ipaddr.IPAddress(m.group(1))
-                portlist = PortList(m.group(2))
-            except (IndexError, ValueError): raise ParseORAddressError
-
-    # return a valid address, portlist or raise ParseORAddressError
-    if address and portlist and len(portlist): return address,portlist
-    raise ParseORAddressError
 
 class PluggableTransport:
     """
@@ -457,18 +399,43 @@ class PluggableTransport:
             self.argdict = argdict
         else: self.argdict = {}
 
-    def getTransportLine(self, includeFingerprint=False):
+    def getTransportLine(self, includeFingerprint=False, bridgePrefix=False):
+        """Get a torrc line for this pluggable transport.
+
+        This method does not return lines which are prefixed with the word
+        'bridge', as they would be in a torrc file. Instead, lines returned
+        look like this:
+
+        obfs3 245.102.100.252:23619 59ca743e89b508e16b8c7c6d2290efdfd14eea98
+
+        :param bool includeFingerprints: If ``True``, include the digest of
+            this bridges public identity key in the torrc line.
+        :param bool bridgePrefix: If ``True``, add ``'Bridge '`` to the
+             beginning of each returned line (suitable for pasting directly
+             into a torrc file).
+        :rtype: str
+        :returns: A configuration line for adding this pluggable transport
+            into a torrc file.
         """
-        returns a torrc bridge line for this transport
-        """
-        if isinstance(self.address,ipaddr.IPv6Address):
-            address = "[%s]" % self.address
-        else: address = self.address
-        host = "%s %s:%d" % (self.methodname, address, self.port)
-        fp = ''
-        if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
-        args = " ".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
-        return "%s %s %s" % (host, fp, args)
+        sections = []
+
+        if bridgePrefix:
+            sections.append('Bridge')
+
+        if isinstance(self.address, ipaddr.IPv6Address):
+            host = "%s [%s]:%d" % (self.methodname, self.address, self.port)
+        else:
+            host = "%s %s:%d" % (self.methodname, self.address, self.port)
+        sections.append(host)
+
+        if includeFingerprint:
+            sections.append(self.bridge.fingerprint)
+
+        args = ",".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
+        sections.append(args)
+
+        line = ' '.join(sections)
+        return line
 
 def parseExtraInfoFile(f):
     """
@@ -500,7 +467,6 @@ def parseExtraInfoFile(f):
 
         # get the bridge ID ?
         if line.startswith("extra-info "): #XXX: get the router ID
-            logging.debug("Parsing extra-info line")
             line = line[11:]
             (nickname, ID) = line.split()
             logging.debug("  Parsed Nickname: %s", nickname)
@@ -512,7 +478,6 @@ def parseExtraInfoFile(f):
 
         # get the transport line
         if ID and line.startswith("transport "):
-            logging.debug("  Parsing transport line")
             fields = line[10:].split()
             # [ arglist ] field, optional
             if len(fields) >= 3:
@@ -535,8 +500,8 @@ def parseExtraInfoFile(f):
                         m = regex.match(fields[1])
                         address  = ipaddr.IPAddress(m.group(1))
                         port = int(m.group(2))
-                        logging.debug("  Parsed Transport: %s", method_name)
-                        logging.debug("  Parsed Transport Address: %s:%d", address, port)
+                        logging.debug("  Parsed Transport: %s %s:%d"
+                                      % (method_name, address, port))
                         yield ID, method_name, address, port, argdict
                     except (IndexError, ValueError, AttributeError):
                         # skip this line
@@ -546,58 +511,63 @@ def parseExtraInfoFile(f):
         if ID and line.startswith("router-signature"):
             ID = None
 
-def parseStatusFile(f):
-    """DOCDOC"""
-    timestamp = ID = None
-    num_or_address_lines = 0
+def parseStatusFile(networkstatusFile):
+    """Parse entries in a bridge networkstatus file.
+
+    :type networkstatusFile: A file-like object.
+    :param networkstatusFile: A file containing `@type bridge-networkstatus` documents.
+    """
+    (nickname, ID, descDigest, timestamp,
+     ORaddr, ORport, dirport, addr, portlist) = (None for x in xrange(9))
+    running = stable = False
+    parsedORAddressLines = 0
     or_addresses = {}
-    for line in f:
-        if not ID:
-            logging.debug("Parsing network status line")
+
+    for line in networkstatusFile:
         line = line.strip()
         if line.startswith("opt "):
             line = line[4:]
 
         if line.startswith("r "):
-            try:
-                ID = binascii.a2b_base64(line.split()[2]+"=")
-                timestamp = time.mktime(time.strptime(
-                    " ".join(line.split()[4:6]), "%Y-%m-%d %H:%M:%S")
-                    )
-                logging.debug("  Fingerprint: %s", toHex(ID))
-                logging.debug("  Timestamp: %s", timestamp)
-            except binascii.Error:
-                logging.warn("  Unparseable base64 ID %r", line.split()[2])
-            except ValueError:
-                timestamp = None
-                logging.debug("  Timestamp; Invalid")
+            (nickname, ID, descDigest, timestamp,
+             ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            logging.debug("Parsed networkstatus line:")
+            logging.debug("  Nickname:   %s" % nickname)
+            logging.debug("  Identity:   %s" % toHex(ID))
+            if descDigest:
+                logging.debug("  Descriptor: {0}".format(toHex(descDigest)))
+                logging.debug("  Timestamp:  {0}".format(timestamp))
+                logging.debug("  ORAddress:  {0}".format(ORaddr))
+                logging.debug("  ORport:     {0}".format(ORport))
+                logging.debug("  dirport:    {0}".format(dirport))
 
         elif ID and line.startswith("a "):
-            if num_or_address_lines < 8:
-                line = line[2:]
-                try:
-                    address,portlist = parseORAddressLine(line)
-                    logging.debug("  Parsed address: %s", address)
-                    logging.debug("  Parsed port(s): %s", portlist)
-                except ParseORAddressError:
-                    logging.debug("  Failed to Parsed address: %s", address)
-                try:
-                    or_addresses[address].add(portlist)
-                except KeyError:
-                    or_addresses[address] = portlist
+            try:
+                addr, portlist = networkstatus.parseALine(line, toHex(ID))
+            except networkstatus.ParseNetstatusError as error:
+                logging.error(error)
             else:
-                logging.warn("  Skipping extra or-address line "\
-                             "from Bridge with ID %r" % ID)
-            num_or_address_lines += 1
+                if (addr is not None) and (portlist is not None):
+                    try:
+                        or_addresses[addr].add(portlist)
+                    except (KeyError, AttributeError):
+                        or_addresses[addr] = portlist
+                    parsedORAddressLines += 1
 
         elif ID and timestamp and line.startswith("s "):
-            flags = line.split()
-            logging.debug("  Parsed Flags: %s", flags)
-            yield ID, ("Running" in flags), ("Stable" in flags), or_addresses, timestamp
-            timestamp = ID = None
-            logging.debug("  Total: %d OR address lines", num_or_address_lines)
-            num_or_address_lines = 0
+            running, stable = networkstatus.parseSLine(line)
+            logging.debug("Bridges.parseStatusFile(): "\
+                          "yielding %s running=%s stable=%s oraddrs=%s ts=%s"
+                          % (toHex(ID), running, stable, or_addresses, timestamp))
+            yield ID, running, stable, or_addresses, timestamp
+
+            (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
+             addr, portlist) = (None for x in xrange(9))
+            running = stable = False
             or_addresses = {}
+
+    logging.debug("Total ORAddress lines parsed from '%s': %d"
+                  % (networkstatusFile.name, parsedORAddressLines))
 
 def parseCountryBlockFile(f):
     """Generator. Parses a blocked-bridges file 'f', and yields
@@ -620,7 +590,7 @@ def parseCountryBlockFile(f):
                 m = regex.match(addrspec)
                 if m:
                     address = ipaddr.IPAddress(m.group(1))
-                    portlist = PortList(m.group(2))
+                    portlist = addr.PortList(m.group(2))
                     countries = countries.split(',')
                     logging.debug("Parsed address: %s", address)
                     logging.debug("Parsed portlist: %s", portlist)
@@ -631,7 +601,7 @@ def parseCountryBlockFile(f):
         if ID and address and portlist and countries:
             yield ID, address, portlist, countries
 
-class BridgeHolder:
+class BridgeHolder(object):
     """Abstract base class for all classes that hold bridges."""
     def insert(self, bridge):
         raise NotImplementedError
@@ -645,35 +615,114 @@ class BridgeHolder:
     def dumpAssignments(self, f, description=""):
         pass
 
-class BridgeRingParameters:
-    """DOCDOC"""
-    def __init__(self, needPorts=(), needFlags=()):
-        """DOCDOC takes list of port, count"""
-        for port,count in needPorts:
+class BridgeRingParameters(object):
+    """Store validated settings on minimum number of Bridges with certain
+    attributes which should be included in any generated subring of a
+    hashring.
+
+    :ivar list needPorts: List of two-tuples of desired port numbers and their
+        respective minimums.
+    :ivar list needFlags: List of two-tuples of desired flags_ assigned to a
+        Bridge by the Bridge DirAuth.
+
+    .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696
+    """
+
+    def __init__(self, needPorts=[], needFlags=[]):
+        """Control the creation of subrings by including a minimum number of
+        bridges which possess certain attributes.
+
+        XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which
+            reads: "Only 'stable' is now supported." Is this still the case?
+            Why?
+
+        :type needPorts: iterable
+        :param needPorts: An iterable of two-tuples. Each two tuple should
+            contain ``(port, minimum)``, where ``port`` is an integer
+            specifying a port number, and ``minimum`` is another integer
+            specifying the minimum number of Bridges running on that ``port``
+            to include in any new subring.
+        :type needFlags: iterable
+        :param needFlags: An iterable of two-tuples. Each two tuple should
+            contain ``(flag, minimum)``, where ``flag`` is a string specifying
+            an OR flag_, and ``minimum`` is an integer for the minimum number
+            of Bridges which have acquired that ``flag`` to include in any new
+            subring.
+        :raises: An :exc:`TypeError` if an invalid port number, a minimum less
+            than one, or an "unsupported" flag is given. "Stable" appears to
+            be the only currently "supported" flag.
+        """
+        for port, count in needPorts:
             if not (1 <= port <= 65535):
-                raise TypeError("Port %s out of range."%port)
+                raise TypeError("Port %s out of range." % port)
             if count <= 0:
-                raise TypeError("Count %s out of range."%count)
+                raise TypeError("Count %s out of range." % count)
         for flag, count in needFlags:
             flag = flag.lower()
-            if flag not in [ "stable" ]:
-                raise TypeError("Unsupported flag %s"%flag)
+            if flag not in ["stable",]:
+                raise TypeError("Unsupported flag %s" % flag)
             if count <= 0:
-                raise TypeError("Count %s out of range."%count)
+                raise TypeError("Count %s out of range." % count)
 
         self.needPorts = needPorts[:]
-        self.needFlags = [(flag.lower(),count) for flag, count in needFlags[:] ]
+        self.needFlags = [(flag.lower(), count) for flag, count in needFlags[:]]
 
 class BridgeRing(BridgeHolder):
-    """Arranges bridges in a ring based on an hmac function."""
-    ## Fields:
-    ##   bridges: a map from hmac value to Bridge.
-    ##   bridgesByID: a map from bridge ID Digest to Bridge.
-    ##   isSorted: true iff sortedKeys is currently sorted.
-    ##   sortedKeys: a list of all the hmacs, in order.
-    ##   name: a string to represent this ring in the logs.
+    """Arranges bridges into a hashring based on an hmac function."""
+
     def __init__(self, key, answerParameters=None):
-        """Create a new BridgeRing, using key as its hmac key."""
+        """Create a new BridgeRing, using key as its hmac key.
+
+        :param key: DOCDOC
+        :type answerParameters: :class:`BridgeRingParameters`
+        :param answerParameters: DOCDOC
+
+        :ivar dict bridges: A dictionary which maps HMAC keys to
+                            :class:`~bridgedb.Bridges.Bridge`s.
+        :ivar dict bridgesByID: A dictionary which maps raw hash digests of
+                                bridge ID keys to
+                                :class:`~bridgedb.Bridges.Bridge`s.
+        :type hmac: callable
+        :ivar hmac: An HMAC function, which uses the **key** parameter to
+                    generate new HMACs for storing, inserting, and retrieving
+                    :class:`~bridgedb.Bridges.Bridge`s within mappings.
+        :ivar bool isSorted: ``True`` if ``sortedKeys`` is currently sorted.
+        :ivar list sortedKeys: A sorted list of all of the HMACs.
+        :ivar str name: A string which identifies this hashring, used mostly
+                        for differentiating this hashring in log messages, but
+                        it is also used for naming subrings. If this hashring
+                        is a subring, the ``name`` will include whatever
+                        distinguishing parameters differentiate that
+                        particular subring (i.e. ``'(port-443 subring)'`` or
+                        ``'(Stable subring)'``)
+        :type subrings: list
+        :ivar subrings: A list of other ``BridgeRing``s, each of which
+                        contains bridges of a particular type. For example, a
+                        subring might contain only ``Bridge``s which have been
+                        given the "Stable" flag, or it might contain only IPv6
+                        bridges. Each item in this list should be a 4-tuple:
+
+                          ``(type, value, count, ring)``
+
+                        where:
+
+                          * ``type`` is a string which describes what kind of
+                            parameter is used to determine if a ``Bridge``
+                            belongs in that subring, i.e. ``'port'`` or
+                            ``'flag'``.
+
+                          * ``value`` is a specific value pertaining to the
+                            ``type``, e.g. ``type='port'; value=443``.
+
+                          * ``count`` is an integer for the current total
+                             number of bridges in the subring.
+
+                          * ``ring`` is a
+                            :class:`~bridgedb.Bridges.BridgeRing`; it is the
+                            sub hashring which contains ``count`` number of
+                            :class:`~bridgedb.Bridges.Bridge`s of a certain
+                            ``type``.
+        """
         self.bridges = {}
         self.bridgesByID = {}
         self.hmac = get_hmac_fn(key, hex=False)
@@ -683,7 +732,7 @@ class BridgeRing(BridgeHolder):
             answerParameters = BridgeRingParameters()
         self.answerParameters = answerParameters
 
-        self.subrings = [] #DOCDOC
+        self.subrings = []
         for port,count in self.answerParameters.needPorts:
             #note that we really need to use the same key here, so that
             # the mapping is in the same order for all subrings.
@@ -694,18 +743,23 @@ class BridgeRing(BridgeHolder):
         self.setName("Ring")
 
     def setName(self, name):
-        """DOCDOC"""
+        """Tag a unique name to this hashring for identification.
+
+        :param string name: The name for this hashring.
+        """
         self.name = name
-        for tp,val,_,subring in self.subrings:
+        for tp, val, _, subring in self.subrings:
             if tp == 'port':
-                subring.setName("%s (port-%s subring)"%(name, val))
+                subring.setName("%s (port-%s subring)" % (name, val))
             else:
-                subring.setName("%s (%s subring)"%(name, val))
+                subring.setName("%s (%s subring)" % (name, val))
 
     def __len__(self):
+        """Get the number of unique bridges this hashring contains."""
         return len(self.bridges)
 
     def clear(self):
+        """Remove all bridges and mappings from this hashring and subrings."""
         self.bridges = {}
         self.bridgesByID = {}
         self.isSorted = False
@@ -715,9 +769,20 @@ class BridgeRing(BridgeHolder):
             subring.clear()
 
     def insert(self, bridge):
-        """Add a bridge to the ring.  If the bridge is already there,
-           replace the old one."""
-        for tp,val,_,subring in self.subrings:
+        """Add a **bridge** to this hashring.
+
+        The bridge's position in the hashring is dependent upon the HMAC of
+        the raw hash digest of the bridge's ID key. The function used to
+        generate the HMAC, :ivar:`BridgeRing.hmac`, is unique to each
+        individual hashring.
+
+        If the (presumably same) bridge is already at that determined position
+        in this hashring, replace the old one.
+
+        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :param bridge: The bridge to insert into this hashring.
+        """
+        for tp, val, _, subring in self.subrings:
             if tp == 'port':
                 if val == bridge.orport:
                     subring.insert(bridge)
@@ -733,10 +798,7 @@ class BridgeRing(BridgeHolder):
             self.isSorted = False
         self.bridges[pos] = bridge
         self.bridgesByID[ident] = bridge
-        #XXX: just use bridge.ip
-        if isinstance(bridge.ip, ipaddr.IPv6Address): ip = "[%s]" % bridge.ip
-        else: ip = bridge.ip
-        logging.debug("Adding %s to %s", ip, self.name)
+        logging.debug("Adding %s to %s" % (bridge.ip, self.name))
 
     def _sort(self):
         """Helper: put the keys in sorted order."""
@@ -745,8 +807,40 @@ class BridgeRing(BridgeHolder):
             self.isSorted = True
 
     def _getBridgeKeysAt(self, pos, N=1):
-        """Helper: return the N keys appearing in the ring after position
-           pos"""
+        """Bisect a list of bridges at a specified position, **pos**, and
+        retrieve bridges from that point onwards, wrapping around the hashring
+        if necessary.
+
+        If the number of bridges requested, **N**, is larger that the size of
+        this hashring, return the entire ring. Otherwise:
+
+          1. Sort this bridges in this hashring, if it is currently unsorted.
+
+          2. Bisect the sorted bridges. If the bridge at the desired position,
+             **pos**, already exists within this hashring, the the bisection
+             result is the bridge at position **pos**. Otherwise, the bisection
+             result is the first position after **pos** which has a bridge
+             assigned to it.
+
+          3. Try to obtain **N** bridges, starting at (and including) the
+             bridge in the requested position, **pos**.
+
+               a. If there aren't **N** bridges after **pos**, wrap back
+                  around to the beginning of the hashring and obtain bridges
+                  until we have **N** bridges.
+
+          4. Check that the number of bridges obtained is indeed **N**, then
+             return them.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
         assert len(pos) == DIGEST_LEN
         if N >= len(self.sortedKeys):
             return self.sortedKeys
@@ -761,9 +855,29 @@ class BridgeRing(BridgeHolder):
         return r
 
     def getBridges(self, pos, N=1, countryCode=None):
-        """Return the N bridges appearing in the ring after position pos"""
+        """Return **N** bridges appearing in this hashring after a position.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :type countryCode: str or None
+        :param countryCode: DOCDOC
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
+        # XXX This can be removed after we determine if countryCode is ever
+        # actually being used. It seems the countryCode should be passed in
+        # from bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer() in
+        # order to hand out bridges which are believed to not be blocked in a
+        # given country.
+        if countryCode:
+            logging.debug("getBridges: countryCode=%r" % countryCode)
+
         forced = []
-        for _,_,count,subring in self.subrings:
+        for _, _, count, subring in self.subrings:
             if len(subring) < count:
                 count = len(subring)
             forced.extend(subring._getBridgeKeysAt(pos, count))
@@ -772,6 +886,10 @@ class BridgeRing(BridgeHolder):
         for k in forced + self._getBridgeKeysAt(pos, N):
             if k not in keys:
                 keys.append(k)
+            else:
+                logging.debug(
+                    "Got duplicate bridge %r in main hashring for position %r."
+                    % (Util.logSafely(k.encode('hex')), pos.encode('hex')))
         keys = keys[:N]
         keys.sort()
 
@@ -791,6 +909,7 @@ class BridgeRing(BridgeHolder):
         return self.bridgesByID.get(fp)
 
     def dumpAssignments(self, f, description=""):
+        logging.info("Dumping bridge assignments for %s..." % self.name)
         for b in self.bridges.itervalues():
             desc = [ description ]
             ident = b.getID()
@@ -817,18 +936,28 @@ class FixedBridgeSplitter(BridgeHolder):
         self.rings[which].insert(bridge)
 
     def clear(self):
+        """Clear all bridges from every ring in ``rings``."""
         for r in self.rings:
             r.clear()
 
     def __len__(self):
-        n = 0
-        for r in self.rings:
-            n += len(r)
-        return n
+        """Returns the total number of bridges in all ``rings``."""
+        total = 0
+        for ring in self.rings:
+            total += len(ring)
+        return total
 
-    def dumpAssignments(self, f, description=""):
-        for i,r in zip(xrange(len(self.rings)), self.rings):
-            r.dumpAssignments(f, "%s ring=%s" % (description, i))
+    def dumpAssignments(self, filename, description=""):
+        """Write all bridges assigned to this hashring to ``filename``.
+
+        :param string description: If given, include a description next to the
+            index number of the ring from :attr:`FilteredBridgeHolder.rings`
+            the following bridges were assigned to. For example, if the
+            description is ``"IPv6 obfs2 bridges"`` the line would read:
+            ``"IPv6 obfs2 bridges ring=3"``.
+        """
+        for index, ring in zip(xrange(len(self.rings)), self.rings):
+            ring.dumpAssignments(filename, "%s ring=%s" % (description, index))
 
 class UnallocatedHolder(BridgeHolder):
     """A pseudo-bridgeholder that ignores its bridges and leaves them
@@ -951,17 +1080,37 @@ class BridgeSplitter(BridgeHolder):
             ring.dumpAssignments(f, "%s %s" % (description, name))
 
 class FilteredBridgeSplitter(BridgeHolder):
-    """ A configurable BridgeHolder that filters bridges
-    into subrings.
-    The set of subrings and conditions used to assign Bridges
-    are passed to the constructor as a list of (filterFn, ringName)
+    """A configurable BridgeHolder that filters bridges into subrings.
+
+    The set of subrings and conditions used to assign :class:`Bridge`s should
+    be passed to :meth:`~FilteredBridgeSplitter.addRing`.
     """
 
     def __init__(self, key, max_cached_rings=3):
+        """Create a hashring which filters bridges into sub hashrings.
+
+        :type key: DOCDOC
+        :param key: An HMAC key.
+        :param int max_cached_rings: XXX max_cached_rings appears to not be
+             used anywhere.
+
+        :ivar filterRings: A dictionary of subrings which has the form
+             ``{ringname: (filterFn, subring)}``, where:
+                 - ``ringname`` is a unique string identifying the subring.
+                 - ``filterFn`` is a callable which filters Bridges in some
+                   manner, i.e. by whether they are IPv4 or IPv6, etc.
+                 - ``subring`` is a :class:`BridgeHolder`.
+        :ivar hmac: DOCDOC
+        :ivar bridges: DOCDOC
+        :type distributorName: str
+        :ivar distributorName: The name of this splitter's distributor. See
+             :meth:`bridgedb.Dist.IPBasedDistributor.setDistributorName`.
+        """
         self.key = key
         self.filterRings = {}
         self.hmac = get_hmac_fn(key, hex=True)
         self.bridges = []
+        self.distributorName = ''
 
         #XXX: unused
         self.max_cached_rings = max_cached_rings
@@ -974,39 +1123,110 @@ class FilteredBridgeSplitter(BridgeHolder):
         self.filterRings = {}
 
     def insert(self, bridge):
+        """Insert a bridge into all appropriate sub-hashrings.
+
+        For all sub-hashrings, the ``bridge`` will only be added iff it passes
+        the filter functions for that sub-hashring.
+
+        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :param bridge: The bridge to add.
+        """
         if not bridge.running:
-            logging.debug("insert non-running bridge %s" % bridge.getID())
+            logging.warn(
+                "Skipping hashring insertion for non-running bridge: '%s'"
+                % bridge.getID())
             return
 
         self.bridges.append(bridge)
+        for ringname, (filterFn, subring) in self.filterRings.items():
+            if filterFn(bridge):
+                subring.insert(bridge)
+                logging.debug("Inserted bridge '%s' into '%s' sub hashring"
+                              % (bridge.getID(), ringname))
 
-        # insert in all matching rings
-        for n,(f,r) in self.filterRings.items():
-            if f(bridge):
-                r.insert(bridge)
-                logging.debug("insert bridge into %s" % n)
+    def extractFilterNames(self, ringname):
+        """Get the names of the filters applied to a particular sub hashring.
 
-    def addRing(self, ring, ringname, filterFn, populate_from=None):
-        """Add a ring to this splitter.
-        ring -- the ring to add
-        ringname -- a unique string identifying the ring
-        filterFn -- a function whose input is a Bridge, and returns
-        True or False
-        populate_from -- an iterable of Bridges
+        :param str ringname: A unique name identifying a sub hashring.
+        :rtype: list
+        :returns: A sorted list of strings, all the function names of the
+                  filters applied to the sub hashring named **ringname**.
         """
-        assert isinstance(ring, BridgeHolder)
-        assert ringname not in self.filterRings.keys()
-        logging.debug("addRing %s" % ringname)
+        filterNames = []
+
+        for filterName in [x.func_name for x in list(ringname)]:
+            # Using `filterAssignBridgesToRing.func_name` gives us a messy
+            # string which includes all parameters and memory addresses. Get
+            # rid of this by partitioning at the first `(`:
+            realFilterName = filterName.partition('(')[0]
+            filterNames.append(realFilterName)
+
+        filterNames.sort()
+        return filterNames
+
+    def addRing(self, subring, ringname, filterFn, populate_from=None):
+        """Add a subring to this hashring.
+
+        :type subring: :class:`BridgeHolder`
+        :param subring: The subring to add.
+        :param str ringname: A unique name for identifying the new subring.
+        :param filterFn: A function whose input is a :class:`Bridge`, and
+                         returns True/False based on some filtration criteria.
+        :type populate_from: iterable or None
+        :param populate_from: A group of :class:`Bridge`s. If given, the newly
+                              added subring will be populated with these
+                              bridges.
+        :rtype: bool
+        :returns: False if there was a problem adding the subring, True
+                  otherwise.
+        """
+        # XXX I think subring and ringname are switched in this function, or
+        # at least that whatever is passed into this function as as the
+        # `ringname` parameter from somewhere else is odd; for example, with
+        # the original code, which was `log.debug("Inserted %d bridges into
+        # hashring '%s'!" % (inserted, ringname))`, this log message appears:
+        #
+        # Jan 04 23:18:37 [INFO] Inserted 12 bridges into hashring
+        # frozenset([<function filterBridgesByIP4 at 0x2d67cf8>, <function
+        # filterAssignBridgesToRing(<function hmac_fn at 0x3778398>, 4, 0) at
+        # 0x37de578>])!
+        #
+        # I suppose since it contains memory addresses, it *is* technically
+        # likely to be a unique string, but it is messy.
+
+        if not isinstance(subring, BridgeHolder):
+            logging.fatal("%s hashring can't add invalid subring: %r"
+                          % (self.distributorName, subring))
+            return False
+        if ringname in self.filterRings.keys():
+            logging.fatal("%s hashring already has a subring named '%s'!"
+                          % (self.distributorName, ringname))
+            return False
+
+        filterNames = self.extractFilterNames(ringname)
+        subringName = [self.distributorName]
+        for filterName in filterNames:
+            if filterName != 'filterAssignBridgesToRing':
+                subringName.append(filterName.strip('filterBridgesBy'))
+        subringName = '-'.join([x for x in subringName])
+        subring.setName(subringName)
+
+        logging.info("Adding subring to %s hashring..." % subring.name)
+        logging.info("  Subring filters: %s" % filterNames)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
-        self.filterRings[ringname] = (filterFn,ring)
+        self.filterRings[ringname] = (filterFn, subring)
 
-        # populate ring from an iterable
         if populate_from:
-            logging.debug("populating ring %s" % ringname)
+            inserted = 0
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
-                    ring.insert(bridge)
+                    subring.insert(bridge)
+                    inserted += 1
+            logging.info("Bridges inserted into %s subring: %d"
+                         % (subring.name, inserted))
+
+        return True
 
     def dumpAssignments(self, f, description=""):
         # one ring per filter set

@@ -11,6 +11,20 @@
 <!-- Le styles -->
 <link href="/assets/bootstrap.min.css" rel="stylesheet">
 <link href="/assets/custom.css" rel="stylesheet">
+
+% if rtl:
+<style>
+span,p,h3,h4 {
+    text-align: right;
+    direction: rtl;
+}
+
+span {
+    float: right;
+}
+</style>
+%endif
+
 </head>
 <body>
 <div class="container-narrow">
