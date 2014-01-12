@@ -211,6 +211,7 @@ class BucketManager:
     def dumpBridgesToFile(self, filename, bridges):
         """Dump a list of given bridges into a file
         """
+        logging.debug("Dumping bridge assignments to file: %r" % filename)
         # get the bridge histories and sort by Time On Same Address
         bridgeHistories = []
         for b in bridges:
