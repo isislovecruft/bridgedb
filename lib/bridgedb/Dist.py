@@ -154,7 +154,7 @@ class IPBasedDistributor(Distributor):
         logging.debug("Added splitter %s to IPBasedDistributor."
                       % self.splitter.__class__)
 
-        self.setDistributorName(self.__class__.__name__)
+        self.setDistributorName('HTTPS')
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
@@ -431,6 +431,8 @@ class EmailBasedDistributor(Distributor):
         #XXX cache options not implemented
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=5)
+
+        self.setDistributorName('Email')
 
     def clear(self):
         self.splitter.clear()
