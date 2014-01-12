@@ -767,7 +767,7 @@ class BridgeRing(BridgeHolder):
         :type bridge: :class:`~bridgedb.Bridges.Bridge`
         :param bridge: The bridge to insert into this hashring.
         """
-        for tp,val,_,subring in self.subrings:
+        for tp, val, _, subring in self.subrings:
             if tp == 'port':
                 if val == bridge.orport:
                     subring.insert(bridge)
