@@ -740,6 +740,7 @@ class BridgeRing(BridgeHolder):
                 subring.setName("%s (%s subring)" % (name, val))
 
     def __len__(self):
+        """Get the number of unique bridges this hashring contains."""
         return len(self.bridges)
 
     def clear(self):
