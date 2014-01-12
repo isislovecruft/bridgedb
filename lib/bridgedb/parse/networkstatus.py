@@ -18,6 +18,7 @@
 ..
   parse
    \_networkstatus
+      |_ isValidRouterNickname - Determine if a nickname is according to spec
       |_ parseRLine - Parse an 'r'-line from a networkstatus document
       |_ parseALine - Parse an 'a'-line from a networkstatus document
       \_ parseSLine - Parse an 's'-line from a networkstatus document
