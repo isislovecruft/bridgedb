@@ -1217,7 +1217,6 @@ class FilteredBridgeSplitter(BridgeHolder):
         self.filterRings[ringname] = (filterFn, subring)
 
         if populate_from:
-            logging.info("Populating hashring %s..." % subringName)
             inserted = 0
             for bridge in populate_from:
                 if isinstance(bridge, Bridge) and filterFn(bridge):
