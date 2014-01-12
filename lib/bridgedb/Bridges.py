@@ -908,6 +908,7 @@ class BridgeRing(BridgeHolder):
         return self.bridgesByID.get(fp)
 
     def dumpAssignments(self, f, description=""):
+        logging.info("Dumping bridge assignments for %s..." % self.name)
         for b in self.bridges.itervalues():
             desc = [ description ]
             ident = b.getID()
