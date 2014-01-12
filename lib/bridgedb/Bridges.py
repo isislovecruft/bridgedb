@@ -783,10 +783,7 @@ class BridgeRing(BridgeHolder):
             self.isSorted = False
         self.bridges[pos] = bridge
         self.bridgesByID[ident] = bridge
-        #XXX: just use bridge.ip
-        if isinstance(bridge.ip, ipaddr.IPv6Address): ip = "[%s]" % bridge.ip
-        else: ip = bridge.ip
-        logging.debug("Adding %s to %s", ip, self.name)
+        logging.debug("Adding %s to %s" % (bridge.ip, self.name))
 
     def _sort(self):
         """Helper: put the keys in sorted order."""
