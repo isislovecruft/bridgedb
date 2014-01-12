@@ -398,7 +398,7 @@ class PluggableTransport:
             self.argdict = argdict
         else: self.argdict = {}
 
-    def getTransportLine(self, includeFingerprint=False):
+    def getTransportLine(self, includeFingerprint=False, bridgePrefix=False):
         """Get a torrc line for this pluggable transport.
 
         This method does not return lines which are prefixed with the word
@@ -409,18 +409,32 @@ class PluggableTransport:
 
         :param bool includeFingerprints: If ``True``, include the digest of
             this bridges public identity key in the torrc line.
+        :param bool bridgePrefix: If ``True``, add ``'Bridge '`` to the
+             beginning of each returned line (suitable for pasting directly
+             into a torrc file).
         :rtype: str
         :returns: A configuration line for adding this pluggable transport
             into a torrc file.
         """
-        if isinstance(self.address,ipaddr.IPv6Address):
-            address = "[%s]" % self.address
-        else: address = self.address
-        host = "%s %s:%d" % (self.methodname, address, self.port)
-        fp = ''
-        if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
-        args = ",".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
-        return "%s %s %s" % (host, fp, args)
+        sections = []
+
+        if bridgePrefix:
+            sections.append('Bridge')
+
+        if isinstance(self.address, ipaddr.IPv6Address):
+            host = "%s [%s]:%d" % (self.methodname, self.address, self.port)
+        else:
+            host = "%s %s:%d" % (self.methodname, self.address, self.port)
+        sections.append(host)
+
+        if includeFingerprint:
+            sections.append(self.bridge.fingerprint)
+
+        args = ",".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
+        sections.append(args)
+
+        line = ' '.join(sections)
+        return line
 
 def parseExtraInfoFile(f):
     """
