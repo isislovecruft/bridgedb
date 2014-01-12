@@ -413,14 +413,23 @@ class PluggableTransport:
         :returns: A configuration line for adding this pluggable transport
             into a torrc file.
         """
-        if isinstance(self.address,ipaddr.IPv6Address):
-            address = "[%s]" % self.address
-        else: address = self.address
-        host = "%s %s:%d" % (self.methodname, address, self.port)
-        fp = ''
-        if includeFingerprint: fp = "keyid=%s" % self.bridge.fingerprint
-        args = ",".join(["%s=%s"%(k,v) for k,v in self.argdict.items()]).strip()
-        return "%s %s %s" % (host, fp, args)
+        sections = []
+
+
+        if isinstance(self.address, ipaddr.IPv6Address):
+            host = "%s [%s]:%d" % (self.methodname, self.address, self.port)
+        else:
+            host = "%s %s:%d" % (self.methodname, self.address, self.port)
+        sections.append(host)
+
+        if includeFingerprint:
+            sections.append(self.bridge.fingerprint)
+
+        args = ",".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
+        sections.append(args)
+
+        line = ' '.join(sections)
+        return line
 
 def parseExtraInfoFile(f):
     """
