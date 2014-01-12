@@ -70,8 +70,8 @@ class Distributor(bridgedb.Bridges.BridgeHolder):
         >>> ipDist.setDistributorName('HTTPS Distributor')
         >>> ipDist.prepopulateRings()
         >>> hashrings = ipDist.splitter.filterRings
-        >>> for (ringname, (filterFn, subring)) in hashrings.items():
-        ...     print subring.name
+        >>> firstSubring = hashrings.items()[0][1][1]
+        >>> assert firstSubring.name
 
         :param str name: A name for this distributor.
         """
