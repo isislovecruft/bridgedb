@@ -150,9 +150,25 @@ class WebResource(twisted.web.resource.Resource):
     def render(self, request):
         """Render a response for a client HTTP request.
 
-        Presently, this method merely returns :meth:`getBridgeRequestAnswer`.
+        Presently, this method merely wraps :meth:`getBridgeRequestAnswer` to
+        catch any unhandled exceptions which occur (otherwise the server will
+        display the traceback to the client). If an unhandled exception *does*
+        occur, the client will be served the default "No bridges currently
+        available" HTML response page.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the HTTP method, full
+                        URI, and any URL/POST arguments and headers present.
+        :rtype: str
+        :returns: A plaintext or HTML response to serve.
         """
-        return self.getBridgeRequestAnswer(request)
+        try:
+            response = self.getBridgeRequestAnswer(request)
+        except Exception as err:
+            logging.exception(err)
+            response = self.renderAnswer(request)
+
+        return response
 
     def getBridgeRequestAnswer(self, request):
         """Respond to a client HTTP request for bridges.
