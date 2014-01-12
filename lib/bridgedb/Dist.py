@@ -221,6 +221,11 @@ class IPBasedDistributor(Distributor):
         :param list bridgeFilterRules: A list of callables used filter the
                                        bridges returned in the response to the
                                        client. See :mod:`~bridgedb.Filters`.
+        :rtype: list
+        :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
+                 the response. See
+                 :meth:`bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer`
+                 for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
                      % (N, Util.logSafely(ip)))
