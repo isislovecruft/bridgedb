@@ -228,7 +228,7 @@ class WebResource(twisted.web.resource.Resource):
                      % (Util.logSafely(ip), request.args))
 
         rules = []
-        bridges = None
+        bridgeLines = None
 
         if ip:
             if ipv6:
@@ -252,12 +252,17 @@ class WebResource(twisted.web.resource.Resource):
                                                        self.nBridgesToGive,
                                                        countryCode,
                                                        bridgeFilterRules=rules)
+            bridgeLines = "".join("  %s\n" % b.getConfigLine(
+                includeFingerprint=self.includeFingerprints,
+                addressClass=addressClass,
+                transport=transport,
+                request=bridgedb.Dist.uniformMap(ip)
+                ) for b in bridges)
 
-        answer = self.renderAnswer(request, ip, bridges, rtl, format)
+        answer = self.renderAnswer(request, bridgeLines, rtl, format)
         return answer
 
-    def renderAnswer(self, request, ip=None, bridges=None,
-                     rtl=False, format=None):
+    def renderAnswer(self, request, bridgeLines=None, rtl=False, format=None):
         """Generate a response for a client which includes **bridges**.
 
         The generated response can be plaintext or HTML.
@@ -265,10 +270,9 @@ class WebResource(twisted.web.resource.Resource):
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
                         URI, and any URL/POST arguments and headers present.
-        :type ip: str or None
-        :param ip: The IP address of the client we're responding to.
-        :type bridges: list or None
-        :param bridges: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        :type bridgeLines: list or None
+        :param bridgeLines: A list of strings used to configure a Tor client
+                            to use a bridge.
         :param bool rtl: If ``True``, the language used for the response to
                          the client should be rendered right-to-left.
         :type format: str or None
@@ -279,22 +283,12 @@ class WebResource(twisted.web.resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
-        answer = None
-
-        if bridges and ip:
-            answer = "".join("  %s\n" % b.getConfigLine(
-                includeFingerprint=self.includeFingerprints,
-                addressClass=addressClass,
-                transport=transport,
-                request=bridgedb.Dist.uniformMap(ip)
-                ) for b in bridges) 
-
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             return answer
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
-            return lookup.get_template('bridges.html').render(answer=answer,
+            return lookup.get_template('bridges.html').render(answer=bridgeLines,
                                                               rtl=rtl)
 
 class WebRoot(twisted.web.resource.Resource):
