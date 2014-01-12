@@ -733,11 +733,11 @@ class BridgeRing(BridgeHolder):
         :param string name: The name for this hashring.
         """
         self.name = name
-        for tp,val,_,subring in self.subrings:
+        for tp, val, _, subring in self.subrings:
             if tp == 'port':
-                subring.setName("%s (port-%s subring)"%(name, val))
+                subring.setName("%s (port-%s subring)" % (name, val))
             else:
-                subring.setName("%s (%s subring)"%(name, val))
+                subring.setName("%s (%s subring)" % (name, val))
 
     def __len__(self):
         return len(self.bridges)
