@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 This module is responsible for everything concerning file bucket bridge 
 distribution. File bucket bridge distribution means that unallocated bridges 
