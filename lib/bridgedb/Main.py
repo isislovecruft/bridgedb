@@ -512,20 +512,31 @@ def startup(options):
         state.proxyList.replaceProxyList(loadProxyList(cfg))
 
         if emailDistributor is not None:
-            logging.debug("Prepopulating email distributor hashrings...")
             emailDistributor.prepopulateRings() # create default rings
-            logging.info("Bridges allotted for email distribution: %d"
-                         % len(emailDistributor.splitter))
+            logging.info("Bridges allotted for %s distribution: %d"
+                         % (emailDistributor.name,
+                            len(emailDistributor.splitter)))
         else:
             logging.warn("No email distributor created!")
 
         if ipDistributor is not None:
-            logging.debug("Prepopulating HTTPS distributor hashrings...")
             ipDistributor.prepopulateRings() # create default rings
-            logging.info("Bridges allotted for web distribution: %d"
-                         % len(ipDistributor.splitter))
-            for (n,(f,r)) in ipDistributor.splitter.filterRings.items():
-                logging.info("\tby filter set %s, %d" % (n, len(r)))
+
+            logging.info("Bridges allotted for %s distribution: %d"
+                         % (ipDistributor.name,
+                            len(ipDistributor.splitter)))
+            logging.info("\tNum bridges:\tFilter set:")
+
+            nSubrings  = 0
+            ipSubrings = ipDistributor.splitter.filterRings
+            for (ringname, (filterFn, subring)) in ipSubrings.items():
+                nSubrings += 1
+                filterSet = ' '.join(
+                    ipDistributor.splitter.extractFilterNames(ringname))
+                logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
+
+            logging.info("Total subrings for %s: %d"
+                         % (ipDistributor.name, nSubrings))
         else:
             logging.warn("No HTTP(S) distributor created!")
 
