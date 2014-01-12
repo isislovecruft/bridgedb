@@ -1108,6 +1108,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         self.filterRings = {}
         self.hmac = get_hmac_fn(key, hex=True)
         self.bridges = []
+        self.distributorName = ''
 
         #XXX: unused
         self.max_cached_rings = max_cached_rings
@@ -1141,6 +1142,26 @@ class FilteredBridgeSplitter(BridgeHolder):
                 logging.debug("Inserted bridge '%s' into '%s' sub hashring"
                               % (bridge.getID(), ringname))
 
+    def extractFilterNames(self, ringname):
+        """Get the names of the filters applied to a particular sub hashring.
+
+        :param str ringname: A unique name identifying a sub hashring.
+        :rtype: list
+        :returns: A sorted list of strings, all the function names of the
+                  filters applied to the sub hashring named **ringname**.
+        """
+        filterNames = []
+
+        for filterName in [x.func_name for x in list(ringname)]:
+            # Using `filterAssignBridgesToRing.func_name` gives us a messy
+            # string which includes all parameters and memory addresses. Get
+            # rid of this by partitioning at the first `(`:
+            realFilterName = filterName.partition('(')[0]
+            filterNames.append(realFilterName)
+
+        filterNames.sort()
+        return filterNames
+
     def addRing(self, subring, ringname, filterFn, populate_from=None):
         """Add a subring to this hashring.
 
@@ -1171,30 +1192,25 @@ class FilteredBridgeSplitter(BridgeHolder):
         # I suppose since it contains memory addresses, it *is* technically
         # likely to be a unique string, but it is messy.
 
-        hashringName = self.__class__.__name__
-        subringName  = subring.__class__
-        filterNames  = []
-
         if not isinstance(subring, BridgeHolder):
-            logging.fatal("Can't add %r to %s because %r isn't a hashring."
-                          % (ringname, hashringName, ringname))
+            logging.fatal("%s hashring can't add invalid subring: %r"
+                          % (self.distributorName, subring))
             return False
         if ringname in self.filterRings.keys():
-            logging.fatal("Hashring %s already has a subring named '%s'!"
-                          % (self.__class__, ringname))
+            logging.fatal("%s hashring already has a subring named '%s'!"
+                          % (self.distributorName, ringname))
             return False
 
-        for filterName in [x.func_name for x in list(ringname)]:
-            # Using `filterAssignBridgesToRing.func_name` gives us a messy
-            # string which includes all parameters and memory addresses. Get
-            # rid of this by partitioning at the first `(`:
-            realFilterName = filterName.partition('(')[0]
-            filterNames.append(realFilterName)
-        filterNames = ' '.join(filterNames)
+        filterNames = self.extractFilterNames(ringname)
+        subringName = [self.distributorName]
+        for filterName in filterNames:
+            if filterName != 'filterAssignBridgesToRing':
+                subringName.append(filterName.strip('filterBridgesBy'))
+        subringName = '-'.join([x for x in subringName])
+        subring.setName(subringName)
 
-        logging.debug("Adding subring to %s hashring:" % hashringName)
-        logging.debug("    Subring class: %r" % subringName)
-        logging.debug("    Subring filters: %s" % filterNames)
+        logging.info("Adding subring to %s hashring..." % subring.name)
+        logging.info("  Subring filters: %s" % filterNames)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
         self.filterRings[ringname] = (filterFn, subring)
