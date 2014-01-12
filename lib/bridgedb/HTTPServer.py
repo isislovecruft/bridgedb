@@ -160,6 +160,8 @@ class WebResource(twisted.web.resource.Resource):
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
                         URI, and any URL/POST arguments and headers present.
+        :rtype: str
+        :returns: A plaintext or HTML response to serve.
         """
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
@@ -177,9 +179,12 @@ class WebResource(twisted.web.resource.Resource):
 
         if geoip:
             countryCode = geoip.country_code_by_addr(ip)
+            if countryCode:
+                logging.debug("Client request from GeoIP CC: %s" % countryCode)
 
-        # set locale
         rtl = usingRTLLang(request)
+        if rtl:
+            logging.debug("Rendering RTL response.")
 
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
@@ -203,7 +208,11 @@ class WebResource(twisted.web.resource.Resource):
         except (TypeError, IndexError, AttributeError):
             unblocked = False
 
+        logging.info("Replying to web request from %s. Parameters were %r"
+                     % (Util.logSafely(ip), request.args))
+
         rules = []
+        bridges = None
 
         if ip:
             if ipv6:
@@ -228,8 +237,35 @@ class WebResource(twisted.web.resource.Resource):
                                                        countryCode,
                                                        bridgeFilterRules=rules)
 
+        answer = self.renderAnswer(request, ip, bridges, rtl, format)
+        return answer
+
+    def renderAnswer(self, request, ip=None, bridges=None,
+                     rtl=False, format=None):
+        """Generate a response for a client which includes **bridges**.
+
+        The generated response can be plaintext or HTML.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the HTTP method, full
+                        URI, and any URL/POST arguments and headers present.
+        :type ip: str or None
+        :param ip: The IP address of the client we're responding to.
+        :type bridges: list or None
+        :param bridges: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        :param bool rtl: If ``True``, the language used for the response to
+                         the client should be rendered right-to-left.
+        :type format: str or None
+        :param format: If ``'plain'``, return a plaintext response. Otherwise,
+                       use the :file:`bridgedb/templates/bridges.html`
+                       template to render an HTML response page which includes
+                       the **bridges**.
+        :rtype: str
+        :returns: A plaintext or HTML response to serve.
+        """
         answer = None
-        if bridges:
+
+        if bridges and ip:
             answer = "".join("  %s\n" % b.getConfigLine(
                 includeFingerprint=self.includeFingerprints,
                 addressClass=addressClass,
@@ -237,14 +273,13 @@ class WebResource(twisted.web.resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges) 
 
-        logging.info("Replying to web request from %s.  Parameters were %r",
-                     Util.logSafely(ip), request.args)
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             return answer
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
-            return lookup.get_template('bridges.html').render(answer=answer, rtl=rtl)
+            return lookup.get_template('bridges.html').render(answer=answer,
+                                                              rtl=rtl)
 
 class WebRoot(twisted.web.resource.Resource):
     isLeaf = True
