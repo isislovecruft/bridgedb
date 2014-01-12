@@ -843,7 +843,19 @@ class BridgeRing(BridgeHolder):
         return r
 
     def getBridges(self, pos, N=1, countryCode=None):
-        """Return the N bridges appearing in the ring after position pos"""
+        """Return **N** bridges appearing in this hashring after a position.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :type countryCode: str or None
+        :param countryCode: DOCDOC
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
         forced = []
         for _,_,count,subring in self.subrings:
             if len(subring) < count:
