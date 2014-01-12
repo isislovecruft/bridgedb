@@ -744,6 +744,7 @@ class BridgeRing(BridgeHolder):
         return len(self.bridges)
 
     def clear(self):
+        """Remove all bridges and mappings from this hashring and subrings."""
         self.bridges = {}
         self.bridgesByID = {}
         self.isSorted = False
