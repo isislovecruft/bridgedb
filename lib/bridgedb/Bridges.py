@@ -1222,8 +1222,8 @@ class FilteredBridgeSplitter(BridgeHolder):
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     subring.insert(bridge)
                     inserted += 1
-            logging.info("Inserted %d bridges into hashring with filters: %s"
-                         % (inserted, filterNames))
+            logging.info("Bridges inserted into %s subring: %d"
+                         % (subring.name, inserted))
 
         return True
 
