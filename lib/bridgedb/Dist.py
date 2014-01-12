@@ -157,6 +157,7 @@ class IPBasedDistributor(Distributor):
         self.setDistributorName('HTTPS')
 
     def prepopulateRings(self):
+        logging.info("Prepopulating %s distributor hashrings..." % self.name)
         # populate all rings (for dumping assignments and testing)
         for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
             n = self.nClusters
