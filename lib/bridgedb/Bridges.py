@@ -853,6 +853,14 @@ class BridgeRing(BridgeHolder):
         :rtype: list
         :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
         """
+        # XXX This can be removed after we determine if countryCode is ever
+        # actually being used. It seems the countryCode should be passed in
+        # from bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer() in
+        # order to hand out bridges which are believed to not be blocked in a
+        # given country.
+        if countryCode:
+            logging.debug("getBridges: countryCode=%r" % countryCode)
+
         forced = []
         for _, _, count, subring in self.subrings:
             if len(subring) < count:
