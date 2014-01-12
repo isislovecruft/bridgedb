@@ -163,8 +163,8 @@ def load(state, splitter, clear=False):
             ID, method_name, address, port, argdict = transport
             try:
                 if bridges[ID].running:
-                    logging.debug("Adding %s transport to running bridge"
-                                  % method_name)
+                    logging.info("Adding %s transport to running bridge"
+                                 % method_name)
                     bridgePT = Bridges.PluggableTransport(
                         bridges[ID], method_name, address, port, argdict)
                     bridges[ID].transports.append(bridgePT)
