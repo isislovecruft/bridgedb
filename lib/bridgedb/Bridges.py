@@ -754,8 +754,19 @@ class BridgeRing(BridgeHolder):
             subring.clear()
 
     def insert(self, bridge):
-        """Add a bridge to the ring.  If the bridge is already there,
-           replace the old one."""
+        """Add a **bridge** to this hashring.
+
+        The bridge's position in the hashring is dependent upon the HMAC of
+        the raw hash digest of the bridge's ID key. The function used to
+        generate the HMAC, :ivar:`BridgeRing.hmac`, is unique to each
+        individual hashring.
+
+        If the (presumably same) bridge is already at that determined position
+        in this hashring, replace the old one.
+
+        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :param bridge: The bridge to insert into this hashring.
+        """
         for tp,val,_,subring in self.subrings:
             if tp == 'port':
                 if val == bridge.orport:
