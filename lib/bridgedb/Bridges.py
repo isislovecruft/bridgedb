@@ -18,6 +18,7 @@ import random
 
 import bridgedb.Storage
 import bridgedb.Bucket
+import bridgedb.Util as Util
 
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
