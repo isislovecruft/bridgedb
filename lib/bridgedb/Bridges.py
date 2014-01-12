@@ -795,8 +795,40 @@ class BridgeRing(BridgeHolder):
             self.isSorted = True
 
     def _getBridgeKeysAt(self, pos, N=1):
-        """Helper: return the N keys appearing in the ring after position
-           pos"""
+        """Bisect a list of bridges at a specified position, **pos**, and
+        retrieve bridges from that point onwards, wrapping around the hashring
+        if necessary.
+
+        If the number of bridges requested, **N**, is larger that the size of
+        this hashring, return the entire ring. Otherwise:
+
+          1. Sort this bridges in this hashring, if it is currently unsorted.
+
+          2. Bisect the sorted bridges. If the bridge at the desired position,
+             **pos**, already exists within this hashring, the the bisection
+             result is the bridge at position **pos**. Otherwise, the bisection
+             result is the first position after **pos** which has a bridge
+             assigned to it.
+
+          3. Try to obtain **N** bridges, starting at (and including) the
+             bridge in the requested position, **pos**.
+
+               a. If there aren't **N** bridges after **pos**, wrap back
+                  around to the beginning of the hashring and obtain bridges
+                  until we have **N** bridges.
+
+          4. Check that the number of bridges obtained is indeed **N**, then
+             return them.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
         assert len(pos) == DIGEST_LEN
         if N >= len(self.sortedKeys):
             return self.sortedKeys
