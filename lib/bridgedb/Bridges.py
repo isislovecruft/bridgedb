@@ -857,7 +857,7 @@ class BridgeRing(BridgeHolder):
         :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
         """
         forced = []
-        for _,_,count,subring in self.subrings:
+        for _, _, count, subring in self.subrings:
             if len(subring) < count:
                 count = len(subring)
             forced.extend(subring._getBridgeKeysAt(pos, count))
