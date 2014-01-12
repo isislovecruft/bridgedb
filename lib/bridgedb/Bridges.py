@@ -653,17 +653,60 @@ class BridgeRingParameters(object):
         self.needFlags = [(flag.lower(), count) for flag, count in needFlags[:]]
 
 class BridgeRing(BridgeHolder):
-    """Arranges bridges in a ring based on an hmac function."""
-    ## Fields:
-    ##   bridges: a map from hmac value to Bridge.
-    ##   bridgesByID: a map from bridge ID Digest to Bridge.
-    ##   isSorted: true iff sortedKeys is currently sorted.
-    ##   sortedKeys: a list of all the hmacs, in order.
-    ##   name: a string to represent this ring in the logs.
+    """Arranges bridges into a hashring based on an hmac function."""
+
     def __init__(self, key, answerParameters=None):
         """Create a new BridgeRing, using key as its hmac key.
 
-        :ivar list subrings: XXX
+        :param key: DOCDOC
+        :type answerParameters: :class:`BridgeRingParameters`
+        :param answerParameters: DOCDOC
+
+        :ivar dict bridges: A dictionary which maps HMAC keys to
+                            :class:`~bridgedb.Bridges.Bridge`s.
+        :ivar dict bridgesByID: A dictionary which maps raw hash digests of
+                                bridge ID keys to
+                                :class:`~bridgedb.Bridges.Bridge`s.
+        :type hmac: callable
+        :ivar hmac: An HMAC function, which uses the **key** parameter to
+                    generate new HMACs for storing, inserting, and retrieving
+                    :class:`~bridgedb.Bridges.Bridge`s within mappings.
+        :ivar bool isSorted: ``True`` if ``sortedKeys`` is currently sorted.
+        :ivar list sortedKeys: A sorted list of all of the HMACs.
+        :ivar str name: A string which identifies this hashring, used mostly
+                        for differentiating this hashring in log messages, but
+                        it is also used for naming subrings. If this hashring
+                        is a subring, the ``name`` will include whatever
+                        distinguishing parameters differentiate that
+                        particular subring (i.e. ``'(port-443 subring)'`` or
+                        ``'(Stable subring)'``)
+        :type subrings: list
+        :ivar subrings: A list of other ``BridgeRing``s, each of which
+                        contains bridges of a particular type. For example, a
+                        subring might contain only ``Bridge``s which have been
+                        given the "Stable" flag, or it might contain only IPv6
+                        bridges. Each item in this list should be a 4-tuple:
+
+                          ``(type, value, count, ring)``
+
+                        where:
+
+                          * ``type`` is a string which describes what kind of
+                            parameter is used to determine if a ``Bridge``
+                            belongs in that subring, i.e. ``'port'`` or
+                            ``'flag'``.
+
+                          * ``value`` is a specific value pertaining to the
+                            ``type``, e.g. ``type='port'; value=443``.
+
+                          * ``count`` is an integer for the current total
+                             number of bridges in the subring.
+
+                          * ``ring`` is a
+                            :class:`~bridgedb.Bridges.BridgeRing`; it is the
+                            sub hashring which contains ``count`` number of
+                            :class:`~bridgedb.Bridges.Bridge`s of a certain
+                            ``type``.
         """
         self.bridges = {}
         self.bridgesByID = {}
@@ -674,7 +717,7 @@ class BridgeRing(BridgeHolder):
             answerParameters = BridgeRingParameters()
         self.answerParameters = answerParameters
 
-        self.subrings = [] #DOCDOC
+        self.subrings = []
         for port,count in self.answerParameters.needPorts:
             #note that we really need to use the same key here, so that
             # the mapping is in the same order for all subrings.
