@@ -871,6 +871,10 @@ class BridgeRing(BridgeHolder):
         for k in forced + self._getBridgeKeysAt(pos, N):
             if k not in keys:
                 keys.append(k)
+            else:
+                logging.debug(
+                    "Got duplicate bridge %r in main hashring for position %r."
+                    % (Util.logSafely(k.encode('hex')), pos.encode('hex')))
         keys = keys[:N]
         keys.sort()
 
