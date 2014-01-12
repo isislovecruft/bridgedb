@@ -103,18 +103,25 @@ def parseRLine(line):
                 "Wrong number of fields in networkstatus 'r'-line: %r" % line)
 
         nickname, ID = fields[:2]
-        isValidRouterNickname(nickname)
 
         try:
             ID = parseUnpaddedBase64(ID)
         except InvalidBase64 as error:
             raise InvalidNetworkstatusRouterIdentity(error)
 
+        # Check the nickname validity after parsing the ID, otherwise, if the
+        # nickname is invalid, we end up with the nickname being ``None`` and
+        # the ID being unparsed, unpadded (meaning it is technically invalid)
+        # base64.
+        isValidRouterNickname(nickname)
+
     except NetworkstatusParsingError as error:
         logging.error(error)
         nickname, ID = None, None
     except InvalidRouterNickname as error:
         logging.error(error)
+        # Assume that we mostly care about obtaining the OR's ID, then it
+        # should be okay to set the nickname to ``None``, if it was invalid.
         nickname = None
     except InvalidNetworkstatusRouterIdentity as error:
         logging.error(error)
