@@ -26,7 +26,7 @@ import bridgedb.Dist
 import bridgedb.I18n as I18n
 import bridgedb.Util as Util
 
-from recaptcha.client import captcha 
+from recaptcha.client import captcha
 from bridgedb.Raptcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -60,7 +60,7 @@ try:
 
 except Exception as err:
     logging.debug("Error while loading geoip module: %r" % err)
-    logging.warn("GeoIP database not found") 
+    logging.warn("GeoIP database not found")
     geoip = None
 else:
     logging.info("GeoIP database loaded")
@@ -129,7 +129,7 @@ class WebResource(twisted.web.resource.Resource):
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
-                 includeFingerprints=True, domains=None): 
+                 includeFingerprints=True, domains=None):
         """Create a new WebResource.
              distributor -- an IPBasedDistributor object
              schedule -- an IntervalSchedule object
@@ -309,7 +309,7 @@ def addWebServer(cfg, dist, sched):
                 HTTPS_USE_IP_FROM_FORWARDED_HEADER
                 RECAPTCHA_ENABLED
                 RECAPTCHA_PUB_KEY
-                RECAPTCHA_PRIV_KEY 
+                RECAPTCHA_PRIV_KEY
          dist -- an IPBasedDistributor object.
          sched -- an IntervalSchedule object.
     """
@@ -335,7 +335,7 @@ def addWebServer(cfg, dist, sched):
         httpdist.putChild('bridges', protected)
     else:
         httpdist.putChild('bridges', resource)
-        
+
     site = Site(httpdist)
 
     if cfg.HTTP_UNENCRYPTED_PORT:
