@@ -1055,13 +1055,32 @@ class BridgeSplitter(BridgeHolder):
             ring.dumpAssignments(f, "%s %s" % (description, name))
 
 class FilteredBridgeSplitter(BridgeHolder):
-    """ A configurable BridgeHolder that filters bridges
-    into subrings.
-    The set of subrings and conditions used to assign Bridges
-    are passed to the constructor as a list of (filterFn, ringName)
+    """A configurable BridgeHolder that filters bridges into subrings.
+
+    The set of subrings and conditions used to assign :class:`Bridge`s should
+    be passed to :meth:`~FilteredBridgeSplitter.addRing`.
     """
 
     def __init__(self, key, max_cached_rings=3):
+        """Create a hashring which filters bridges into sub hashrings.
+
+        :type key: DOCDOC
+        :param key: An HMAC key.
+        :param int max_cached_rings: XXX max_cached_rings appears to not be
+             used anywhere.
+
+        :ivar filterRings: A dictionary of subrings which has the form
+             ``{ringname: (filterFn, subring)}``, where:
+                 - ``ringname`` is a unique string identifying the subring.
+                 - ``filterFn`` is a callable which filters Bridges in some
+                   manner, i.e. by whether they are IPv4 or IPv6, etc.
+                 - ``subring`` is a :class:`BridgeHolder`.
+        :ivar hmac: DOCDOC
+        :ivar bridges: DOCDOC
+        :type distributorName: str
+        :ivar distributorName: The name of this splitter's distributor. See
+             :meth:`bridgedb.Dist.IPBasedDistributor.setDistributorName`.
+        """
         self.key = key
         self.filterRings = {}
         self.hmac = get_hmac_fn(key, hex=True)
