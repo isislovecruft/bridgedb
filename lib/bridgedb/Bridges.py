@@ -398,7 +398,7 @@ class PluggableTransport:
             self.argdict = argdict
         else: self.argdict = {}
 
-    def getTransportLine(self, includeFingerprint=False):
+    def getTransportLine(self, includeFingerprint=False, bridgePrefix=False):
         """Get a torrc line for this pluggable transport.
 
         This method does not return lines which are prefixed with the word
@@ -409,12 +409,17 @@ class PluggableTransport:
 
         :param bool includeFingerprints: If ``True``, include the digest of
             this bridges public identity key in the torrc line.
+        :param bool bridgePrefix: If ``True``, add ``'Bridge '`` to the
+             beginning of each returned line (suitable for pasting directly
+             into a torrc file).
         :rtype: str
         :returns: A configuration line for adding this pluggable transport
             into a torrc file.
         """
         sections = []
 
+        if bridgePrefix:
+            sections.append('Bridge')
 
         if isinstance(self.address, ipaddr.IPv6Address):
             host = "%s [%s]:%d" % (self.methodname, self.address, self.port)
