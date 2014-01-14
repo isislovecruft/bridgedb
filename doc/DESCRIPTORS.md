@@ -130,7 +130,7 @@ Optionally followed by:
     bridge-stats-end 2013-10-21 17:28:15 (86400 s)
     bridge-ips de=8,nl=8,us=8
 
-And, if it include the `bridge-ips` line, it MAY include the following right
+And, if it includes the `bridge-ips` line, it MAY include the following right
 afterwards:
 
     bridge-ip-versions v4=16,v6=8
