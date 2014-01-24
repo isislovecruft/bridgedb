@@ -292,10 +292,31 @@ class WebResource(twisted.web.resource.Resource):
                                                               rtl=rtl)
 
 class WebRoot(twisted.web.resource.Resource):
+    """The parent resource of all other documents hosted by the webserver."""
+
     isLeaf = True
+
     def render_GET(self, request):
-        rtl = usingRTLLang(request)
+        """Handles requests for the webserver root document.
+
+        For example, this function handles requests for
+        https://bridges.torproject.org/.
+
+        :type request: :api:`twisted.web.server.Request`
+        :param request: An incoming request.
+        """
+        rtl = False
+
+        try:
+            rtl = usingRTLLang(request)
+        except Exception as err:
+            logging.exception(err)
+            logging.error("The gettext files were not properly installed.")
+            logging.info("To install translations, try doing `python " \
+                         "setup.py compile_catalog`.")
+
         return lookup.get_template('index.html').render(rtl=rtl)
+
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -359,8 +380,7 @@ def addWebServer(cfg, dist, sched):
     return site
 
 def usingRTLLang(request):
-    """
-    Check if we should translate the text into a RTL language
+    """Check if we should translate the text into a RTL language
 
     Retrieve the headers from the request. Obtain the Accept-Language header
     and decide if we need to translate the text. Install the requisite
@@ -368,8 +388,11 @@ def usingRTLLang(request):
     support. Choose the first language from the header that we support and
     return True if it is a RTL language, else return False.
 
-    :param request twisted.web.server.Request: Incoming request
-    :returns bool: Language is right-to-left
+    :type request: :api:`twisted.web.server.Request`
+    :param request: An incoming request.
+    :rtype: bool
+    :returns: ``True`` if the preferred language is right-to-left; ``False``
+              otherwise.
     """
     langs = setLocaleFromRequestHeader(request)
 
