@@ -292,10 +292,22 @@ class WebResource(twisted.web.resource.Resource):
                                                               rtl=rtl)
 
 class WebRoot(twisted.web.resource.Resource):
+    """The parent resource of all other documents hosted by the webserver."""
+
     isLeaf = True
+
     def render_GET(self, request):
+        """Handles requests for the webserver root document.
+
+        For example, this function handles requests for
+        https://bridges.torproject.org/.
+
+        :type request: :api:`twisted.web.server.Request`
+        :param request: An incoming request.
+        """
         rtl = usingRTLLang(request)
         return lookup.get_template('index.html').render(rtl=rtl)
+
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
