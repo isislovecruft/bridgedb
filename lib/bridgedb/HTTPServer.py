@@ -305,7 +305,16 @@ class WebRoot(twisted.web.resource.Resource):
         :type request: :api:`twisted.web.server.Request`
         :param request: An incoming request.
         """
-        rtl = usingRTLLang(request)
+        rtl = False
+
+        try:
+            rtl = usingRTLLang(request)
+        except Exception as err:
+            logging.exception(err)
+            logging.error("The gettext files were not properly installed.")
+            logging.info("To install translations, try doing `python " \
+                         "setup.py compile_catalog`.")
+
         return lookup.get_template('index.html').render(rtl=rtl)
 
 
