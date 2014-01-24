@@ -371,8 +371,7 @@ def addWebServer(cfg, dist, sched):
     return site
 
 def usingRTLLang(request):
-    """
-    Check if we should translate the text into a RTL language
+    """Check if we should translate the text into a RTL language
 
     Retrieve the headers from the request. Obtain the Accept-Language header
     and decide if we need to translate the text. Install the requisite
@@ -380,8 +379,11 @@ def usingRTLLang(request):
     support. Choose the first language from the header that we support and
     return True if it is a RTL language, else return False.
 
-    :param request twisted.web.server.Request: Incoming request
-    :returns bool: Language is right-to-left
+    :type request: :api:`twisted.web.server.Request`
+    :param request: An incoming request.
+    :rtype: bool
+    :returns: ``True`` if the preferred language is right-to-left; ``False``
+              otherwise.
     """
     langs = setLocaleFromRequestHeader(request)
 
