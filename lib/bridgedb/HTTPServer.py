@@ -98,7 +98,9 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
 
         # TODO: this does not work for versions of IE < 8.0
         imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-        return lookup.get_template('captcha.html').render(imgstr=imgstr, challenge_field=c.challenge)
+        template = lookup.get_template('captcha.html')
+        rendered = template.render(imgstr=imgstr, challenge_field=c.challenge)
+        return rendered
 
     def render_POST(self, request):
         try:
