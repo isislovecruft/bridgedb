@@ -82,7 +82,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    logging.warn("Got weird X-Forwarded-For value %r" % h)
                     ip = None
         else:
             ip = request.getClientIP()
