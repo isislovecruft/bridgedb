@@ -114,13 +114,14 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         recaptcha_response = captcha.submit(challenge, response,
                                         self.recaptchaPrivKey, remote_ip)
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r",
-                    Util.logSafely(remote_ip), request.args)
+            logging.info("Valid recaptcha from %s. Parameters were %r"
+                         % (remote_ip, request.args))
             return self.resource.render(request)
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r",
-                         Util.logSafely(remote_ip), request.args)
-            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
+            logging.info("Invalid recaptcha from %s. Parameters were %r"
+                         % (remote_ip, request.args))
+            logging.info("Recaptcha error code: %r"
+                         % recaptcha_response.error_code)
         return redirectTo(request.URLPath(), request)
 
 class WebResource(twisted.web.resource.Resource):
