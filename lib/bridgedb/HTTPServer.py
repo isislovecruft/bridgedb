@@ -94,7 +94,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         try:
             c.get()
         except Exception as error:
-            log.error("Connection to Recaptcha server failed.")
+            logging.fatal("Connection to Recaptcha server failed: %s" % error)
 
         # TODO: this does not work for versions of IE < 8.0
         imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
