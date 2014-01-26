@@ -432,11 +432,11 @@ def usingRTLLang(request):
     return False
 
 def getAssumedChosenLang(langs):
-    """
-    Return the first language in ``langs`` and we supprt
+    """Return the first language in **langs** that we support.
 
-    :param langs list: All requested languages
-    :returns string: Chosen language
+    :param list langs: All requested languages
+    :rtype: str
+    :returns: A country code for the client's preferred language.
     """
     i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
     path = filepath.FilePath(i18npath)
@@ -456,9 +456,8 @@ def setLocaleFromRequestHeader(request):
     Parse the languages in the header, and attempt to install the first one in
     the list. If that fails, we receive a :class:`gettext.NullTranslation`
     object, if it worked then we have a :class:`gettext.GNUTranslation`
-    object. Whichever one we end up with, add the other get the other
-    languages and add them as fallbacks to the first. Lastly, install this
-    chain of translations.
+    object. Whichever one we end up with, get the other languages and add them
+    as fallbacks to the first. Lastly, install this chain of translations.
 
     :type request: :api:`twisted.web.server.Request`
     :param request: An incoming request from a client.
