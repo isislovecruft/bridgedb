@@ -145,7 +145,10 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
                          % (remote_ip, request.args))
             logging.info("Recaptcha error code: %r"
                          % recaptcha_response.error_code)
-        return redirectTo(request.URLPath(), request)
+
+        logging.debug("Client failed a recaptcha; returning redirect to %s"
+                      % request.uri)
+        return redirectTo(request.uri, request)
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
