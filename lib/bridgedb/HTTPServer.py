@@ -112,6 +112,18 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return rendered
 
     def render_POST(self, request):
+    """Process a client CAPTCHA by sending it to the ReCaptcha server.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the POST arguments
+                        should include two key/value pairs: one key being
+                        ``'recaptcha_challange_field'``, and the other,
+                        ``'recaptcha_response_field'``. These POST arguments
+                        should be obtained from :meth:`render_GET`.
+        """
         try:
             challenge = request.args['recaptcha_challenge_field'][0]
             response = request.args['recaptcha_response_field'][0]
