@@ -96,6 +96,15 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         except Exception as error:
             logging.fatal("Connection to Recaptcha server failed: %s" % error)
 
+        if c.image is None:
+            # TODO: We should have a general "Something went wrong!" page
+            # which displays here, rather than displaying the img alt text
+            # (which says "Upgrade your browser to Firefox"), so that users
+            # don't think the problem is on their end when it's actually a
+            # problem with ReCaptcha or BridgeDB.
+            logging.warn("No CAPTCHA image received from ReCaptcha server!")
+            c.image = ''
+
         # TODO: this does not work for versions of IE < 8.0
         imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
         template = lookup.get_template('captcha.html')
