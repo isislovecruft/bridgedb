@@ -112,7 +112,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return rendered
 
     def render_POST(self, request):
-    """Process a client CAPTCHA by sending it to the ReCaptcha server.
+        """Process a client CAPTCHA by sending it to the ReCaptcha server.
 
         The client's IP address is not sent to the ReCaptcha server; instead,
         a completely random IP is generated and sent instead.
