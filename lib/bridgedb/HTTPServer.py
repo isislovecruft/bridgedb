@@ -40,11 +40,22 @@ from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
-lookup = TemplateLookup(directories=[template_root],
-                        output_encoding='utf-8')
+logging.debug("Set template root to %s" % template_root)
+
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
-logging.debug("Set template root to %s" % template_root)
+# Setting `filesystem_checks` to False is recommended for production servers,
+# due to potential speed increases. This means that the atimes of the Mako
+# template files aren't rechecked every time the template is requested
+# (otherwise, if they are checked, and the atime is newer, the template is
+# recompiled). `collection_size` sets the number of compiled templates which
+# are cached before the least recently used ones are removed. See:
+# http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
+lookup = TemplateLookup(directories=[template_root],
+                        output_encoding='utf-8',
+                        filesystem_checks=False,
+                        collection_size=500)
+
 
 try:
     # Make sure we have the database before trying to import the module:
