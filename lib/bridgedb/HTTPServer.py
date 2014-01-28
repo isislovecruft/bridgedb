@@ -46,11 +46,13 @@ rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 # due to potential speed increases. This means that the atimes of the Mako
 # template files aren't rechecked every time the template is requested
 # (otherwise, if they are checked, and the atime is newer, the template is
-# recompiled). See:
-# http://docs.makotemplates.org/en/latest/usage.html#setting-filesystem-checks
+# recompiled). `collection_size` sets the number of compiled templates which
+# are cached before the least recently used ones are removed. See:
+# http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
 lookup = TemplateLookup(directories=[template_root],
                         output_encoding='utf-8',
-                        filesystem_checks=False)
+                        filesystem_checks=False,
+                        collection_size=500)
 
 logging.debug("Set template root to %s" % template_root)
 
