@@ -1,0 +1,69 @@
+Changes in version 0.1.0 - 2014-XXX
+BridgeDB 0.1.1 includes fixes for the following bugs:
+	* FIXES #9127
+	* FIXES #10737
+
+Including the following general changes:
+	* ADDS A general simple error page to display rather than
+		webserver tracebacks. See #6127.
+
+Changes in version 0.1.0 - 2014-01-14
+BridgeDB 0.1.0 includes fixes for the following bugs:
+	* FIXES #1606 Write a BridgeDB spec
+	* FIXES #3573 bridges.torproject.org doesn't have a robots.txt
+	* FIXES #6127 bridges.tpo runs in development mode
+	* FIXES #9013 BridgeDB should pass pluggable transport
+		shared-secrets to clients
+	* FIXES #9157 Persian and Arabic should be right aligned on bridges.tpo
+	* FIXES #9462 BridgeDB netstatus descriptor parsers need refactoring
+	* FIXES #9959 BridgeDB seems to be missing English translations
+	* FIXES #9865 Add automated code coverage report generation
+	* FIXES #9872 Create a test runner for BridgeDB unittests
+	* FIXES #9873 Convert BridgeDB's old unittests to use twisted.trial
+	* FIXES #9937 Create fake non-sanitised bridge descriptors for
+		BridgeDB testing purposes
+	* FIXES #10333 Indexing list-like objects by 0L in
+		Bridges.getConfigLine
+	* FIXES #10446 BridgeDB is/was using a GeoIP module which is
+		incompatible with virtualenvs
+	* FIXES #10559 BridgeDB writes `keyid=` before fingerprints
+
+Including the following general changes:
+	* ADD Numerous unittests and automated continuous integration testing.
+	* ADD Patches by sysrqb to correctly render right-to-left languages.
+	* FIXES fallback languages for translations.
+	* ADD Sphinx makefiles, substantial amounts of documentation.
+	* ADD Documentations builds (currently at
+	      https://para.noid.cat/bridgedb)
+
+Changes in version 0.0.1 - 2013-08-20
+BridgeDB 0.0.1 includes fixes for the following bugs:
+	* FIXES #5332 Update BridgeDB documentation with deployment
+		instructions
+	* FIXES #9156 BridgeDB: Users try to add obfsbridges to their
+		normal TBB
+	These commits were added to fix a compatibility issue with
+	Vidalia, though they may be reverted to switch back to the old
+	behaviour of returning bridge lines in the form:
+	  Bridge [transport_method] address:port [keyid=fingerprint] [K=v] […]
+	in order to work with torrc files and the new TBB-3.x packages
+	which use TorLauncher instead of Vidalia.
+	* PARTIAL FIX #9264 Problem with transport lines in BridgeDB's
+	          bridge pool assignment files.
+	* FIXES #9425 Create and document a better BridgeDB (re)deployment
+		strategy
+
+Including the following general changes:
+	* UPDATE translations files with finished files from Transifex for
+	the strings for the newly-refactored web interface created by
+	gsathya.
+	* ADD an automatic version-numbering system as part of developing
+	a better deployment strategy.
+	* CHANGE setup.py script to automatically install Python-based
+	dependencies from requirements.txt.
+	* REMOVE MANIFEST.in and put equivalent 'include' directives into
+	setup.py (the less places we have for manually keeping track of
+	files, the better).
+	* REMOVE the "bridge " prefix from the lines returned on the web
+	interface.
+
