@@ -40,6 +40,8 @@ from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
+logging.debug("Set template root to %s" % template_root)
+
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 # Setting `filesystem_checks` to False is recommended for production servers,
@@ -54,7 +56,6 @@ lookup = TemplateLookup(directories=[template_root],
                         filesystem_checks=False,
                         collection_size=500)
 
-logging.debug("Set template root to %s" % template_root)
 
 try:
     # Make sure we have the database before trying to import the module:
