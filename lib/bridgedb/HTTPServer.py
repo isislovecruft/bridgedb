@@ -82,7 +82,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    logging.warn("Got weird X-Forwarded-For value %r" % h)
                     ip = None
         else:
             ip = request.getClientIP()
@@ -94,13 +94,36 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         try:
             c.get()
         except Exception as error:
-            log.error("Connection to Recaptcha server failed.")
+            logging.fatal("Connection to Recaptcha server failed: %s" % error)
+
+        if c.image is None:
+            # TODO: We should have a general "Something went wrong!" page
+            # which displays here, rather than displaying the img alt text
+            # (which says "Upgrade your browser to Firefox"), so that users
+            # don't think the problem is on their end when it's actually a
+            # problem with ReCaptcha or BridgeDB.
+            logging.warn("No CAPTCHA image received from ReCaptcha server!")
+            c.image = ''
 
         # TODO: this does not work for versions of IE < 8.0
         imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-        return lookup.get_template('captcha.html').render(imgstr=imgstr, challenge_field=c.challenge)
+        template = lookup.get_template('captcha.html')
+        rendered = template.render(imgstr=imgstr, challenge_field=c.challenge)
+        return rendered
 
     def render_POST(self, request):
+        """Process a client CAPTCHA by sending it to the ReCaptcha server.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the POST arguments
+                        should include two key/value pairs: one key being
+                        ``'recaptcha_challange_field'``, and the other,
+                        ``'recaptcha_response_field'``. These POST arguments
+                        should be obtained from :meth:`render_GET`.
+        """
         try:
             challenge = request.args['recaptcha_challenge_field'][0]
             response = request.args['recaptcha_response_field'][0]
@@ -114,14 +137,18 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         recaptcha_response = captcha.submit(challenge, response,
                                         self.recaptchaPrivKey, remote_ip)
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r",
-                    Util.logSafely(remote_ip), request.args)
+            logging.info("Valid recaptcha from %s. Parameters were %r"
+                         % (remote_ip, request.args))
             return self.resource.render(request)
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r",
-                         Util.logSafely(remote_ip), request.args)
-            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
-        return redirectTo(request.URLPath(), request)
+            logging.info("Invalid recaptcha from %s. Parameters were %r"
+                         % (remote_ip, request.args))
+            logging.info("Recaptcha error code: %r"
+                         % recaptcha_response.error_code)
+
+        logging.debug("Client failed a recaptcha; returning redirect to %s"
+                      % request.uri)
+        return redirectTo(request.uri, request)
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
@@ -405,11 +432,11 @@ def usingRTLLang(request):
     return False
 
 def getAssumedChosenLang(langs):
-    """
-    Return the first language in ``langs`` and we supprt
+    """Return the first language in **langs** that we support.
 
-    :param langs list: All requested languages
-    :returns string: Chosen language
+    :param list langs: All requested languages
+    :rtype: str
+    :returns: A country code for the client's preferred language.
     """
     i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
     path = filepath.FilePath(i18npath)
@@ -429,9 +456,8 @@ def setLocaleFromRequestHeader(request):
     Parse the languages in the header, and attempt to install the first one in
     the list. If that fails, we receive a :class:`gettext.NullTranslation`
     object, if it worked then we have a :class:`gettext.GNUTranslation`
-    object. Whichever one we end up with, add the other get the other
-    languages and add them as fallbacks to the first. Lastly, install this
-    chain of translations.
+    object. Whichever one we end up with, get the other languages and add them
+    as fallbacks to the first. Lastly, install this chain of translations.
 
     :type request: :api:`twisted.web.server.Request`
     :param request: An incoming request from a client.
