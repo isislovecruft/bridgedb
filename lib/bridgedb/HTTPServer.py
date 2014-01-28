@@ -123,8 +123,16 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return ip
 
     def render_GET(self, request):
-        # get a captcha
+        """Retrieve a ReCaptcha from the API server and serve it to the client.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for 'bridges.html'.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
+        """
         c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+
         try:
             c.get()
         except Exception as error:
