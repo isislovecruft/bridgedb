@@ -34,6 +34,7 @@ from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
+import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
@@ -64,6 +65,39 @@ except Exception as err:
     geoip = None
 else:
     logging.info("GeoIP database loaded")
+
+
+def replaceErrorPage(error, template_name=None):
+    """Create a general error page for displaying in place of tracebacks.
+
+    Log the error to BridgeDB's logger, and then display a very plain "Sorry!
+    Something went wrong!" page to the client.
+
+    :type error: :exc:`Exception`
+    :param error: Any exeption which has occurred while attempting to retrieve
+                  a template, render a page, or retrieve a resource.
+    :param str template_name: A string describing which template/page/resource
+                              was being used when the exception occurred,
+                              i.e. ``'index.html'``.
+    :returns: A string containing HTML to serve to the client (rather than
+              serving a traceback).
+    """
+    logging.error("Error while attempting to render %s: %s"
+                  % (template_name or 'template',
+                     mako.exceptions.text_error_template().render()))
+
+    errmsg = _("Sorry! Something went wrong with your request.")
+    rendered = """<html>
+                    <head>
+                      <link href="/assets/bootstrap.min.css" rel="stylesheet">
+                      <link href="/assets/custom.css" rel="stylesheet">
+                    </head>
+                    <body>
+                      <p>{0}</p>
+                    </body>
+                  </html>""".format(errmsg)
+
+    return rendered
 
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
@@ -97,18 +131,17 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             logging.fatal("Connection to Recaptcha server failed: %s" % error)
 
         if c.image is None:
-            # TODO: We should have a general "Something went wrong!" page
-            # which displays here, rather than displaying the img alt text
-            # (which says "Upgrade your browser to Firefox"), so that users
-            # don't think the problem is on their end when it's actually a
-            # problem with ReCaptcha or BridgeDB.
             logging.warn("No CAPTCHA image received from ReCaptcha server!")
-            c.image = ''
 
-        # TODO: this does not work for versions of IE < 8.0
-        imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-        template = lookup.get_template('captcha.html')
-        rendered = template.render(imgstr=imgstr, challenge_field=c.challenge)
+        try:
+            # TODO: this does not work for versions of IE < 8.0
+            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
+            template = lookup.get_template('captcha.html')
+            rendered = template.render(imgstr=imgstr,
+                                       challenge_field=c.challenge)
+        except Exception as err:
+            rendered = replaceErrorPage(err, 'captcha.html')
+
         return rendered
 
     def render_POST(self, request):
@@ -135,20 +168,26 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
                                      randint(1,255),randint(1,255))
 
         recaptcha_response = captcha.submit(challenge, response,
-                                        self.recaptchaPrivKey, remote_ip)
+                                            self.recaptchaPrivKey, remote_ip)
+        logging.debug("Captcha from client with masked IP %r. Parameters:\n%r"
+                      % (remote_ip, request.args))
+
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r"
-                         % (remote_ip, request.args))
-            return self.resource.render(request)
+            logging.info("Valid recaptcha from client with masked IP %r."
+                         % remote_ip)
+            try:
+                rendered = self.resource.render(request)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
+            return rendered
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r"
-                         % (remote_ip, request.args))
-            logging.info("Recaptcha error code: %r"
-                         % recaptcha_response.error_code)
+            logging.info("Invalid recaptcha from client with masked IP %r: %r"
+                         % (remote_ip, recaptcha_response.error_code))
 
         logging.debug("Client failed a recaptcha; returning redirect to %s"
                       % request.uri)
         return redirectTo(request.uri, request)
+
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
@@ -312,11 +351,17 @@ class WebResource(twisted.web.resource.Resource):
         """
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
-            return answer
+            rendered = bridgeLines
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
-            return lookup.get_template('bridges.html').render(answer=bridgeLines,
-                                                              rtl=rtl)
+            try:
+                template = lookup.get_template('bridges.html')
+                rendered = template.render(answer=bridgeLines, rtl=rtl)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
+
+        return rendered
+
 
 class WebRoot(twisted.web.resource.Resource):
     """The parent resource of all other documents hosted by the webserver."""
