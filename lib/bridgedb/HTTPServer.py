@@ -527,7 +527,7 @@ def setLocaleFromRequestHeader(request):
     localedir = os.path.join(os.path.dirname(__file__), 'i18n/')
     langs = headers.parseAcceptLanguage(header)
     ## XXX the 'Accept-Language' header is potentially identifying
-    logging.debug("Client Accept-Language (top 5): %s" % langs[:4])
+    logging.debug("Client Accept-Language (top 5): %s" % langs[:5])
 
     try:
         language = gettext.translation("bridgedb", localedir=localedir,
