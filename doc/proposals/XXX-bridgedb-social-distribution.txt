@@ -1,0 +1,496 @@
+# -*- coding: utf-8 ; mode: org -*-
+
+Filename: XXX-social-bridge-distribution.txt
+Title: Social Bridge Distribution
+Author: Isis Agora Lovecruft
+Created: 18 July 2013
+Related Proposals: 199-bridgefinder-integration.txt
+                   XXX-bridgedb-database-improvements.txt
+Status: Draft
+
+*  I.    Overview
+
+   This proposal specifies a system for social distribution of the
+   centrally-stored bridges within BridgeDB. It is primarily based upon Part
+   IV of the rBridge paper, [1] utilising a coin-based incentivisation scheme
+   to ensure that malicious users and/or censoring entities are deterred from
+   blocking bridges, as well as socially-distributed invite tickets to prevent
+   such malicious users and/or censoring entities from joining the pool of
+   Tor clients who are able to receive distributed bridges.
+
+*  II.   Motivation & Problem Scope
+
+   As it currently stands, Tor bridges which are stored within BridgeDB may be
+   freely requested by any entity at nearly any time. While the openness, that
+   is to say public accessibility, of any anonymity system certainly
+   provisions its users with the protections of a more greatly diversified
+   anonymity set, the damages to usability, and the efficacy of such an
+   anonymity system for censorship circumvention, are devastatingly impacted
+   due to the equal capabilities of both a censoring/malicious entity and an
+   honest user to request new Tor bridges.
+
+   Thus far, very little has been done to protect the volunteered bridges from
+   eventually being blocked in various regions. This severely restricts the
+   overall usability of Tor for clients within these regions, who, arguably,
+   can be even more in need of the identity protections and free speech
+   enablement which Tor can provide, given their political contexts.
+
+** II.A.  Current Tor bridge distribution mechanisms and known pitfalls:
+
+*** 1. HTTP(S) Distributor
+
+    At https://bridges.torproject.org, users may request new bridges, provided
+    that they are able to pass a CAPTCHA test. Requests through the HTTP(S)
+    Distributor are not allowed to be made from any current Tor exit relay,
+    and a hash of the user's actual IP address is used to place them within a
+    hash ring so that only a subset of the bridges allotted to the HTTP(S)
+    Distributor's pool may become known to a(n) adversary/user at that IP
+    address.
+
+**** 1.a. Known attacks/pitfalls:
+
+    1) An adversary with a diverse and large IP address space can easily
+       retrieve some significant portion of the bridges in the HTTPS
+       Distributor pool.
+
+    2) The relatively low cost of employing humans to solve CAPTCHAs is not
+       sufficient to deter adversaries with requisite economic resources from
+       doing so to obtain bridges. [XXX cost of employment]
+
+*** 2. Email Distributor
+
+    Clients may send email to bridges@bridges.torproject.org with the line
+    "get bridges" in the body of the email to obtain new bridges. Such emails
+    must be sent from a Gmail or Yahoo! account, which is required under the
+    assumption that such accounts are non-trivial to obtain.
+
+**** 2.a. Known attacks/pitfalls:
+
+    1) Mechanisms for purchasing pre-registered Gmail accounts en masse
+       exists, charging between USD$0.25 and USD$0.70 per account. With
+       roughly 1000 bridges in the Email Distributor's pool, distributing 3
+       bridges per email response,
+
+*  III.   Terminology & Notations
+** III.A. Terminology Definitions
+
+   User := A client connecting to BridgeDB in order to obtain bridges.
+
+** III.B. Notations
+
+|--------------------+---------------------------------------------------------------------------------------------|
+| Symbol             | Definition                                                                                  |
+|--------------------+---------------------------------------------------------------------------------------------|
+| U                  | A user connecting to BridgeDB in order to obtain bridges, identified by a User Credential   |
+| D                  | The bridge distributor, i.e. BridgeDB                                                       |
+| Gᵐᵃˣ               | Upper limit (maximum) number of bridge users for a bridge Bᵢ                                |
+| Gˢᵗᵃʳᵗ             | Number of starting users                                                                    |
+| Gᵃᵛᵍ               | Average number of users per bridge                                                          |
+| M                  | Fraction of users which are malicious                                                       |
+| B                  | A bridge                                                                                    |
+| {B₁, …, Bᵢ, …, Bₖ} | The set of bridges assigned and given to user U                                             |
+| k                  | The number of bridges which have been given to user U                                       |
+| Tᵐⁱⁿ               | The minimum time which a bridge must remain reachable                                       |
+| Tᶜᵘʳ               | The current time, given in Unix Era (UE) seconds notation (an integer, seconds since epoch) |
+| Tᵐᵃˣ               | The upper bound on the time for which a user U can earn coins from Bᵢ                       |
+| τᵢ                 | The time when bridge Bᵢ was first given to user U                                           |
+| tᵢ                 | The time from when U was first given Bᵢ to either Tᶜᵘʳ or ßᵢ, whichever is greater          |
+| ßᵢ                 | The time when bridge Bᵢ was first considered blocked; if not blocked, ßᵢ = 0                |
+| ϕ                  | Total coins owned by user U                                                                 |
+| φᵢ                 | The coins which user U has earned thus far from bridge Bᵢ                                   |
+| ϱᵢ                 | Rate of earning coins from bridge Bᵢ                                                        |
+| λᵢ                 | The probability that bridge Bᵢ has been blocked                                             |
+| ω                  | The last time that U requested and Invite Ticket from D                                     |
+|--------------------+---------------------------------------------------------------------------------------------|
+
+*  IV.    Threat Model
+
+   In the original rBridge scheme, there are two separate proposals: the first
+   does not make any attempt to hide information such as the user's (U)
+   identity, the list of bridges given to U, the from BridgeDBBridgeDB is
+
+   In our modifications to the rBridge social bridge distribution scheme,
+   BridgeDB is considered a trusted party, that is to say, BridgeDB is
+   assumed to be honest in all protocols, and no protections are taken to
+   protect clients from malicious behaviour from BridgeDB.
+
+****      Why we should still hide the Credential from BridgeDB:
+
+   Lemma 1:
+
+      A User Credential contains that User's list of Bridges, and thus, in all
+      probability, it uniquely identifies the User.
+
+   Proof 1:
+
+      For simplicity's sake, if we falsely assume ☥ that the Bridges in a
+      User's Credential is a constant and static number, then an estimate for
+      the number of possible Credentials is given by:
+
+                   Γ(n+1)
+        nCₖ =  ⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽⎽
+               Γ(m+1)Γ(-m+n+1)
+                                   ⎛n⎞
+      for the binomial coefficient ⎝m⎠, where n is the number of Bridges, m is
+      the number of Bridges in a User Credential, and Γ is the gamma function.
+           ⎛5000⎞
+      With ⎝  3 ⎠ there are 2.0820835 x 10¹⁰ possible Credentials, or, roughly
+      three unique Credentials for every one of the seven billion people alive
+      on Earth today. The binomial coefficient grows tetrationally for
+      increasing n and increasing m, [0] and so as the number of Bridge relays
+      grows over time, and with Users perpetually appending newer Bridges to
+      their Creditials, the probability of colliding Credentials decreases
+      tetrationally. Therefore, Credentials are taken to be unique.
+
+   Because the Credentials are uniquely identifying, care should be taken so
+   that two User Credentials cannot be linked by BridgeDB, as this would allow
+   BridgeDB to obtain a social graph of the network of Bridge Users.
+   Therefore, it is necessary to hide the Credential from BridgeDB; otherwise,
+   when requesting an Invite Ticket, the User openly sending their Credential
+   to BridgeDB to prove possession of the minimum number of Credits would be
+   linkable to the created Invite Ticket.
+
+ ----------
+ ☥ It would actually be some complicated series of binomial coefficients with
+   respect to the individual q-binomial coefficients with q being a
+   differential of the Bridge turnover w.r.t. time.
+
+***   1.  BridgeDB is permitted to know the following information:
+
+   XXX finishme
+
+****      Which Bridges a User is being given
+
+
+   o How many credits a User has
+
+** IV.A.  Modifications
+
+   The original rBridge scheme is modified to model BridgeDB as a potential
+   malicious actor.  Protecting against this at this point in time is too
+   costly, both in terms of development time, as well as in network bandwidth
+   and computational overhead.  Instead, prioritization should be placed on
+   eliminating BridgeDB's ability to obtain a social graph for Tor bridge
+   users, as this is not information it currently possesses.
+
+   The rBridge scheme utilises 1-out-of-m Oblivious Transfer (OT) to allow
+   BridgeDB to blind a set of m Bridges, letting U pick (and thus learn the
+   address of) at most one out of the m Bridges.  Think of it like a stage
+   magician waving a fanned deck of cards face down, and asking an audience
+   member to "pick a card! any card!"  While the authors of the original paper
+   choose Naor and Pinkas' 1-out-of-m OT scheme [2] for its efficiency, they
+   failed to specify which of Naor and Pinkas' OT schemes ― as there are four
+   within the referenced paper and several more described elsewhere.  For the
+   sake of continuing the argument against their recommendations to use OT
+   within the social bridge distribution scheme, it is presumed that the
+   rBridge authors were referring to the round-optimal 1-out-of-N oblivious
+   transfer scheme in §4 of that paper.
+
+   During the OT process, for each Bridge in m, BridgeDB creates a Blind
+   Signature of the Bridge and tags each signature to its corresponding
+   Bridge, so that if U chooses that Bridge, she will also recieve the
+   signature.  The signature schemes utilised is Au et al.'s k-TAA Blind
+   Signature scheme, [8] which requires a bilinear pairing (XXX what type?)
+   and is q-SDH secure in the standard model.  That k-TAA scheme is chosen
+   because it is compatible with Zero-Knowledge Proofs-of-Knowledge (ZKPoK),
+   such that ZKPoK may be made for k-TAA signatures, as well as for
+   Commitments.  Additionally, Au et al.'s k-TAA signature scheme is a
+   modification to that proposed by Camenisch and Stadler, i.e. it allows for
+   signatures on message vectors, provided that a nonce is included with the
+   message vector.  See §VII.B for an open research question regarding k-TAA
+   signature schemes.
+
+   Next, U creates a Pedersens Commitment (CMT) to the total amount of Credits
+   owned by U, and another commitment to the last time that U requested an
+   Invite Ticket.  For each of these commitments, U obtains from BridgeDB
+   another k_-TAA blind signature on the commitment.  Then, U constructs her
+   own Credential, consisting of the Bridge's tagged blind signature, the
+   blind signature on each of the commitments, and a hash of the nonce that
+   used as the blinding factor.  (The hash of the nonce is included so that
+   multiple users may not collude to swap portions of their Credentials by
+   using the same blinding factor.)  The Fiat-Shamir transformation is then
+   used to convert the aformentioned ZKPoK scheme into a Zero-Knowledge
+   Non-Interactive Proof-of-Knowledge (NIPK) scheme.  With this, U send to D
+   a Proof of their Credential, without revealing any of its contents.
+
+   Every so often, the User requests that BridgeDB update their Credential
+   with recently earned tokens.  XXX finish describing this process
+
+   When one of U's Bridges is "blocked", U notifies BridgeDB of the "block"
+   and, likely, if she has enough Credits to afford it, requests a new bridge.
+   In the original rBridge design, BridgeDB is only to acknowledge requests
+   for new bridges after confirming that the Bridge is indeed blocked.
+
+   This is where the rBridge design begins to do a bit of handwaving. Either
+   that, or they neglected both to put sufficient effort into defining the
+   term "blocked", as well as enough thought into precisely how BridgeDB might
+   check this.  Take for example a User behind a corporate firewall which
+   blocks undentified encrypted protocols: that User will report her Bridges
+   as "blocked" ― and they are, for her at least ― though for everyone else
+   they work just fine.  BridgeDB can easily check Bridge reachability from
+   the location of BridgeDB's server, and possibly can check bridge
+   reachability from various network vantage points around the world (though
+   doing this without *causing* the Bridge to become blocked when checking
+   from censoring regions can quickly become quite complex). [9]
+
+[#]: Au, Man Ho, Willy Susilo, and Yi Mu.
+       "Proof-of-knowledge of representation of committed value and its
+       applications." Information Security and Privacy.
+       Springer Berlin Heidelberg, 2010.
+       http://web.science.mq.edu.au/conferences/acisp2010/program/Session%2010%20-%20Public%20Key%20Encryption%20and%20Protocols/10-04-AuSM10acisp.pdf
+
+*  V.     Design
+** V.A.   Overview
+
+   As mentioned, most of this proposal is based upon §IV of the rBridge
+   paper, which is the non-privacy preserving portion of the paper. [1] The
+   reasons for deferring implementation of §V include:
+
+   - Adding a simpler out-of-band distribution of bridges. Requiring users to
+     copy+paste Bridge lines into their torrc is ridiculous.
+
+   - XXX
+
+   Modifications to the original rBridge scheme:
+
+   - Remove Oblivious Transfer, keep blind signatures and Pedersen's Commitments.
+
+     rBridge uses 1-out-of-m Oblivious Transfer (OT) in order to allow each
+     client to choose their own Bridges. Simply put, if a User is to be given
+     three Bridges, then 1-out-of-m OT is run three times: for each time, the
+     following steps are taken:
+
+     1. User picks a set of m nonces and uses them to generate point in the
+        group G__1 via:
+
+                R
+            yⱼ̍ ⟵―― ℤ*ₚ, where 1 ≤ j ≤ m
+
+     2. User computes a Non-Interactive Proof-of-Knowledge (NIPK) of the set
+        of nonces in the following manner:
+
+                      ⎧ ⎛    ₘ  ⎞   ₘ  ⎡       yⱼ̍⎤ ⎫
+            ᴨ₀ = NIPK ⎨ ⎜{yⱼ̍}ⱼ₌₁⎟: ∀ⱼ₌₁⎢ Yⱼ̍ = ɡ₁ ⎥ ⎬
+                      ⎩ ⎝       ⎠      ⎣         ⎦ ⎭
+
+                  ⎛     ₘ      ⎞
+        and sends ⎜{Yⱼ̍}ⱼ₌₁ ⃦ ᴨ₀⎟ to BridgeDB.
+                  ⎝            ⎠
+
+     3. BridgeDB verifies the NIPK of the set of nonces, ᴨ₀, and then created
+        a one-time keypair:
+
+                 R              ₛₖ⁰
+            sk⁰ ⟵―― ℤ*ₚ, pk⁰ = h
+
+        For each available bridge Bⱼ, BridgeDB randomly selects
+
+                   R
+            eⱼ̊,yⱼ̎ ⟵―― ℤ*ₚ,
+
+        computes                   1
+                               ―――――――――
+                 ⎛    yⱼ̎   Bⱼ ⎞ eⱼ̊ + ₛₖ⁰
+            Aⱼ̊ = ⎜ g₀g₁ Yⱼ̍g₃  ⎟
+                 ⎝            ⎠
+
+        and tags (Aⱼ̊,eⱼ̊,yⱼ̎) to Bⱼ.
+
+     4. After OT… ZKNIPK… XXX
+
+     Specifically, the 1-out-of-m OT scheme used within the "Part V: rBridge
+     with Privacy Preservation" section of the paper is described in
+     "Efficient oblivious transfer protocols" by M. Naor and B. Pinkas. [2] It
+     requires the use of a bilinear group pairing on a Type-3 supersingular
+     elliptic curve.
+
+     Unfortunately, there are very few FLOSS libraries which currently exist
+     for pairing-based cryptography. The one used in the benchmarking section
+     of the rBridge paper is libpbc [3] from Stanford University. Several
+     cryptographers have offhandedly remarked to me that I should not use this
+     library in any deployed system. When I mentioned the need for a vetted
+     pairing-based cryptographic library to Dr. Tanja Lange, she replied that
+     she has a graduate student working on it -- though when this new library
+     will be complete is uncertain.
+
+     libpbc has Python bindings, although pypbc [4] is quite incomplete and
+     only in py3k. Additionally, pypbc requires dynamic library overloading of
+     the shared object libraried for both libpbc and libgmp (the Gnu
+     Multi-Precision library, [5] which allows for calculations of arbitrary
+     precision on floats).
+
+     Rather than waiting for Dr. Lange's student to complete the new library,
+     I propose spending some small amount of time (not more than a couple
+     weeks) creating Python2 bindings for libpbc.  From my experience, the
+     simplest, least error-prone method for creating Python bindings to C
+     libraries (and with the least amount of effort/knowledge of internal
+     Python functions involved) is to use CFFI. [7]
+
+   - Pedersens' Commitments
+
+   - For ZKPoK
+
+** V.C.   Data Formats
+
+***   1.  User Credential
+
+   A Credential is a signed document obtained from BridgeDB. It contains all
+   of the state required to verify honest client behavior, and is formatted
+   as a JSON object with the following format:
+
+   { "Bridges" : [
+         { "BridgeLine" : BridgeLine,
+           "LearnedTS" : TimeStamp,
+           "CreditsEarned" : INT
+         },
+         ...
+       ],
+     "CrenditialTS" : TimeStamp,
+     "TotalUnspentCredits" : INT
+    } NL
+
+  BridgeLine := <Bridge line from BridgeDB>
+  TimeStamp := INT
+  NumCredits := INT
+
+  The Timestamp in this case is the time which a user first learned the
+  existence of that bridge.
+
+  Example:
+
+  {'Bridges': [
+    {'BridgeLine': '1.2.3.4:6666 obfs3 adc83b19e793491b1c6ea0fd8b46cd9f32e592fc',
+     'CreditsEarned': 5,
+     'Timestamp': 1382078292.864117},
+    {'BridgeLine': '6.6.6.6:1234 d929c82d2ee727ccbea9c50c669a71075249899f',
+     'CreditsEarned': 5,
+     'LearnedTS': 1382078292.864117}],
+   'CredentialTS': 982398423,
+   'TotalUnspentCredits': 10}
+
+*** XXX   other formats
+
+*  VI.    Open Questions
+** VI.A.  In which component of the Tor ecosystem should the client application code go?
+***   1.  Should this be done as a Pluggable Transport?
+
+    Considerations:
+
+****  1a. It doesn't need to modify the user's application-level traffic
+
+         The clientside will eventually need to be able to build a circuit to the
+         BridgeDB backend, but it is not necessary that the clientside handle
+         any of the user's application level traffic. However, the clientside
+         system of rBridge must start when TBB (or tor) is started.
+
+****  1b. It needs to be able to start tor.
+
+         This is necessary because the lines:
+         {{{
+             UseBridges 1
+             Bridge [...]
+         }}}
+         must be present before tor is started; tor will not reload these
+         settings via SIGHUP.
+
+****  1c. TorLaucher is not the correct place for this functionality.
+
+         I am *not* adding this to TorLauncher. The clientside of rBridge will
+         eventually need to handle a lot of complicated new cryptographic
+         primitives, including commitments and zero-knowledge proofs. This is
+         dangerous enough, period, because there aren't really any libraries
+         for Pairing-Based Cryptography yet (though Tanya Lange has mentioned
+         to me that a student of theirs should have a good one finished some
+         time this year -- but I'm still going to count that as existing like
+         a unicorn). If I am to write this, I am doing it in
+         C/Python/Python-extensions. Not JS.
+
+***** c.i It could possibly launch TorLauncher
+
+         In other words, this thing edits the torrc according to it's state,
+         and then either launches tor (if the user wants to use an installed
+         tor binary) or launches TorLauncher if we're running TBB.
+
+****  1d. Little-t tor is not the correct place for this either.
+
+         It might be possible, instead of (b) or (c), to add this to little-t
+         tor. However, I feel like the bridge distribution problem is a
+         separate to tor, which should be (more or less) strictly an
+         implementation of the onion-routing design. Additionally, I do not
+         wish to pile more code or maintenance upon eith Nick or Andrea, nor
+         do I wish to make little-t tor more monolithic.
+
+         I talked with Nick briefly about this at the Summer 2013 Tor Dev
+         meeting in München, and he agreed that little-t tor isn't where this
+         code should go.
+
+** VI.B.  Anonymous Authentication/Signature Schemes?
+
+     As the property of conditional anonymity of k-TAA blind signatures is not
+     utilised in any version of the social bridge distribution design, some
+     research should be done on other Anonymous or Partial signature schemes
+     which allow signatures to be made on message vectors.  The k-TAA
+     signature scheme used in rBridge, designed by Au et al., [XXX] was based
+     off of one of Camenisch and Lysyanskaya's signature schemes. (Which one?)
+
+     Of particular interest, the cryptologists Camenisch and Lysyanskaya have
+     several schemes for various types of anonymous signatures, with varying
+     properties, as well as "A Formal Treatment of Onion Routing." [XXX] I am
+     under the impresseion that when they say "anonymous" they mean in the
+     strong sense (versus other cryptologists who attempt to design signature
+     schemes with "revocable anonymity", for example, trusted Centralised-PKI
+     Anonymous Proxy Signature schemes, or signature schemes with "anonymity"
+     that is revocable by a third party). [XXX]
+
+     Specifically, one paper, "Randomizable Proofs and Delegatable Anonymous
+     Credentials" by Camenisch and Lysyanskaya could be applicable to
+     simultaneously ensuring all of the following properties for Invite
+     Tickets:
+
+       * The Unlinkability of a generated Invite Ticket to one used later for
+         registration.
+       * Strong Anonymity for the holders of such Invite Tickets and for their
+         eventual recipients.  Many "unlinkable token" schemes which rely on
+         blind signatures, i.e. Chaum's tokens, remain vulnerable to a
+         particular deanonymisation attack if the Signer is modelled as a
+         "curious" or malicious entity who stores records of the protocol
+         steps for blind signatures. [XXX explain]
+       * Unforgeability
+       * Verifiability
+
+*  VII.   Dependencies Upon Other Tor Software
+** VII.A. Tor Controllers
+***  1.   Proposal #199: Integration of BridgeFinder and BridgeFinderHelper
+
+   The client-side code of BridgeDB will essentially be acting as a
+   BridgeFinder, and thus BridgeDB will require a client-side mechanism for
+   communication with various Tor Controllers. This is necessary in order to
+   present a discovery mechanism whereby a Tor Controller may learn the
+   current number of Credits and Invite Tickets available to a User, and may
+   display this information in some meaningful manner.
+
+
+* References
+
+[0]: Ayad, Hanan. "Growth Rate of the Binomial Coefficient."
+       Lecture Notes on SYDE423 - Computer Algorithm Design and Analysis.
+       University of Waterloo, Canada, 2008.
+       http://www.hananayad.com/teaching/syde423/binomialCoefficient.pdf
+[1]: http://www-users.cs.umn.edu/~hopper/rbridge_ndss13.pdf
+[2]: Naor, Moni, and Benny Pinkas. "Efficient oblivious transfer protocols."
+       Proceedings of the twelfth annual ACM-SIAM symposium on Discrete algorithms.
+       Society for Industrial and Applied Mathematics, 2001.
+       http://www.wisdom.weizmann.ac.il/%7Enaor/PAPERS/eotp.ps
+       https://gitweb.torproject.org/user/isis/bridgedb.git/tree/refs/heads/feature/7520-social-dist-design:/doc/papers/naor2001efficient.pdf
+[3]: https://crypto.stanford.edu/pbc/
+     http://repo.or.cz/r/pbc.git
+[4]: https://www.gitorious.org/pypbc/pages/Documentation
+     git@gitorious.org:pypbc/pypbc.git
+[5]: http://gmplib.org/
+[6]: https://metrics.torproject.org/formats.html#descriptortypes
+[7]: https://bitbucket.org/cffi/cffi
+[8]: Au, Man Ho, Willy Susilo, and Yi Mu. "Constant-size dynamic k-TAA."
+        Security and Cryptography for Networks.
+        Springer Berlin Heidelberg, 2006. 111-125.
+        http://ro.uow.edu.au/cgi/viewcontent.cgi?article=10257&context=infopapers
+[19]: https://trac.torproject.org/projects/tor/ticket/6396#comment:16
