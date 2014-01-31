@@ -15,6 +15,7 @@ import socket
 import time
 import ipaddr
 import random
+import hashlib
 
 import bridgedb.Storage
 import bridgedb.Bucket
@@ -22,6 +23,11 @@ import bridgedb.Util as Util
 
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 HEX_FP_LEN = 40
@@ -315,6 +321,71 @@ class Bridge:
         """Weighted Uptime"""
         db = bridgedb.Storage.getDB()
         return db.getBridgeHistory(self.fingerprint).weightedUptime
+
+def getDescriptorDigests(desc):
+    """Return the SHA-1 hash hexdigests of all descriptor descs
+
+    :param File desc: A string containing the contents of one
+                      or more bridge descriptors concatenated
+                      together.
+    :returns: A dict indexed by the SHA-1 hexdigest of the bridge
+              descriptor, equivalent to that which was published
+              on the 'r' line of the networkstatus for this bridge.
+              The value is the bridge's extra-info document digest,
+              or None, if not provided.
+    """
+    if not desc: return None
+
+    descriptors = {}
+    sha1hash = hashlib.sha1()
+    ei_digest = None
+
+    for line in desc:
+        if line != '-----BEGIN SIGNATURE-----\n':
+            sha1hash.update(line)
+            if line.startswith('extra-info-digest'):
+                parts = line.split()
+                if len(parts) == 2:
+                    ei_digest = parts[1].lower()
+        else:
+            digest = sha1hash.hexdigest().lower()
+            descriptors[digest] = ei_digest
+            while line != '-----END SIGNATURE-----\n':
+                line = next(desc)
+            sha1hash = hashlib.sha1()
+            ei_digest = None
+    return descriptors
+
+def getExtraInfoDigests(doc):
+    """Return the SHA-1 hash hexdigests of all extra-info documents
+
+    :param File doc: A string containing the contents of one
+                      or more bridge extra-info documents concatenated
+                      together.
+    :returns: A dict indexed by the SHA-1 hexdigest of the bridge
+              extra-info doc, equivalent to that which was published
+              on the 'extra-info-digest' line of the bridge's
+              descriptor. The value is the bridge's extra-info document
+              digest, or None, if not provided.
+    """
+    if not doc: return None
+
+    documents = {}
+    sha1hash = hashlib.sha1()
+    document_content = ''
+
+    for line in doc:
+        if line != '-----BEGIN SIGNATURE-----\n':
+            sha1hash.update(line)
+            document_content += line
+        else:
+            digest = sha1hash.hexdigest().lower()
+            documents[digest] = StringIO(document_content)
+            while line != '-----END SIGNATURE-----\n':
+                line = next(doc)
+            sha1hash = hashlib.sha1()
+            document_content = ''
+    return documents
 
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
