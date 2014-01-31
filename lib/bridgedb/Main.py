@@ -98,8 +98,9 @@ def load(state, splitter, clear=False):
 
     logging.info("Opening network status file: %s" % state.STATUS_FILE)
     f = open(state.STATUS_FILE, 'r')
-    for (ID, running, stable,
-         or_addresses, timestamp) in Bridges.parseStatusFile(f):
+    for (ID, nickname, descDigest, running, stable,
+         ORaddr, ORport, or_addresses,
+         timestamp) in Bridges.parseStatusFile(f):
 
         status[ID] = running, stable
         addresses[ID] = or_addresses

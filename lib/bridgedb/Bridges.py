@@ -540,6 +540,7 @@ def parseStatusFile(networkstatusFile):
                 logging.debug("  ORAddress:  {0}".format(ORaddr))
                 logging.debug("  ORport:     {0}".format(ORport))
                 logging.debug("  dirport:    {0}".format(dirport))
+            descDigest = toHex(descDigest)
 
         elif ID and line.startswith("a "):
             try:
@@ -556,10 +557,15 @@ def parseStatusFile(networkstatusFile):
 
         elif ID and timestamp and line.startswith("s "):
             running, stable = networkstatus.parseSLine(line)
-            logging.debug("Bridges.parseStatusFile(): "\
-                          "yielding %s running=%s stable=%s oraddrs=%s ts=%s"
-                          % (toHex(ID), running, stable, or_addresses, timestamp))
-            yield ID, running, stable, or_addresses, timestamp
+            logging.debug("Bridges.parseStatusFile(): "
+                          "yielding %s nickname=%s descDigest=%s "
+                          "running=%s stable=%s oraddr=%s orport=%s "
+                          "oraddrs=%s ts=%s"
+                          % (toHex(ID), nickname, descDigest, running,
+                             stable, ORaddr, ORport, or_addresses,
+                             timestamp))
+            yield (ID, nickname, descDigest, running, stable, ORaddr, ORport,
+                   or_addresses, timestamp)
 
             (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
              addr, portlist) = (None for x in xrange(9))
