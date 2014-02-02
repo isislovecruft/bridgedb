@@ -131,6 +131,9 @@ class Bridge:
         self.transports = transports
         self.running = self.stable = None
         self.blockingCountries = {}
+        self.desc_digest = None
+        self.ei_digest = None
+        self.verified = False
 
         if id_digest is not None:
             assert fingerprint is None
@@ -144,6 +147,22 @@ class Bridge:
             self.fingerprint = fingerprint.lower()
         else:
             raise TypeError("Bridge with no ID")
+
+    def setDescriptorDigest(self, digest):
+        """Set the descriptor digest, specified in the NS."""
+        self.desc_digest = digest
+
+    def setExtraInfoDigest(self, digest):
+        """Set the extra-info digest, specified in the descriptor."""
+        self.ei_digest = digest
+
+    def setVerified(self):
+        """Call when the bridge's descriptor is parsed"""
+        self.verified = True
+
+    def isVerified(self):
+        """Returns the truthiness of ``verified``"""
+        return self.verified
 
     def getID(self):
         """Return the bridge's identity digest."""
