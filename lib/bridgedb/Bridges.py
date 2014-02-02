@@ -473,9 +473,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
-                b.assertOK()
-                yield b
+                yield (nickname, ipaddr.IPAddress(ip), orport, fingerprint)
             nickname = ip = orport = fingerprint = purpose = None 
 
 
@@ -637,9 +635,10 @@ def parseStatusFile(networkstatusFile):
         if line.startswith("r "):
             (nickname, ID, descDigest, timestamp,
              ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            hexID = toHex(ID)
             logging.debug("Parsed networkstatus line:")
             logging.debug("  Nickname:   %s" % nickname)
-            logging.debug("  Identity:   %s" % toHex(ID))
+            logging.debug("  Identity:   %s" % hexID)
             if descDigest:
                 logging.debug("  Descriptor: {0}".format(toHex(descDigest)))
                 logging.debug("  Timestamp:  {0}".format(timestamp))
@@ -667,14 +666,15 @@ def parseStatusFile(networkstatusFile):
                           "yielding %s nickname=%s descDigest=%s "
                           "running=%s stable=%s oraddr=%s orport=%s "
                           "oraddrs=%s ts=%s"
-                          % (toHex(ID), nickname, descDigest, running,
+                          % (hexID, nickname, descDigest, running,
                              stable, ORaddr, ORport, or_addresses,
                              timestamp))
-            yield (ID, nickname, descDigest, running, stable, ORaddr, ORport,
+            yield (ID, nickname, descDigest, running, stable,
+                   ipaddr.IPAddress(ORaddr), ORport,
                    or_addresses, timestamp)
 
             (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
-             addr, portlist) = (None for x in xrange(9))
+             addr, portlist, hexID) = (None for x in xrange(10))
             running = stable = False
             or_addresses = {}
 
