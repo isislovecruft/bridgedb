@@ -469,7 +469,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
                 ip = items[2].strip('[]')
                 orport = int(items[3])
         elif line.startswith("fingerprint "):
-            fingerprint = line[12:].replace(" ", "")
+            fingerprint = line[12:].replace(" ", "").lower()
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
@@ -635,7 +635,7 @@ def parseStatusFile(networkstatusFile):
         if line.startswith("r "):
             (nickname, ID, descDigest, timestamp,
              ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
-            hexID = toHex(ID)
+            hexID = toHex(ID).lower()
             logging.debug("Parsed networkstatus line:")
             logging.debug("  Nickname:   %s" % nickname)
             logging.debug("  Identity:   %s" % hexID)
