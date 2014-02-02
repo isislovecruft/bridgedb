@@ -109,15 +109,31 @@ def chopString(s, size):
         yield s[pos:pos+size]
 
 class Bridge:
-    """Holds information for a single bridge"""
-    ## Fields:
-    ##   nickname -- The bridge's nickname.  Not currently used.
-    ##   ip -- The bridge's IP address, as a dotted quad.
-    ##   orport -- The bridge's OR port.
-    ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
-    ##       no spaces.
-    ##   running,stable -- DOCDOC
-    ##   blockingCountries -- list of country codes blocking this bridge
+    """Holds information for a single bridge
+
+    :attr str nickname: The bridge's nickname.  Not currently used.
+    :attr str ip: The bridge's IPv4 address, as a dotted quad.
+    :attr int orport: The bridge's OR port.
+    :attr dict or_addresses: The bridges alternate IP addresses, keys
+                             the address, values are the port(s) on
+                             which it listens.
+    :attr list transports: List of PluggableTransport instances for
+                           each PT the bridge supports.
+    :attr str fingerprint: The bridge's identity digest, in lowercase
+                           hex, with no spaces.
+    :attr bool running: Is this bridge running?
+    :attr bool stable: Is this bridge stable?
+    :attr dict blockingCountries: list of country codes blocking this
+                                  bridge
+    :attr str desc_digest: SHA-1 hexdigest of the bridge's descriptor
+                           as defined in the networkstatus document
+    :attr str ei_digest: SHA-1 hexdigest of the bridge's extra-info
+                         document as defined in the bridge's
+                         descriptor, corresponding to desc_digest
+    :attr bool verified: Did we receive the descriptor for this
+                         bridge that was specified in the
+                         networkstatus?
+    """
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
                  or_addresses=None, transports=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
