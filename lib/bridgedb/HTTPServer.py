@@ -244,9 +244,23 @@ class WebResourceBridges(twisted.web.resource.Resource):
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
                  includeFingerprints=True, domains=None):
         """Create a new WebResource.
-             distributor -- an IPBasedDistributor object
-             schedule -- an IntervalSchedule object
-             N -- the number of bridges to hand out per query.
+             :type distributor: :class:`IPBasedDistributor`
+             :param distributor: The mechanism to retrieve bridges for
+                                 this distributor
+             :type schedule: :class:`IntervalSchedule`
+             :param schedule: The time period used to tweak the bridge
+                              selection procedure.
+             :param int N: The number of bridges to hand out per query.
+             :param bool useForwardedHeader: Whether or not we should
+                                             use the the
+                                             X-Forwarded-For header
+                                             instead of the source IP
+                                             address.
+             :param bool includeFingerprints: Do we include the
+                                              bridge's fingerprint
+                                              in the response?
+             :param list domains: The list of email provider
+                                  domain names we support. (unused)
         """
         gettext.install("bridgedb", unicode=True)
         twisted.web.resource.Resource.__init__(self)
