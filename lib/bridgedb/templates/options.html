@@ -1,0 +1,39 @@
+﻿## -*- coding: utf-8 -*-
+<%inherit file="base.html"/>
+
+<br />
+<br />
+<p><h2><a href="bridges">${_("""Just Give Me Bridges!""")}</a></h2>
+</p>
+<br /><br /><br />
+<hr />
+<p>
+<h3> ${_("""Advanced Options""")}</h3>
+<form action="bridges" method="GET">
+<div style="float: left;">
+<p>${_("""Do you need IPv6 addresses?""")}
+</p>
+## TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses"
+<input type="checkbox" name="ipv6" value="yes">${_("""Yes!""")}</input>
+<br />
+<br />
+</div><div style="float: right;">
+<p>${_("""Do you need a specific pluggable transport?""")}</p>
+<select name="transport">
+<option name="none" value="0">
+## TRANSLATORS: Please do not translate the pluggable transport names
+## (obfs2, obfs3, etc)
+  ${_("""No""")}
+</option>
+<option value="obfs2">${_("""Yes, obfs2""")}</option>
+<option value="obfs3">${_("""Yes, obfs3""")}</option>
+<!--<option value="scramblesuit">${_("""Yes, scramblesuit""")}</option>-->
+</select>
+</div>
+<br />
+<br />
+<br />
+<br />
+<p><button>${_("""Get Bridges""")}</button></p>
+</form>
+<hr>
