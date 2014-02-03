@@ -262,7 +262,7 @@ class Database:
         cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,))
 
     def getEmailTime(self, addr):
-        addr = hashlib.new(addr).hexdigest()
+        addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
         cur.execute("SELECT when_mailed FROM EmailedBridges WHERE "
                     "email = ?", (addr,))
@@ -272,7 +272,7 @@ class Database:
         return strToTime(v[0])
 
     def setEmailTime(self, addr, whenMailed):
-        addr = hashlib.new(addr).hexdigest()
+        addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
         t = timeToStr(whenMailed)
         cur.execute("INSERT OR REPLACE INTO EmailedBridges "
@@ -359,7 +359,7 @@ class Database:
         return True 
 
     def getWarnedEmail(self, addr):
-        addr = hashlib.new(addr).hexdigest()
+        addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
         cur.execute("SELECT * FROM WarnedEmails WHERE "
                     " email = ?", (addr,))
@@ -369,7 +369,7 @@ class Database:
         return True
 
     def setWarnedEmail(self, addr, warned=True, whenWarned=time.time()):
-        addr = hashlib.new(addr).hexdigest()
+        addr = hashlib.sha1(addr).hexdigest()
         t = timeToStr(whenWarned)
         cur = self._cur
         if warned == True:
