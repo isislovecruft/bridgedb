@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Module for functionality to persistently storing state."""
+"""Module for functionality to persistently store state."""
 
 import copy
 import logging

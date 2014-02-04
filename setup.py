@@ -163,7 +163,7 @@ def get_supported_langs():
         for line in langsfile.readlines():
             if line.startswith('supported'):
                 line = "supported = %s\n" % supported
-                print("REWROTE supported langs: %s" % line)
+                #print("REWROTE supported langs: %s" % line)
             new_langs_lines.append(line)
     with open(repo_langs, 'w') as newlangsfile:
         for line in new_langs_lines:
@@ -226,7 +226,7 @@ def get_data_files(filesonly=False):
         for ldir, lfile in zip(lang_dirs, lang_files):
             data_files.append((ldir, [lfile,]))
 
-    [sys.stdout.write("Added data_file '%s'\n" % x) for x in data_files]
+    #[sys.stdout.write("Added data_file '%s'\n" % x) for x in data_files]
 
     return data_files
 
@@ -257,12 +257,8 @@ class runTests(setuptools.Command):
             sys.path = old_path
 
 
-requires, deplinks = get_requirements()
-print('Found requirements:')
-[print('\t%s' % name) for name in requires]
 
-print('Found dependency links:')
-[print('\t%s' % uri) for uri in deplinks]
+requires, deplinks = get_requirements()
 
 setuptools.setup(
     name='bridgedb',

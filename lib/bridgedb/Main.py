@@ -140,16 +140,17 @@ def load(state, splitter, clear=False):
                 # ns, then we skip it there, too.
                 splitter.insert(bridge)
 
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                            "Adding/updating timestamps in BridgeHistory for "\
-                            "'%s' in database: %s"
-                            % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                            bridge, timestamp)
+                if state.COLLECT_TIMESTAMPS:
+                    if bridge.getID() in timestamps.keys():
+                        ts = timestamps[bridge.getID()][:]
+                        ts.sort()
+                        for timestamp in ts:
+                            logging.debug(
+                                "Updating BridgeHistory timestamps for %s: %s"
+                                % (bridge.fingerprint, timestamp))
+                            bridgedb.Stability.addOrUpdateBridgeHistory(
+                                bridge, timestamp)
+
         logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
         f.close()
 

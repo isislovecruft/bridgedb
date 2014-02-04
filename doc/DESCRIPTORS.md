@@ -130,7 +130,7 @@ Optionally followed by:
     bridge-stats-end 2013-10-21 17:28:15 (86400 s)
     bridge-ips de=8,nl=8,us=8
 
-And, if it include the `bridge-ips` line, it MAY include the following right
+And, if it includes the `bridge-ips` line, it MAY include the following right
 afterwards:
 
     bridge-ip-versions v4=16,v6=8
@@ -170,6 +170,7 @@ obproxy pluggable transport types:
     dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
     transport obfs3 10.0.1.111:3333
     transport obfs2 10.0.1.111:2222
+    transport scramblesuit 10.0.1.111:4444 password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
     bridge-stats-end 2013-10-21 13:04:24 (86400 s)
     bridge-ips ca=8
     bridge-ip-versions v4=8,v6=0

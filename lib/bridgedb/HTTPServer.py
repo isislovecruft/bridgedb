@@ -34,16 +34,28 @@ from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
+import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from zope.interface import Interface, Attribute, implements
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
-lookup = TemplateLookup(directories=[template_root],
-                        output_encoding='utf-8')
+logging.debug("Set template root to %s" % template_root)
+
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
-logging.debug("Set template root to %s" % template_root)
+# Setting `filesystem_checks` to False is recommended for production servers,
+# due to potential speed increases. This means that the atimes of the Mako
+# template files aren't rechecked every time the template is requested
+# (otherwise, if they are checked, and the atime is newer, the template is
+# recompiled). `collection_size` sets the number of compiled templates which
+# are cached before the least recently used ones are removed. See:
+# http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
+lookup = TemplateLookup(directories=[template_root],
+                        output_encoding='utf-8',
+                        filesystem_checks=False,
+                        collection_size=500)
+
 
 try:
     # Make sure we have the database before trying to import the module:
@@ -66,6 +78,39 @@ else:
     logging.info("GeoIP database loaded")
 
 
+def replaceErrorPage(error, template_name=None):
+    """Create a general error page for displaying in place of tracebacks.
+
+    Log the error to BridgeDB's logger, and then display a very plain "Sorry!
+    Something went wrong!" page to the client.
+
+    :type error: :exc:`Exception`
+    :param error: Any exeption which has occurred while attempting to retrieve
+                  a template, render a page, or retrieve a resource.
+    :param str template_name: A string describing which template/page/resource
+                              was being used when the exception occurred,
+                              i.e. ``'index.html'``.
+    :returns: A string containing HTML to serve to the client (rather than
+              serving a traceback).
+    """
+    logging.error("Error while attempting to render %s: %s"
+                  % (template_name or 'template',
+                     mako.exceptions.text_error_template().render()))
+
+    errmsg = _("Sorry! Something went wrong with your request.")
+    rendered = """<html>
+                    <head>
+                      <link href="/assets/bootstrap.min.css" rel="stylesheet">
+                      <link href="/assets/custom.css" rel="stylesheet">
+                    </head>
+                    <body>
+                      <p>{0}</p>
+                    </body>
+                  </html>""".format(errmsg)
+
+    return rendered
+
+
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
             recaptchaPubKey='', useForwardedHeader=False, resource=None):
@@ -82,25 +127,55 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             if h:
                 ip = h.split(",")[-1].strip()
                 if not bridgedb.Bridges.is_valid_ip(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
+                    logging.warn("Got weird X-Forwarded-For value %r" % h)
                     ip = None
         else:
             ip = request.getClientIP()
         return ip
 
     def render_GET(self, request):
-        # get a captcha
+        """Retrieve a ReCaptcha from the API server and serve it to the client.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for 'bridges.html'.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
+        """
         c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+
         try:
             c.get()
         except Exception as error:
-            log.error("Connection to Recaptcha server failed.")
+            logging.fatal("Connection to Recaptcha server failed: %s" % error)
 
-        # TODO: this does not work for versions of IE < 8.0
-        imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-        return lookup.get_template('captcha.html').render(imgstr=imgstr, challenge_field=c.challenge)
+        if c.image is None:
+            logging.warn("No CAPTCHA image received from ReCaptcha server!")
+
+        try:
+            # TODO: this does not work for versions of IE < 8.0
+            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
+            template = lookup.get_template('captcha.html')
+            rendered = template.render(imgstr=imgstr,
+                                       challenge_field=c.challenge)
+        except Exception as err:
+            rendered = replaceErrorPage(err, 'captcha.html')
+
+        return rendered
 
     def render_POST(self, request):
+        """Process a client CAPTCHA by sending it to the ReCaptcha server.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the POST arguments
+                        should include two key/value pairs: one key being
+                        ``'recaptcha_challange_field'``, and the other,
+                        ``'recaptcha_response_field'``. These POST arguments
+                        should be obtained from :meth:`render_GET`.
+        """
         try:
             challenge = request.args['recaptcha_challenge_field'][0]
             response = request.args['recaptcha_response_field'][0]
@@ -112,16 +187,26 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
                                      randint(1,255),randint(1,255))
 
         recaptcha_response = captcha.submit(challenge, response,
-                                        self.recaptchaPrivKey, remote_ip)
+                                            self.recaptchaPrivKey, remote_ip)
+        logging.debug("Captcha from client with masked IP %r. Parameters:\n%r"
+                      % (remote_ip, request.args))
+
         if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from %s. Parameters were %r",
-                    Util.logSafely(remote_ip), request.args)
-            return self.resource.render(request)
+            logging.info("Valid recaptcha from client with masked IP %r."
+                         % remote_ip)
+            try:
+                rendered = self.resource.render(request)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
+            return rendered
         else:
-            logging.info("Invalid recaptcha from %s. Parameters were %r",
-                         Util.logSafely(remote_ip), request.args)
-            logging.info("Recaptcha error code: %s", recaptcha_response.error_code)
-        return redirectTo(request.URLPath(), request)
+            logging.info("Invalid recaptcha from client with masked IP %r: %r"
+                         % (remote_ip, recaptcha_response.error_code))
+
+        logging.debug("Client failed a recaptcha; returning redirect to %s"
+                      % request.uri)
+        return redirectTo(request.uri, request)
+
 
 class WebResource(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
@@ -285,17 +370,44 @@ class WebResource(twisted.web.resource.Resource):
         """
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
-            return answer
+            rendered = bridgeLines
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
-            return lookup.get_template('bridges.html').render(answer=bridgeLines,
-                                                              rtl=rtl)
+            try:
+                template = lookup.get_template('bridges.html')
+                rendered = template.render(answer=bridgeLines, rtl=rtl)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
+
+        return rendered
+
 
 class WebRoot(twisted.web.resource.Resource):
+    """The parent resource of all other documents hosted by the webserver."""
+
     isLeaf = True
+
     def render_GET(self, request):
-        rtl = usingRTLLang(request)
+        """Handles requests for the webserver root document.
+
+        For example, this function handles requests for
+        https://bridges.torproject.org/.
+
+        :type request: :api:`twisted.web.server.Request`
+        :param request: An incoming request.
+        """
+        rtl = False
+
+        try:
+            rtl = usingRTLLang(request)
+        except Exception as err:
+            logging.exception(err)
+            logging.error("The gettext files were not properly installed.")
+            logging.info("To install translations, try doing `python " \
+                         "setup.py compile_catalog`.")
+
         return lookup.get_template('index.html').render(rtl=rtl)
+
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
@@ -359,8 +471,7 @@ def addWebServer(cfg, dist, sched):
     return site
 
 def usingRTLLang(request):
-    """
-    Check if we should translate the text into a RTL language
+    """Check if we should translate the text into a RTL language
 
     Retrieve the headers from the request. Obtain the Accept-Language header
     and decide if we need to translate the text. Install the requisite
@@ -368,8 +479,11 @@ def usingRTLLang(request):
     support. Choose the first language from the header that we support and
     return True if it is a RTL language, else return False.
 
-    :param request twisted.web.server.Request: Incoming request
-    :returns bool: Language is right-to-left
+    :type request: :api:`twisted.web.server.Request`
+    :param request: An incoming request.
+    :rtype: bool
+    :returns: ``True`` if the preferred language is right-to-left; ``False``
+              otherwise.
     """
     langs = setLocaleFromRequestHeader(request)
 
@@ -382,11 +496,11 @@ def usingRTLLang(request):
     return False
 
 def getAssumedChosenLang(langs):
-    """
-    Return the first language in ``langs`` and we supprt
+    """Return the first language in **langs** that we support.
 
-    :param langs list: All requested languages
-    :returns string: Chosen language
+    :param list langs: All requested languages
+    :rtype: str
+    :returns: A country code for the client's preferred language.
     """
     i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
     path = filepath.FilePath(i18npath)
@@ -406,9 +520,8 @@ def setLocaleFromRequestHeader(request):
     Parse the languages in the header, and attempt to install the first one in
     the list. If that fails, we receive a :class:`gettext.NullTranslation`
     object, if it worked then we have a :class:`gettext.GNUTranslation`
-    object. Whichever one we end up with, add the other get the other
-    languages and add them as fallbacks to the first. Lastly, install this
-    chain of translations.
+    object. Whichever one we end up with, get the other languages and add them
+    as fallbacks to the first. Lastly, install this chain of translations.
 
     :type request: :api:`twisted.web.server.Request`
     :param request: An incoming request from a client.
@@ -425,7 +538,7 @@ def setLocaleFromRequestHeader(request):
     localedir = os.path.join(os.path.dirname(__file__), 'i18n/')
     langs = headers.parseAcceptLanguage(header)
     ## XXX the 'Accept-Language' header is potentially identifying
-    logging.debug("Client Accept-Language (top 5): %s" % langs[:4])
+    logging.debug("Client Accept-Language (top 5): %s" % langs[:5])
 
     try:
         language = gettext.translation("bridgedb", localedir=localedir,

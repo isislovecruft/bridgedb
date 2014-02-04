@@ -28,9 +28,10 @@ layer of encryption.
 
 #### So how do I use this?
 Well, probably, you don't. But if you're looking for bridges, you can use
-[BridgeDB's web interface](https://bridges.torproject.org), which has
-instructions on getting the Pluggable Transports Tor Browser Bundle, as well
-as instructions for getting extra Bridges.
+[the web interface](https://bridges.torproject.org) of the BridgeDB instance
+deployed by the Tor Project, which has instructions on getting the Pluggable
+Transports-capable Tor Browser Bundle, as well as instructions for getting
+extra Bridges.
 
 
 ## Maintainer Setup
@@ -122,8 +123,8 @@ all the updated files in their correct locations.
 
 **Requesting Translations for Altered/Added Source Code**: This should be done
   whenever any of the strings requiring translation -- _("they are formatted
-  like this") -- are changed, or new ones are added. See
-  ```lib/bridgedb/I18n.py```.
+  like this") -- are changed, or new ones are added.
+  See ```lib/bridgedb/I18n.py```.
 
 Translations for Tor Project repos are kept
 [in a separate repo](https://gitweb.torproject.org/translation.git).  You'll
@@ -153,7 +154,7 @@ complete, the finished .po files should be placed into the
 #### Enabling HTTPS
 Create a self-signed certificate with:
 
-     maint/make-ssl-cert
+     scripts/make-ssl-cert
 
 Or, place an existing certificate in the path specified in bridgedb.conf by
 the ```HTTPS_CERT_FILE``` option, and a private key where ```HTTPS_KEY_FILE```
@@ -233,8 +234,10 @@ such as Twitter.
 Just connect to the appropriate port.
 
 #### To use with email:
-Any mail sent to the email port with a subject or a single line _exactly_
-equal to "get bridges" will get answered, assuming the domain is okay.
+Any mail sent to the email port with a destination username as defined by the
+EMAIL_USERNAME configuration option (default is 'bridge', e.g. bridges@...)
+and sent from a yahoo or gmail address (by default, configured with the
+EMAIL_DOMAINS option).
 
 ### Support
 Send your questions to isis (A) torproject (circle) org.
