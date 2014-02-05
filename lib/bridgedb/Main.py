@@ -616,9 +616,6 @@ def runSubcommand(options, config):
 
     statuscode = 0
 
-    if options['dump-bridges']:
-        runner.doDumpBridges(config)
-
     if options.subCommand is not None:
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
 
