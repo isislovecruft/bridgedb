@@ -333,6 +333,19 @@ def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callLater(0, _reloadFn, *args)
 
+def _handleSIGUSR1(*args):
+    """Handler for SIGUSR1. Calls :func:`~bridgedb.runner.doDumpBridges`."""
+    logging.debug("Caught SIGUSR1 signal")
+
+    from bridgedb import runner
+
+    logging.info("Loading saved state...")
+    state = persistent.load()
+    cfg = loadConfig(state.CONFIG_FILE, state.config)
+
+    logging.info("Dumping bridge assignments to files...")
+    reactor.callLater(0, runner.doDumpBridges, cfg)
+
 
 class ProxyCategory:
     def __init__(self):
@@ -560,6 +573,7 @@ def startup(options):
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
+    signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
     # And actually load it to start parsing.
     reload()
