@@ -325,13 +325,26 @@ def loadProxyList(cfg):
         f.close()
     return ipset
 
-def _reloadFn():
+def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
     return True
 
 def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callLater(0, _reloadFn, *args)
+
+def _handleSIGUSR1(*args):
+    """Handler for SIGUSR1. Calls :func:`~bridgedb.runner.doDumpBridges`."""
+    logging.debug("Caught SIGUSR1 signal")
+
+    from bridgedb import runner
+
+    logging.info("Loading saved state...")
+    state = persistent.load()
+    cfg = loadConfig(state.CONFIG_FILE, state.config)
+
+    logging.info("Dumping bridge assignments to files...")
+    reactor.callLater(0, runner.doDumpBridges, cfg)
 
 
 class ProxyCategory:
@@ -459,7 +472,7 @@ def startup(options):
     state.key = key
     state.save()
 
-    def reload():
+    def reload(*args):
         """Reload settings, proxy lists, and bridges.
 
         State should be saved before calling this method, and will be saved
@@ -560,6 +573,7 @@ def startup(options):
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
+    signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
     # And actually load it to start parsing.
     reload()
@@ -601,9 +615,6 @@ def runSubcommand(options, config):
     from bridgedb import runner
 
     statuscode = 0
-
-    if options['dump-bridges']:
-        runner.doDumpBridges(config)
 
     if options.subCommand is not None:
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
