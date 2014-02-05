@@ -1134,7 +1134,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         if not bridge.running:
             logging.warn(
                 "Skipping hashring insertion for non-running bridge: '%s'"
-                % bridge.getID())
+                % Util.logSafely(bridge.fingerprint))
             return
 
         self.bridges.append(bridge)
@@ -1142,7 +1142,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             if filterFn(bridge):
                 subring.insert(bridge)
                 logging.debug("Inserted bridge '%s' into '%s' sub hashring"
-                              % (bridge.getID(), ringname))
+                              % (Util.logSafely(bridge.fingerprint), ringname))
 
     def extractFilterNames(self, ringname):
         """Get the names of the filters applied to a particular sub hashring.
