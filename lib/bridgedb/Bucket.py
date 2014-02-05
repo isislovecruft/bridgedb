@@ -23,6 +23,7 @@ even though in the database, there would now by 'name1', 'name2' or 'foobar'
 instead of 'unallocated'. This is why they are called pseudo-distributors.
 """
 
+import logging
 import time
 import bridgedb.Storage
 import bridgedb.Bridges 

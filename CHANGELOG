@@ -1,11 +1,24 @@
-Changes in version 0.1.0 - 2014-XXX
+Changes in version 0.1.2 - 2014-02-05
+BridgeDB 0.1.2 includes fixes for the following bugs:
+	* FIXES #10811 BridgeDB's assignments.log files are not being updated
+
+
+Changes in version 0.1.1 - 2014-02-03
 BridgeDB 0.1.1 includes fixes for the following bugs:
-	* FIXES #9127
-	* FIXES #10737
+	* FIXES #9127 Users can't ask for ipv6 bridges with the new bridgedb
+		interface
+	* FIXES #9988 Refactor BridgeDB's use of `sha` module to use `hashlib`
+	* FIXES #10737 POST arguments to bridges.torproject.org are dropped if
+		entering a CAPTCHA fails
 
 Including the following general changes:
 	* ADDS A general simple error page to display rather than
 		webserver tracebacks. See #6127.
+	* MOVES The recently added BridgeDB specification file
+		('doc/bridge-db-spec.txt') to the torspec repo:
+		https://gitweb.torproject.org/torspec.git
+	* FIXES template caching for the web interface.
+
 
 Changes in version 0.1.0 - 2014-01-14
 BridgeDB 0.1.0 includes fixes for the following bugs:
@@ -35,6 +48,7 @@ Including the following general changes:
 	* ADD Sphinx makefiles, substantial amounts of documentation.
 	* ADD Documentations builds (currently at
 	      https://para.noid.cat/bridgedb)
+
 
 Changes in version 0.0.1 - 2013-08-20
 BridgeDB 0.0.1 includes fixes for the following bugs:
