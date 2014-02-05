@@ -325,7 +325,7 @@ def loadProxyList(cfg):
         f.close()
     return ipset
 
-def _reloadFn():
+def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
     return True
 
@@ -459,7 +459,7 @@ def startup(options):
     state.key = key
     state.save()
 
-    def reload():
+    def reload(*args):
         """Reload settings, proxy lists, and bridges.
 
         State should be saved before calling this method, and will be saved
