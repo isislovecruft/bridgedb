@@ -89,8 +89,38 @@ class BridgeDBCliTest(unittest.TestCase):
         self.doCopyFile(eindesc, eidesc, 'duplicated cached-extrainfo(.new)')
 
         print("Running `bridgedb' to test server startups...")
-        bridgedbProc = Popen([bridgedbScript, '-r', runDir])
+        # Sorry Windows users
+        devnull = open('/dev/null', 'w')
+        bridgedbProc = Popen([bridgedbScript, '-r', runDir], stdout=devnull)
         time.sleep(30)
+        assignments = pjoin(runDir, 'assignments.log')
+        self.assertTrue(os.path.isfile(assignments))
+        os.unlink(assignments)
+        bridgedbProc.send_signal(signal.SIGHUP)
+        time.sleep(5)
+        try:
+            self.assertTrue(os.path.isfile(assignments))
+        except self.failureException as e:
+            bridgedbProc.send_signal(signal.SIGKILL)
+            bridgedbProcCode = bridgedbProc.wait()
+            print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
+            raise e
+        bridgedbProc.send_signal(signal.SIGUSR1)
+        time.sleep(5)
+        buckets = [['email', False], ['https', False], ['unallocated', False]]
+        for rundirfile in os.listdir(runDir):
+            for bucket in buckets:
+                if rundirfile.startswith(bucket[0]):
+                    bucket[1] = True
+                    break
+        for bucket in buckets:
+            try:
+                self.assertTrue(bucket[1], "%s bucket was not dumped!" % bucket[0])
+            except self.failureException as e:
+                bridgedbProc.send_signal(signal.SIGKILL)
+                bridgedbProcCode = bridgedbProc.wait()
+                print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
+                raise e
         bridgedbProc.send_signal(signal.SIGINT)
         bridgedbProcCode = bridgedbProc.wait()
         print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
