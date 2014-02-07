@@ -1,3 +1,10 @@
+Changes in version 0.1.7 -
+        * FIXES #5232 Perform long running and blocking transactions
+                in background threads. Primarily this moves bridge
+                descriptor reparsing into another thread and
+                significantly increased the availability of bridgedb,
+                as a result.
+
 Changes in version 0.1.6 - 2014-03-26
 BridgeDB 0.1.6 includes fixes for the following bugs:
 	* FIXES #11196 BridgeDB should use leekspin
