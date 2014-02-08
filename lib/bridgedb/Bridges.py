@@ -112,7 +112,8 @@ class Bridge:
     """Holds information for a single bridge
 
     :attr str nickname: The bridge's nickname.  Not currently used.
-    :attr str ip: The bridge's IPv4 address, as a dotted quad.
+    :type ip: :class:`ipaddr.IPAddress`
+    :attr ip: The bridge's IPv4 address, specified on 'r'-line in NS
     :attr int orport: The bridge's OR port.
     :attr dict or_addresses: The bridges alternate IP addresses, keys
                              the address, values are the port(s) on
