@@ -252,12 +252,16 @@ class State(jelly.Jellyable):
                 if value != self.config.__dict__[key]:
                     setattr(self, key, value)
                     updated.append(key)
-                    logging.debug("Updated %s setting: %r → %r"
-                                  % (key, self.config.__dict__[key], value))
+                    logging.debug("Updated %s setting: %r → %r" %
+                                  (key.decode('ascii', 'replace'),
+                                   self.config.__dict__[key],
+                                   value))
             except (KeyError, AttributeError):
                 setattr(self, key, value)
                 new.append(key)
-                logging.debug("New setting: %s = %r" % (key, value))
+                logging.debug("New setting: %s = %r" %
+                              (key.decode('ascii', 'replace'),
+                               value))
 
         logging.info("Updated setting(s): %s" % ' '.join([x for x in updated]))
         logging.info("New setting(s): %s" % ' '.join([x for x in new]))
