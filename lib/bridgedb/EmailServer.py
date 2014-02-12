@@ -186,9 +186,9 @@ def getMailResponse(lines, ctx):
             bridgeFilterRules=bridgeFilterRules)
 
     # Handle rate limited email
-    except TooSoonEmail, e:
-        logging.info("Got a mail too frequently; warning %r: %s.",
-                     util.logSafely(clientAddr), e)
+    except TooSoonEmail as err:
+        logging.info("Got a mail too frequently; warning '%s': %s."
+                     % (util.logSafely(clientAddr), err))
 
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
@@ -196,14 +196,14 @@ def getMailResponse(lines, ctx):
         return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
                 gpgContext=ctx.gpgContext)
 
-    except IgnoreEmail, e:
-        logging.info("Got a mail too frequently; ignoring %r: %s.",
-                      util.logSafely(clientAddr), e)
+    except IgnoreEmail as err:
+        logging.info("Got a mail too frequently; ignoring '%s': %s."
+                     % (util.logSafely(clientAddr), err))
         return None, None
 
-    except BadEmail, e:
-        logging.info("Got a mail from a bad email address %r: %s.",
-                     util.logSafely(clientAddr), e)
+    except BadEmail as err:
+        logging.info("Got a mail from a bad email address '%s': %s."
+                     % (util.logSafely(clientAddr), err))
         return None, None
 
     if bridges:
