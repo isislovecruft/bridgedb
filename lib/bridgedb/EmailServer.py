@@ -98,7 +98,7 @@ def getMailResponse(lines, ctx):
     t = I18n.getLang(lang)
 
     try:
-        _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
+        _, addrdomain = Dist.extractAddrSpec(clientAddr.lower())
     except BadEmail:
         logging.info("Ignoring bad address on incoming email.")
         return None, None
