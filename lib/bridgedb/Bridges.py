@@ -641,12 +641,12 @@ def parseStatusFile(networkstatusFile):
             logging.debug("  Nickname:   %s" % nickname)
             logging.debug("  Identity:   %s" % hexID)
             if descDigest:
-                logging.debug("  Descriptor: {0}".format(toHex(descDigest)))
+                descDigest = toHex(descDigest)
+                logging.debug("  Descriptor: {0}".format(descDigest))
                 logging.debug("  Timestamp:  {0}".format(timestamp))
                 logging.debug("  ORAddress:  {0}".format(ORaddr))
                 logging.debug("  ORport:     {0}".format(ORport))
                 logging.debug("  dirport:    {0}".format(dirport))
-            descDigest = toHex(descDigest)
 
         elif ID and line.startswith("a "):
             try:
