@@ -15,6 +15,7 @@ import socket
 import time
 import ipaddr
 import random
+import hashlib
 
 import bridgedb.Storage
 import bridgedb.Bucket
@@ -22,6 +23,11 @@ import bridgedb.Util as Util
 
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 HEX_FP_LEN = 40
@@ -103,15 +109,32 @@ def chopString(s, size):
         yield s[pos:pos+size]
 
 class Bridge:
-    """Holds information for a single bridge"""
-    ## Fields:
-    ##   nickname -- The bridge's nickname.  Not currently used.
-    ##   ip -- The bridge's IP address, as a dotted quad.
-    ##   orport -- The bridge's OR port.
-    ##   fingerprint -- The bridge's identity digest, in lowercase hex, with
-    ##       no spaces.
-    ##   running,stable -- DOCDOC
-    ##   blockingCountries -- list of country codes blocking this bridge
+    """Holds information for a single bridge
+
+    :attr str nickname: The bridge's nickname.  Not currently used.
+    :type ip: :class:`ipaddr.IPAddress`
+    :attr ip: The bridge's IPv4 address, specified on 'r'-line in NS
+    :attr int orport: The bridge's OR port.
+    :attr dict or_addresses: The bridges alternate IP addresses, keys
+                             the address, values are the port(s) on
+                             which it listens.
+    :attr list transports: List of PluggableTransport instances for
+                           each PT the bridge supports.
+    :attr str fingerprint: The bridge's identity digest, in lowercase
+                           hex, with no spaces.
+    :attr bool running: Is this bridge running?
+    :attr bool stable: Is this bridge stable?
+    :attr dict blockingCountries: list of country codes blocking this
+                                  bridge
+    :attr str desc_digest: SHA-1 hexdigest of the bridge's descriptor
+                           as defined in the networkstatus document
+    :attr str ei_digest: SHA-1 hexdigest of the bridge's extra-info
+                         document as defined in the bridge's
+                         descriptor, corresponding to desc_digest
+    :attr bool verified: Did we receive the descriptor for this
+                         bridge that was specified in the
+                         networkstatus?
+    """
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
                  or_addresses=None, transports=None):
         """Create a new Bridge.  One of fingerprint and id_digest must be
@@ -125,6 +148,9 @@ class Bridge:
         self.transports = transports
         self.running = self.stable = None
         self.blockingCountries = {}
+        self.desc_digest = None
+        self.ei_digest = None
+        self.verified = False
 
         if id_digest is not None:
             assert fingerprint is None
@@ -138,6 +164,22 @@ class Bridge:
             self.fingerprint = fingerprint.lower()
         else:
             raise TypeError("Bridge with no ID")
+
+    def setDescriptorDigest(self, digest):
+        """Set the descriptor digest, specified in the NS."""
+        self.desc_digest = digest
+
+    def setExtraInfoDigest(self, digest):
+        """Set the extra-info digest, specified in the descriptor."""
+        self.ei_digest = digest
+
+    def setVerified(self):
+        """Call when the bridge's descriptor is parsed"""
+        self.verified = True
+
+    def isVerified(self):
+        """Returns the truthiness of ``verified``"""
+        return self.verified
 
     def getID(self):
         """Return the bridge's identity digest."""
@@ -316,6 +358,71 @@ class Bridge:
         db = bridgedb.Storage.getDB()
         return db.getBridgeHistory(self.fingerprint).weightedUptime
 
+def getDescriptorDigests(desc):
+    """Return the SHA-1 hash hexdigests of all descriptor descs
+
+    :param File desc: A string containing the contents of one
+                      or more bridge descriptors concatenated
+                      together.
+    :returns: A dict indexed by the SHA-1 hexdigest of the bridge
+              descriptor, equivalent to that which was published
+              on the 'r' line of the networkstatus for this bridge.
+              The value is the bridge's extra-info document digest,
+              or None, if not provided.
+    """
+    if not desc: return None
+
+    descriptors = {}
+    sha1hash = hashlib.sha1()
+    ei_digest = None
+
+    for line in desc:
+        if line != '-----BEGIN SIGNATURE-----\n':
+            sha1hash.update(line)
+            if line.startswith('extra-info-digest'):
+                parts = line.split()
+                if len(parts) == 2:
+                    ei_digest = parts[1].lower()
+        else:
+            digest = sha1hash.hexdigest().lower()
+            descriptors[digest] = ei_digest
+            while line != '-----END SIGNATURE-----\n':
+                line = next(desc)
+            sha1hash = hashlib.sha1()
+            ei_digest = None
+    return descriptors
+
+def getExtraInfoDigests(doc):
+    """Return the SHA-1 hash hexdigests of all extra-info documents
+
+    :param File doc: A string containing the contents of one
+                      or more bridge extra-info documents concatenated
+                      together.
+    :returns: A dict indexed by the SHA-1 hexdigest of the bridge
+              extra-info doc, equivalent to that which was published
+              on the 'extra-info-digest' line of the bridge's
+              descriptor. The value is the bridge's extra-info document
+              digest, or None, if not provided.
+    """
+    if not doc: return None
+
+    documents = {}
+    sha1hash = hashlib.sha1()
+    document_content = ''
+
+    for line in doc:
+        if line != '-----BEGIN SIGNATURE-----\n':
+            sha1hash.update(line)
+            document_content += line
+        else:
+            digest = sha1hash.hexdigest().lower()
+            documents[digest] = StringIO(document_content)
+            while line != '-----END SIGNATURE-----\n':
+                line = next(doc)
+            sha1hash = hashlib.sha1()
+            document_content = ''
+    return documents
+
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
        for every entry whose purpose matches bridge_purpose.
@@ -367,9 +474,7 @@ def parseDescFile(f, bridge_purpose='bridge'):
         elif line.startswith("router-signature"):
             purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
             if purposeMatches and nickname and ip and orport and fingerprint:
-                b = Bridge(nickname, ipaddr.IPAddress(ip), orport, fingerprint)
-                b.assertOK()
-                yield b
+                yield (nickname, ipaddr.IPAddress(ip), orport, fingerprint)
             nickname = ip = orport = fingerprint = purpose = None 
 
 
@@ -531,11 +636,13 @@ def parseStatusFile(networkstatusFile):
         if line.startswith("r "):
             (nickname, ID, descDigest, timestamp,
              ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            hexID = toHex(ID)
             logging.debug("Parsed networkstatus line:")
             logging.debug("  Nickname:   %s" % nickname)
-            logging.debug("  Identity:   %s" % toHex(ID))
+            logging.debug("  Identity:   %s" % hexID)
             if descDigest:
-                logging.debug("  Descriptor: {0}".format(toHex(descDigest)))
+                descDigest = toHex(descDigest)
+                logging.debug("  Descriptor: {0}".format(descDigest))
                 logging.debug("  Timestamp:  {0}".format(timestamp))
                 logging.debug("  ORAddress:  {0}".format(ORaddr))
                 logging.debug("  ORport:     {0}".format(ORport))
@@ -556,13 +663,19 @@ def parseStatusFile(networkstatusFile):
 
         elif ID and timestamp and line.startswith("s "):
             running, stable = networkstatus.parseSLine(line)
-            logging.debug("Bridges.parseStatusFile(): "\
-                          "yielding %s running=%s stable=%s oraddrs=%s ts=%s"
-                          % (toHex(ID), running, stable, or_addresses, timestamp))
-            yield ID, running, stable, or_addresses, timestamp
+            logging.debug("Bridges.parseStatusFile(): "
+                          "yielding %s nickname=%s descDigest=%s "
+                          "running=%s stable=%s oraddr=%s orport=%s "
+                          "oraddrs=%s ts=%s"
+                          % (hexID, nickname, descDigest, running,
+                             stable, ORaddr, ORport, or_addresses,
+                             timestamp))
+            yield (ID, nickname, descDigest, running, stable,
+                   ipaddr.IPAddress(ORaddr), ORport,
+                   or_addresses, timestamp)
 
             (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
-             addr, portlist) = (None for x in xrange(9))
+             addr, portlist, hexID) = (None for x in xrange(10))
             running = stable = False
             or_addresses = {}
 

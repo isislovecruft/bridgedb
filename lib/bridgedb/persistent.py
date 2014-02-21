@@ -20,6 +20,7 @@ try:
 except (ImportError, NameError):
     import pickle
 
+from twisted.python.reflect import safe_repr
 from twisted.spread import jelly
 
 from bridgedb import Filters, Bridges, Dist
@@ -252,12 +253,16 @@ class State(jelly.Jellyable):
                 if value != self.config.__dict__[key]:
                     setattr(self, key, value)
                     updated.append(key)
-                    logging.debug("Updated %s setting: %r → %r"
-                                  % (key, self.config.__dict__[key], value))
+                    logging.debug("Updated %s setting: %r → %r" %
+                                  (safe_repr(key),
+                                   self.config.__dict__[key],
+                                   safe_repr(value)))
             except (KeyError, AttributeError):
                 setattr(self, key, value)
                 new.append(key)
-                logging.debug("New setting: %s = %r" % (key, value))
+                logging.debug("New setting: %s = %r" %
+                              (safe_repr(key),
+                               safe_repr(value)))
 
         logging.info("Updated setting(s): %s" % ' '.join([x for x in updated]))
         logging.info("New setting(s): %s" % ' '.join([x for x in new]))

@@ -208,7 +208,35 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return redirectTo(request.uri, request)
 
 
-class WebResource(twisted.web.resource.Resource):
+class WebResourceOptions(twisted.web.resource.Resource):
+    """This resource is used by Twisted Web to give a web page with
+       additional options that the user may use to specify the criteria
+       the returned bridges should meet.
+    """
+    isLeaf = True
+
+    def __init__(self):
+        """Create a new WebResource for the Options page"""
+        gettext.install("bridgedb", unicode=True)
+        twisted.web.resource.Resource.__init__(self)
+
+    def render_GET(self, request):
+        rtl = False
+
+        try:
+            rtl = usingRTLLang(request)
+        except Exception as err:
+            logging.exception(err)
+            logging.error("The gettext files were not properly installed.")
+            logging.info("To install translations, try doing `python " \
+                         "setup.py compile_catalog`.")
+
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        return lookup.get_template('options.html').render(rtl=rtl)
+
+    render_POST = render_GET
+
+class WebResourceBridges(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
        bridges in response to a request."""
     isLeaf = True
@@ -216,9 +244,23 @@ class WebResource(twisted.web.resource.Resource):
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
                  includeFingerprints=True, domains=None):
         """Create a new WebResource.
-             distributor -- an IPBasedDistributor object
-             schedule -- an IntervalSchedule object
-             N -- the number of bridges to hand out per query.
+             :type distributor: :class:`IPBasedDistributor`
+             :param distributor: The mechanism to retrieve bridges for
+                                 this distributor
+             :type schedule: :class:`IntervalSchedule`
+             :param schedule: The time period used to tweak the bridge
+                              selection procedure.
+             :param int N: The number of bridges to hand out per query.
+             :param bool useForwardedHeader: Whether or not we should
+                                             use the the
+                                             X-Forwarded-For header
+                                             instead of the source IP
+                                             address.
+             :param bool includeFingerprints: Do we include the
+                                              bridge's fingerprint
+                                              in the response?
+             :param list domains: The list of email provider
+                                  domain names we support. (unused)
         """
         gettext.install("bridgedb", unicode=True)
         twisted.web.resource.Resource.__init__(self)
@@ -433,11 +475,14 @@ def addWebServer(cfg, dist, sched):
     httpdist.putChild('assets',
                       static.File(os.path.join(template_root, 'assets/')))
 
-    resource = WebResource(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
+    resource = WebResourceBridges(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                    cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                    includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
                    domains=cfg.EMAIL_DOMAINS)
 
+    resource_options = WebResourceOptions()
+
+    httpdist.putChild('options', resource_options)
     if cfg.RECAPTCHA_ENABLED:
         protected = CaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,

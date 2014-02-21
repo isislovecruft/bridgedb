@@ -1,0 +1,92 @@
+
+Volunteer Posting
+-----------------
+
+Number of Positions Available: 2
+
+Project: BridgeDB https://gitweb.torproject.org/bridgedb.git
+
+Difficulty Level: Moderate - Difficult, dependent on proposal and previous experience
+
+Myself (isis) and sysrqb are both looking for students who wish to help Tor by
+contributing code to BridgeDB (the program which distributes Tor bridges and
+pluggable transport bridges to clients connecting to Tor) through
+participation in Google Summer of Code 2014. We are each taking a student, so
+if we each find someone someone we want to mentor, then we'll take two
+students total. If we only find one student we like, then I suppose sysrqb and
+I will just have to fight over that person.
+
+Required Skills and Prerequisite Tasks for Application:
+-------------------------------------------------------
+  * IRC skills. Lurk in irc.oftc.net#tor-dev, and possibly irc.freenode.net#gsoc as well.
+
+  * Fluent in Python (version 2.7).
+
+  * Proven experience and comfort with asynchronous network programming using
+    Twisted.
+
+  * Be comfortable doing git things. Not saying you have to have mad
+    git-fu, but we shouldn't have to explain the difference between
+    merge/rebase or fetch/pull.
+
+  * Familiarity with documentating code in Sphinx ReStructured Text
+    format. (See recent commits in the BridgeDB repository for syntax
+    examples, and https://para.noid.cat/bridgedb/ for documentation builds.)
+
+  * Familiarity with writing unittests. (And willingness to do so!)
+    Preferably, using `twisted.trial.unittest.TestCase`s. See
+    https://coveralls.io/r/isislovecruft/bridgedb for current test coverage.
+
+  * Submit a brief sample of Python code that you're proud of (written by you,
+    and for which you've got whatever necessary legal whatever is needed for
+    you to share it). It helps if it's Twisted Python code, but it doesn't
+    have to be.
+
+  * Fix a BridgeDB ticket. Contact isis or sysrqb on ircs://irc.oftc.net:6697
+    in #tor-dev to ask if a particular ticket is a good idea, or to ask for a
+    suggestion or help. Eventually, sysrqb and I will tag some tickets with
+    "bridgedb-gsoc-application" that we think are good ones to try.
+
+  * Submit a proposal for a distributor (an object which distributes Tor
+    bridges to clients in possibly censored/surveilled regions). Current
+    distributors include the `bridgedb.Dist.EmailBasedDistributor` at
+    bridges@bridges.torproject.org, and the `bridgedb.Dist.IPBasedDistributor`
+    which serves pages at https://bridges.torproject.org . Other example ideas
+    for bridge distributors are:
+        - A Twitter bot which interacts with Chinese and Farsi speaking
+          Twitter users through PMs.
+        - A distributor which uses XMPP+OTR to give bridges to users.
+        - Basically, all the nifty protocol obfuscation tricks which could
+          apply to a pluggable transport would likely also apply here.
+        - Keep in mind that various adversaries (automated and/or human and/or
+          extraterrestrial and/or unknown) will be trying to trick your
+          distributor into giving them bridges. Be prepared to come up with
+          some sort of safety machanism(s) to protect against this.
+        - You should plan to have your code finished, reviewed (and
+          revised…), tested, approved, and deployed by the end of GSoC. (I
+          think this means "at the end of six weeks".)
+
+  * Please send your code sample, a link to your completed BridgeDB ticket
+    (which should have your patch(es) attached, or have a link to your git
+    repository), and proposal to both isis@torproject.org and
+    sysrqb@torproject.org. Additionally CC'ing tor-dev@lists.torproject.org is
+    probably a good idea.
+
+  * If accepted, you'll need a google-melange account: 
+    https://www.google-melange.com/gsoc/homepage/google/gsoc2014?ModPagespeed=noscript
+
+Additional Ways to Earn Bonus Points:
+-------------------------------------
+  * OTR skills (over IRC/XMPP).
+
+  * Knowledge about the current state and technical mechanisms of real-world,
+    deployed censorship/surveillance systems is helpful, though not necessary.
+    We will gladly provide continual feedback on design proposals and
+    implementation to ensure that the threats posed by various adversaries
+    have been taken into account.
+
+  * Major bonus points if you're into test-driven development.
+
+  * Propose building more than one distributor. Each of them still needs to be
+    a good idea, and we'll need to make certain it's something you're capable
+    of finishing in the allotted timespan.

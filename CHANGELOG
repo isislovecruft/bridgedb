@@ -1,3 +1,17 @@
+Changes in version 0.1.3 - 2014-02-21
+BridgeDB 0.1.3 includes fixes for the following bugs:
+	* FIXES #9264 Problem with transport lines in BridgeDB's bridge
+		pool assignment files
+	* FIXES a bug caused by attempts to convert descriptor digests
+		which could not be parsed into hexadecimal.
+	* FIXES a unicode decoding error within the bridgedb.persistent
+		module.
+	* REMOVES continuous integration testing for Python 2.6.
+
+Including the following general changes:
+	* ADD volunteer page text for GSoC 2014 applications.
+
+
 Changes in version 0.1.2 - 2014-02-05
 BridgeDB 0.1.2 includes fixes for the following bugs:
 	* FIXES #10811 BridgeDB's assignments.log files are not being updated
