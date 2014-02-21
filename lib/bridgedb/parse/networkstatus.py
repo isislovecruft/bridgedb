@@ -132,7 +132,7 @@ def parseRLine(line):
             timestamp = time.mktime(time.strptime(" ".join(fields[3:5]),
                                                   "%Y-%m-%d %H:%M:%S"))
             ORaddr = fields[5]
-            ORport = fields[6]
+            ORport = int(fields[6])
             dirport = fields[7]
         except InvalidBase64 as error:
             logging.error(error)
