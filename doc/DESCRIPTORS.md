@@ -38,7 +38,7 @@ fields. They look like this:
     VXAN4HoclQiNWdgZF3kAdCXW+8YR/rqyYtSOaLFOxgs=
     -----END SIGNATURE-----
 
-As of tor-0.2.4.15, bridge router descriptors may be missig the 'opt ' prefix,
+As of tor-0.2.4.15, bridge router descriptors may be missing the 'opt ' prefix,
 and thus appear like this:
 
     @purpose bridge
@@ -182,7 +182,7 @@ obproxy pluggable transport types:
     D9FLbPlXw4NWy9B32IT/luOHsENaAJNvOv7ociMPnsM=
     -----END SIGNATURE-----
 
-## Bridge router microdescriptors
+## Bridge router microdescriptors / bridge networkstatus documents
 
     r Unnamed /wywABJee98ZPOiCGYM1dpgQc70 NpK1tsi97A+SH8s0evowXkRcyr8 2013-10-22 01:49:45 88.200.197.4 9001 0
     a [6212:b13d:252e:479d:32b8:d713:3718:2fac]:9001
