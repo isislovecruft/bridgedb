@@ -428,7 +428,7 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         mailbody.write(body)
 
     f.seek(0)
-    logging.debug("Email body:\n%s" % f.read())
+    logging.debug("Email body:\n%s" % Util.logSafely(f.read()))
     f.seek(0)
     return clientAddr, f
 
