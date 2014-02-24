@@ -113,11 +113,13 @@ def replaceErrorPage(error, template_name=None):
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
-            recaptchaPubKey='', useForwardedHeader=False, resource=None):
+            recaptchaPubKey='', remoteip='', useForwardedHeader=False,
+            resource=None):
         self.isLeaf = resource.isLeaf
         self.useForwardedHeader = useForwardedHeader
         self.recaptchaPrivKey = recaptchaPrivKey
         self.recaptchaPubKey = recaptchaPubKey
+        self.recaptchaRemoteIP = remoteip
         self.resource = resource
 
     def getClientIP(self, request):
@@ -182,9 +184,12 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         except:
             return redirectTo(request.URLPath(), request)
 
-        # generate a random IP for the captcha submission
-        remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
-                                     randint(1,255),randint(1,255))
+        if self.recaptchaRemoteIP:
+            remote_ip = self.recaptchaRemoteIP
+        else:
+            # generate a random IP for the captcha submission
+            remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
+                                         randint(1,255),randint(1,255))
 
         recaptcha_response = captcha.submit(challenge, response,
                                             self.recaptchaPrivKey, remote_ip)
@@ -464,6 +469,7 @@ def addWebServer(cfg, dist, sched):
                 RECAPTCHA_ENABLED
                 RECAPTCHA_PUB_KEY
                 RECAPTCHA_PRIV_KEY
+                RECAPTCHA_REMOTEIP
          dist -- an IPBasedDistributor object.
          sched -- an IntervalSchedule object.
     """
@@ -487,6 +493,7 @@ def addWebServer(cfg, dist, sched):
         protected = CaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
+                remoteip=cfg.RECAPTCHA_REMOTEIP,
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                 resource=resource)
         httpdist.putChild('bridges', protected)
