@@ -26,8 +26,8 @@ import bridgedb.Dist
 import bridgedb.I18n as I18n
 import bridgedb.Util as Util
 
-from recaptcha.client import captcha
-from bridgedb.Raptcha import Raptcha
+from recaptcha.client import captcha as recaptcha
+from bridgedb.captcha import Raptcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
@@ -191,7 +191,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
                                          randint(1,255),randint(1,255))
 
-        recaptcha_response = captcha.submit(challenge, response,
+        recaptcha_response = recaptcha.submit(challenge, response,
                                             self.recaptchaPrivKey, remote_ip)
         logging.debug("Captcha from client with masked IP %r. Parameters:\n%r"
                       % (remote_ip, request.args))

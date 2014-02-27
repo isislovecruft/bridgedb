@@ -16,7 +16,8 @@
 """
 This module wraps the recaptcha api and proxies requests to protect privacy.
 """
-import recaptcha.client.captcha as captcha
+
+from recaptcha.client import captcha as recaptcha
 from BeautifulSoup import BeautifulSoup
 import urllib2
 
@@ -34,7 +35,7 @@ class Raptcha():
 
         if (self.pubkey == '') or (self.privkey == ''):
             raise RaptchaKeyError
-        urlbase = captcha.API_SERVER
+        urlbase = recaptcha.API_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
         # extract and store image from captcha
