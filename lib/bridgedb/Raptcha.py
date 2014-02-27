@@ -1,6 +1,17 @@
-# Raptcha
-# Copyright (c) 2010, The Tor Project, Inc.
-# See LICENSE for licensing information
+# -*- encoding: utf-8 -*-
+#_____________________________________________________________________________
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           Aaron Gibson   0x2C4B239DD876C9F6 <aagbsn@torproject.org>
+#           Nick Mathewson 0x21194EBB165733EA <nickm@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2007-2014, all entities within the AUTHORS file
+#             (c) 2014, Isis Lovecruft
+# :license: see LICENSE for licensing information
+#_____________________________________________________________________________
 
 """
 This module wraps the recaptcha api and proxies requests to protect privacy.
