@@ -13,8 +13,23 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""
-This module wraps the recaptcha api and proxies requests to protect privacy.
+"""This module implements various methods for obtaining or creating CAPTCHAs.
+
+**Module Overview:**
+
+..
+  captcha
+   |_RaptchaKeyError
+   \_Raptcha - Class for obtaining reCaptcha images and challenge strings
+..
+
+There are two types of CAPTCHAs which BridgeDB knows how to serve: those
+obtained by from a reCaptcha_ API server with
+:class:`~bridgedb.captcha.Raptcha`, and those which have been generated with
+gimp-captcha_ and then cached locally.
+
+.. _reCaptcha : https://code.google.com/p/recaptcha/
+.. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
 """
 
 from recaptcha.client import captcha as recaptcha
