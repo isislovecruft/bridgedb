@@ -38,6 +38,13 @@ from BeautifulSoup import BeautifulSoup
 from recaptcha.client import captcha as recaptcha
 
 
+class ReCaptchaKeyError(Exception):
+    """Exception raised when recaptcha API keys are not supplied"""
+
+    def __init__(self):
+        msg = 'You must supply recaptcha API keys'
+        Exception.__init__(self, msg)
+
 class ReCaptcha(object):
     """ A recaptcha captcha and method to request them """
 
@@ -62,8 +69,3 @@ class ReCaptcha(object):
         self.challenge = str(soup.find('input', {'name' : 'recaptcha_challenge_field'})['value'])
         self.image = urllib2.urlopen(imgurl).read()
 
-class ReCaptchaKeyError(Exception):
-    """ Exception raised when recaptcha API keys are not supplied"""
-    def __init__(self):
-        msg = 'You must supply recaptcha API keys'
-        Exception.__init__(self, msg)
