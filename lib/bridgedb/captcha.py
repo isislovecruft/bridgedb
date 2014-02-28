@@ -38,7 +38,7 @@ from BeautifulSoup import BeautifulSoup
 from recaptcha.client import captcha as recaptcha
 
 
-class Raptcha():
+class Raptcha(object):
     """ A recaptcha captcha and method to request them """
 
     def __init__(self, pubkey=None, privkey=None):
