@@ -32,9 +32,11 @@ gimp-captcha_ and then cached locally.
 .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
 """
 
-from recaptcha.client import captcha as recaptcha
-from BeautifulSoup import BeautifulSoup
 import urllib2
+
+from BeautifulSoup import BeautifulSoup
+from recaptcha.client import captcha as recaptcha
+
 
 class Raptcha():
     """ A recaptcha captcha and method to request them """
