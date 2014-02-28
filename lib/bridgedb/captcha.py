@@ -19,8 +19,8 @@
 
 ..
   captcha
-   |_RaptchaKeyError
-   \_Raptcha - Class for obtaining reCaptcha images and challenge strings
+   |_ReCaptchaKeyError
+   \_ReCaptcha - Class for obtaining reCaptcha images and challenge strings
 ..
 
 There are two types of CAPTCHAs which BridgeDB knows how to serve: those
@@ -38,7 +38,7 @@ from BeautifulSoup import BeautifulSoup
 from recaptcha.client import captcha as recaptcha
 
 
-class Raptcha(object):
+class ReCaptcha(object):
     """ A recaptcha captcha and method to request them """
 
     def __init__(self, pubkey=None, privkey=None):
@@ -51,7 +51,7 @@ class Raptcha(object):
         """ gets a fresh captcha """
 
         if (self.pubkey == '') or (self.privkey == ''):
-            raise RaptchaKeyError
+            raise ReCaptchaKeyError
         urlbase = recaptcha.API_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
@@ -62,7 +62,7 @@ class Raptcha(object):
         self.challenge = str(soup.find('input', {'name' : 'recaptcha_challenge_field'})['value'])
         self.image = urllib2.urlopen(imgurl).read()
 
-class RaptchaKeyError(Exception):
+class ReCaptchaKeyError(Exception):
     """ Exception raised when recaptcha API keys are not supplied"""
     def __init__(self):
         msg = 'You must supply recaptcha API keys'
