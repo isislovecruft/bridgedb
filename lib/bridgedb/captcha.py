@@ -84,7 +84,7 @@ class ReCaptcha(Captcha):
         """
         if (self.pubkey == '') or (self.privkey == ''):
             raise ReCaptchaKeyError
-        urlbase = recaptcha.API_SERVER
+        urlbase = recaptcha.API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
         # extract and store image from captcha
