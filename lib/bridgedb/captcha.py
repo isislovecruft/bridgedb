@@ -74,8 +74,14 @@ class ReCaptcha(Captcha):
         super(ReCaptcha, self).__init__()
 
     def get(self):
-        """ gets a fresh captcha """
+        """Retrieve a CAPTCHA from the reCaptcha API server.
 
+        This simply requests a new CAPTCHA from
+        ``recaptcha.client.captcha.API_SSL_SERVER`` and parses the returned
+        HTML to extract the CAPTCHA image and challenge string. The image is
+        stored at ``ReCaptcha.image`` and the challenge string at
+        ``ReCaptcha.challenge``.
+        """
         if (self.pubkey == '') or (self.privkey == ''):
             raise ReCaptchaKeyError
         urlbase = recaptcha.API_SERVER
