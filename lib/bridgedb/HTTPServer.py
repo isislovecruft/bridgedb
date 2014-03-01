@@ -27,7 +27,7 @@ import bridgedb.I18n as I18n
 import bridgedb.Util as Util
 
 from recaptcha.client import captcha as recaptcha
-from bridgedb.captcha import ReCaptcha
+from bridgedb import captcha
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
@@ -144,7 +144,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
                   for the client to solve.
         """
-        c = ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+        c = captcha.ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
 
         try:
             c.get()
