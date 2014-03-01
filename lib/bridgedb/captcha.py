@@ -36,6 +36,7 @@ import urllib2
 
 from BeautifulSoup import BeautifulSoup
 from recaptcha.client import captcha as recaptcha
+from zope.interface import Interface, Attribute, implements
 
 
 class ReCaptchaKeyError(Exception):
@@ -45,14 +46,32 @@ class ReCaptchaKeyError(Exception):
         msg = 'You must supply recaptcha API keys'
         Exception.__init__(self, msg)
 
-class ReCaptcha(object):
-    """ A recaptcha captcha and method to request them """
+class ICaptcha(Interface):
+    """Interface specification for CAPTCHAs."""
+    image = Attribute("A CAPTCHA image.")
+
+    def get(self):
+        """Retrieve a new CAPTCHA."""
+        return None
+
+class Captcha(object):
+    """A generic CAPTCHA object."""
+    implements(ICaptcha)
+
+    def __init__(self):
+        self.image = None
+
+    def get(self):
+        return self.image
+
+class ReCaptcha(Captcha):
+    """A reCaptcha CAPTCHA."""
 
     def __init__(self, pubkey=None, privkey=None):
         self.pubkey = pubkey
         self.privkey = privkey
         self.image = None
-        self.challenge = None
+        super(ReCaptcha, self).__init__()
 
     def get(self):
         """ gets a fresh captcha """
