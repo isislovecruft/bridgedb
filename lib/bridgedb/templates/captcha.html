@@ -1,14 +1,16 @@
-﻿## -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 <%inherit file="base.html"/>
 <div class="captcha">
 <form action="" method="POST">
-  <input type="hidden" name="recaptcha_challenge_field"
-    id="recaptcha_challenge_field" value="${challenge_field}">
-  <img width="300" height="57" alt="${_('Upgrade your browser to Firefox')}" src="${imgstr}">
-  <div class="recaptcha_input_area">
-    <label for="recaptcha_response_field">${_("Type the two words")}</label></div>
-  <input name="recaptcha_response_field" id="recaptcha_response_field"
-    type="text" autocomplete="off">
+  <input type="hidden" name="captcha_challenge_field"
+    id="captcha_challenge_field" value="${challenge_field}">
+  <img width="300" height="57"
+       alt="${_('Your browser is not displaying images properly.')}"
+       src="${imgstr}">
+  <div class="captcha_input_area">
+    <label for="captcha_response_field">${_("Type the two words")}</label></div>
+  <input name="captcha_response_field" id="captcha_response_field"
+         type="text" autocomplete="off">
   <input class="btn btn-success" type="submit" name="submit" value="I am human">
 </form>
 </div>
