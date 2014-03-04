@@ -53,20 +53,26 @@ class ReCaptchaKeyError(Exception):
 class GimpCaptchaError(Exception):
     """General exception raised when a Gimp CAPTCHA cannot be retrieved."""
 
+
 class ICaptcha(Interface):
     """Interface specification for CAPTCHAs."""
-    image = Attribute("A CAPTCHA image.")
 
-    def get(self):
-        """Retrieve a new CAPTCHA."""
-        return None
+    image = Attribute(
+        "A string containing the contents of a CAPTCHA image file.")
+    challenge = Attribute(
+        "A unique string associated with the dispursal of this CAPTCHA.")
+
+    def get():
+        """Retrieve a new CAPTCHA image."""
+
 
 class Captcha(object):
-    """A generic CAPTCHA object."""
+    """A generic CAPTCHA base class."""
     implements(ICaptcha)
 
     def __init__(self):
         self.image = None
+        self.challenge = None
 
     def get(self):
         return self.image
@@ -76,10 +82,9 @@ class ReCaptcha(Captcha):
     """A reCaptcha CAPTCHA."""
 
     def __init__(self, pubkey=None, privkey=None):
+        super(ReCaptcha, self).__init__()
         self.pubkey = pubkey
         self.privkey = privkey
-        self.image = None
-        super(ReCaptcha, self).__init__()
 
     def get(self):
         """Retrieve a CAPTCHA from the reCaptcha API server.
@@ -111,15 +116,12 @@ class GimpCaptcha(Captcha):
 
         :raises GimpCaptchaError: if **cacheDir** is not a directory.
         """
+        super(GimpCaptcha, self).__init__()
         if not os.path.isdir(cacheDir):
             raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
                                    % cacheDir)
-
-        self.image = None
-        self.challenge = None
         self.cacheDir = cacheDir
         self.clientIP = clientIP
-        super(GimpCaptcha, self).__init__()
 
     @classmethod
     def check(cls, challenge, answer, clientIP=None):
