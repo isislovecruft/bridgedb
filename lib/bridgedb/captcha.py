@@ -39,7 +39,7 @@ import os
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
-from recaptcha.client import captcha as recaptcha
+from recaptcha.client.captcha import API_SSL_SERVER
 from zope.interface import Interface, Attribute, implements
 
 
@@ -92,7 +92,7 @@ class ReCaptcha(Captcha):
         """
         if (self.pubkey == '') or (self.privkey == ''):
             raise ReCaptchaKeyError
-        urlbase = recaptcha.API_SSL_SERVER
+        urlbase = API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
         # extract and store image from captcha
