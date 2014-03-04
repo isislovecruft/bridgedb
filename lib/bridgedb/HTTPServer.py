@@ -220,7 +220,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
                 rendered = replaceErrorPage(err)
             return rendered
 
-        logging.debug("Client failed a recaptcha; returning redirect to %s"
+        logging.debug("Client failed a CAPTCHA; returning redirect to %s"
                       % request.uri)
         return redirectTo(request.uri, request)
 
