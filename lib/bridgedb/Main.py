@@ -124,16 +124,17 @@ def load(state, splitter, clear=False):
         logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
         f = open(fname, 'r')
         desc_digests.update(Bridges.getDescriptorDigests(f))
-        if bridge.getID() in timestamps.keys():
-            ts = timestamps[bridge.getID()][:]
-            ts.sort()
-            for timestamp in ts:
-                logging.debug(
-                    "Adding/updating timestamps in BridgeHistory for "\
-                    "'%s' in database: %s"
-                    % (bridge.fingerprint, timestamp))
-                bridgedb.Stability.addOrUpdateBridgeHistory(
-                    bridge, timestamp)
+        for bridge in bridges.values():
+            if bridge.getID() in timestamps.keys():
+                ts = timestamps[bridge.getID()][:]
+                ts.sort()
+                for timestamp in ts:
+                    logging.debug(
+                       "Adding/updating timestamps in BridgeHistory for "\
+                       "'%s' in database: %s"
+                       % (bridge.fingerprint, timestamp))
+                    bridgedb.Stability.addOrUpdateBridgeHistory(
+                       bridge, timestamp)
         logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
         f.close()
 
