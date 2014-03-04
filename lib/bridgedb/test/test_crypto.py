@@ -24,7 +24,8 @@ SEKRIT_KEY  = b'v\x16Xm\xfc\x1b}\x063\x85\xaa\xa5\xf9\xad\x18\xb2P\x93\xc6k\xf9'
 SEKRIT_KEY += b'\x8bI\xd9\xb8xw\xf5\xec\x1b\x7f\xa8'
 
 
-class CryptoTest(unittest.TestCase):
+class GetKeyTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.crypto.getKey`."""
 
     def test_getKey_nokey(self):
         """Test retrieving the secret_key from an empty file."""
