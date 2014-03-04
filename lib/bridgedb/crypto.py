@@ -3,17 +3,33 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
-#           please also see AUTHORS file
-# :copyright: (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2013-2014, Isis Lovecruft
+#             (c) 2007-2014, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
+"""crypto - BridgeDB general cryptographic utilities.
+
+**Module Overview:**
+
+..
+  crypto
+   |_getKey() - Load the master key from a file, or create a new one.
+   |
+   \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
+      |                           certificate chains and matches hostnames.
+      |_getContext() - Retrieve an SSL context configured for certificate
+      |                verification.
+      |_getHostnameFromURL() - Parses the hostname from the request URL.
+      \_verifyHostname() - Check that the cert CN matches the request
+                           hostname.
+
+"""
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import logging
-
 import os
 
 import OpenSSL.rand
