@@ -133,7 +133,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             ip = request.getClientIP()
         return ip
 
-    def getCaptchaImage(self):
+    def getCaptchaImage(self, request=None):
         """Get a CAPTCHA image.
 
         :returns: A 2-tuple of ``(image, challenge)``, where ``image`` is a
@@ -183,7 +183,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
                   for the client to solve.
         """
-        image, challenge = self.getCaptchaImage()
+        image, challenge = self.getCaptchaImage(request)
 
         try:
             # TODO: this does not work for versions of IE < 8.0
@@ -225,6 +225,98 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         return redirectTo(request.uri, request)
 
 
+class GimpCaptchaProtectedResource(CaptchaProtectedResource):
+    """A web resource which uses a local cache of CAPTCHAs, generated with
+    gimp-captcha.
+
+    .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
+    """
+
+    def __init__(self, captchaDir='',
+                 useForwardedHeader=False, resource=None):
+        CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+        self.captchaDir = captchaDir
+
+    def checkSolution(self, request):
+        """Process a solved CAPTCHA by sending rehashing the solution together with
+        the client's IP address, and checking that the result matches the challenge.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtupe: bool
+        :returns: True, if the CAPTCHA solution was valid; False otherwise.
+        """
+        challenge, response = self.extractClientSolution(request)
+        clientIP = self.getClientIP(request)
+        solution = captcha.GimpCaptcha.check(challenge, response, clientIP)
+        logging.debug("Captcha from %r. Parameters: %r"
+                      % (Util.logSafely(clientIP), request.args))
+        return solution
+
+    def getCaptchaImage(self, request):
+        """Get a random CAPTCHA image from our **captchaDir**.
+
+        Creates a :class:`~bridgedb.captcha.GimpCaptcha`, and calls its
+        :meth:`~bridgedb.captcha.GimpCaptcha.get` method to return a random
+        CAPTCHA and challenge string.
+
+        :returns: A 2-tuple of ``(image, challenge)``, where::
+            - ``image`` is a string holding a binary, JPEG-encoded image.
+            - ``challenge`` is a unique string associated with the request.
+        """
+        clientIP = self.getClientIP(request)
+        c = captcha.GimpCaptcha(self.captchaDir, clientIP)
+
+        try:
+            c.get()
+        except captcha.GimpCaptchaError as error:
+            logging.error(error)
+        except Exception as error:
+            logging.error("Unhandled error while retrieving Gimp captcha!")
+            logging.error(error)
+
+        return (c.image, c.challenge)
+
+    def render_GET(self, request):
+        """Retrieve a ReCaptcha from the API server and serve it to the client.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for a page which should be
+                        protected by a CAPTCHA.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
+        """
+        return CaptchaProtectedResource.render_GET(self, request)
+
+    def render_POST(self, request):
+        """Process a client's CAPTCHA solution.
+
+        If the client's CAPTCHA solution is valid (according to
+        :meth:`checkSolution`), process and serve their original
+        request. Otherwise, redirect them back to a new CAPTCHA page.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object, including POST arguments which
+                        should include two key/value pairs: one key being
+                        ``'captcha_challenge_field'``, and the other,
+                        ``'captcha_response_field'``. These POST arguments
+                        should be obtained from :meth:`render_GET`.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
+        """
+        return CaptchaProtectedResource.render_POST(self, request)
+
+
 class ReCaptchaProtectedResource(CaptchaProtectedResource):
     """A web resource which uses the reCaptcha_ service.
 
@@ -238,7 +330,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         self.recaptchaPubKey = recaptchaPubKey
         self.recaptchaRemoteIP = remoteip
 
-    def getCaptchaImage(self):
+    def getCaptchaImage(self, request):
         """Get a CAPTCHA image from the remote reCaptcha server.
 
         :returns: A 2-tuple of ``(image, challenge)``, where::
