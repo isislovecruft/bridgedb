@@ -685,7 +685,6 @@ def addWebServer(cfg, dist, sched):
          dist -- an IPBasedDistributor object.
          sched -- an IntervalSchedule object.
     """
-    site = None
     httpdist = twisted.web.resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
