@@ -380,7 +380,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
                         ``'captcha_response_field'``. These POST arguments
                         should be obtained from :meth:`render_GET`.
         :rtupe: bool
-        :returns: XXX
+        :returns: True, if the CAPTCHA solution was valid; False otherwise.
         """
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
