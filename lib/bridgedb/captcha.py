@@ -32,6 +32,10 @@ gimp-captcha_ and then cached locally.
 .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
 """
 
+import hashlib
+import logging
+import random
+import os
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
@@ -45,6 +49,9 @@ class ReCaptchaKeyError(Exception):
     def __init__(self):
         msg = 'You must supply recaptcha API keys'
         Exception.__init__(self, msg)
+
+class GimpCaptchaError(Exception):
+    """General exception raised when a Gimp CAPTCHA cannot be retrieved."""
 
 class ICaptcha(Interface):
     """Interface specification for CAPTCHAs."""
@@ -63,6 +70,7 @@ class Captcha(object):
 
     def get(self):
         return self.image
+
 
 class ReCaptcha(Captcha):
     """A reCaptcha CAPTCHA."""
@@ -94,3 +102,69 @@ class ReCaptcha(Captcha):
         self.challenge = str(soup.find('input', {'name' : 'recaptcha_challenge_field'})['value'])
         self.image = urllib2.urlopen(imgurl).read()
 
+
+class GimpCaptcha(Captcha):
+    """A cached CAPTCHA image which was created with Gimp."""
+
+    def __init__(self, cacheDir=None, clientIP=None):
+        """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
+
+        :raises GimpCaptchaError: if **cacheDir** is not a directory.
+        """
+        if not os.path.isdir(cacheDir):
+            raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
+                                   % cacheDir)
+
+        self.image = None
+        self.challenge = None
+        self.cacheDir = cacheDir
+        self.clientIP = clientIP
+        super(GimpCaptcha, self).__init__()
+
+    @classmethod
+    def check(cls, challenge, answer, clientIP=None):
+        """Check a client's CAPTCHA solution against the **challenge**.
+
+        :rtype: bool
+        :returns: True if the CAPTCHA solution was correct.
+        """
+        logging.debug("Checking CAPTCHA solution %r against challenge %r"
+                      % (answer, challenge))
+        solution = cls.createChallenge(answer, clientIP)
+        if (not challenge) or (challenge != solution):
+            return False
+        return True
+
+    @classmethod
+    def createChallenge(cls, answer, clientIP=None):
+        """Hash a CAPTCHA answer together with a **clientIP**, if given.
+
+        :param str answer: The answer (either actual, or a client's proposed
+            solution) to a CAPTCHA.
+        :param str clientIP: The client's IP address.
+        """
+        challenge = '\n'.join([answer, str(clientIP)])
+        return hashlib.sha256(challenge).hexdigest()
+
+    def get(self):
+        """Get a random CAPTCHA from the cache directory.
+
+        :raises GimpCaptchaError: if the chosen CAPTCHA image file could not
+                                  be read.
+        :returns: A 2-tuple of ``(captcha, None)``, where ``captcha`` is the
+                  image file contents.
+        """
+        imageFilename = random.choice(os.listdir(self.cacheDir))
+        imagePath = os.path.join(self.cacheDir, imageFilename)
+
+        try:
+            with open(imagePath) as imageFile:
+                self.image = imageFile.read()
+        except (OSError, IOError) as err:
+            raise GimpCaptchaError("Could not read Gimp captcha image file: %r"
+                                   % imageFilename)
+
+        captchaAnswer = imageFilename.rsplit(os.path.extsep, 1)[0]
+        self.challenge = self.createChallenge(captchaAnswer, self.clientIP)
+
+        return (self.image, self.challenge)
