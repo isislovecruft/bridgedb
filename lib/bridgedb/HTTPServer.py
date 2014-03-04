@@ -691,14 +691,12 @@ def addWebServer(cfg, dist, sched):
                       static.File(os.path.join(template_root, 'robots.txt')))
     httpdist.putChild('assets',
                       static.File(os.path.join(template_root, 'assets/')))
+    httpdist.putChild('options', WebResourceOptions())
 
     resource = WebResourceBridges(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                    cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                    includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
 
-    resource_options = WebResourceOptions()
-
-    httpdist.putChild('options', resource_options)
     if cfg.RECAPTCHA_ENABLED:
         protected = CaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
