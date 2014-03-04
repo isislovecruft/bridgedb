@@ -44,7 +44,7 @@ from zope.interface import Interface, Attribute, implements
 
 
 class ReCaptchaKeyError(Exception):
-    """Exception raised when recaptcha API keys are not supplied"""
+    """Exception raised when recaptcha API keys are not supplied."""
 
     def __init__(self):
         msg = 'You must supply recaptcha API keys'
