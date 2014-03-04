@@ -95,16 +95,17 @@ class ReCaptcha(Captcha):
         stored at ``ReCaptcha.image`` and the challenge string at
         ``ReCaptcha.challenge``.
         """
-        if (self.pubkey == '') or (self.privkey == ''):
+        if not self.pubkey or not self.privkey:
             raise ReCaptchaKeyError
+
         urlbase = API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
         # extract and store image from captcha
-        html = urllib2.urlopen(urlbase+form).read()
+        html = urllib2.urlopen(urlbase + form).read()
         soup = BeautifulSoup(html)
-        imgurl = urlbase+"/"+ soup.find('img')['src']
-        self.challenge = str(soup.find('input', {'name' : 'recaptcha_challenge_field'})['value'])
+        imgurl = urlbase + "/" +  soup.find('img')['src']
+        self.challenge = str(soup.find('input', {'name': 'recaptcha_challenge_field'})['value'])
         self.image = urllib2.urlopen(imgurl).read()
 
 
