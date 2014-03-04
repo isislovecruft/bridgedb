@@ -249,7 +249,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
-                 includeFingerprints=True, domains=None):
+                 includeFingerprints=True):
         """Create a new WebResource.
 
         :type distributor: :class:`IPBasedDistributor`
@@ -272,10 +272,6 @@ class WebResourceBridges(twisted.web.resource.Resource):
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
         self.includeFingerprints = includeFingerprints
-
-        # do not use mutable types as __init__ defaults!
-        if not domains: domains = []
-        self.domains = domains
 
     def render(self, request):
         """Render a response for a client HTTP request.
@@ -481,8 +477,7 @@ def addWebServer(cfg, dist, sched):
 
     resource = WebResourceBridges(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                    cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                   domains=cfg.EMAIL_DOMAINS)
+                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
 
     resource_options = WebResourceOptions()
 
