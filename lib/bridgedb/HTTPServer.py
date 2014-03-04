@@ -698,12 +698,18 @@ def addWebServer(cfg, dist, sched):
                    includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
 
     if cfg.RECAPTCHA_ENABLED:
-        protected = CaptchaProtectedResource(
+        protected = ReCaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
                 remoteip=cfg.RECAPTCHA_REMOTEIP,
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                 resource=resource)
+        httpdist.putChild('bridges', protected)
+    elif cfg.GIMP_CAPTCHA_ENABLED:
+        protected = GimpCaptchaProtectedResource(
+            captchaDir=cfg.GIMP_CAPTCHA_DIR,
+            useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+            resource=resource)
         httpdist.putChild('bridges', protected)
     else:
         httpdist.putChild('bridges', resource)
