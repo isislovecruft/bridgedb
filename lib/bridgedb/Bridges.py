@@ -92,13 +92,17 @@ def get_hmac(key, value):
     h = hmac.new(key, value, digestmod=DIGESTMOD)
     return h.digest()
 
-def get_hmac_fn(k, hex=True):
+def get_hmac_fn(key, hex=True):
     """Return a function that computes the hmac of its input using the key k.
-       If 'hex' is true, the output of the function will be hex-encoded."""
-    h = hmac.new(k, digestmod=DIGESTMOD)
-    def hmac_fn(v):
+
+    :param bool hex: If True, the output of the function will be hex-encoded.
+    :rtype: callable
+    :returns: A function which can be uses to generate HMACs.
+    """
+    h = hmac.new(key, digestmod=DIGESTMOD)
+    def hmac_fn(value):
         h_tmp = h.copy()
-        h_tmp.update(v)
+        h_tmp.update(value)
         if hex:
             return h_tmp.hexdigest()
         else:
