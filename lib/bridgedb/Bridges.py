@@ -87,9 +87,9 @@ def is_valid_fingerprint(fp):
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
-def get_hmac(k,v):
-    """Return the hmac of v using the key k."""
-    h = hmac.new(k, v, digestmod=DIGESTMOD)
+def get_hmac(key, value):
+    """Return the hmac of **value** using the **key**."""
+    h = hmac.new(key, value, digestmod=DIGESTMOD)
     return h.digest()
 
 def get_hmac_fn(k, hex=True):
