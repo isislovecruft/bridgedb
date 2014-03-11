@@ -126,10 +126,13 @@ class ReCaptcha(Captcha):
 
         # Extract and store image from recaptcha
         html = urllib2.urlopen(urlbase + form).read()
-        soup = BeautifulSoup(html)
-        imgurl = urlbase + "/" +  soup.find('img')['src']
-        self.challenge = str(soup.find('input', {'name': 'recaptcha_challenge_field'})['value'])
-        self.image = urllib2.urlopen(imgurl).read()
+        # FIXME: The remaining lines currently cannot be reliably unit tested:
+        soup = BeautifulSoup(html)                           # pragma: no cover
+        imgurl = urlbase + "/" +  soup.find('img')['src']    # pragma: no cover
+        cField = soup.find(                                  # pragma: no cover
+            'input', {'name': 'recaptcha_challenge_field'})  # pragma: no cover
+        self.challenge = str(cField['value'])                # pragma: no cover
+        self.image = urllib2.urlopen(imgurl).read()          # pragma: no cover
 
 
 class GimpCaptcha(Captcha):
