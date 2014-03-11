@@ -81,9 +81,19 @@ class Captcha(object):
 
 
 class ReCaptcha(Captcha):
-    """A reCaptcha CAPTCHA."""
+    """A reCaptcha CAPTCHA.
+
+    :ivar str image: The CAPTCHA image.
+    :ivar str challenge: The ``'recaptcha_challenge_response'`` HTTP form
+        field to pass to the client along with the CAPTCHA image.
+    """
 
     def __init__(self, pubkey=None, privkey=None):
+        """Create a new ReCaptcha CAPTCHA.
+
+        :param str pubkey: The public reCaptcha API key.
+        :param str privkey: The private reCaptcha API key.
+        """
         super(ReCaptcha, self).__init__()
         self.pubkey = pubkey
         self.privkey = privkey
@@ -96,6 +106,10 @@ class ReCaptcha(Captcha):
         HTML to extract the CAPTCHA image and challenge string. The image is
         stored at ``ReCaptcha.image`` and the challenge string at
         ``ReCaptcha.challenge``.
+
+        :raises ReCaptchaKeyError: If either the :ivar:`pubkey` or
+            :ivar:`privkey` are missing.
+        :raises HTTPError: If the server returned any HTTP error status code.
         """
         if not self.pubkey or not self.privkey:
             raise ReCaptchaKeyError('You must supply recaptcha API keys')
@@ -103,7 +117,7 @@ class ReCaptcha(Captcha):
         urlbase = API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
 
-        # extract and store image from captcha
+        # Extract and store image from recaptcha
         html = urllib2.urlopen(urlbase + form).read()
         soup = BeautifulSoup(html)
         imgurl = urlbase + "/" +  soup.find('img')['src']
