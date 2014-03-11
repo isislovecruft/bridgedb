@@ -36,9 +36,16 @@ import os
 
 import OpenSSL.rand
 
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+
 
 #: The hash digest to use for HMACs.
 DIGESTMOD = hashlib.sha1
+
+
+class RSAKeyGenerationError(Exception):
+    """Raised when there was an error creating an RSA keypair."""
 
 
 def writeKeyToFile(key, filename):
@@ -59,6 +66,71 @@ def writeKeyToFile(key, filename):
     os.write(fd, key)
     os.fsync(fd)
     os.close(fd)
+
+def getRSAKey(filename, bits=2048):
+    """Load the RSA key stored in **filename**, or create and save a new key.
+
+    >>> from bridgedb import crypto
+    >>> keyfile = 'doctest_getRSAKey'
+    >>> message = "The secret words are Squeamish Ossifrage."
+    >>> keypair = crypto.getRSAKey(keyfile, bits=2048)
+    >>> (secretkey, publickey) = keypair
+    >>> encrypted = publickey.encrypt(message)
+    >>> assert encrypted != message
+    >>> decrypted = secretkey.decrypt(encrypted)
+    >>> assert message == decrypted
+
+
+    If **filename** already exists, it is assumed to contain a PEM-encoded RSA
+    private key, which will be read from the file. (The parameters of a
+    private RSA key contain the public exponent and public modulus, which
+    together comprise the public key ― ergo having two separate keyfiles is
+    assumed unnecessary.)
+
+    If **filename** doesn't exist, a new RSA keypair will be created, and the
+    private key will be stored in **filename**, using :func:`writeKeyToFile`.
+
+    Once the private key is either loaded or created, the public key is
+    extracted from it. Both keys are then input into PKCS#1 RSAES-OAEP cipher
+    schemes (see `RFC 3447 §7.1`__) in order to introduce padding, and then
+    returned.
+
+    .. __: https://tools.ietf.org/html/rfc3447#section-7.1
+
+    :param str filename: The filename to which the secret parameters of the
+        RSA key are stored in.
+    :param int bits: If no key is found within the file, create a new key with
+        this bitlength and store it in **filename**.
+    :rtype: tuple of ``Crypto.Cipher.PKCS1_OAEP.PKCS1OAEP_Cipher``
+    :returns: A 2-tuple of ``(privatekey, publickey)``, which are PKCS#1
+        RSAES-OAEP padded and encoded private and public keys, forming an RSA
+        keypair.
+    """
+    filename = os.path.extsep.join([filename, 'sec'])
+    keyfile = os.path.join(os.getcwd(), filename)
+
+    try:
+        fh = open(keyfile, 'rb')
+    except IOError:
+        logging.info("Generating %d-bit RSA keypair..." % bits)
+        secretKey = RSA.generate(bits, e=65537)
+
+        # Store a PEM copy of the secret key (which contains the parameters
+        # necessary to create the corresponding public key):
+        secretKeyPEM = secretKey.exportKey("PEM")
+        writeKeyToFile(secretKeyPEM, keyfile)
+    else:
+        logging.info("Secret RSA keyfile %r found. Loading..." % filename)
+        secretKey = RSA.importKey(fh.read())
+        fh.close()
+
+    publicKey = secretKey.publickey()
+
+    # Add PKCS#1 OAEP padding to the secret and public keys:
+    sk = PKCS1_OAEP.new(secretKey)
+    pk = PKCS1_OAEP.new(publicKey)
+
+    return (sk, pk)
 
 def getKey(filename):
     """Load the key stored in ``filename``, or create a new key.
