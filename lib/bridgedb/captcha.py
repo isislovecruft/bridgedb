@@ -229,10 +229,15 @@ class GimpCaptcha(Captcha):
     def get(self):
         """Get a random CAPTCHA from the cache directory.
 
+        This chooses a random CAPTCHA image file from the cache directory, and
+        reads the contents of the image into a string. Next, it creates a
+        challenge string for the CAPTCHA, via :meth:`createChallenge`.
+
         :raises GimpCaptchaError: if the chosen CAPTCHA image file could not
-                                  be read.
-        :returns: A 2-tuple of ``(captcha, None)``, where ``captcha`` is the
-                  image file contents.
+            be read, or if the **cacheDir** is empty.
+        :rtype: tuple
+        :returns: A 2-tuple containing the image file contents as a string,
+            and a challenge string (used for checking the client's solution).
         """
         try:
             imageFilename = random.choice(os.listdir(self.cacheDir))
