@@ -40,6 +40,26 @@ import OpenSSL.rand
 #: The hash digest to use for HMACs.
 DIGESTMOD = hashlib.sha1
 
+
+def writeKeyToFile(key, filename):
+    """Write **key** to **filename**, with ``0400`` permissions.
+
+    If **filename** doesn't exist, it will be created. If it does exist
+    already, and is writable by the owner of the current process, then it will
+    be truncated to zero-length and overwritten.
+
+    :param bytes key: A key (or some other private data) to write to
+        **filename**.
+    :param str filename: The path of the file to write to.
+    :raises: Any exceptions which may occur.
+    """
+    logging.info("Writing key to file: %r" % filename)
+    flags = os.O_WRONLY | os.O_TRUNC | os.O_CREAT | getattr(os, "O_BIN", 0)
+    fd = os.open(filename, flags, 0400)
+    os.write(fd, key)
+    os.fsync(fd)
+    os.close(fd)
+
 def getKey(filename):
     """Load the key stored in ``filename``, or create a new key.
 
@@ -69,11 +89,7 @@ def getKey(filename):
     except IOError:
         logging.debug("getKey(): Creating new secret key.")
         key = OpenSSL.rand.bytes(32)
-        flags = os.O_WRONLY | os.O_TRUNC | os.O_CREAT | getattr(os, "O_BIN", 0)
-        fd = os.open(filename, flags, 0400)
-        os.write(fd, key)
-        os.fsync(fd)
-        os.close(fd)
+        writeKeyToFile(key, filename)
     else:
         logging.debug("getKey(): Secret key file found. Loading...")
         key = fh.read()
