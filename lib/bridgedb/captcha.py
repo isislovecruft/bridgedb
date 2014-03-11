@@ -46,10 +46,6 @@ from zope.interface import Interface, Attribute, implements
 class ReCaptchaKeyError(Exception):
     """Exception raised when recaptcha API keys are not supplied."""
 
-    def __init__(self):
-        msg = 'You must supply recaptcha API keys'
-        Exception.__init__(self, msg)
-
 class GimpCaptchaError(Exception):
     """General exception raised when a Gimp CAPTCHA cannot be retrieved."""
 
@@ -96,7 +92,7 @@ class ReCaptcha(Captcha):
         ``ReCaptcha.challenge``.
         """
         if not self.pubkey or not self.privkey:
-            raise ReCaptchaKeyError
+            raise ReCaptchaKeyError('You must supply recaptcha API keys')
 
         urlbase = API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
