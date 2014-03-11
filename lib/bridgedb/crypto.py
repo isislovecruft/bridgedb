@@ -29,11 +29,16 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import hashlib
+import hmac
 import logging
 import os
 
 import OpenSSL.rand
 
+
+#: The hash digest to use for HMACs.
+DIGESTMOD = hashlib.sha1
 
 def getKey(filename):
     """Load the key stored in ``filename``, or create a new key.
@@ -74,3 +79,25 @@ def getKey(filename):
         key = fh.read()
         fh.close()
     return key
+
+def getHMAC(key, value):
+    """Return the HMAC of **value** using the **key**."""
+    h = hmac.new(key, value, digestmod=DIGESTMOD)
+    return h.digest()
+
+def getHMACFunc(key, hex=True):
+    """Return a function that computes the HMAC of its input using the **key**.
+
+    :param bool hex: If True, the output of the function will be hex-encoded.
+    :rtype: callable
+    :returns: A function which can be uses to generate HMACs.
+    """
+    h = hmac.new(key, digestmod=DIGESTMOD)
+    def hmac_fn(value):
+        h_tmp = h.copy()
+        h_tmp.update(value)
+        if hex:
+            return h_tmp.hexdigest()
+        else:
+            return h_tmp.digest()
+    return hmac_fn

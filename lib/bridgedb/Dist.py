@@ -15,10 +15,13 @@ import re
 import time
 from ipaddr import IPv6Address, IPAddress
 
+from bridgedb.crypto import getHMAC
+from bridgedb.crypto import getHMACFunc
 from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
+
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -137,11 +140,11 @@ class IPBasedDistributor(Distributor):
         for c in ipCategories:
             self.categories.append(c)
 
-        key2 = bridgedb.Bridges.get_hmac(key, "Assign-Bridges-To-Rings")
-        key3 = bridgedb.Bridges.get_hmac(key, "Order-Areas-In-Rings")
-        self.areaOrderHmac = bridgedb.Bridges.get_hmac_fn(key3, hex=False)
-        key4 = bridgedb.Bridges.get_hmac(key, "Assign-Areas-To-Rings")
-        self.areaClusterHmac = bridgedb.Bridges.get_hmac_fn(key4, hex=True)
+        key2 = getHMAC(key, "Assign-Bridges-To-Rings")
+        key3 = getHMAC(key, "Order-Areas-In-Rings")
+        self.areaOrderHmac = getHMACFunc(key3, hex=False)
+        key4 = getHMAC(key, "Assign-Areas-To-Rings")
+        self.areaClusterHmac = getHMACFunc(key4, hex=True)
 
         # add splitter and cache the default rings
         # plus leave room for dynamic filters
@@ -170,9 +173,8 @@ class IPBasedDistributor(Distributor):
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 "Order-Bridges-In-Ring-%d"
-                                                 % n)
+                key1 = getHMAC(self.splitter.key,
+                               "Order-Bridges-In-Ring-%d" % n)
                 n += 1
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 ring.setName('{0} Ring'.format(self.name))
@@ -192,9 +194,8 @@ class IPBasedDistributor(Distributor):
                 if filterFn:
                     bridgeFilterRules.append(filterFn)
                 ruleset = frozenset(bridgeFilterRules)
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 "Order-Bridges-In-Ring-%d"
-                                                 % clusterNum)
+                key1 = getHMAC(self.splitter.key,
+                               "Order-Bridges-In-Ring-%d" % clusterNum)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 self.splitter.addRing(ring,
                                       ruleset,
@@ -262,9 +263,8 @@ class IPBasedDistributor(Distributor):
                 bridgeFilterRules.append(g)
                 logging.info("category<%s>%s", epoch, Util.logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
-                key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                                 "Order-Bridges-In-Ring-%d"
-                                                 % n)
+                key1 = getHMAC(self.splitter.key,
+                               "Order-Bridges-In-Ring-%d" % n)
                 break
             n += 1
 
@@ -281,9 +281,8 @@ class IPBasedDistributor(Distributor):
                                           clusterNum)
             bridgeFilterRules.append(g)
             pos = self.areaOrderHmac("<%s>%s" % (epoch, area))
-            key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             "Order-Bridges-In-Ring-%d"
-                                             % clusterNum)
+            key1 = getHMAC(self.splitter.key,
+                           "Order-Bridges-In-Ring-%d" % clusterNum)
 
         # try to find a cached copy
         ruleset = frozenset(bridgeFilterRules)
@@ -425,10 +424,10 @@ class EmailBasedDistributor(Distributor):
     ##       to their canonical forms.
     def __init__(self, key, domainmap, domainrules,
                  answerParameters=None):
-        key1 = bridgedb.Bridges.get_hmac(key, "Map-Addresses-To-Ring")
-        self.emailHmac = bridgedb.Bridges.get_hmac_fn(key1, hex=False)
+        key1 = getHMAC(key, "Map-Addresses-To-Ring")
+        self.emailHmac = getHMACFunc(key1, hex=False)
 
-        key2 = bridgedb.Bridges.get_hmac(key, "Order-Bridges-In-Ring")
+        key2 = getHMAC(key, "Order-Bridges-In-Ring")
         # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
@@ -506,8 +505,7 @@ class EmailBasedDistributor(Distributor):
             logging.debug("Cache miss %s" % ruleset)
 
             # add new ring
-            key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             "Order-Bridges-In-Ring")
+            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             # debug log: cache miss
             self.splitter.addRing(ring, ruleset,
@@ -544,8 +542,7 @@ class EmailBasedDistributor(Distributor):
         # populate all rings (for dumping assignments and testing)
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
             ruleset = frozenset([filterFn])
-            key1 = bridgedb.Bridges.get_hmac(self.splitter.key,
-                                             "Order-Bridges-In-Ring")
+            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, ruleset,
                                   filterBridgesByRules([filterFn]),
