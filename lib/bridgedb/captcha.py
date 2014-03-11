@@ -63,7 +63,13 @@ class ICaptcha(Interface):
 
 
 class Captcha(object):
-    """A generic CAPTCHA base class."""
+    """A generic CAPTCHA base class.
+
+    :ivar str image: The CAPTCHA image.
+    :ivar str challenge: A challenge string which should permit checking of
+        the client's CAPTCHA solution in some manner. This should be passed
+        along to the client with the CAPTCHA image.
+    """
     implements(ICaptcha)
 
     def __init__(self):
