@@ -283,7 +283,8 @@ def loadConfig(configFile=None, configCls=None):
     for attr in ["DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE", "PIDFILE",
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
                  "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE",
-                 "GIMP_CAPTCHA_DIR"]:
+                 "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
+                 "GIMP_CAPTCHA_RSA_KEYFILE"]:
         setting = getattr(config, attr, None)
         if setting is None:
             setattr(config, attr, setting)
