@@ -32,7 +32,9 @@ gimp-captcha_ and then cached locally.
 .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
 """
 
-import hashlib
+from base64 import urlsafe_b64encode
+from base64 import urlsafe_b64decode
+
 import logging
 import random
 import os
@@ -42,12 +44,17 @@ from BeautifulSoup import BeautifulSoup
 from recaptcha.client.captcha import API_SSL_SERVER
 from zope.interface import Interface, Attribute, implements
 
+from bridgedb import crypto
+
 
 class ReCaptchaKeyError(Exception):
     """Exception raised when recaptcha API keys are not supplied."""
 
 class GimpCaptchaError(Exception):
     """General exception raised when a Gimp CAPTCHA cannot be retrieved."""
+
+class GimpCaptchaKeyError(ValueError):
+    """Raised when there is a problem with one of the Gimp CAPTCHA keys."""
 
 
 class ICaptcha(Interface):
@@ -128,42 +135,96 @@ class ReCaptcha(Captcha):
 class GimpCaptcha(Captcha):
     """A cached CAPTCHA image which was created with Gimp."""
 
-    def __init__(self, cacheDir=None, clientIP=None):
+    def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
+                 cacheDir=None):
         """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
 
+        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
+            verifying the client's solution to the CAPTCHA.
+        :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
+            creating the ``captcha_challenge_field`` string to give to a
+            client.
+        :param bytes hmacKey: A client-specific HMAC secret key.
+        :param str cacheDir: The local directory which pre-generated CAPTCHA
+            images have been stored in. This can be set via the
+            ``GIMP_CAPTCHA_DIR`` setting in the config file.
         :raises GimpCaptchaError: if **cacheDir** is not a directory.
+        :raises GimpCaptchaKeyError: if any of **secretKey**, **publicKey**,
+            or **hmacKey** is invalid, or missing.
         """
         super(GimpCaptcha, self).__init__()
-        if not os.path.isdir(cacheDir):
+
+        if not cacheDir or not os.path.isdir(cacheDir):
             raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
                                    % cacheDir)
+        if not (publicKey and secretKey and hmacKey):
+            raise GimpCaptchaKeyError(
+                "Invalid key supplied to GimpCaptcha: SK=%r PK=%r HMAC=%r"
+                % (secretKey, publicKey, hmacKey))
+
+        self.secretKey = secretKey
+        self.publicKey = publicKey
         self.cacheDir = cacheDir
-        self.clientIP = clientIP
+        self.hmacKey = hmacKey
+        self.answer = None
 
     @classmethod
-    def check(cls, challenge, answer, clientIP=None):
-        """Check a client's CAPTCHA solution against the **challenge**.
+    def check(cls, challenge, solution, secretKey, hmacKey):
+        """Check a client's CAPTCHA **solution** against the **challenge**.
 
+        :param str challenge: The contents of the
+            ``'captcha_challenge_field'`` HTTP form field.
+        :param str solution: The client's proposed solution to the CAPTCHA
+            that they were presented with.
+        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
+            verifying the client's solution to the CAPTCHA.
+        :param bytes hmacKey: A private key for generating HMACs.
         :rtype: bool
         :returns: True if the CAPTCHA solution was correct.
         """
+        validHMAC = False
+
+        if not solution:
+            return validHMAC
+
         logging.debug("Checking CAPTCHA solution %r against challenge %r"
-                      % (answer, challenge))
-        solution = cls.createChallenge(answer, clientIP)
-        if (not challenge) or (challenge != solution):
+                      % (solution, challenge))
+        try:
+            decoded = urlsafe_b64decode(challenge)
+            hmac, original = decoded.split(';', 1)
+            verified = crypto.getHMAC(hmacKey, original)
+            validHMAC = verified == hmac
+        except Exception as error:
+            logging.exception(error)
+        finally:
+            if validHMAC:
+                decrypted = secretKey.decrypt(original)
+                if solution == decrypted:
+                    return True
             return False
-        return True
 
-    @classmethod
-    def createChallenge(cls, answer, clientIP=None):
-        """Hash a CAPTCHA answer together with a **clientIP**, if given.
+    def createChallenge(self, answer):
+        """Encrypt the CAPTCHA **answer** and HMAC the encrypted data.
 
-        :param str answer: The answer (either actual, or a client's proposed
-            solution) to a CAPTCHA.
-        :param str clientIP: The client's IP address.
+        Take a string containing the answer to a CAPTCHA and encrypts it to
+        :attr:`publicKey`. The resulting encrypted blob is then HMACed with a
+        client-specific :attr:`hmacKey`. These two strings are then joined
+        together in the form:
+
+                HMAC ";" ENCRYPTED_ANSWER
+
+        and lastly base64-encoded (in a URL safe manner).
+
+        :param str answer: The answer to a CAPTCHA.
+        :rtype: str
+        :returns: An HMAC of, as well as a string containing the URL-safe,
+            base64-encoded encrypted **answer**.
         """
-        challenge = '\n'.join([answer, str(clientIP)])
-        return hashlib.sha256(challenge).hexdigest()
+        encrypted = self.publicKey.encrypt(answer)
+        hmac = crypto.getHMAC(self.hmacKey, encrypted)
+        challenge = hmac + ';' + encrypted
+        encoded = urlsafe_b64encode(challenge)
+        return encoded
 
     def get(self):
         """Get a random CAPTCHA from the cache directory.
@@ -173,17 +234,19 @@ class GimpCaptcha(Captcha):
         :returns: A 2-tuple of ``(captcha, None)``, where ``captcha`` is the
                   image file contents.
         """
-        imageFilename = random.choice(os.listdir(self.cacheDir))
-        imagePath = os.path.join(self.cacheDir, imageFilename)
-
         try:
+            imageFilename = random.choice(os.listdir(self.cacheDir))
+            imagePath = os.path.join(self.cacheDir, imageFilename)
             with open(imagePath) as imageFile:
                 self.image = imageFile.read()
-        except (OSError, IOError) as err:
+        except IndexError:
+            raise GimpCaptchaError("CAPTCHA cache dir appears empty: %r"
+                                   % self.cacheDir)
+        except (OSError, IOError):
             raise GimpCaptchaError("Could not read Gimp captcha image file: %r"
                                    % imageFilename)
 
-        captchaAnswer = imageFilename.rsplit(os.path.extsep, 1)[0]
-        self.challenge = self.createChallenge(captchaAnswer, self.clientIP)
+        self.answer = imageFilename.rsplit(os.path.extsep, 1)[0]
+        self.challenge = self.createChallenge(self.answer)
 
         return (self.image, self.challenge)
