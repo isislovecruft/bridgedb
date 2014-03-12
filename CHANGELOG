@@ -1,3 +1,14 @@
+Changes in version 0.1.5 - 2014-02-27
+BridgeDB 0.1.5 includes fixes for the following bugs:
+	* FIXES #10809 reCAPTCHA on bridges.torproject.org are impossible
+		to solve for humans
+	* FIXES #10834
+
+Including the following general changes:
+	* CHANGES the reCaptcha remote IP address to be either a
+		configurable value, or random (as it was previously).
+
+
 Changes in version 0.1.4 - 2014-02-21
 BridgeDB 0.1.4 includes fixes for the following bugs:
 	* FIXES an RTL encoding issue in the "Step 2" text on index.html
