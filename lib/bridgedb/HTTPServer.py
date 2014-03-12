@@ -747,8 +747,20 @@ def addWebServer(cfg, dist, sched):
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                 resource=resource)
         httpdist.putChild('bridges', protected)
+
     elif cfg.GIMP_CAPTCHA_ENABLED:
+        # Get the HMAC secret key for CAPTCHA challenges and create a new key
+        # from it for use on the server:
+        captchaKey = crypto.getKey(cfg.GIMP_CAPTCHA_HMAC_KEYFILE)
+        hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key")
+
+        # Load or create our encryption keys:
+        secretKey, publicKey = crypto.getRSAKey(cfg.GIMP_CAPTCHA_RSA_KEYFILE)
+
         protected = GimpCaptchaProtectedResource(
+            secretKey=secretKey,
+            publicKey=publicKey,
+            hmacKey=hmacKey,
             captchaDir=cfg.GIMP_CAPTCHA_DIR,
             useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
             resource=resource)
