@@ -133,7 +133,7 @@ def getRSAKey(filename, bits=2048):
     return (sk, pk)
 
 def getKey(filename):
-    """Load the key stored in ``filename``, or create a new key.
+    """Load the master key stored in ``filename``, or create a new key.
 
     If ``filename`` does not exist, create a new 32-byte key and store it in
     ``filename``.
