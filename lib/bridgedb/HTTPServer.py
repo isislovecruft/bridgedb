@@ -115,9 +115,10 @@ def replaceErrorPage(error, template_name=None):
 class CaptchaProtectedResource(twisted.web.resource.Resource):
     """A general resource protected by some form of CAPTCHA."""
 
+    isLeaf = True
+
     def __init__(self, useForwardedHeader=False, resource=None):
         twisted.web.resource.Resource.__init__(self)
-        self.isLeaf = resource.isLeaf
         self.useForwardedHeader = useForwardedHeader
         self.resource = resource
 
@@ -234,9 +235,33 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
     """
 
-    def __init__(self, captchaDir='',
-                 useForwardedHeader=False, resource=None):
+    def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
+                 captchaDir='', useForwardedHeader=False, resource=None):
+        """Protect a **resource** via this one, using a local CAPTCHA cache.
+
+        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
+            verifying the client's solution to the CAPTCHA. See
+            :func:`bridgedb.crypto.getRSAKey` and the
+            ``GIMP_CAPTCHA_RSA_KEYFILE`` config setting.
+        :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
+            creating the ``captcha_challenge_field`` string to give to a
+            client.
+        :param bytes hmacKey: The master HMAC key, used for validating CAPTCHA
+            challenge strings in :meth:`captcha.GimpCaptcha.check`. The file
+            where this key is stored can be set via the
+            ``GIMP_CAPTCHA_HMAC_KEYFILE`` option in the config file.
+        :param str captchaDir: The directory where the cached CAPTCHA images
+            are stored. See the ``GIMP_CAPTCHA_DIR`` config setting.
+        :param bool useForwardedHeader: If ``True``, obtain the client's IP
+            address from the ``X-Forwarded-For`` HTTP header.
+        :type resource: :api:`twisted.web.resource.Resource`
+        :param resource: The resource to serve if the client successfully
+            passes the CAPTCHA challenge.
+        """
         CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+        self.secretKey = secretKey
+        self.publicKey = publicKey
+        self.hmacKey = hmacKey
         self.captchaDir = captchaDir
 
     def checkSolution(self, request):
@@ -255,12 +280,15 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         :rtupe: bool
         :returns: True, if the CAPTCHA solution was valid; False otherwise.
         """
-        challenge, response = self.extractClientSolution(request)
+        challenge, solution = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
-        solution = captcha.GimpCaptcha.check(challenge, response, clientIP)
-        logging.debug("Captcha from %r. Parameters: %r"
-                      % (Util.logSafely(clientIP), request.args))
-        return solution
+        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
+        valid = captcha.GimpCaptcha.check(challenge, solution,
+                                          self.secretKey, clientHMACKey)
+        logging.debug("%sorrect captcha from %r: %r." % (
+            "C" if valid else "Inc", Util.logSafely(clientIP), solution))
+
+        return valid
 
     def getCaptchaImage(self, request):
         """Get a random CAPTCHA image from our **captchaDir**.
@@ -276,18 +304,20 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
             - ``image`` is a string holding a binary, JPEG-encoded image.
             - ``challenge`` is a unique string associated with the request.
         """
+        # Create a new HMAC key, specific to requests from this client:
         clientIP = self.getClientIP(request)
-        c = captcha.GimpCaptcha(self.captchaDir, clientIP)
-
+        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
+        capt = captcha.GimpCaptcha(self.secretKey, self.publicKey,
+                                   clientHMACKey, self.captchaDir)
         try:
-            c.get()
+            capt.get()
         except captcha.GimpCaptchaError as error:
             logging.error(error)
         except Exception as error:
             logging.error("Unhandled error while retrieving Gimp captcha!")
-            logging.error(error)
+            logging.exception(error)
 
-        return (c.image, c.challenge)
+        return (capt.image, capt.challenge)
 
     def render_GET(self, request):
         """Get a random CAPTCHA from our local cache directory and serve it to
