@@ -112,7 +112,7 @@ def chopString(s, size):
     for pos in xrange(0, len(s), size):
         yield s[pos:pos+size]
 
-class Bridge:
+class Bridge(object):
     """Holds information for a single bridge
 
     :attr str nickname: The bridge's nickname.  Not currently used.
