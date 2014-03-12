@@ -486,7 +486,7 @@ re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
 
-class PluggableTransport:
+class PluggableTransport(object):
     """
     an object that represents a pluggable-transport method
     and a reference to the relevant bridge 
