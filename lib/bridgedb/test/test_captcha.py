@@ -163,7 +163,7 @@ class GimpCaptchaTests(unittest.TestCase):
         decoded = urlsafe_b64decode(challenge)
         hmac, orig = decoded.split(';', 1)
         correctHMAC = crypto.getHMAC(self.hmacKey, orig)
-        self.assertTrue(hmac == correctHMAC)
+        self.assertEquals(hmac, correctHMAC)
 
     def test_createChallenge_decryptedAnswerMatches(self):
         """The HMAC in createChallenge() return value should be valid."""
