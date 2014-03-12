@@ -790,10 +790,11 @@ class BridgeRing(BridgeHolder):
     def __init__(self, key, answerParameters=None):
         """Create a new BridgeRing, using key as its hmac key.
 
-        :param key: DOCDOC
+        :type key: bytes
+        :param key: The HMAC key, generated with
+                    :func:`bridgedb.crypto.getKey`.
         :type answerParameters: :class:`BridgeRingParameters`
         :param answerParameters: DOCDOC
-
         :ivar dict bridges: A dictionary which maps HMAC keys to
                             :class:`~bridgedb.Bridges.Bridge`s.
         :ivar dict bridgesByID: A dictionary which maps raw hash digests of
