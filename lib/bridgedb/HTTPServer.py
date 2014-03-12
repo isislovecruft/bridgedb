@@ -368,6 +368,9 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
     def getCaptchaImage(self, request):
         """Get a CAPTCHA image from the remote reCaptcha server.
 
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A client's initial request for some other resource
+            which is protected by this one (i.e. protected by a CAPTCHA).
         :returns: A 2-tuple of ``(image, challenge)``, where::
             - ``image`` is a string holding a binary, JPEG-encoded image.
             - ``challenge`` is a unique string associated with the request.
