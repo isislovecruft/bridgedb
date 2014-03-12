@@ -38,7 +38,7 @@ from random import randint
 import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
-from zope.interface import Interface, Attribute, implements
+
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 logging.debug("Set template root to %s" % template_root)
