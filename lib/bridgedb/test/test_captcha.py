@@ -52,7 +52,7 @@ class ReCaptchaTests(unittest.TestCase):
         """Check the ReCaptcha class stored the private and public keys."""
         self.assertEquals(self.c.privkey, 'sekrit')
         self.assertEquals(self.c.pubkey, 'publik')
-        
+
     def test_get(self):
         """Test get() method."""
 
@@ -71,7 +71,7 @@ class ReCaptchaTests(unittest.TestCase):
         try:
             # There isn't really a reliable way to test this function! :(
             self.c.get()
-        except Exception as error: 
+        except Exception as error:
             reason  = "ReCaptcha.get() test requires an active network "
             reason += "connection.\nThis test failed with: %s" % error
             raise unittest.SkipTest(reason)
