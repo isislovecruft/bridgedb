@@ -2,6 +2,8 @@
 .PHONY: install test
 .DEFAULT: install test
 
+TRIAL:=$(shell which trial)
+
 all:
 	python setup.py build
 
@@ -41,4 +43,6 @@ clean:
 	-rm -rf _trial_temp
 
 coverage:
-	-coverage run $(which trial) ./lib/bridgedb/test/test_* && coverage report && coverage html
+	-coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
+	-coverage report
+	-coverage html
