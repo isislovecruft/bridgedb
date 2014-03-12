@@ -14,6 +14,7 @@ import logging
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.base import DelayedCall
+from twisted.internet.error import ConnectionDone
 from twisted.internet.error import ConnectionLost
 from twisted.internet.error import ConnectionRefusedError
 from twisted.test import proto_helpers
@@ -94,10 +95,11 @@ class RecaptchaResponseProtocolTests(unittest.TestCase):
 
     def test_trueResponse(self):
         """A valid API response which states 'true' should result in
-        ``RecaptchaResponse.is_valid`` being ``True``.
+        ``RecaptchaResponse.is_valid`` being ``True`` after receiving a
+        ``ConnectionDone``.
         """
         responseBody = "true\nsome-reason-or-another\n"
-        response = self._test(responseBody, ResponseDone)
+        response = self._test(responseBody, ConnectionDone)
         self.assertIsInstance(response, txrecaptcha.RecaptchaResponse)
         self.assertTrue(response.is_valid)
         self.assertEqual(response.error_code, "some-reason-or-another")
