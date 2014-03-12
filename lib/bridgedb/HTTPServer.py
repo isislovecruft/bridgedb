@@ -26,13 +26,14 @@ import bridgedb.Dist
 import bridgedb.I18n as I18n
 import bridgedb.Util as Util
 
-from recaptcha.client import captcha as recaptcha
 from bridgedb import captcha
 from bridgedb import crypto
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
+from bridgedb import txrecaptcha
+
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 import mako.exceptions
@@ -423,8 +424,8 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
         remoteIP = self.getRemoteIP()
-        solution = recaptcha.submit(challenge, response,
-                                    self.recaptchaPrivKey, remoteIP)
+        solution = txrecaptcha.submit(challenge, response,
+                                      self.recaptchaPrivKey, remoteIP)
         logging.debug("Captcha from %r. Parameters: %r"
                       % (Util.logSafely(clientIP), request.args))
 
