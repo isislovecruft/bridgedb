@@ -375,17 +375,17 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             - ``image`` is a string holding a binary, JPEG-encoded image.
             - ``challenge`` is a unique string associated with the request.
         """
-        c = captcha.ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+        capt = captcha.ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
 
         try:
-            c.get()
+            capt.get()
         except Exception as error:
             logging.fatal("Connection to Recaptcha server failed: %s" % error)
 
-        if c.image is None:
+        if capt.image is None:
             logging.warn("No CAPTCHA image received from ReCaptcha server!")
 
-        return (c.image, c.challenge)
+        return (capt.image, capt.challenge)
 
     def getRemoteIP(self):
         """Mask the client's real IP address with a faked one.
