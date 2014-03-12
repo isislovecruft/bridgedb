@@ -38,9 +38,13 @@ HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
+
 def is_valid_ip(ip):
     """Return True if ip is the string encoding of a valid IPv4 address,
        and False otherwise.
+
+    XXX this should probably be deprecated in favour of
+    :func:`bridgedb.parse.addr.isValid`.
 
     >>> from bridgedb import Bridges
     >>> Bridges.is_valid_ip('1.2.3.4')
