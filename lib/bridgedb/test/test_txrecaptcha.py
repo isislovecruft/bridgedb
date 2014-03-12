@@ -213,7 +213,13 @@ class SubmitTests(unittest.TestCase):
         return d
 
     def tearDown(self):
-        """Cleanup method for removing timed out connections on the reactor."""
+        """Cleanup method for removing timed out connections on the reactor.
+
+        This seems to be the solution for the dirty reactor due to
+        ``DelayedCall``s which is mentioned at the beginning of this
+        file. There doesn't seem to be any documentation anywhere which
+        proposes this solution, although this seems to solve the problem.
+        """
         for delay in reactor.getDelayedCalls():
             try:
                 delay.cancel()
