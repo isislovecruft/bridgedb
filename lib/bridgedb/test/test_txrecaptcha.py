@@ -228,10 +228,10 @@ class SubmitTests(unittest.TestCase):
 
 
 class MiscTests(unittest.TestCase):
-    """Tests for :func:`~bridgedb.txrecaptcha._cbRequest`."""
+    """Tests for miscellaneous functions in :mod:`~bridgedb.txrecaptcha`."""
 
     def test_cbRequest(self):
-        """Send a :class:`MockResponse` and check that thee resulting protocol
+        """Send a :class:`MockResponse` and check that the resulting protocol
         is a :class:`~bridgedb.txrecaptcha.RecaptchaResponseProtocol`.
         """
         response = MockResponse()
