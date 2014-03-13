@@ -1255,7 +1255,16 @@ class FilteredBridgeSplitter(BridgeHolder):
                 % Util.logSafely(bridge.fingerprint))
             return
 
-        self.bridges.append(bridge)
+        index = 0
+        logging.debug("Inserting %s into splitter"
+                      % (Util.logSafely(bridge.fingerprint)))
+        for old_bridge in self.bridges[:]:
+            if bridge.fingerprint == old_bridge.fingerprint:
+                self.bridges[index] = bridge
+                break
+            index += 1
+        else:
+            self.bridges.append(bridge)
         for ringname, (filterFn, subring) in self.filterRings.items():
             if filterFn(bridge):
                 subring.insert(bridge)

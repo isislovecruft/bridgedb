@@ -109,3 +109,33 @@ class BridgeClassTest(unittest.TestCase):
         digests = Bridges.getExtraInfoDigests(StringIO(test))
         self.failUnlessIn(digest, digests)
         self.failUnlessEqual(content, digests[digest].read())
+
+    def test_splitterBridgeInsertion(self):
+        key = "Testing-Bridges-To-Rings"
+        splitter = Bridges.FilteredBridgeSplitter(key)
+
+        bridge1 = Bridges.Bridge('unamed1', '1.2.3.5', 9100,
+                            'a1cc8dfef1fa11af9c40af1054df9daf45250550')
+        bridge1.setStatus(running = True)
+        bridge2 = Bridges.Bridge('unamed2', '1.2.3.4', 8080,
+                            'a1cc8dfef1fa11af9c40af1054df9daf45250551')
+        bridge2.setStatus(running = True)
+        bridge3 = Bridges.Bridge('unamed3', '5.2.3.4', 8080,
+                            'b1cc8dfef1fa11af9c40af1054df9daf45250552')
+        bridge3.setStatus(running = True)
+        bridge4 = Bridges.Bridge('unamed3', '5.2.3.4', 8080,
+                            'b1cc8dfef1fa11af9c40af1054df9daf45250552')
+        bridge4.setStatus(running = True)
+
+        self.failUnlessEqual(len(splitter), 0)
+        splitter.insert(bridge1)
+        splitter.insert(bridge2)
+        splitter.insert(bridge3)
+        # Check that all were inserted
+        self.failUnlessEqual(len(splitter), 3)
+        splitter.insert(bridge1)
+        # Check that the same bridge is not inserted twice
+        self.failUnlessEqual(len(splitter), 3)
+        splitter.insert(bridge4)
+        # Check that identical bridges are not inserted twice
+        self.failUnlessEqual(len(splitter), 3)
