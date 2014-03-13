@@ -1251,8 +1251,9 @@ class FilteredBridgeSplitter(BridgeHolder):
             return
 
         index = 0
-        logging.debug("Inserting %s into %s ring" % (bridge.fingerprint, self.key))
-        for old_bridge in self.bridges:
+        logging.debug("Inserting %s into splitter"
+                      % (Util.logSafely(bridge.fingerprint)))
+        for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
                 self.bridges[index] = bridge
                 break
