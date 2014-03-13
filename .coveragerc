@@ -12,7 +12,9 @@ omit =
      */test*
      */_langs*
      */_version*
-     bridgedb/Tests.py
+     */__init__*
+     */Tests*
+     */sitecustomize*
 # Regexes for lines to exclude from report generation:
 exclude_lines = 
      pragma: no cover
