@@ -41,10 +41,11 @@ import os
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
-from recaptcha.client.captcha import API_SSL_SERVER
+
 from zope.interface import Interface, Attribute, implements
 
 from bridgedb import crypto
+from bridgedb.txrecaptcha import API_SSL_SERVER
 
 
 class ReCaptchaKeyError(Exception):
