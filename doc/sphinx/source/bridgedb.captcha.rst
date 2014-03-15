@@ -1,7 +1,7 @@
-bridgedb.Raptcha
+bridgedb.captcha
 ----------------
 
-.. automodule:: bridgedb.Raptcha
+.. automodule:: bridgedb.captcha
     :members:
     :undoc-members:
     :private-members:

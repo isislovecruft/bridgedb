@@ -98,3 +98,6 @@ gnupghome/*
 # trial test run directory:
 _trial_temp/*
 _trial_temp.lock
+
+# default captcha cache directory:
+captchas/*

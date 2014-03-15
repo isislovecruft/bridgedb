@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(
 
 
 import bridgedb
+import bridgedb.captcha
 import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
@@ -37,7 +38,6 @@ import bridgedb.HTTPServer
 import bridgedb.I18n
 import bridgedb.Main
 import bridgedb.persistent
-import bridgedb.Raptcha
 import bridgedb.runner
 import bridgedb.Stability
 import bridgedb.Storage

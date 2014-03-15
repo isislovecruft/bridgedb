@@ -7,7 +7,6 @@ them in rings.
 
 import binascii
 import bisect
-import hmac
 import logging
 import re
 import hashlib
@@ -15,12 +14,12 @@ import socket
 import time
 import ipaddr
 import random
-import hashlib
 
 import bridgedb.Storage
 import bridgedb.Bucket
 import bridgedb.Util as Util
 
+from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
 
@@ -32,8 +31,6 @@ except ImportError:
 
 HEX_FP_LEN = 40
 ID_LEN = 20
-
-DIGESTMOD = hashlib.sha1
 HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
@@ -86,24 +83,6 @@ def is_valid_fingerprint(fp):
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
-
-def get_hmac(k,v):
-    """Return the hmac of v using the key k."""
-    h = hmac.new(k, v, digestmod=DIGESTMOD)
-    return h.digest()
-
-def get_hmac_fn(k, hex=True):
-    """Return a function that computes the hmac of its input using the key k.
-       If 'hex' is true, the output of the function will be hex-encoded."""
-    h = hmac.new(k, digestmod=DIGESTMOD)
-    def hmac_fn(v):
-        h_tmp = h.copy()
-        h_tmp.update(v)
-        if hex:
-            return h_tmp.hexdigest()
-        else:
-            return h_tmp.digest()
-    return hmac_fn
 
 def chopString(s, size):
     """Generator. Given a string and a length, divide the string into pieces
@@ -212,7 +191,7 @@ class Bridge(object):
         """
 
         if not request: request = 'default'
-        digest = get_hmac_fn('Order-Or-Addresses')(request)
+        digest = getHMACFunc('Order-Or-Addresses')(request)
         pos = long(digest[:8], 16) # lower 8 bytes -> long
 
         # default address type
@@ -843,7 +822,7 @@ class BridgeRing(BridgeHolder):
         """
         self.bridges = {}
         self.bridgesByID = {}
-        self.hmac = get_hmac_fn(key, hex=False)
+        self.hmac = getHMACFunc(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
         if answerParameters is None:
@@ -1041,7 +1020,7 @@ class FixedBridgeSplitter(BridgeHolder):
        them to several sub-bridgeholders with equal probability.
     """
     def __init__(self, key, rings):
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.rings = rings[:]
         for r in self.rings:
             assert(isinstance(r, BridgeHolder))
@@ -1119,7 +1098,7 @@ class BridgeSplitter(BridgeHolder):
        Bridge-to-bridgeholder associations are recorded in a store.
     """
     def __init__(self, key):
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.ringsByName = {}
         self.totalP = 0
         self.pValues = []
@@ -1226,7 +1205,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         """
         self.key = key
         self.filterRings = {}
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.bridges = []
         self.distributorName = ''
 
