@@ -7,6 +7,7 @@ bridgedb
 
     bridgedb.Bridges
     bridgedb.Bucket
+    bridgedb.captcha
     bridgedb.crypto
     bridgedb.Dist
     bridgedb.EmailServer
@@ -16,7 +17,6 @@ bridgedb
     bridgedb.Main
     bridgedb.parse
     bridgedb.persistent
-    bridgedb.Raptcha
     bridgedb.runner
     bridgedb.Stability
     bridgedb.Storage

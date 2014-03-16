@@ -7,7 +7,6 @@ them in rings.
 
 import binascii
 import bisect
-import hmac
 import logging
 import re
 import hashlib
@@ -15,12 +14,12 @@ import socket
 import time
 import ipaddr
 import random
-import hashlib
 
 import bridgedb.Storage
 import bridgedb.Bucket
 import bridgedb.Util as Util
 
+from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
 
@@ -32,15 +31,17 @@ except ImportError:
 
 HEX_FP_LEN = 40
 ID_LEN = 20
-
-DIGESTMOD = hashlib.sha1
 HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
+
 def is_valid_ip(ip):
     """Return True if ip is the string encoding of a valid IPv4 address,
        and False otherwise.
+
+    XXX this should probably be deprecated in favour of
+    :func:`bridgedb.parse.addr.isValid`.
 
     >>> from bridgedb import Bridges
     >>> Bridges.is_valid_ip('1.2.3.4')
@@ -83,24 +84,6 @@ def is_valid_fingerprint(fp):
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
-def get_hmac(k,v):
-    """Return the hmac of v using the key k."""
-    h = hmac.new(k, v, digestmod=DIGESTMOD)
-    return h.digest()
-
-def get_hmac_fn(k, hex=True):
-    """Return a function that computes the hmac of its input using the key k.
-       If 'hex' is true, the output of the function will be hex-encoded."""
-    h = hmac.new(k, digestmod=DIGESTMOD)
-    def hmac_fn(v):
-        h_tmp = h.copy()
-        h_tmp.update(v)
-        if hex:
-            return h_tmp.hexdigest()
-        else:
-            return h_tmp.digest()
-    return hmac_fn
-
 def chopString(s, size):
     """Generator. Given a string and a length, divide the string into pieces
        of no more than that length.
@@ -108,7 +91,7 @@ def chopString(s, size):
     for pos in xrange(0, len(s), size):
         yield s[pos:pos+size]
 
-class Bridge:
+class Bridge(object):
     """Holds information for a single bridge
 
     :attr str nickname: The bridge's nickname.  Not currently used.
@@ -208,7 +191,7 @@ class Bridge:
         """
 
         if not request: request = 'default'
-        digest = get_hmac_fn('Order-Or-Addresses')(request)
+        digest = getHMACFunc('Order-Or-Addresses')(request)
         pos = long(digest[:8], 16) # lower 8 bytes -> long
 
         # default address type
@@ -482,7 +465,7 @@ re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
 
-class PluggableTransport:
+class PluggableTransport(object):
     """
     an object that represents a pluggable-transport method
     and a reference to the relevant bridge 
@@ -786,10 +769,11 @@ class BridgeRing(BridgeHolder):
     def __init__(self, key, answerParameters=None):
         """Create a new BridgeRing, using key as its hmac key.
 
-        :param key: DOCDOC
+        :type key: bytes
+        :param key: The HMAC key, generated with
+                    :func:`bridgedb.crypto.getKey`.
         :type answerParameters: :class:`BridgeRingParameters`
         :param answerParameters: DOCDOC
-
         :ivar dict bridges: A dictionary which maps HMAC keys to
                             :class:`~bridgedb.Bridges.Bridge`s.
         :ivar dict bridgesByID: A dictionary which maps raw hash digests of
@@ -838,7 +822,7 @@ class BridgeRing(BridgeHolder):
         """
         self.bridges = {}
         self.bridgesByID = {}
-        self.hmac = get_hmac_fn(key, hex=False)
+        self.hmac = getHMACFunc(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
         if answerParameters is None:
@@ -1036,7 +1020,7 @@ class FixedBridgeSplitter(BridgeHolder):
        them to several sub-bridgeholders with equal probability.
     """
     def __init__(self, key, rings):
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.rings = rings[:]
         for r in self.rings:
             assert(isinstance(r, BridgeHolder))
@@ -1114,7 +1098,7 @@ class BridgeSplitter(BridgeHolder):
        Bridge-to-bridgeholder associations are recorded in a store.
     """
     def __init__(self, key):
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.ringsByName = {}
         self.totalP = 0
         self.pValues = []
@@ -1221,7 +1205,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         """
         self.key = key
         self.filterRings = {}
-        self.hmac = get_hmac_fn(key, hex=True)
+        self.hmac = getHMACFunc(key, hex=True)
         self.bridges = []
         self.distributorName = ''
 
@@ -1250,7 +1234,16 @@ class FilteredBridgeSplitter(BridgeHolder):
                 % Util.logSafely(bridge.fingerprint))
             return
 
-        self.bridges.append(bridge)
+        index = 0
+        logging.debug("Inserting %s into splitter"
+                      % (Util.logSafely(bridge.fingerprint)))
+        for old_bridge in self.bridges[:]:
+            if bridge.fingerprint == old_bridge.fingerprint:
+                self.bridges[index] = bridge
+                break
+            index += 1
+        else:
+            self.bridges.append(bridge)
         for ringname, (filterFn, subring) in self.filterRings.items():
             if filterFn(bridge):
                 subring.insert(bridge)

@@ -26,18 +26,20 @@ import bridgedb.Dist
 import bridgedb.I18n as I18n
 import bridgedb.Util as Util
 
-from recaptcha.client import captcha
-from bridgedb.Raptcha import Raptcha
+from bridgedb import captcha
+from bridgedb import crypto
 from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
+from bridgedb import txrecaptcha
+
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
 import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
-from zope.interface import Interface, Attribute, implements
+
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
 logging.debug("Set template root to %s" % template_root)
@@ -112,12 +114,13 @@ def replaceErrorPage(error, template_name=None):
 
 
 class CaptchaProtectedResource(twisted.web.resource.Resource):
-    def __init__(self, useRecaptcha=False, recaptchaPrivKey='',
-            recaptchaPubKey='', useForwardedHeader=False, resource=None):
-        self.isLeaf = resource.isLeaf
+    """A general resource protected by some form of CAPTCHA."""
+
+    isLeaf = True
+
+    def __init__(self, useForwardedHeader=False, resource=None):
+        twisted.web.resource.Resource.__init__(self)
         self.useForwardedHeader = useForwardedHeader
-        self.recaptchaPrivKey = recaptchaPrivKey
-        self.recaptchaPubKey = recaptchaPubKey
         self.resource = resource
 
     def getClientIP(self, request):
@@ -133,6 +136,308 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
             ip = request.getClientIP()
         return ip
 
+    def getCaptchaImage(self, request=None):
+        """Get a CAPTCHA image.
+
+        :returns: A 2-tuple of ``(image, challenge)``, where ``image`` is a
+                  binary, JPEG-encoded image, and ``challenge`` is a unique
+                  string. If unable to retrieve a CAPTCHA, returns
+                  ``(None, None)``.
+        """
+        return (None, None)
+
+    def extractClientSolution(self, request):
+        """Extract the client's CAPTCHA solution from a POST request.
+
+        This is used after receiving a POST request from a client (which
+        should contain their solution to the CAPTCHA), to extract the solution
+        and challenge strings.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for 'bridges.html'.
+        :returns: A redirect for a request for a new CAPTCHA if there was a
+            problem. Otherwise, returns a 2-tuple of strings, the first is the
+            client's CAPTCHA solution from the text input area, and the second
+            is the challenge string.
+        """
+        try:
+            challenge = request.args['captcha_challenge_field'][0]
+            response = request.args['captcha_response_field'][0]
+        except:
+            return redirectTo(request.URLPath(), request)
+        return (challenge, response)
+
+    def checkSolution(self, request):
+        """Override this method to check a client's CAPTCHA solution.
+
+        :rtype: bool
+        :returns: ``True`` if the client correctly solved the CAPTCHA;
+            ``False`` otherwise.
+        """
+        return False
+
+    def render_GET(self, request):
+        """Retrieve a ReCaptcha from the API server and serve it to the client.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for a page which should be
+            protected by a CAPTCHA.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+            for the client to solve.
+        """
+        image, challenge = self.getCaptchaImage(request)
+
+        try:
+            # TODO: this does not work for versions of IE < 8.0
+            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(image)
+            template = lookup.get_template('captcha.html')
+            rendered = template.render(imgstr=imgstr,
+                                       challenge_field=challenge)
+        except Exception as err:
+            rendered = replaceErrorPage(err, 'captcha.html')
+
+        return rendered
+
+    def render_POST(self, request):
+        """Process a client's CAPTCHA solution.
+
+        If the client's CAPTCHA solution is valid (according to
+        :meth:`checkSolution`), process and serve their original
+        request. Otherwise, redirect them back to a new CAPTCHA page.
+
+        :type request: :api:`twisted.web.http.Request`
+
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
+        """
+        if self.checkSolution(request):
+            try:
+                rendered = self.resource.render(request)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
+            return rendered
+
+        logging.debug("Client failed a CAPTCHA; returning redirect to %s"
+                      % request.uri)
+        return redirectTo(request.uri, request)
+
+
+class GimpCaptchaProtectedResource(CaptchaProtectedResource):
+    """A web resource which uses a local cache of CAPTCHAs, generated with
+    gimp-captcha_, to protect another resource.
+
+    .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
+    """
+
+    def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
+                 captchaDir='', useForwardedHeader=False, resource=None):
+        """Protect a **resource** via this one, using a local CAPTCHA cache.
+
+        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
+            verifying the client's solution to the CAPTCHA. See
+            :func:`bridgedb.crypto.getRSAKey` and the
+            ``GIMP_CAPTCHA_RSA_KEYFILE`` config setting.
+        :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
+            creating the ``captcha_challenge_field`` string to give to a
+            client.
+        :param bytes hmacKey: The master HMAC key, used for validating CAPTCHA
+            challenge strings in :meth:`captcha.GimpCaptcha.check`. The file
+            where this key is stored can be set via the
+            ``GIMP_CAPTCHA_HMAC_KEYFILE`` option in the config file.
+        :param str captchaDir: The directory where the cached CAPTCHA images
+            are stored. See the ``GIMP_CAPTCHA_DIR`` config setting.
+        :param bool useForwardedHeader: If ``True``, obtain the client's IP
+            address from the ``X-Forwarded-For`` HTTP header.
+        :type resource: :api:`twisted.web.resource.Resource`
+        :param resource: The resource to serve if the client successfully
+            passes the CAPTCHA challenge.
+        """
+        CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+        self.secretKey = secretKey
+        self.publicKey = publicKey
+        self.hmacKey = hmacKey
+        self.captchaDir = captchaDir
+
+    def checkSolution(self, request):
+        """Process a solved CAPTCHA by sending rehashing the solution together with
+        the client's IP address, and checking that the result matches the challenge.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtupe: bool
+        :returns: True, if the CAPTCHA solution was valid; False otherwise.
+        """
+        challenge, solution = self.extractClientSolution(request)
+        clientIP = self.getClientIP(request)
+        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
+        valid = captcha.GimpCaptcha.check(challenge, solution,
+                                          self.secretKey, clientHMACKey)
+        logging.debug("%sorrect captcha from %r: %r." % (
+            "C" if valid else "Inc", Util.logSafely(clientIP), solution))
+
+        return valid
+
+    def getCaptchaImage(self, request):
+        """Get a random CAPTCHA image from our **captchaDir**.
+
+        Creates a :class:`~bridgedb.captcha.GimpCaptcha`, and calls its
+        :meth:`~bridgedb.captcha.GimpCaptcha.get` method to return a random
+        CAPTCHA and challenge string.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A client's initial request for some other resource
+            which is protected by this one (i.e. protected by a CAPTCHA).
+        :returns: A 2-tuple of ``(image, challenge)``, where::
+            - ``image`` is a string holding a binary, JPEG-encoded image.
+            - ``challenge`` is a unique string associated with the request.
+        """
+        # Create a new HMAC key, specific to requests from this client:
+        clientIP = self.getClientIP(request)
+        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
+        capt = captcha.GimpCaptcha(self.secretKey, self.publicKey,
+                                   clientHMACKey, self.captchaDir)
+        try:
+            capt.get()
+        except captcha.GimpCaptchaError as error:
+            logging.error(error)
+        except Exception as error:
+            logging.error("Unhandled error while retrieving Gimp captcha!")
+            logging.exception(error)
+
+        return (capt.image, capt.challenge)
+
+    def render_GET(self, request):
+        """Get a random CAPTCHA from our local cache directory and serve it to
+        the client.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for a page which should be
+            protected by a CAPTCHA.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+           for the client to solve.
+        """
+        return CaptchaProtectedResource.render_GET(self, request)
+
+    def render_POST(self, request):
+        """Process a client's CAPTCHA solution.
+
+        If the client's CAPTCHA solution is valid (according to
+        :meth:`checkSolution`), process and serve their original
+        request. Otherwise, redirect them back to a new CAPTCHA page.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+            for the client to solve.
+        """
+        return CaptchaProtectedResource.render_POST(self, request)
+
+
+class ReCaptchaProtectedResource(CaptchaProtectedResource):
+    """A web resource which uses the reCaptcha_ service.
+
+    .. _reCaptcha: http://www.google.com/recaptcha
+    """
+
+    def __init__(self, recaptchaPrivKey='', recaptchaPubKey='', remoteip='',
+                 useForwardedHeader=False, resource=None):
+        CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+        self.recaptchaPrivKey = recaptchaPrivKey
+        self.recaptchaPubKey = recaptchaPubKey
+        self.recaptchaRemoteIP = remoteip
+
+    def getCaptchaImage(self, request):
+        """Get a CAPTCHA image from the remote reCaptcha server.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A client's initial request for some other resource
+            which is protected by this one (i.e. protected by a CAPTCHA).
+        :returns: A 2-tuple of ``(image, challenge)``, where::
+            - ``image`` is a string holding a binary, JPEG-encoded image.
+            - ``challenge`` is a unique string associated with the request.
+        """
+        capt = captcha.ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+
+        try:
+            capt.get()
+        except Exception as error:
+            logging.fatal("Connection to Recaptcha server failed: %s" % error)
+
+        if capt.image is None:
+            logging.warn("No CAPTCHA image received from ReCaptcha server!")
+
+        return (capt.image, capt.challenge)
+
+    def getRemoteIP(self):
+        """Mask the client's real IP address with a faked one.
+
+        The fake client IP address is sent to the reCaptcha server, and it is
+        either the public IP address of bridges.torproject.org (if
+        ``RECAPTCHA_REMOTE_IP`` is configured), or a random IP.
+
+        :rtype: str
+        :returns: A fake IP address to report to the reCaptcha API server.
+        """
+        if self.recaptchaRemoteIP:
+            remoteIP = self.recaptchaRemoteIP
+        else:
+            # generate a random IP for the captcha submission
+            remoteIP = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
+                                        randint(1,255),randint(1,255))
+        return remoteIP
+
+    def checkSolution(self, request):
+        """Process a solved CAPTCHA by sending it to the ReCaptcha server.
+
+        The client's IP address is not sent to the ReCaptcha server; instead,
+        a completely random IP is generated and sent instead.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtupe: bool
+        :returns: True, if the CAPTCHA solution was valid; False otherwise.
+        """
+        challenge, response = self.extractClientSolution(request)
+        clientIP = self.getClientIP(request)
+        remoteIP = self.getRemoteIP()
+        solution = txrecaptcha.submit(challenge, response,
+                                      self.recaptchaPrivKey, remoteIP)
+        logging.debug("Captcha from %r. Parameters: %r"
+                      % (Util.logSafely(clientIP), request.args))
+
+        if solution.is_valid:
+            logging.info("Valid CAPTCHA solution from %r."
+                         % Util.logSafely(clientIP))
+            return True
+        else:
+            logging.info("Invalid CAPTCHA solution from %r: %r"
+                         % (Util.logSafely(clientIP), solution.error_code))
+            return False
+
     def render_GET(self, request):
         """Retrieve a ReCaptcha from the API server and serve it to the client.
 
@@ -142,70 +447,27 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
                   for the client to solve.
         """
-        c = Raptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
-
-        try:
-            c.get()
-        except Exception as error:
-            logging.fatal("Connection to Recaptcha server failed: %s" % error)
-
-        if c.image is None:
-            logging.warn("No CAPTCHA image received from ReCaptcha server!")
-
-        try:
-            # TODO: this does not work for versions of IE < 8.0
-            imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(c.image)
-            template = lookup.get_template('captcha.html')
-            rendered = template.render(imgstr=imgstr,
-                                       challenge_field=c.challenge)
-        except Exception as err:
-            rendered = replaceErrorPage(err, 'captcha.html')
-
-        return rendered
+        return CaptchaProtectedResource.render_GET(self, request)
 
     def render_POST(self, request):
-        """Process a client CAPTCHA by sending it to the ReCaptcha server.
+        """Process a client's CAPTCHA solution.
 
-        The client's IP address is not sent to the ReCaptcha server; instead,
-        a completely random IP is generated and sent instead.
+        If the client's CAPTCHA solution is valid (according to
+        :meth:`checkSolution`), process and serve their original
+        request. Otherwise, redirect them back to a new CAPTCHA page.
 
         :type request: :api:`twisted.web.http.Request`
-        :param request: A ``Request`` object containing the POST arguments
-                        should include two key/value pairs: one key being
-                        ``'recaptcha_challange_field'``, and the other,
-                        ``'recaptcha_response_field'``. These POST arguments
-                        should be obtained from :meth:`render_GET`.
+
+        :param request: A ``Request`` object, including POST arguments which
+            should include two key/value pairs: one key being
+            ``'captcha_challenge_field'``, and the other,
+            ``'captcha_response_field'``. These POST arguments should be
+            obtained from :meth:`render_GET`.
+        :rtype: str
+        :returns: A rendered HTML page containing a ReCaptcha challenge image
+                  for the client to solve.
         """
-        try:
-            challenge = request.args['recaptcha_challenge_field'][0]
-            response = request.args['recaptcha_response_field'][0]
-        except:
-            return redirectTo(request.URLPath(), request)
-
-        # generate a random IP for the captcha submission
-        remote_ip = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
-                                     randint(1,255),randint(1,255))
-
-        recaptcha_response = captcha.submit(challenge, response,
-                                            self.recaptchaPrivKey, remote_ip)
-        logging.debug("Captcha from client with masked IP %r. Parameters:\n%r"
-                      % (remote_ip, request.args))
-
-        if recaptcha_response.is_valid:
-            logging.info("Valid recaptcha from client with masked IP %r."
-                         % remote_ip)
-            try:
-                rendered = self.resource.render(request)
-            except Exception as err:
-                rendered = replaceErrorPage(err)
-            return rendered
-        else:
-            logging.info("Invalid recaptcha from client with masked IP %r: %r"
-                         % (remote_ip, recaptcha_response.error_code))
-
-        logging.debug("Client failed a recaptcha; returning redirect to %s"
-                      % request.uri)
-        return redirectTo(request.uri, request)
+        return CaptchaProtectedResource.render_POST(self, request)
 
 
 class WebResourceOptions(twisted.web.resource.Resource):
@@ -236,31 +498,28 @@ class WebResourceOptions(twisted.web.resource.Resource):
 
     render_POST = render_GET
 
+
 class WebResourceBridges(twisted.web.resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
        bridges in response to a request."""
+
     isLeaf = True
 
     def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
-                 includeFingerprints=True, domains=None):
-        """Create a new WebResource.
-             :type distributor: :class:`IPBasedDistributor`
-             :param distributor: The mechanism to retrieve bridges for
-                                 this distributor
-             :type schedule: :class:`IntervalSchedule`
-             :param schedule: The time period used to tweak the bridge
-                              selection procedure.
-             :param int N: The number of bridges to hand out per query.
-             :param bool useForwardedHeader: Whether or not we should
-                                             use the the
-                                             X-Forwarded-For header
-                                             instead of the source IP
-                                             address.
-             :param bool includeFingerprints: Do we include the
-                                              bridge's fingerprint
-                                              in the response?
-             :param list domains: The list of email provider
-                                  domain names we support. (unused)
+                 includeFingerprints=True):
+        """Create a new resource for displaying bridges to a client.
+
+        :type distributor: :class:`IPBasedDistributor`
+        :param distributor: The mechanism to retrieve bridges for this
+            distributor.
+        :type schedule: :class:`IntervalSchedule`
+        :param schedule: The time period used to tweak the bridge selection
+            procedure.
+        :param int N: The number of bridges to hand out per query.
+        :param bool useForwardedHeader: Whether or not we should use the the
+            X-Forwarded-For header instead of the source IP address.
+        :param bool includeFingerprints: Do we include the bridge's
+            fingerprint in the response?
         """
         gettext.install("bridgedb", unicode=True)
         twisted.web.resource.Resource.__init__(self)
@@ -269,10 +528,6 @@ class WebResourceBridges(twisted.web.resource.Resource):
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
         self.includeFingerprints = includeFingerprints
-
-        # do not use mutable types as __init__ defaults!
-        if not domains: domains = []
-        self.domains = domains
 
     def render(self, request):
         """Render a response for a client HTTP request.
@@ -285,7 +540,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
-                        URI, and any URL/POST arguments and headers present.
+            URI, and any URL/POST arguments and headers present.
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
@@ -302,7 +557,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
-                        URI, and any URL/POST arguments and headers present.
+            URI, and any URL/POST arguments and headers present.
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
@@ -396,17 +651,16 @@ class WebResourceBridges(twisted.web.resource.Resource):
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
-                        URI, and any URL/POST arguments and headers present.
+            URI, and any URL/POST arguments and headers present.
         :type bridgeLines: list or None
         :param bridgeLines: A list of strings used to configure a Tor client
-                            to use a bridge.
+            to use a bridge.
         :param bool rtl: If ``True``, the language used for the response to
-                         the client should be rendered right-to-left.
+            the client should be rendered right-to-left.
         :type format: str or None
         :param format: If ``'plain'``, return a plaintext response. Otherwise,
-                       use the :file:`bridgedb/templates/bridges.html`
-                       template to render an HTML response page which includes
-                       the **bridges**.
+            use the :file:`bridgedb/templates/bridges.html` template to render
+            an HTML response page which includes the **bridges**.
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
@@ -453,42 +707,64 @@ class WebRoot(twisted.web.resource.Resource):
 
 def addWebServer(cfg, dist, sched):
     """Set up a web server.
-         cfg -- a configuration object from Main.  We use these options:
-                HTTPS_N_BRIDGES_PER_ANSWER
-                HTTP_UNENCRYPTED_PORT
-                HTTP_UNENCRYPTED_BIND_IP
-                HTTP_USE_IP_FROM_FORWARDED_HEADER
-                HTTPS_PORT
-                HTTPS_BIND_IP
-                HTTPS_USE_IP_FROM_FORWARDED_HEADER
-                RECAPTCHA_ENABLED
-                RECAPTCHA_PUB_KEY
-                RECAPTCHA_PRIV_KEY
-         dist -- an IPBasedDistributor object.
-         sched -- an IntervalSchedule object.
+
+    :param cfg: A configuration object from :mod:`bridgedb.Main`. Currently,
+         we use these options::
+             HTTPS_N_BRIDGES_PER_ANSWER
+             HTTP_UNENCRYPTED_PORT
+             HTTP_UNENCRYPTED_BIND_IP
+             HTTP_USE_IP_FROM_FORWARDED_HEADER
+             HTTPS_PORT
+             HTTPS_BIND_IP
+             HTTPS_USE_IP_FROM_FORWARDED_HEADER
+             RECAPTCHA_ENABLED
+             RECAPTCHA_PUB_KEY
+             RECAPTCHA_PRIV_KEY
+             RECAPTCHA_REMOTEIP
+             GIMP_CAPTCHA_ENABLED
+             GIMP_CAPTCHA_DIR
+    :type dist: :class:`bridgedb.Dist.IPBasedDistributor`
+    :param dist: A bridge distributor.
+    :type sched: :class:`bridgedb.Time.IntervalSchedule`
+    :param sched: DOCDOC
     """
-    site = None
     httpdist = twisted.web.resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
                       static.File(os.path.join(template_root, 'robots.txt')))
     httpdist.putChild('assets',
                       static.File(os.path.join(template_root, 'assets/')))
+    httpdist.putChild('options', WebResourceOptions())
 
     resource = WebResourceBridges(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
                    cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS,
-                   domains=cfg.EMAIL_DOMAINS)
+                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
 
-    resource_options = WebResourceOptions()
-
-    httpdist.putChild('options', resource_options)
     if cfg.RECAPTCHA_ENABLED:
-        protected = CaptchaProtectedResource(
+        protected = ReCaptchaProtectedResource(
                 recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
+                remoteip=cfg.RECAPTCHA_REMOTEIP,
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
                 resource=resource)
+        httpdist.putChild('bridges', protected)
+
+    elif cfg.GIMP_CAPTCHA_ENABLED:
+        # Get the HMAC secret key for CAPTCHA challenges and create a new key
+        # from it for use on the server:
+        captchaKey = crypto.getKey(cfg.GIMP_CAPTCHA_HMAC_KEYFILE)
+        hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key")
+
+        # Load or create our encryption keys:
+        secretKey, publicKey = crypto.getRSAKey(cfg.GIMP_CAPTCHA_RSA_KEYFILE)
+
+        protected = GimpCaptchaProtectedResource(
+            secretKey=secretKey,
+            publicKey=publicKey,
+            hmacKey=hmacKey,
+            captchaDir=cfg.GIMP_CAPTCHA_DIR,
+            useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+            resource=resource)
         httpdist.putChild('bridges', protected)
     else:
         httpdist.putChild('bridges', resource)

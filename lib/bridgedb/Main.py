@@ -124,16 +124,18 @@ def load(state, splitter, clear=False):
         logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
         f = open(fname, 'r')
         desc_digests.update(Bridges.getDescriptorDigests(f))
-        if bridge.getID() in timestamps.keys():
-            ts = timestamps[bridge.getID()][:]
-            ts.sort()
-            for timestamp in ts:
-                logging.debug(
-                    "Adding/updating timestamps in BridgeHistory for "\
-                    "'%s' in database: %s"
-                    % (bridge.fingerprint, timestamp))
-                bridgedb.Stability.addOrUpdateBridgeHistory(
-                    bridge, timestamp)
+        if state.COLLECT_TIMESTAMPS:
+            for bridge in bridges.values():
+                if bridge.getID() in timestamps.keys():
+                    ts = timestamps[bridge.getID()][:]
+                    ts.sort()
+                    for timestamp in ts:
+                        logging.debug(
+                           "Adding/updating timestamps in BridgeHistory for "\
+                           "'%s' in database: %s"
+                           % (bridge.fingerprint, timestamp))
+                        bridgedb.Stability.addOrUpdateBridgeHistory(
+                           bridge, timestamp)
         logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
         f.close()
 
@@ -282,7 +284,9 @@ def loadConfig(configFile=None, configCls=None):
 
     for attr in ["DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE", "PIDFILE",
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
-                 "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE"]:
+                 "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE",
+                 "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
+                 "GIMP_CAPTCHA_RSA_KEYFILE"]:
         setting = getattr(config, attr, None)
         if setting is None:
             setattr(config, attr, setting)
@@ -409,7 +413,7 @@ def startup(options):
 
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
-    splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
+    splitter = Bridges.BridgeSplitter(crypto.getHMAC(key, "Splitter-Key"))
     logging.debug("Created splitter: %r" % splitter)
 
     # Create ring parameters.
@@ -430,7 +434,7 @@ def startup(options):
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
             config.N_IP_CLUSTERS,
-            Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
+            crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             categories,
             answerParameters=ringParams)
         splitter.addRing(ipDistributor, "https", config.HTTPS_SHARE)
@@ -441,7 +445,7 @@ def startup(options):
     if config.EMAIL_DIST and config.EMAIL_SHARE:
         logging.debug("Setting up Email Distributor...")
         emailDistributor = Dist.EmailBasedDistributor(
-            Bridges.get_hmac(key, "Email-Dist-Key"),
+            crypto.getHMAC(key, "Email-Dist-Key"),
             config.EMAIL_DOMAIN_MAP.copy(),
             config.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams)
