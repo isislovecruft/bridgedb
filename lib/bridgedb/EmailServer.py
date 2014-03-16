@@ -427,9 +427,15 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
     else:
         mailbody.write(body)
 
+    # Only log the email text (including all headers) if SAFE_LOGGING is
+    # disabled:
+    if not Util.safe_logging:
+        f.seek(0)
+        logging.debug("Email contents:\n%s" % f.read())
+    else:
+        logging.debug("Email text for %r created." % Util.logSafely(clientAddr))
     f.seek(0)
-    logging.debug("Email body:\n%s" % Util.logSafely(f.read()))
-    f.seek(0)
+
     return clientAddr, f
 
 def getGPGContext(cfg):
