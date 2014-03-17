@@ -68,7 +68,7 @@ try:
                                "please install the geoip-database package."
                                % _geoipdb)
     # This is a "pure" python version which interacts with the Maxmind GeoIP
-    # API (version 1). It require, in Debian, the libgeoip-dev and
+    # API (version 1). It requires, in Debian, the libgeoip-dev and
     # geoip-database packages.
     import pygeoip
     geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
