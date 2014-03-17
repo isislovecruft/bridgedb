@@ -251,19 +251,18 @@ def replyToMail(lines, ctx):
     """
     logging.info("Got an email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
+
     if response is None:
         logging.debug("getMailResponse() said not to reply to %s, so I won't."
                       % Util.logSafely(sendToUser))
         return
+
     response.seek(0)
     logging.info("Sending reply to %r", Util.logSafely(sendToUser))
 
     d = Deferred()
-    factory = twisted.mail.smtp.SMTPSenderFactory(
-        ctx.smtpFromAddr,
-        sendToUser,
-        response,
-        d)
+    factory = twisted.mail.smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
+                                                  response, d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
 
     return d
