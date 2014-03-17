@@ -1,3 +1,11 @@
+Changes in version 0.1.6 - 2014-03-17
+BridgeDB 0.1.6 includes fixes for the following bugs:
+	* FIXES #11218 ReCaptchaProtectedResource.checkSolution()
+		doesn't expect a deferred
+	* FIXES #11219 BridgeDB's twisted version doesn´t have a
+		`t.w.client.HTTPConnectionPool` class
+
+
 Changes in version 0.1.5 - 2014-02-27
 BridgeDB 0.1.5 includes fixes for the following bugs:
 	* FIXES #9264 Problem with transport lines in BridgeDB's bridge
