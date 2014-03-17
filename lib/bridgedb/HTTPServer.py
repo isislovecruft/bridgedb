@@ -59,19 +59,19 @@ lookup = TemplateLookup(directories=[template_root],
                         collection_size=500)
 
 
+_geoipdb = '/usr/share/GeoIP/GeoIP.dat'
+
 try:
     # Make sure we have the database before trying to import the module:
-    geoipdb = '/usr/share/GeoIP/GeoIP.dat'
-    if not os.path.isfile(geoipdb):
+    if not os.path.isfile(_geoipdb):
         raise EnvironmentError("Could not find %r. On Debian-based systems, "\
                                "please install the geoip-database package."
-                               % geoipdb)
+                               % _geoipdb)
     # This is a "pure" python version which interacts with the Maxmind GeoIP
     # API (version 1). It require, in Debian, the libgeoip-dev and
     # geoip-database packages.
     import pygeoip
-    geoip = pygeoip.GeoIP(geoipdb, flags=pygeoip.MEMORY_CACHE)
-
+    geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
 except Exception as err:
     logging.debug("Error while loading geoip module: %r" % err)
     logging.warn("GeoIP database not found")
