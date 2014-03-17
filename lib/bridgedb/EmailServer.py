@@ -236,8 +236,18 @@ def buildSpamWarningTemplate(t):
     return msg_template 
 
 def replyToMail(lines, ctx):
-    """Given a list of lines from an incoming email message, and a
-       MailContext object, possibly send a reply.
+    """Reply to an incoming email. Maybe.
+
+    If no `response` is returned from :func:`getMailResponse`, then the
+    incoming email will not be responded to at all. This can happen for
+    several reasons, for example: if the DKIM signature was invalid or
+    missing, or if the incoming email came from an unacceptable domain, or if
+    there have been too many emails from this client in the allotted time
+    period.
+
+    :param list lines: A list of lines from an incoming email message.
+    :type ctx: :class:`MailContext`
+    :param ctx: The configured context for the email server.
     """
     logging.info("Got a completed email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
