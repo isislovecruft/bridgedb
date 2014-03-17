@@ -249,12 +249,15 @@ def replyToMail(lines, ctx):
     :type ctx: :class:`MailContext`
     :param ctx: The configured context for the email server.
     """
-    logging.info("Got a completed email; deciding whether to reply.")
+    logging.info("Got an email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
     if response is None:
-        logging.debug("getMailResponse said not to reply, so I won't.")
+        logging.debug("getMailResponse() said not to reply to %s, so I won't."
+                      % Util.logSafely(sendToUser))
         return
     response.seek(0)
+    logging.info("Sending reply to %r", Util.logSafely(sendToUser))
+
     d = Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(
         ctx.smtpFromAddr,
@@ -262,7 +265,7 @@ def replyToMail(lines, ctx):
         response,
         d)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-    logging.info("Sending reply to %r", Util.logSafely(sendToUser))
+
     return d
 
 def getLocaleFromPlusAddr(address):
