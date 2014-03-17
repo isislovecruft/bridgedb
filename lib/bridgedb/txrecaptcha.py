@@ -15,10 +15,12 @@ from recaptcha.client.captcha import API_SSL_SERVER
 from recaptcha.client.captcha import RecaptchaResponse
 from recaptcha.client.captcha import displayhtml
 
+from twisted import version as _twistedversion
 from twisted.internet import defer
 from twisted.internet import protocol
 from twisted.internet import reactor
 from twisted.python import failure
+from twisted.python.util import Version
 from twisted.web import client
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
@@ -31,10 +33,20 @@ from bridgedb.crypto import SSLVerifyingContextFactory
 API_SERVER = API_SSL_SERVER
 API_SSL_VERIFY_URL = "%s/verify" % API_SSL_SERVER
 
-_pool = client.HTTPConnectionPool(reactor, persistent=False)
-_pool.maxPersistentPerHost = 5
-_pool.cachedConnectionTimeout = 30
-_agent = client.Agent(reactor, pool=_pool)
+# `t.w.client.HTTPConnectionPool` isn't available in Twisted-12.0.0 (see
+# ticket #11219):
+_connectionPoolAvailable = _twistedversion >= Version('twisted', 12, 1, 0)
+if _connectionPoolAvailable:
+    logging.info("Using HTTPConnectionPool for reCaptcha API server.")
+    _pool = client.HTTPConnectionPool(reactor, persistent=False)
+    _pool.maxPersistentPerHost = 5
+    _pool.cachedConnectionTimeout = 30
+    _agent = client.Agent(reactor, pool=_pool)
+else:
+    logging.warn("Twisted-%s is too old for HTTPConnectionPool! Disabling..."
+                 % _twistedversion.short())
+    _pool = None
+    _agent = client.Agent(reactor)
 
 
 def _setAgent(agent):
@@ -45,8 +57,8 @@ def _setAgent(agent):
     global _agent
     _agent = agent
 
-def _getAgent(reactor=reactor, url=API_SSL_VERIFY_URL, pool=_pool,
-              connectTimeout=30, **kwargs):
+def _getAgent(reactor=reactor, url=API_SSL_VERIFY_URL, connectTimeout=30,
+              **kwargs):
     """Create a :api:`twisted.web.client.Agent` which will verify the
     certificate chain and hostname for the given **url**.
 
@@ -62,11 +74,17 @@ def _getAgent(reactor=reactor, url=API_SSL_VERIFY_URL, pool=_pool,
         :api:`twisted.internet.reactor.connectSSL` for specifying the
         connection timeout. (default: ``30``)
     """
-    return client.Agent(reactor,
-                        contextFactory=SSLVerifyingContextFactory(url),
-                        connectTimeout=connectTimeout,
-                        pool=pool,
-                        **kwargs)
+    if _connectionPoolAvailable:
+        return client.Agent(reactor,
+                            contextFactory=SSLVerifyingContextFactory(url),
+                            connectTimeout=connectTimeout,
+                            pool=_pool,
+                            **kwargs)
+    else:
+        return client.Agent(reactor,
+                            contextFactory=SSLVerifyingContextFactory(url),
+                            connectTimeout=connectTimeout,
+                            **kwargs)
 
 _setAgent(_getAgent())
 
