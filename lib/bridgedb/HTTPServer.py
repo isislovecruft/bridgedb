@@ -72,12 +72,10 @@ try:
     # geoip-database packages.
     import pygeoip
     geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
-except Exception as err:
-    logging.debug("Error while loading geoip module: %r" % err)
-    logging.warn("GeoIP database not found")
-    geoip = None
-else:
     logging.info("GeoIP database loaded")
+except Exception as err:
+    logging.warn("Error while loading geoip module: %r" % err)
+    geoip = None
 
 
 def replaceErrorPage(error, template_name=None):
