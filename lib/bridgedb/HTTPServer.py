@@ -424,19 +424,24 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
         remoteIP = self.getRemoteIP()
-        solution = txrecaptcha.submit(challenge, response,
-                                      self.recaptchaPrivKey, remoteIP)
+
         logging.debug("Captcha from %r. Parameters: %r"
                       % (Util.logSafely(clientIP), request.args))
 
-        if solution.is_valid:
-            logging.info("Valid CAPTCHA solution from %r."
-                         % Util.logSafely(clientIP))
-            return True
-        else:
-            logging.info("Invalid CAPTCHA solution from %r: %r"
-                         % (Util.logSafely(clientIP), solution.error_code))
-            return False
+
+        def checkResponse(solution, clientIP):
+            if solution.is_valid:
+                logging.info("Valid CAPTCHA solution from %r."
+                             % Util.logSafely(clientIP))
+                return True
+            else:
+                logging.info("Invalid CAPTCHA solution from %r: %r"
+                             % (Util.logSafely(clientIP), solution.error_code))
+                return False
+
+        d = txrecaptcha.submit(challenge, response, self.recaptchaPrivKey,
+                               remoteIP).addCallback(checkResponse, clientIP)
+        return d
 
     def render_GET(self, request):
         """Retrieve a ReCaptcha from the API server and serve it to the client.
