@@ -139,8 +139,8 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
 
         :returns: A 2-tuple of ``(image, challenge)``, where ``image`` is a
                   binary, JPEG-encoded image, and ``challenge`` is a unique
-                  string. If unable to retrieve a CAPTCHA, returns
-                  ``(None, None)``.
+                  string. If unable to retrieve a CAPTCHA, returns a tuple
+                  containing two empty strings.
         """
         return ('', '')
 
