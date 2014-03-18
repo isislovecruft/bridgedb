@@ -215,7 +215,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
                   for the client to solve.
         """
-        if self.checkSolution(request):
+        if self.checkSolution(request) is True:
             try:
                 rendered = self.resource.render(request)
             except Exception as err:
