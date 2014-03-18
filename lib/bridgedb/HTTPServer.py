@@ -142,7 +142,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
                   string. If unable to retrieve a CAPTCHA, returns
                   ``(None, None)``.
         """
-        return (None, None)
+        return ('', '')
 
     def extractClientSolution(self, request):
         """Extract the client's CAPTCHA solution from a POST request.
