@@ -86,19 +86,39 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         finally:
             HTTPServer.lookup = oldLookup
 
+    def createRequestWithIPs(self):
+        """Set the IP address returned from ``request.getClientIP()`` to
+        '3.3.3.3', and the IP address reported in the 'X-Forwarded-For' header
+        to '2.2.2.2'.
+        """
+        request = DummyRequest([self.pagename])
+        # Since we do not set ``request.getClientIP`` here like we do in some
+        # of the other unittests, an exception would be raised here if
+        # ``getBridgesForRequest()`` is unable to get the IP address from this
+        # 'X-Forwarded-For' header (because ``ip`` would get set to ``None``).
+        request.headers.update({'x-forwarded-for': '2.2.2.2'})
+        # See :api:`twisted.test.requesthelper.DummyRequest.getClientIP`
+        request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+        request.method = b'GET'
+        return request
+
     def test_getClientIP_XForwardedFor(self):
         """CaptchaProtectedResource.getClientIP() should return the IP address
         from the 'X-Forwarded-For' header when ``useForwardedHeader=True``.
         """
-        requestIP = b'6.6.6.6'
-        request = requesthelper.DummyRequest([self.pagename])
-        request.setHeader(b'X-Forwarded-For', requestIP)
-        request.method = b'GET'
-
-        #child = root.getChild(pagename, request)
-        page = self.captchaResource.render_GET(request)
+        self.captchaResource.useForwardedHeader = True
+        request = self.createRequestWithIPs()
         clientIP = self.captchaResource.getClientIP(request)
-        #self.assertEquals(requestIP, clientIP)
+        self.assertEqual(clientIP, '2.2.2.2')
+
+    def test_getClientIP_fromRequest(self):
+        """CaptchaProtectedResource.getClientIP() should return the IP address
+        from the request instance when ``useForwardedHeader=False``.
+        """
+        self.captchaResource.useForwardedHeader = False
+        request = self.createRequestWithIPs()
+        clientIP = self.captchaResource.getClientIP(request)
+        self.assertEqual(clientIP, '3.3.3.3')
 
     def test_render_POST(self):
         """render_POST() with a wrong 'captcha_response_field' should return
