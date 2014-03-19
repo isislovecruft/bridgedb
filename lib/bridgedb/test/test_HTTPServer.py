@@ -11,8 +11,11 @@
 
 """Unittests for :mod:`bridgedb.HTTPServer`."""
 
+from __future__ import print_function
+
 import logging
 import os
+import random
 import shutil
 
 import ipaddr
@@ -354,7 +357,6 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', '') 
 
         page = self.captchaResource.render_POST(self.request)
-        print page
         self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
                          'refresh')
 
@@ -370,6 +372,49 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', expectedResponse) 
 
         page = self.captchaResource.render_POST(self.request)
-        print page
         self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
                          'refresh')
+
+
+class DummyBridge(object):
+    """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
+    ``getConfigLine`` method."""
+
+    def _randORPort(self): return random.randint(9001, 9999)
+    def _randPTPort(self): return random.randint(6001, 6666)
+    def _returnFour(self): return random.randint(2**24, 2**32-1)
+    def _returnSix(self): return random.randint(2**24, 2**128-1)
+
+    def __init__(self, transports=[]):
+        """Create a mocked bridge suitable for testing distributors and web
+        resource rendering.
+        """
+        self.nickname = "bridge-{0}".format(self._returnFour())
+        self.ip = ipaddr.IPv4Address(self._returnFour())
+        self.orport = self._randORPort()
+        self.transports = transports
+        self.running = True
+        self.stable = True
+        self.blockingCountries = {}
+        self.desc_digest = None
+        self.ei_digest = None
+        self.verified = False
+        self.fingerprint = "".join(random.choice('abcdef0123456789')
+                                   for _ in xrange(40))
+        self.or_addresses = {ipaddr.IPv6Address(self._returnSix()):
+                             self._randORPort()}
+
+    def getConfigLine(self, includeFingerprint=True,
+                      addressClass=ipaddr.IPv4Address,
+                      transport=None,
+                      request=None):
+        """Get a "torrc" bridge config line to give to a client."""
+        line = []
+        if transport is not None:
+            #print("getConfigLine got transport=%r" % transport)
+            line.append(str(transport))
+        line.append("%s:%s" % (self.ip, self.orport))
+        if includeFingerprint is True: line.append(self.fingerprint)
+        bridgeLine = " ".join([item for item in line])
+        #print "Created config line: %r" % bridgeLine
+        return bridgeLine
