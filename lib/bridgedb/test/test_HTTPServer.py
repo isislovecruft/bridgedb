@@ -445,3 +445,23 @@ class DummyIPBasedDistributor(object):
         :meth:`WebResourceBridges.getBridgesForIP`.
         """
         return [DummyBridge() for _ in xrange(N)]
+
+
+class DummyRequest(requesthelper.DummyRequest):
+    """Wrapper for :api:`twisted.test.requesthelper.DummyRequest` to add
+    redirect support.
+    """
+
+    def __init__(self, *args, **kwargs):
+        requesthelper.DummyRequest.__init__(self, *args, **kwargs)
+        self.redirect = self._redirect(self)
+
+    def URLPath(self):
+        """Fake the missing Request.URLPath too."""
+        return self.uri
+
+    def _redirect(self, request):
+        """Stub method to add a redirect() method to DummyResponse."""
+        newRequest = type(request)
+        newRequest.uri = request.uri
+        return newRequest
