@@ -28,6 +28,7 @@ from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
 
 from bridgedb import HTTPServer
+from bridgedb.Time import IntervalSchedule
 
 
 # For additional logger output for debugging, comment out the following:
@@ -459,3 +460,138 @@ class DummyRequest(requesthelper.DummyRequest):
         newRequest = type(request)
         newRequest.uri = request.uri
         return newRequest
+
+
+class WebResourceBridgesTests(unittest.TestCase):
+    """Tests for :class:`HTTPServer.WebResourceBridges`."""
+
+    def setUp(self):
+        """Set up our resources to fake a minimal HTTP(S) server."""
+        self.pagename = b'bridges.html'
+        self.root = Resource()
+
+        self.dist = DummyIPBasedDistributor()
+        self.sched = IntervalSchedule('hour', 1)
+        self.nBridgesPerRequest = 2
+        self.bridgesResource = HTTPServer.WebResourceBridges(
+            self.dist, self.sched, N=2,
+            #useForwardedHeader=True,
+            includeFingerprints=True)
+
+        self.root.putChild(self.pagename, self.bridgesResource)
+
+    def parseBridgesFromHTMLPage(self, page):
+        """Utility to pull the bridge lines out of an HTML response page.
+
+        :param str page: A rendered HTML page, as a string.
+        :raises: Any error which might occur.
+        :rtype: list
+        :returns: A list of the bridge lines contained on the **page**.
+        """
+        # The bridge lines are contained in a <pre> tag:
+        soup = BeautifulSoup(page).find('pre')
+        soup = str(soup).replace('<pre>', '').strip()
+        soup = str(soup).replace('</pre>', '').strip()
+        bridges = [b.strip() for b in soup.splitlines()]
+        return bridges
+
+    def test_render_GET_vanilla(self):
+        """Test rendering a request for normal, vanilla bridges."""
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.getClientIP = lambda: '1.1.1.1'
+
+        page = self.bridgesResource.render(request)
+
+        # The response should explain how to use the bridge lines:
+        self.assertSubstring("To use the above lines", page)
+
+        for b in self.parseBridgesFromHTMLPage(page):
+            # Check that each bridge line had the expected number of fields:
+            fields = b.split(' ')
+            self.assertEqual(len(fields), 2)
+
+            # Check that the IP and port seem okay:
+            ip, port = fields[0].rsplit(':')
+            self.assertIsInstance(ipaddr.IPv4Address(ip), ipaddr.IPv4Address)
+            self.assertIsInstance(int(port), int)
+            self.assertGreater(int(port), 0)
+            self.assertLessEqual(int(port), 65535)
+
+    def test_render_GET_XForwardedFor(self):
+        """The client's IP address should be obtainable from the
+        'X-Forwarded-For' header in the request.
+        """
+        self.bridgesResource.useForwardedHeader = True
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        # Since we do not set ``request.getClientIP`` here like we do in some
+        # of the other unittests, an exception would be raised here if
+        # ``getBridgesForRequest()`` is unable to get the IP address from this
+        # 'X-Forwarded-For' header (because ``ip`` would get set to ``None``).
+        request.headers.update({'x-forwarded-for': '2.2.2.2'})
+
+        page = self.bridgesResource.render(request)
+        self.bridgesResource.useForwardedHeader = False  # Reset it
+        self.assertSubstring("To use the above lines", page)
+
+    def test_render_GET_RTLlang(self):
+        """Test rendering a request for obfs3 bridges in Arabic."""
+        request = DummyRequest(["bridges?transport=obfs3"])
+        request.method = b'GET'
+        request.getClientIP = lambda: '3.3.3.3'
+        request.headers.update({'accept-language': 'ar'})
+        # We actually have to set the request args manually when using a
+        # DummyRequest:
+        request.args.update({'transport': 'obfs3'})
+
+        page = self.bridgesResource.render(request)
+        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring("لاستخدام الأسطر أعلاه", page)
+
+        for bridgeLine in self.parseBridgesFromHTMLPage(page):
+            # Check that each bridge line had the expected number of fields:
+            bridgeLine = bridgeLine.split(' ')
+            self.assertEqual(len(bridgeLine), 3)
+
+            print("""
+            FIXME: The first field should be the transport method:
+            DummyBridge.getConfigLine() receives transport='o', not 'obfs3'.
+            What the hell?
+            """)
+            #self.assertEqual(bridgeLine[0], 'obfs3')
+
+            # Check that the IP and port seem okay:
+            ip, port = bridgeLine[1].rsplit(':')
+            self.assertIsInstance(ipaddr.IPv4Address(ip), ipaddr.IPv4Address)
+            self.assertIsInstance(int(port), int)
+            self.assertGreater(int(port), 0)
+            self.assertLessEqual(int(port), 65535)
+
+    def test_renderAnswer_textplain(self):
+        """If the request format specifies 'plain', we should return content
+        with mimetype 'text/plain'.
+        """
+        request = DummyRequest([self.pagename])
+        request.args.update({'format': 'plain'})
+        request.getClientIP = lambda: '4.4.4.4'
+        request.method = b'GET'
+
+        page = self.bridgesResource.render(request)
+
+        print("""
+        FIXME: The result page should have a mimetype of 'text/plain', and yet
+        it's still HTML.
+        """)
+        #self.assertNotSubstring("html", page)
+
+        for bridgeLine in self.parseBridgesFromHTMLPage(page):
+            bridgeLine = bridgeLine.split(' ')
+            self.assertEqual(len(bridgeLine), 2)
+
+            # Check that the IP and port seem okay:
+            ip, port = bridgeLine[0].rsplit(':')
+            self.assertIsInstance(ipaddr.IPv4Address(ip), ipaddr.IPv4Address)
+            self.assertIsInstance(int(port), int)
+            self.assertGreater(int(port), 0)
+            self.assertLessEqual(int(port), 65535)
