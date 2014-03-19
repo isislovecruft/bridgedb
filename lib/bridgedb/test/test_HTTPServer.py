@@ -11,6 +11,7 @@
 
 """Unittests for :mod:`bridgedb.HTTPServer`."""
 
+import logging
 import os
 import shutil
 
@@ -25,8 +26,11 @@ from twisted.web.test import requesthelper
 
 from bridgedb import HTTPServer
 
-import logging
+
+# For additional logger output for debugging, comment out the following:
 logging.disable(50)
+# and then uncomment the following line:
+#HTTPServer.logging.getLogger().setLevel(10)
 
 
 class ReplaceErrorPageTests(unittest.TestCase):
