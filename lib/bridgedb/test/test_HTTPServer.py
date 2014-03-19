@@ -418,3 +418,30 @@ class DummyBridge(object):
         bridgeLine = " ".join([item for item in line])
         #print "Created config line: %r" % bridgeLine
         return bridgeLine
+
+
+class DummyIPBasedDistributor(object):
+    """A mocked :class:`bridgedb.Dist.IPBasedDistributor` which is used to test
+    :class:`bridgedb.HTTPServer.WebResourceBridges.
+    """
+
+    def _dumbAreaMapper(ip): return ip
+
+    def __init__(self, areaMapper=None, nClusters=None, key=None,
+                 ipCategories=None, answerParameters=None):
+        """None of the parameters are really used, they are just there to retain
+        an identical method signature.
+        """
+        self.areaMapper = self._dumbAreaMapper
+        self.nClusters = 3
+        self.nBridgesToGive = 3
+        self.key = self.__class__.__name__
+        self.ipCategories = ipCategories
+        self.answerParameters = answerParameters
+
+    def getBridgesForIP(self, ip=None, epoch=None, N=1,
+                        countyCode=None, bridgeFilterRules=None):
+        """Needed because it's called in
+        :meth:`WebResourceBridges.getBridgesForIP`.
+        """
+        return [DummyBridge() for _ in xrange(N)]
