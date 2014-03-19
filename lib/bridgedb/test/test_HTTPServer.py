@@ -50,7 +50,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
     def setUp(self):
         self.dist = None
         self.sched = None
-        self.pagename = b'somepage.html'
+        self.pagename = b'bridges.html'
         self.root = Resource()
         self.protectedResource = HTTPServer.WebResourceBridges(self.dist,
                                                                self.sched)
