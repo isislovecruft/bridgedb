@@ -181,12 +181,21 @@ class SubmitTests(unittest.TestCase):
         self.ip = "1.2.3.4"
 
     def test_submit_emptyResponseField(self):
-        """An empty 'recaptcha_response_field' should immediately return a
-        RecaptchaResponse whose error_code is 'incorrect-captcha-sol'."""
-        response = txrecaptcha.submit(self.challenge, '', self.key, self.ip)
-        self.assertIsInstance(response, txrecaptcha.RecaptchaResponse)
-        self.assertIs(response.is_valid, False)
-        self.assertEqual(response.error_code, 'incorrect-captcha-sol')
+        """An empty 'recaptcha_response_field' should return a deferred which
+        callbacks with a RecaptchaResponse whose error_code is
+        'incorrect-captcha-sol'.
+        """
+        def checkResponse(response):
+            """Check that the response is a
+            :class:`txcaptcha.RecaptchaResponse`.
+            """
+            self.assertIsInstance(response, txrecaptcha.RecaptchaResponse)
+            self.assertIs(response.is_valid, False)
+            self.assertEqual(response.error_code, 'incorrect-captcha-sol')
+
+        d = txrecaptcha.submit(self.challenge, '', self.key, self.ip)
+        d.addCallback(checkResponse)
+        return d
 
     def test_submit_returnsDeferred(self):
         """:func:`txrecaptcha.submit` should return a deferred."""

@@ -309,9 +309,9 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_challenge_field', '')
         self.request.addArg('captcha_response_field', '') 
         
-        self.assertIsInstance(
-            self.captchaResource.checkSolution(self.request),
-            HTTPServer.txrecaptcha.RecaptchaResponse)
+        self.assertIs(False,
+                      self.successResultOf(
+                          self.captchaResource.checkSolution(self.request)))
 
     def test_getRemoteIP_useRandomIP(self):
         """Check that removing our remoteip setting produces a random IP."""
