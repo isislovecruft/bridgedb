@@ -65,7 +65,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         """render_GET() should return a page without a CAPTCHA, which has the
         image alt text.
         """
-        request = requesthelper.DummyRequest([self.pagename])
+        request = DummyRequest([self.pagename])
         request.method = b'GET'
         page = self.captchaResource.render_GET(request)
         self.assertSubstring(
@@ -78,7 +78,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         oldLookup = HTTPServer.lookup
         try:
             HTTPServer.lookup = None
-            request = requesthelper.DummyRequest([self.pagename])
+            request = DummyRequest([self.pagename])
             request.method = b'GET'
             page = self.captchaResource.render_GET(request)
             errorPage = HTTPServer.replaceErrorPage(Exception('kablam'))
@@ -104,18 +104,8 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         """render_POST() with a wrong 'captcha_response_field' should return
         a redirect to the CaptchaProtectedResource page.
         """
-        pagename = 'captcha.html'
-        self.root.putChild(pagename, self.captchaResource)
-
-        def redirect(request):
-            newRequest = type(request)
-            newRequest.uri = pagename
-            return newRequest
-
-        request = requesthelper.DummyRequest(['captcha.html'])
+        request = DummyRequest([self.pagename])
         request.method = b'POST'
-        request.redirect = redirect(request)
-
         page = self.captchaResource.render_POST(request)
         self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
                          'refresh')
@@ -149,15 +139,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
         self.root.putChild(self.pagename, self.captchaResource)
 
         # Set up the basic parts of our faked request:
-        self.request = requesthelper.DummyRequest([self.pagename])
-        self.request.URLPath = lambda: request.uri # Fake the URLPath too
-        self.request.redirect = self.doRedirect(self.request)
-
-    def doRedirect(self, request):
-        """Stub method to add a redirect() to DummyResponse."""
-        newRequest = type(request)
-        newRequest.uri = self.pagename
-        return newRequest
+        self.request = DummyRequest([self.pagename])
 
     def tearDown(self):
         """Delete the cached CAPTCHA directory if it still exists."""
@@ -283,15 +265,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.root.putChild(self.pagename, self.captchaResource)
 
         # Set up the basic parts of our faked request:
-        self.request = requesthelper.DummyRequest([self.pagename])
-        self.request.URLPath = lambda: request.uri # Fake the URLPath too
-        self.request.redirect = self.doRedirect(self.request)
-
-    def doRedirect(self, request):
-        """Stub method to add a redirect() to DummyResponse."""
-        newRequest = type(request)
-        newRequest.uri = self.pagename
-        return newRequest
+        self.request = DummyRequest([self.pagename])
 
     def tearDown(self):
         """Cleanup method for removing timed out connections on the reactor.
