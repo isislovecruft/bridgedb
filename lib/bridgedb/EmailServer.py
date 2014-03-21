@@ -21,6 +21,7 @@ from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 import twisted.mail.smtp
+from twisted.internet.error import ConnectionRefusedError
 
 from zope.interface import implements
 
@@ -235,6 +236,17 @@ def buildSpamWarningTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
     return msg_template 
 
+def _ebReplyToMailFailure(fail):
+    """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
+
+    :param fail: A :api:`twisted.python.failure.Failure` which occurred during
+        the transaction.
+    """
+    logging.debug("EmailServer._ebReplyToMailFailure() called with %r" % fail)
+    error = fail.getErrorMessage() or "unknown failure."
+    logging.exception("replyToMail Failure: %s" % error)
+    return None
+
 def replyToMail(lines, ctx):
     """Given a list of lines from an incoming email message, and a
        MailContext object, possibly send a reply.
@@ -250,9 +262,14 @@ def replyToMail(lines, ctx):
         ctx.smtpFromAddr,
         sendToUser,
         response,
-        d)
-    reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
+        d, retries=0, timeout=30)
+    d.addErrback(_ebReplyToMailFailure)
     logging.info("Sending reply to %r", Util.logSafely(sendToUser))
+    try:
+        reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
+    except ConnectionRefusedError as error:
+        logging.exception("Caught exception when replying to mail: %s",
+            error)
     return d
 
 def getLocaleFromPlusAddr(address):
