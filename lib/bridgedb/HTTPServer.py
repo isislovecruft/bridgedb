@@ -139,10 +139,10 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
 
         :returns: A 2-tuple of ``(image, challenge)``, where ``image`` is a
                   binary, JPEG-encoded image, and ``challenge`` is a unique
-                  string. If unable to retrieve a CAPTCHA, returns
-                  ``(None, None)``.
+                  string. If unable to retrieve a CAPTCHA, returns a tuple
+                  containing two empty strings.
         """
-        return (None, None)
+        return ('', '')
 
     def extractClientSolution(self, request):
         """Extract the client's CAPTCHA solution from a POST request.
@@ -215,7 +215,7 @@ class CaptchaProtectedResource(twisted.web.resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
                   for the client to solve.
         """
-        if self.checkSolution(request):
+        if self.checkSolution(request) is True:
             try:
                 rendered = self.resource.render(request)
             except Exception as err:
