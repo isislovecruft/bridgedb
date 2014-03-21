@@ -92,54 +92,112 @@ def load(state, splitter, clear=False):
 
     logging.info("Loading bridges...")
 
+    bridges = {}
     status = {}
     addresses = {}
     timestamps = {}
 
-    logging.info("Opening network status file: %s" % state.STATUS_FILE)
-    f = open(state.STATUS_FILE, 'r')
-    for (ID, running, stable,
-         or_addresses, timestamp) in Bridges.parseStatusFile(f):
+    logging.debug("Acquring lock at load()")
+    with bridgedb.Storage.getDB() as db:
+        logging.debug("Acquired lock at load()")
+        logging.info("Opening network status file: %s" % state.STATUS_FILE)
+        f = open(state.STATUS_FILE, 'r')
+        for (ID, running, stable,
+             or_addresses, timestamp) in Bridges.parseStatusFile(f):
 
-        status[ID] = running, stable
-        addresses[ID] = or_addresses
+            status[ID] = running, stable
+            addresses[ID] = or_addresses
 
-        if ID in timestamps.keys():
-            timestamps[ID].append(timestamp)
-        else:
-            timestamps[ID] = [timestamp]
-        #transports[ID] = transports
-    logging.debug("Closing network status file")
-    f.close()
-
-    bridges = {}
-
-    for fname in state.BRIDGE_FILES:
-        logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
-        f = open(fname, 'r')
-        for bridge in Bridges.parseDescFile(f, state.BRIDGE_PURPOSE):
-            if bridge.getID() in bridges:
-                logging.warn("Parsed a duplicate bridge. Skipping.")
-                continue
+            if ID in timestamps.keys():
+                timestamps[ID].append(timestamp)
             else:
-                bridges[bridge.getID()] = bridge
-                s = status.get(bridge.getID())
-                if s is not None:
-                    running, stable = s
-                    bridge.setStatus(running=running, stable=stable)
-                # XXX: what do we do with all these or_addresses?
-                #
-                # The bridge stability metrics are only concerned with a
-                # single ip:port So for now, we will only consider the bridges
-                # primary IP:port
-                bridge.or_addresses = addresses.get(bridge.getID())
-                # We attempt to insert all bridges. If the bridge is not
-                # running, then it is skipped during the insertion process. Also,
-                # if we have a descriptor for the bridge but it was not in the
-                # ns, then we skip it there, too.
-                splitter.insert(bridge)
+                timestamps[ID] = [timestamp]
+            #transports[ID] = transports
+        logging.debug("Closing network status file")
+        f.close()
 
-                if state.COLLECT_TIMESTAMPS:
+        for fname in state.BRIDGE_FILES:
+            logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
+            f = open(fname, 'r')
+            for bridge in Bridges.parseDescFile(f, state.BRIDGE_PURPOSE):
+                if bridge.getID() in bridges:
+                    logging.warn("Parsed a duplicate bridge. Skipping.")
+                    continue
+                else:
+                    bridges[bridge.getID()] = bridge
+                    s = status.get(bridge.getID())
+                    if s is not None:
+                        running, stable = s
+                        bridge.setStatus(running=running, stable=stable)
+                    # XXX: what do we do with all these or_addresses?
+                    #
+                    # The bridge stability metrics are only concerned with a
+                    # single ip:port So for now, we will only consider the bridges
+                    # primary IP:port
+                    bridge.or_addresses = addresses.get(bridge.getID())
+                    # We attempt to insert all bridges. If the bridge is not
+                    # running, then it is skipped during the insertion process. Also,
+                    # if we have a descriptor for the bridge but it was not in the
+                    # ns, then we skip it there, too.
+                    splitter.insert(bridge)
+            logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
+            f.close()
+
+        # read pluggable transports from extra-info document
+        # XXX: should read from networkstatus after bridge-authority
+        # does a reachability test
+        for filename in state.EXTRA_INFO_FILES:
+            logging.info("Opening extra-info file: '%s'" % filename)
+            f = open(filename, 'r')
+            for transport in Bridges.parseExtraInfoFile(f):
+                ID, method_name, address, port, argdict = transport
+                try:
+                    if bridges[ID].running:
+                        logging.info("Adding %s transport to running bridge"
+                                     % method_name)
+                        bridgePT = Bridges.PluggableTransport(
+                            bridges[ID], method_name, address, port, argdict)
+                        bridges[ID].transports.append(bridgePT)
+                        if not bridgePT in bridges[ID].transports:
+                            logging.critical(
+                                "Added a transport, but it disappeared!",
+                                "\tTransport: %r" % bridgePT)
+                except KeyError as error:
+                    logging.error("Could not find bridge with fingerprint '%s'."
+                                  % Bridges.toHex(ID))
+            logging.debug("Closing extra-info file: '%s'" % filename)
+            f.close()
+
+        if state.COUNTRY_BLOCK_FILE:
+            logging.info("Opening Blocking Countries file %s"
+                         % state.COUNTRY_BLOCK_FILE)
+            f = open(state.COUNTRY_BLOCK_FILE)
+            # Identity digest, primary OR address, portlist, country codes
+            for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
+                if ID in bridges.keys() and bridges[ID].running:
+                    for port in portlist:
+                        addrport = "{0}:{1}".format(addr, port)
+                        logging.debug(":'( Tears! %s blocked bridge %s at %s"
+                                      % (cc, bridges[ID].fingerprint, addrport))
+                        try:
+                            bridges[ID].blockingCountries[addrport].update(cc)
+                        except KeyError:
+                            bridges[ID].blockingCountries[addrport] = set(cc)
+            logging.debug("Closing blocking-countries document")
+            f.close()
+
+    logging.debug("Released at load()")
+    def updateBridgeHistory(bridges, timestamps):
+        if not hasattr(state, 'config'):
+            logging.info("updateBridgeHistory(): Config file not set "\
+                "in State file.")
+            return
+        logging.debug("Acquiring lock in updateBridgeHistory()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in updateBridgeHistory()")
+            if state.COLLECT_TIMESTAMPS:
+                for ID in bridges:
+                    bridge = bridges[ID]
                     if bridge.getID() in timestamps.keys():
                         ts = timestamps[bridge.getID()][:]
                         ts.sort()
@@ -147,54 +205,13 @@ def load(state, splitter, clear=False):
                             logging.debug(
                                 "Updating BridgeHistory timestamps for %s: %s"
                                 % (bridge.fingerprint, timestamp))
-                            bridgedb.Stability.addOrUpdateBridgeHistory(
+                            reactor.callFromThread(
+                                bridgedb.Stability.addOrUpdateBridgeHistory,
                                 bridge, timestamp)
+        logging.debug("Released lock in updateBridgeHistory()")
+        logging.debug("Done.")
 
-        logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
-        f.close()
-
-    # read pluggable transports from extra-info document
-    # XXX: should read from networkstatus after bridge-authority
-    # does a reachability test
-    for filename in state.EXTRA_INFO_FILES:
-        logging.info("Opening extra-info file: '%s'" % filename)
-        f = open(filename, 'r')
-        for transport in Bridges.parseExtraInfoFile(f):
-            ID, method_name, address, port, argdict = transport
-            try:
-                if bridges[ID].running:
-                    logging.info("Adding %s transport to running bridge"
-                                 % method_name)
-                    bridgePT = Bridges.PluggableTransport(
-                        bridges[ID], method_name, address, port, argdict)
-                    bridges[ID].transports.append(bridgePT)
-                    if not bridgePT in bridges[ID].transports:
-                        logging.critical(
-                            "Added a transport, but it disappeared!",
-                            "\tTransport: %r" % bridgePT)
-            except KeyError as error:
-                logging.error("Could not find bridge with fingerprint '%s'."
-                              % Bridges.toHex(ID))
-        logging.debug("Closing extra-info file: '%s'" % filename)
-        f.close()
-
-    if state.COUNTRY_BLOCK_FILE:
-        logging.info("Opening Blocking Countries file %s"
-                     % state.COUNTRY_BLOCK_FILE)
-        f = open(state.COUNTRY_BLOCK_FILE)
-        # Identity digest, primary OR address, portlist, country codes
-        for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
-            if ID in bridges.keys() and bridges[ID].running:
-                for port in portlist:
-                    addrport = "{0}:{1}".format(addr, port)
-                    logging.debug(":'( Tears! %s blocked bridge %s at %s"
-                                  % (cc, bridges[ID].fingerprint, addrport))
-                    try:
-                        bridges[ID].blockingCountries[addrport].update(cc)
-                    except KeyError:
-                        bridges[ID].blockingCountries[addrport] = set(cc)
-        logging.debug("Closing blocking-countries document")
-        f.close()
+    reactor.callInThread(updateBridgeHistory, bridges, timestamps)
 
     bridges = None
     state.save()
@@ -343,7 +360,7 @@ def _handleSIGUSR1(*args):
     cfg = loadConfig(state.CONFIG_FILE, state.config)
 
     logging.info("Dumping bridge assignments to files...")
-    reactor.callLater(0, runner.doDumpBridges, cfg)
+    reactor.callInThread(runner.doDumpBridges, cfg)
 
 
 class ProxyCategory:
@@ -537,8 +554,10 @@ def startup(options):
          ipDistributorTmp) = createBridgeRings(cfg, proxyList, key)
 
         # Initialize our DB file.
-        db = bridgedb.Storage.Database(cfg.DB_FILE + ".sqlite", cfg.DB_FILE)
-        bridgedb.Storage.setGlobalDB(db)
+        dbfile = cfg.DB_FILE + ".sqlite"
+        bridgedb.Storage.checkAndConvertDB(dbfile, cfg.DB_FILE)
+        bridgedb.Storage.setDBFilename(dbfile)
+        #db = bridgedb.Storage.getDB()
         load(state, splitter, clear=False)
 
         state = persistent.load()
@@ -589,7 +608,6 @@ def startup(options):
             logging.info("I/O error while writing assignments to: '%s'"
                          % state.ASSIGNMENTS_FILE)
         state.save()
-        db.close()
 
         if inThread:
             reactor.callFromThread(replaceBridgeRings, ipDistributor, ipDistributorTmp)
@@ -598,6 +616,9 @@ def startup(options):
             # We're still starting up. Return these distributors so
             # they are configured in the outer-namespace
             return emailDistributorTmp, ipDistributorTmp
+        #logging.info("Closing databases...")
+        #db = bridgedb.Storage.getDB()
+        #if db: db.close()
 
     global _reloadFn
     _reloadFn = reload
@@ -624,7 +645,6 @@ def startup(options):
     except KeyboardInterrupt:
         logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
-        logging.info("Closing databases...")
         if config.PIDFILE:
             os.unlink(config.PIDFILE)
         logging.info("Exiting...")
