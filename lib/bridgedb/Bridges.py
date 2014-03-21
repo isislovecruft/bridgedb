@@ -308,38 +308,38 @@ class Bridge(object):
         A bridge is 'familiar' if 1/8 of all active bridges have appeared
         more recently than it, or if it has been around for a Weighted Time of 8 days.
         """
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).familiar
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).familiar
 
     @property
     def wfu(self):
         """Weighted Fractional Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
 
     @property
     def weightedTime(self):
         """Weighted Time"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedTime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedTime
 
     @property
     def wmtbac(self):
         """Weighted Mean Time Between Address Change"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).wmtbac
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).wmtbac
 
     @property
     def tosa(self):
         """the Time On Same Address (TOSA)"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).tosa
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).tosa
 
     @property
     def weightedUptime(self):
         """Weighted Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedUptime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
 
 def getDescriptorDigests(desc):
     """Return the SHA-1 hash hexdigests of all descriptor descs
@@ -1122,19 +1122,19 @@ class UnallocatedHolder(BridgeHolder):
         self.fingerprints = []
 
     def dumpAssignments(self, f, description=""):
-        db = bridgedb.Storage.getDB()
-        allBridges = db.getAllBridges()
-        for bridge in allBridges:
-            if bridge.hex_key not in self.fingerprints:
-                continue
-            dist = bridge.distributor
-            desc = [ description ]
-            if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
-                dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
-                desc.append("bucket=%s" % dist)
-            elif dist != "unallocated":
-                continue
-            f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
+        with bridgedb.Storage.getDB() as db:
+            allBridges = db.getAllBridges()
+            for bridge in allBridges:
+                if bridge.hex_key not in self.fingerprints:
+                    continue
+                dist = bridge.distributor
+                desc = [ description ]
+                if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
+                    dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
+                    desc.append("bucket=%s" % dist)
+                elif dist != "unallocated":
+                    continue
+                f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
 
 class BridgeSplitter(BridgeHolder):
     """A BridgeHolder that splits incoming bridges up based on an hmac,
@@ -1186,7 +1186,6 @@ class BridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         assert self.rings
-        db = bridgedb.Storage.getDB()
 
         for s in self.statsHolders:
             s.insert(bridge)
@@ -1205,16 +1204,17 @@ class BridgeSplitter(BridgeHolder):
 
         validRings = self.rings + self.pseudoRings
 
-        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
+        with bridgedb.Storage.getDB() as db:
+            ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
                                              validRings)
-        db.commit()
+            db.commit()
 
-        # Pseudo distributors are always held in the "unallocated" ring
-        if ringname in self.pseudoRings:
-            ringname = "unallocated"
+            # Pseudo distributors are always held in the "unallocated" ring
+            if ringname in self.pseudoRings:
+                ringname = "unallocated"
 
-        ring = self.ringsByName.get(ringname)
-        ring.insert(bridge)
+            ring = self.ringsByName.get(ringname)
+            ring.insert(bridge)
 
     def dumpAssignments(self, f, description=""):
         for name,ring in self.ringsByName.iteritems():

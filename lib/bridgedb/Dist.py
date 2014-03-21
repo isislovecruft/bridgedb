@@ -474,58 +474,59 @@ class EmailBasedDistributor(Distributor):
         if emailaddress is None:
             return [] #XXXX raise an exception.
 
-        db = bridgedb.Storage.getDB()
-        wasWarned = db.getWarnedEmail(emailaddress)
-        lastSaw = db.getEmailTime(emailaddress)
+        with bridgedb.Storage.getDB() as db:
+            wasWarned = db.getWarnedEmail(emailaddress)
+            lastSaw = db.getEmailTime(emailaddress)
 
-        logging.info("Attempting to return for %d bridges for %s..."
-                     % (N, Util.logSafely(emailaddress)))
+            logging.info("Attempting to return for %d bridges for %s..."
+                         % (N, Util.logSafely(emailaddress)))
 
-        if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
-            logging.info("Client %s sent duplicate request within %d seconds."
-                         % (Util.logSafely(emailaddress), MAX_EMAIL_RATE))
-            if wasWarned:
-                logging.info(
-                    "Client was already warned about duplicate requests.")
-                raise IgnoreEmail("Client was warned",
-                                  Util.logSafely(emailaddress))
+            if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
+                logging.info("Client %s sent duplicate request within %d seconds."
+                             % (Util.logSafely(emailaddress), MAX_EMAIL_RATE))
+                if wasWarned:
+                    logging.info(
+                        "Client was already warned about duplicate requests.")
+                    raise IgnoreEmail("Client was warned",
+                                      Util.logSafely(emailaddress))
+                else:
+                    logging.info("Sending duplicate request warning to %s..."
+                                 % Util.logSafely(emailaddress))
+                    db.setWarnedEmail(emailaddress, True, now)
+                    db.commit()
+
+                raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+
+            # warning period is over
+            elif wasWarned:
+                db.setWarnedEmail(emailaddress, False)
+
+            pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
+
+            ring = None
+            ruleset = frozenset(bridgeFilterRules)
+            if ruleset in self.splitter.filterRings.keys():
+                logging.debug("Cache hit %s" % ruleset)
+                _, ring = self.splitter.filterRings[ruleset]
             else:
-                logging.info("Sending duplicate request warning to %s..."
-                             % Util.logSafely(emailaddress))
-                db.setWarnedEmail(emailaddress, True, now)
-                db.commit()
+                # cache miss, add new ring
+                logging.debug("Cache miss %s" % ruleset)
 
-            raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+                # add new ring
+                key1 = getHMAC(self.splitter.key,
+                                                 "Order-Bridges-In-Ring")
+                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                # debug log: cache miss
+                self.splitter.addRing(ring, ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
+                                      populate_from=self.splitter.bridges)
 
-        # warning period is over
-        elif wasWarned:
-            db.setWarnedEmail(emailaddress, False)
+            numBridgesToReturn = getNumBridgesPerAnswer(ring,
+                                                        max_bridges_per_answer=N)
+            result = ring.getBridges(pos, numBridgesToReturn)
 
-        pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-
-        ring = None
-        ruleset = frozenset(bridgeFilterRules)
-        if ruleset in self.splitter.filterRings.keys():
-            logging.debug("Cache hit %s" % ruleset)
-            _, ring = self.splitter.filterRings[ruleset]
-        else:
-            # cache miss, add new ring
-            logging.debug("Cache miss %s" % ruleset)
-
-            # add new ring
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
-            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            # debug log: cache miss
-            self.splitter.addRing(ring, ruleset,
-                                  filterBridgesByRules(bridgeFilterRules),
-                                  populate_from=self.splitter.bridges)
-
-        numBridgesToReturn = getNumBridgesPerAnswer(ring,
-                                                    max_bridges_per_answer=N)
-        result = ring.getBridges(pos, numBridgesToReturn)
-
-        db.setEmailTime(emailaddress, now)
-        db.commit()
+            db.setEmailTime(emailaddress, now)
+            db.commit()
 
         return result
 
@@ -533,15 +534,15 @@ class EmailBasedDistributor(Distributor):
         return len(self.splitter)
 
     def cleanDatabase(self):
-        db = bridgedb.Storage.getDB()
-        try:
-            db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
-            db.cleanWarnedEmails(time.time()-MAX_EMAIL_RATE)
-        except:
-            db.rollback()
-            raise
-        else:
-            db.commit()
+        with bridgedb.Storage.getDB() as db:
+            try:
+                db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
+                db.cleanWarnedEmails(time.time()-MAX_EMAIL_RATE)
+            except:
+                db.rollback()
+                raise
+            else:
+                db.commit()
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
