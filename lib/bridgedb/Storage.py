@@ -9,10 +9,15 @@ import binascii
 import sqlite3
 import time
 import hashlib
+from contextlib import contextmanager
+from contextlib import GeneratorContextManager
+from functools import wraps
 from ipaddr import IPAddress, IPv6Address, IPv4Address
+import sys
 
 import bridgedb.Stability as Stability
 from bridgedb.Stability import BridgeHistory
+import threading
 
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
@@ -201,13 +206,14 @@ class BridgeData:
         self.first_seen = first_seen
         self.last_seen = last_seen
 
-class Database:
+class Database(object):
     def __init__(self, sqlite_fname, db_fname=None):
         if db_fname is None:
             self._conn = openDatabase(sqlite_fname)
         else:
             self._conn = openOrConvertDatabase(sqlite_fname, db_fname)
         self._cur = self._conn.cursor()
+        self.sqlite_fname = sqlite_fname
 
     def commit(self):
         self._conn.commit()
@@ -216,6 +222,7 @@ class Database:
         self._conn.rollback()
 
     def close(self):
+        #print "Closing DB"
         self._cur.close()
         self._conn.close()
 
@@ -498,12 +505,147 @@ def openOrConvertDatabase(sqlite_file, db_file):
     conn.commit()
     return conn
 
-_THE_DB = None
+class DBGeneratorContextManager(GeneratorContextManager):
+    """Overload __exit__() so we can call the generator many times"""
+    def __exit__(self, type, value, traceback):
+        """Significantly based on contextlib.py"""
+        if type is None:
+            try:
+                self.gen.next()
+            except StopIteration:
+                return
+            return
+        else:
+            if value is None:
+                # Need to force instantiation so we can reliably
+                # tell if we get the same exception back
+                value = type()
+            try:
+                self.gen.throw(type, value, traceback)
+                raise RuntimeError("generator didn't stop after throw()")
+            except StopIteration, exc:
+                # Suppress the exception *unless* it's the same exception that
+                # was passed to throw().  This prevents a StopIteration
+                # raised inside the "with" statement from being suppressed
+                return exc is not value
+            except:
+                # only re-raise if it's *not* the exception that was
+                # passed to throw(), because __exit__() must not raise
+                # an exception unless __exit__() itself failed.  But throw()
+                # has to raise the exception to signal propagation, so this
+                # fixes the impedance mismatch between the throw() protocol
+                # and the __exit__() protocol.
+                #
+                if sys.exc_info()[1] is not value:
+                    raise
+def contextmanager(func):
+    @wraps(func)
+    def helper(*args, **kwds):
+        return DBGeneratorContextManager(func(*args, **kwds))
+    return helper
 
-def setGlobalDB(db):
-    global _THE_DB
-    _THE_DB = db
+_DB_FNAME = None
+_LOCK = None
+_LOCKED = False
+_OPENED_DB = None
+_TOC = None
 
-def getDB():
-    return _THE_DB
+def clearGlobalDB():
+    """Start from scratch"""
+    global _DB_FNAME
+    global _LOCK
+    global _LOCKED
+    global _OPENED_DB
+    global _TOC
 
+    _DB_FNAME = None
+    _LOCK = None
+    _LOCKED = False
+    _OPENED_DB = None
+    _TOC = None
+
+def checkAndConvertDB(sqlite_file, db_file):
+    openOrConvertDatabase(sqlite_file, db_file).close()
+
+def setDBFilename(sqlite_fname):
+    global _DB_FNAME
+    _DB_FNAME = sqlite_fname
+
+@contextmanager
+def getDB(block=True):
+    """Generator: Return a usable database handler
+
+    Always return a :class:`bridgedb.Storage.Database` that is
+    usable within the current thread. If a connection already exists
+    and it was created by the current thread, then return the
+    associated :class:`bridgedb.Storage.Database` instance. Otherwise,
+    create a new instance, blocking until the existing connection
+    is closed, if applicable.
+
+    Note: This is a blocking call, be careful about deadlocks!
+
+    :rtype: :class:`bridgedb.Storage.Database`
+    :returns: An instance of :class:`bridgedb.Storage.Database` used to
+        query the database
+    """
+    global _DB_FNAME
+    global _LOCK
+    global _LOCKED
+    global _OPENED_DB
+    global _TOC
+
+    refcount = 0
+
+    if not _LOCK:
+        _LOCK = threading.RLock()
+    this_thread = threading.current_thread().ident
+
+    #print "_DB_FNAME: %s, _LOCK: %s, _LOCKED: %s, _OPENED_DB: %s, _TOC: %s" % \
+    #    (_DB_FNAME, _LOCK, _LOCKED, _OPENED_DB, _TOC)
+
+    try:
+        if _TOC == this_thread:
+            refcount += 1
+            #print "yielding db from earlier"
+            logging.debug("Refcount: %d" % refcount)
+            yield _OPENED_DB
+        logging.debug("Checking lock status")
+        logging.debug("lock _LOCKED: %s" % _LOCKED)
+        locked = _LOCK.acquire(False)
+        logging.debug("lock aquired: %s" % locked)
+        if locked: _LOCK.release()
+        if _LOCK.acquire(block):
+            db = Database(_DB_FNAME)
+            assert not _LOCKED
+            _LOCKED = True
+            _OPENED_DB = db
+            _TOC = this_thread
+            refcount += 1
+            #print "yielding db of type: %s" % type(db)
+            #print "_DB_FNAME: %s, _LOCK: %s, _LOCKED: %s, _OPENED_DB: %s, _TOC: %s" % \
+            #    (_DB_FNAME, _LOCK, _LOCKED, _OPENED_DB, _TOC)
+            logging.debug("yielding db")
+            yield db
+        else:
+            #print "yielding False"
+            yield False
+    finally:
+        logging.debug("Refcount is %d in finally" % refcount)
+        if refcount == 1:
+            #assert _LOCKED
+            _LOCK.release()
+            assert _LOCK.acquire()
+            _LOCK.release()
+            _LOCKED = False
+            _OPENED_DB = None
+            _TOC = None
+            db.close()
+            logging.debug("Refcount resulted in closed")
+        else:
+            refcount -= 1
+
+def closeDB():
+    next(getDB(), None)
+
+def dbIsLocked():
+    return _LOCKED
