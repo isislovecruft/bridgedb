@@ -213,12 +213,12 @@ def submit(recaptcha_challenge_field, recaptcha_response_field,
     :returns: A :api:`~twisted.internet.defer.Deferred` which will callback
         with a ``recaptcha.RecaptchaResponse`` for the request.
     """
-    if not (recaptcha_response_field and
-            recaptcha_challenge_field and
-            len(recaptcha_response_field) and
-            len(recaptcha_challenge_field)):
-        return RecaptchaResponse(is_valid=False,
-                                 error_code='incorrect-captcha-sol')
+    if not (recaptcha_response_field and len(recaptcha_response_field) and
+            recaptcha_challenge_field and len(recaptcha_challenge_field)):
+        d = defer.Deferred()
+        d.addBoth(_ebRequest)  # We want `is_valid=False`
+        d.errback(failure.Failure(ValueError('incorrect-captcha-sol')))
+        return d
 
     params = urllib.urlencode({
         'privatekey': _encodeIfNecessary(private_key),

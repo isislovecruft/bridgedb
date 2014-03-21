@@ -426,7 +426,6 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         logging.debug("Captcha from %r. Parameters: %r"
                       % (Util.logSafely(clientIP), request.args))
 
-
         def checkResponse(solution, clientIP):
             if solution.is_valid:
                 logging.info("Valid CAPTCHA solution from %r."
@@ -564,10 +563,14 @@ class WebResourceBridges(twisted.web.resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
+        # XXX why are we getting the interval if our distributor might be
+        # using bridgedb.Time.NoSchedule?
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None
         countryCode = None
+
+        # XXX this code is duplicated in CaptchaProtectedResource
         if self.useForwardedHeader:
             h = request.getHeader("X-Forwarded-For")
             if h:
@@ -578,6 +581,8 @@ class WebResourceBridges(twisted.web.resource.Resource):
         else:
             ip = request.getClientIP()
 
+        # XXX This can also be a separate function
+        # XXX if the ip is None, this throws an exception
         if geoip:
             countryCode = geoip.country_code_by_addr(ip)
             if countryCode:
@@ -587,6 +592,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
         if rtl:
             logging.debug("Rendering RTL response.")
 
+        # XXX separate function again
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
 
@@ -596,6 +602,9 @@ class WebResourceBridges(twisted.web.resource.Resource):
         ipv6 = request.args.get("ipv6", False)
         if ipv6: ipv6 = True # if anything after ?ipv6=
 
+        # XXX oh dear hell. why not check for the '?transport=' arg before
+        # regex'ing? And why not compile the regex once, somewhere outside
+        # this function and class?
         try:
             # validate method name
             transport = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
@@ -673,6 +682,9 @@ class WebResourceBridges(twisted.web.resource.Resource):
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
             try:
+                # XXX FIXME the returned page from
+                # ``WebResourceBridgesTests.test_render_GET_RTLlang``
+                # is in Arabic and has `<html lang="en">`! Doh.
                 template = lookup.get_template('bridges.html')
                 rendered = template.render(answer=bridgeLines, rtl=rtl)
             except Exception as err:
