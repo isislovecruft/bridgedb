@@ -17,8 +17,13 @@ import os
 import shutil
 
 from io import StringIO
+import StringIO.StringIO
 
 from bridgedb import EmailServer
+from bridgedb.Dist import BadEmail
+from bridgedb.Dist import EmailBasedDistributor
+from bridgedb.EmailServer import MailContext
+from bridgedb.Time import NoSchedule
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
 from twisted.python import log
@@ -30,6 +35,20 @@ EMAIL_DIST = True
 EMAIL_GPG_SIGNING_ENABLED = True
 EMAIL_GPG_SIGNING_KEY = 'TESTING.subkeys.sec'
 """))
+
+class FakeDistributor(EmailBasedDistributor):
+    def __init__(self, key, domainmap, domainrules, answerParameters=None,
+                 bridges=None):
+        super(Distributor, self).__init__(key, domainmap, domainrules,
+            answerParameters)
+        if bridges:
+            self.bridges = bridges
+        else:
+            self.bridges = []
+
+    def getBridgesForEmail(self, emailaddr, epoch, N=1,
+         parameters=None, countryCode=None, bridgeFilterRules=None):
+        return self.bridges[:N]
 
 
 class EmailGnuPGTest(unittest.TestCase):
@@ -96,3 +115,82 @@ class EmailGnuPGTest(unittest.TestCase):
         self.makeBadKey()
         ctx = EmailServer.getGPGContext(self.config)
         self.assertTrue(ctx is None)
+
+class EmailCompositionTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.EmailServer.getMailResponse`."""
+
+    def setup(self):
+        """Create fake email and associated data"""
+        # TODO: Add headers if we start validating them
+        cfg = {'EMAIL_DOMAIN_MAP': {}}
+        self.lines = ["From: %s@%s.com", "To: %s@example.net",
+                      "Subject: testing", "\n", "get bridges"]
+        distributor = FakeDistributor('key', {}, {}, [])
+        self.ctx = MailContext(cfg, distributor, NoSchedule)
+
+    def test_getMailResponseNoFrom(self):
+        lines = self.lines
+        lines[0] = ""
+        lines[1] = lines[1] % "bridges"
+        ret = EmailServer.getMailResponse(lines, None)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+
+    def test_getMailResponseBadAddress(self):
+        lines = self.lines
+        lines[0] = self.lines[0] % ("testing", "exa#mple")
+        lines[0] = self.lines[0] % ("testing?", "example")
+        lines[1] = self.lines[1] % "bridges"
+        lines[2] = ""
+        ret = EmailServer.getMailResponse(lines, None)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+        lines[0] = self.lines[0] % ("<>>", "example")
+        ret = EmailServer.getMailResponse(lines, None)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+
+    def test_getMailResponseInvalidDomain(self):
+        lines = self.lines
+        lines[0] = self.lines[0] % ("testing", "exa#mple")
+        ret = EmailServer.getMailResponse(lines, self.ctx)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+        lines[0] = self.lines[0] % ("testing", "example")
+        ret = EmailServer.getMailResponse(lines, self.ctx)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+
+    def test_getMailResponseDKIM(self):
+        cfg = {'EMAIL_DOMAIN_MAP': {},
+               'EMAIL_DOMAIN_RULES': {
+                   'gmail.com': ["ignore_dots", "dkim"],
+                   'example.com': [],
+                }
+              }
+        lines = self.lines
+        lines[0] = self.lines[0] % ("testing", "gmail")
+        lines.append("X-DKIM-Authentication-Result: ")
+        ret = EmailServer.getMailResponse(lines, self.ctx)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+        lines[0] = self.lines[0] % ("testing", "example")
+        ret = EmailServer.getMailResponse(lines, self.ctx)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], "testing@example.com")
+        self.assertIsInstance(ret[1], StringIO.StringIO)
+        mail = ret[1].getvalue()
+        self.assertNotEqual(mail.find("no bridges currently"), -1)

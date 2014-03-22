@@ -308,38 +308,56 @@ class Bridge(object):
         A bridge is 'familiar' if 1/8 of all active bridges have appeared
         more recently than it, or if it has been around for a Weighted Time of 8 days.
         """
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).familiar
+        logging.debug("Acquiring lock in familiar()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in familiar()")
+            return db.getBridgeHistory(self.fingerprint).familiar
+        logging.debug("Released lock in familiar()")
 
     @property
     def wfu(self):
         """Weighted Fractional Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+        logging.debug("Acquiring lock in wfu()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in wfu()")
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+        logging.debug("Released lock in wfu()")
 
     @property
     def weightedTime(self):
         """Weighted Time"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedTime
+        logging.debug("Acquiring lock in weightedTime()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in weightedTime()")
+            return db.getBridgeHistory(self.fingerprint).weightedTime
+        logging.debug("Released lock in weightedTime()")
 
     @property
     def wmtbac(self):
         """Weighted Mean Time Between Address Change"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).wmtbac
+        logging.debug("Acquiring lock in wmtbac()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in wmtbac()")
+            return db.getBridgeHistory(self.fingerprint).wmtbac
+        logging.debug("Released lock in wmtbac()")
 
     @property
     def tosa(self):
         """the Time On Same Address (TOSA)"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).tosa
+        logging.debug("Acquiring lock in tosa()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in tosa()")
+            return db.getBridgeHistory(self.fingerprint).tosa
+        logging.debug("Released lock in tosa()")
 
     @property
     def weightedUptime(self):
         """Weighted Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedUptime
+        logging.debug("Acquiring lock in weightedUptime()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in weightedUptime()")
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
+        logging.debug("Released lock in weightedUptime()")
 
 def getDescriptorDigests(desc):
     """Return the SHA-1 hash hexdigests of all descriptor descs
@@ -1122,19 +1140,22 @@ class UnallocatedHolder(BridgeHolder):
         self.fingerprints = []
 
     def dumpAssignments(self, f, description=""):
-        db = bridgedb.Storage.getDB()
-        allBridges = db.getAllBridges()
-        for bridge in allBridges:
-            if bridge.hex_key not in self.fingerprints:
-                continue
-            dist = bridge.distributor
-            desc = [ description ]
-            if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
-                dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
-                desc.append("bucket=%s" % dist)
-            elif dist != "unallocated":
-                continue
-            f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
+        logging.debug("Acquiring lock in UnallocatedHolder.dumpAssignments()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in UnallocatedHolder.dumpAssignments()")
+            allBridges = db.getAllBridges()
+            for bridge in allBridges:
+                if bridge.hex_key not in self.fingerprints:
+                    continue
+                dist = bridge.distributor
+                desc = [ description ]
+                if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
+                    dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
+                    desc.append("bucket=%s" % dist)
+                elif dist != "unallocated":
+                    continue
+                f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
+        logging.debug("Released lock in UnallocatedHolder.dumpAssignments()")
 
 class BridgeSplitter(BridgeHolder):
     """A BridgeHolder that splits incoming bridges up based on an hmac,
@@ -1186,7 +1207,6 @@ class BridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         assert self.rings
-        db = bridgedb.Storage.getDB()
 
         for s in self.statsHolders:
             s.insert(bridge)
@@ -1205,16 +1225,20 @@ class BridgeSplitter(BridgeHolder):
 
         validRings = self.rings + self.pseudoRings
 
-        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
+        logging.debug("Acquiring lock in BridgeSplitter.insert()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in BridgeSplitter.insert()")
+            ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
                                              validRings)
-        db.commit()
+            db.commit()
 
-        # Pseudo distributors are always held in the "unallocated" ring
-        if ringname in self.pseudoRings:
-            ringname = "unallocated"
+            # Pseudo distributors are always held in the "unallocated" ring
+            if ringname in self.pseudoRings:
+                ringname = "unallocated"
 
-        ring = self.ringsByName.get(ringname)
-        ring.insert(bridge)
+            ring = self.ringsByName.get(ringname)
+            ring.insert(bridge)
+        logging.debug("Released lock in BridgeSplitter.insert()")
 
     def dumpAssignments(self, f, description=""):
         for name,ring in self.ringsByName.iteritems():

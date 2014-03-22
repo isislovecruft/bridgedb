@@ -92,104 +92,126 @@ def load(state, splitter, clear=False):
 
     logging.info("Loading bridges...")
 
+    bridges = {}
     status = {}
     addresses = {}
     timestamps = {}
-    bridges = {}
-    desc_digests = {}
-    ei_digests = {}
 
-    logging.info("Opening network status file: %s" % state.STATUS_FILE)
-    f = open(state.STATUS_FILE, 'r')
-    for (ID, nickname, desc_digest, running, stable,
-         ORaddr, ORport, or_addresses,
-         timestamp) in Bridges.parseStatusFile(f):
-        bridge = Bridges.Bridge(nickname, ORaddr, ORport, id_digest=ID,
-                                or_addresses=or_addresses)
-        bridge.assertOK()
-        bridge.setStatus(running, stable)
-        bridge.setDescriptorDigest(desc_digest)
-        bridges[ID] = bridge
+    logging.debug("Acquring lock at load()")
+    with bridgedb.Storage.getDB() as db:
+        logging.debug("Acquired lock at load()")
+        logging.info("Opening network status file: %s" % state.STATUS_FILE)
+        f = open(state.STATUS_FILE, 'r')
+        for (ID, running, stable,
+             or_addresses, timestamp) in Bridges.parseStatusFile(f):
 
-        if ID in timestamps.keys():
-            timestamps[ID].append(timestamp)
-        else:
-            timestamps[ID] = [timestamp]
-    logging.debug("Closing network status file")
-    f.close()
+            status[ID] = running, stable
+            addresses[ID] = or_addresses
 
-    db = bridgedb.Storage.getDB()
-
-    for fname in state.BRIDGE_FILES:
-        logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
-        f = open(fname, 'r')
-        desc_digests.update(Bridges.getDescriptorDigests(f))
-        if state.COLLECT_TIMESTAMPS:
-            for bridge in bridges.values():
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                           "Adding/updating timestamps in BridgeHistory for "\
-                           "'%s' in database: %s"
-                           % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                           bridge, timestamp)
-        logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
+            if ID in timestamps.keys():
+                timestamps[ID].append(timestamp)
+            else:
+                timestamps[ID] = [timestamp]
+            #transports[ID] = transports
+        logging.debug("Closing network status file")
         f.close()
 
-    for ID in bridges.keys():
-        bridge = bridges[ID]
-        if bridge.desc_digest in desc_digests:
-            bridge.setVerified()
-            bridge.setExtraInfoDigest(desc_digests[bridge.desc_digest])
-        # We attempt to insert all bridges. If the bridge is not
-        # running, then it is skipped during the insertion process.
-        splitter.insert(bridge)
+        for fname in state.BRIDGE_FILES:
+            logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
+            f = open(fname, 'r')
+            for bridge in Bridges.parseDescFile(f, state.BRIDGE_PURPOSE):
+                if bridge.getID() in bridges:
+                    logging.warn("Parsed a duplicate bridge. Skipping.")
+                    continue
+                else:
+                    bridges[bridge.getID()] = bridge
+                    s = status.get(bridge.getID())
+                    if s is not None:
+                        running, stable = s
+                        bridge.setStatus(running=running, stable=stable)
+                    # XXX: what do we do with all these or_addresses?
+                    #
+                    # The bridge stability metrics are only concerned with a
+                    # single ip:port So for now, we will only consider the bridges
+                    # primary IP:port
+                    bridge.or_addresses = addresses.get(bridge.getID())
+                    # We attempt to insert all bridges. If the bridge is not
+                    # running, then it is skipped during the insertion process. Also,
+                    # if we have a descriptor for the bridge but it was not in the
+                    # ns, then we skip it there, too.
+                    splitter.insert(bridge)
+            logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
+            f.close()
 
-    # read pluggable transports from extra-info document
-    # XXX: should read from networkstatus after bridge-authority
-    # does a reachability test
-    for filename in state.EXTRA_INFO_FILES:
-        logging.info("Opening extra-info file: '%s'" % filename)
-        f = open(filename, 'r')
-        for transport in Bridges.parseExtraInfoFile(f):
-            ID, method_name, address, port, argdict = transport
-            try:
-                if bridges[ID].running:
-                    logging.info("Adding %s transport to running bridge"
-                                 % method_name)
-                    bridgePT = Bridges.PluggableTransport(
-                        bridges[ID], method_name, address, port, argdict)
-                    bridges[ID].transports.append(bridgePT)
-                    if not bridgePT in bridges[ID].transports:
-                        logging.critical(
-                            "Added a transport, but it disappeared!",
-                            "\tTransport: %r" % bridgePT)
-            except KeyError as error:
-                logging.error("Could not find bridge with fingerprint '%s'."
-                              % Bridges.toHex(ID))
-        logging.debug("Closing extra-info file: '%s'" % filename)
-        f.close()
+        # read pluggable transports from extra-info document
+        # XXX: should read from networkstatus after bridge-authority
+        # does a reachability test
+        for filename in state.EXTRA_INFO_FILES:
+            logging.info("Opening extra-info file: '%s'" % filename)
+            f = open(filename, 'r')
+            for transport in Bridges.parseExtraInfoFile(f):
+                ID, method_name, address, port, argdict = transport
+                try:
+                    if bridges[ID].running:
+                        logging.info("Adding %s transport to running bridge"
+                                     % method_name)
+                        bridgePT = Bridges.PluggableTransport(
+                            bridges[ID], method_name, address, port, argdict)
+                        bridges[ID].transports.append(bridgePT)
+                        if not bridgePT in bridges[ID].transports:
+                            logging.critical(
+                                "Added a transport, but it disappeared!",
+                                "\tTransport: %r" % bridgePT)
+                except KeyError as error:
+                    logging.error("Could not find bridge with fingerprint '%s'."
+                                  % Bridges.toHex(ID))
+            logging.debug("Closing extra-info file: '%s'" % filename)
+            f.close()
 
-    if state.COUNTRY_BLOCK_FILE:
-        logging.info("Opening Blocking Countries file %s"
-                     % state.COUNTRY_BLOCK_FILE)
-        f = open(state.COUNTRY_BLOCK_FILE)
-        # Identity digest, primary OR address, portlist, country codes
-        for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
-            if ID in bridges.keys() and bridges[ID].running:
-                for port in portlist:
-                    addrport = "{0}:{1}".format(addr, port)
-                    logging.debug(":'( Tears! %s blocked bridge %s at %s"
-                                  % (cc, bridges[ID].fingerprint, addrport))
-                    try:
-                        bridges[ID].blockingCountries[addrport].update(cc)
-                    except KeyError:
-                        bridges[ID].blockingCountries[addrport] = set(cc)
-        logging.debug("Closing blocking-countries document")
-        f.close()
+        if state.COUNTRY_BLOCK_FILE:
+            logging.info("Opening Blocking Countries file %s"
+                         % state.COUNTRY_BLOCK_FILE)
+            f = open(state.COUNTRY_BLOCK_FILE)
+            # Identity digest, primary OR address, portlist, country codes
+            for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
+                if ID in bridges.keys() and bridges[ID].running:
+                    for port in portlist:
+                        addrport = "{0}:{1}".format(addr, port)
+                        logging.debug(":'( Tears! %s blocked bridge %s at %s"
+                                      % (cc, bridges[ID].fingerprint, addrport))
+                        try:
+                            bridges[ID].blockingCountries[addrport].update(cc)
+                        except KeyError:
+                            bridges[ID].blockingCountries[addrport] = set(cc)
+            logging.debug("Closing blocking-countries document")
+            f.close()
+
+    logging.debug("Released at load()")
+    def updateBridgeHistory(bridges, timestamps):
+        if not hasattr(state, 'config'):
+            logging.info("updateBridgeHistory(): Config file not set "\
+                "in State file.")
+            return
+        logging.debug("Acquiring lock in updateBridgeHistory()")
+        with bridgedb.Storage.getDB() as db:
+            logging.debug("Acquired lock in updateBridgeHistory()")
+            if state.COLLECT_TIMESTAMPS:
+                for ID in bridges:
+                    bridge = bridges[ID]
+                    if bridge.getID() in timestamps.keys():
+                        ts = timestamps[bridge.getID()][:]
+                        ts.sort()
+                        for timestamp in ts:
+                            logging.debug(
+                                "Updating BridgeHistory timestamps for %s: %s"
+                                % (bridge.fingerprint, timestamp))
+                            reactor.callFromThread(
+                                bridgedb.Stability.addOrUpdateBridgeHistory,
+                                bridge, timestamp)
+        logging.debug("Released lock in updateBridgeHistory()")
+        logging.debug("Done.")
+
+    reactor.callInThread(updateBridgeHistory, bridges, timestamps)
 
     bridges = None
     state.save()
@@ -327,7 +349,7 @@ def _reloadFn(*args):
 
 def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
-    reactor.callLater(0, _reloadFn, *args)
+    reactor.callInThread(_reloadFn)
 
 def _handleSIGUSR1(*args):
     """Handler for SIGUSR1. Calls :func:`~bridgedb.runner.doDumpBridges`."""
@@ -340,7 +362,7 @@ def _handleSIGUSR1(*args):
     cfg = loadConfig(state.CONFIG_FILE, state.config)
 
     logging.info("Dumping bridge assignments to files...")
-    reactor.callLater(0, runner.doDumpBridges, cfg)
+    reactor.callInThread(runner.doDumpBridges, cfg)
 
 
 class ProxyCategory:
@@ -350,6 +372,75 @@ class ProxyCategory:
         return self.ipset.has_key(ip)
     def replaceProxyList(self, ipset):
         self.ipset = ipset
+
+def replaceBridgeRings(current, replacement):
+    """Replace the current thing with the new one"""
+    current.splitter = replacement.splitter
+
+def createBridgeRings(cfg, proxyList, key):
+    """Create the bridge distributors defined by the config file
+
+    :type cfg:  :class:`Conf`
+    :param cfg: The current configuration, including any in-memory
+                settings (i.e. settings whose values were not obtained from the
+                config file, but were set via a function somewhere)
+    :type proxyList: :class:`ProxyCategory`
+    :param proxyList: The container for the IP addresses of any currently
+                      known open proxies.
+    :param bytes key: Splitter master key
+    :rtype: tuple
+    :returns: A BridgeSplitter splitter, an IPBasedDistributor or None,
+              and an EmailBasedDistributor or None.
+    """
+
+    # Create a BridgeSplitter to assign the bridges to the different
+    # distributors.
+    splitter = Bridges.BridgeSplitter(Bridges.get_hmac(key, "Splitter-Key"))
+    logging.debug("Created splitter: %r" % splitter)
+
+    # Create ring parameters.
+    ringParams = Bridges.BridgeRingParameters(needPorts=cfg.FORCE_PORTS,
+                                              needFlags=cfg.FORCE_FLAGS)
+
+    emailDistributor = ipDistributor = None
+    # As appropriate, create an IP-based distributor.
+    if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
+        logging.debug("Setting up HTTPS Distributor...")
+        categories = []
+        if proxyList.ipset:
+            logging.debug("Adding proxyList to HTTPS Distributor categories.")
+            categories.append(proxyList)
+        logging.debug("HTTPS Distributor categories: '%s'" % categories)
+
+        ipDistributor = Dist.IPBasedDistributor(
+            Dist.uniformMap,
+            cfg.N_IP_CLUSTERS,
+            Bridges.get_hmac(key, "HTTPS-IP-Dist-Key"),
+            categories,
+            answerParameters=ringParams)
+        splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+
+    # As appropriate, create an email-based distributor.
+    if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
+        logging.debug("Setting up Email Distributor...")
+        emailDistributor = Dist.EmailBasedDistributor(
+            Bridges.get_hmac(key, "Email-Dist-Key"),
+            cfg.EMAIL_DOMAIN_MAP.copy(),
+            cfg.EMAIL_DOMAIN_RULES.copy(),
+            answerParameters=ringParams)
+        splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+
+    # As appropriate, tell the splitter to leave some bridges unallocated.
+    if cfg.RESERVED_SHARE:
+        splitter.addRing(Bridges.UnallocatedHolder(),
+                         "unallocated",
+                         cfg.RESERVED_SHARE)
+
+    # Add pseudo distributors to splitter
+    for pseudoRing in cfg.FILE_BUCKETS.keys():
+        splitter.addPseudoRing(pseudoRing)
+
+    return splitter, emailDistributor, ipDistributor
 
 def startup(options):
     """Parse bridges,
@@ -402,73 +493,18 @@ def startup(options):
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
 
-    # Initialize our DB file.
-    db = bridgedb.Storage.Database(config.DB_FILE + ".sqlite", config.DB_FILE)
-    # TODO: move setGlobalDB to bridgedb.persistent.State class
-    bridgedb.Storage.setGlobalDB(db)
-
     # Get a proxy list.
     proxyList = ProxyCategory()
     proxyList.replaceProxyList(loadProxyList(config))
 
-    # Create a BridgeSplitter to assign the bridges to the different
-    # distributors.
-    splitter = Bridges.BridgeSplitter(crypto.getHMAC(key, "Splitter-Key"))
-    logging.debug("Created splitter: %r" % splitter)
-
-    # Create ring parameters.
-    ringParams = Bridges.BridgeRingParameters(needPorts=config.FORCE_PORTS,
-                                              needFlags=config.FORCE_FLAGS)
-
     emailDistributor = ipDistributor = None
-
-    # As appropriate, create an IP-based distributor.
-    if config.HTTPS_DIST and config.HTTPS_SHARE:
-        logging.debug("Setting up HTTPS Distributor...")
-        categories = []
-        if proxyList.ipset:
-            logging.debug("Adding proxyList to HTTPS Distributor categories.")
-            categories.append(proxyList)
-        logging.debug("HTTPS Distributor categories: '%s'" % categories)
-
-        ipDistributor = Dist.IPBasedDistributor(
-            Dist.uniformMap,
-            config.N_IP_CLUSTERS,
-            crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
-            categories,
-            answerParameters=ringParams)
-        splitter.addRing(ipDistributor, "https", config.HTTPS_SHARE)
-        #webSchedule = Time.IntervalSchedule("day", 2)
-        webSchedule = Time.NoSchedule()
-
-    # As appropriate, create an email-based distributor.
-    if config.EMAIL_DIST and config.EMAIL_SHARE:
-        logging.debug("Setting up Email Distributor...")
-        emailDistributor = Dist.EmailBasedDistributor(
-            crypto.getHMAC(key, "Email-Dist-Key"),
-            config.EMAIL_DOMAIN_MAP.copy(),
-            config.EMAIL_DOMAIN_RULES.copy(),
-            answerParameters=ringParams)
-        splitter.addRing(emailDistributor, "email", config.EMAIL_SHARE)
-        #emailSchedule = Time.IntervalSchedule("day", 1)
-        emailSchedule = Time.NoSchedule()
-
-    # As appropriate, tell the splitter to leave some bridges unallocated.
-    if config.RESERVED_SHARE:
-        splitter.addRing(Bridges.UnallocatedHolder(),
-                         "unallocated",
-                         config.RESERVED_SHARE)
-
-    # Add pseudo distributors to splitter
-    for pseudoRing in config.FILE_BUCKETS.keys():
-        splitter.addPseudoRing(pseudoRing)
 
     # Save our state
     state.proxyList = proxyList
     state.key = key
     state.save()
 
-    def reload(*args):
+    def reload(inThread=True):
         """Reload settings, proxy lists, and bridges.
 
         State should be saved before calling this method, and will be saved
@@ -514,6 +550,16 @@ def startup(options):
         logging.debug("Saving state again before reparsing descriptors...")
         state.save()
         logging.info("Reparsing bridge descriptors...")
+
+        (splitter,
+         emailDistributorTmp,
+         ipDistributorTmp) = createBridgeRings(cfg, proxyList, key)
+
+        # Initialize our DB file.
+        dbfile = cfg.DB_FILE + ".sqlite"
+        bridgedb.Storage.checkAndConvertDB(dbfile, cfg.DB_FILE)
+        bridgedb.Storage.setDBFilename(dbfile)
+        #db = bridgedb.Storage.getDB()
         load(state, splitter, clear=False)
 
         state = persistent.load()
@@ -521,32 +567,32 @@ def startup(options):
         logging.debug("Replacing the list of open proxies...")
         state.proxyList.replaceProxyList(loadProxyList(cfg))
 
-        if emailDistributor is not None:
-            emailDistributor.prepopulateRings() # create default rings
+        if emailDistributorTmp is not None:
+            emailDistributorTmp.prepopulateRings() # create default rings
             logging.info("Bridges allotted for %s distribution: %d"
-                         % (emailDistributor.name,
-                            len(emailDistributor.splitter)))
+                         % (emailDistributorTmp.name,
+                            len(emailDistributorTmp.splitter)))
         else:
             logging.warn("No email distributor created!")
 
-        if ipDistributor is not None:
-            ipDistributor.prepopulateRings() # create default rings
+        if ipDistributorTmp is not None:
+            ipDistributorTmp.prepopulateRings() # create default rings
 
             logging.info("Bridges allotted for %s distribution: %d"
-                         % (ipDistributor.name,
-                            len(ipDistributor.splitter)))
+                         % (ipDistributorTmp.name,
+                            len(ipDistributorTmp.splitter)))
             logging.info("\tNum bridges:\tFilter set:")
 
             nSubrings  = 0
-            ipSubrings = ipDistributor.splitter.filterRings
+            ipSubrings = ipDistributorTmp.splitter.filterRings
             for (ringname, (filterFn, subring)) in ipSubrings.items():
                 nSubrings += 1
                 filterSet = ' '.join(
-                    ipDistributor.splitter.extractFilterNames(ringname))
+                    ipDistributorTmp.splitter.extractFilterNames(ringname))
                 logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
 
             logging.info("Total subrings for %s: %d"
-                         % (ipDistributor.name, nSubrings))
+                         % (ipDistributorTmp.name, nSubrings))
         else:
             logging.warn("No HTTP(S) distributor created!")
 
@@ -566,18 +612,33 @@ def startup(options):
 
         state.save()
 
+        if inThread:
+            reactor.callFromThread(replaceBridgeRings, ipDistributor, ipDistributorTmp)
+            reactor.callFromThread(replaceBridgeRings, emailDistributor, emailDistributorTmp)
+        else:
+            # We're still starting up. Return these distributors so
+            # they are configured in the outer-namespace
+            return emailDistributorTmp, ipDistributorTmp
+        #logging.info("Closing databases...")
+        #db = bridgedb.Storage.getDB()
+        #if db: db.close()
+
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
     signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
-    # And actually load it to start parsing.
-    reload()
+    # And actually load it to start parsing. Get back our distributors.
+    emailDistributor, ipDistributor = reload(False)
 
     # Configure all servers:
     if config.HTTPS_DIST and config.HTTPS_SHARE:
+        #webSchedule = Time.IntervalSchedule("day", 2)
+        webSchedule = Time.NoSchedule()
         HTTPServer.addWebServer(config, ipDistributor, webSchedule)
     if config.EMAIL_DIST and config.EMAIL_SHARE:
+        #emailSchedule = Time.IntervalSchedule("day", 1)
+        emailSchedule = Time.NoSchedule()
         EmailServer.addSMTPServer(config, emailDistributor, emailSchedule)
 
     # Actually run the servers.
@@ -587,8 +648,6 @@ def startup(options):
     except KeyboardInterrupt:
         logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
-        logging.info("Closing databases...")
-        db.close()
         if config.PIDFILE:
             os.unlink(config.PIDFILE)
         logging.info("Exiting...")
