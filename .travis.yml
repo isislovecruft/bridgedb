@@ -31,9 +31,6 @@ install:
   - pip install coverage==3.7 coveralls==0.3 sure==1.2.2 --use-mirrors
   - make install
 
-before_script:
-  - bridgedb mock -n 250
-
 script:
   - coverage run $(which trial) ./lib/bridgedb/test/test_*.py
   - coverage report
