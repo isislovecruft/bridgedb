@@ -45,7 +45,7 @@ def generateDescriptors(count=None, rundir=None):
 
     proc = None
     statuscode = 0
-    script = 'gen_bridge_descriptors'
+    script = 'leekspin'
     rundir = rundir if os.path.isdir(rundir) else None
     count = count if count else 3
     try:
