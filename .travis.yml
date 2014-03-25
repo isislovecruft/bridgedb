@@ -37,4 +37,3 @@ script:
 
 after_success:
   - coveralls
-  - cat bridgedb.log
