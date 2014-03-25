@@ -206,7 +206,6 @@ class CaptchaProtectedResource(resource.Resource):
         request. Otherwise, redirect them back to a new CAPTCHA page.
 
         :type request: :api:`twisted.web.http.Request`
-
         :param request: A ``Request`` object, including POST arguments which
             should include two key/value pairs: one key being
             ``'captcha_challenge_field'``, and the other,
@@ -214,7 +213,7 @@ class CaptchaProtectedResource(resource.Resource):
             obtained from :meth:`render_GET`.
         :rtype: str
         :returns: A rendered HTML page containing a ReCaptcha challenge image
-                  for the client to solve.
+            for the client to solve.
         """
         if self.checkSolution(request) is True:
             try:
@@ -451,7 +450,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         :param request: A ``Request`` object for 'bridges.html'.
         :rtype: str
         :returns: A rendered HTML page containing a ReCaptcha challenge image
-                  for the client to solve.
+            for the client to solve.
         """
         return CaptchaProtectedResource.render_GET(self, request)
 
@@ -463,7 +462,6 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         request. Otherwise, redirect them back to a new CAPTCHA page.
 
         :type request: :api:`twisted.web.http.Request`
-
         :param request: A ``Request`` object, including POST arguments which
             should include two key/value pairs: one key being
             ``'captcha_challenge_field'``, and the other,
