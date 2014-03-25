@@ -367,6 +367,39 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         self.recaptchaPubKey = recaptchaPubKey
         self.recaptchaRemoteIP = remoteip
 
+    def _renderDeferred(self, checkedRequest):
+        """Render this resource asynchronously.
+
+        :type checkedRequest: tuple
+        :param checkedRequest: A tuple of ``(bool, request)``, as returned
+            from :meth:`checkSolution`.
+        """
+        try:
+            valid, request = checkedRequest
+        except Exception as err:
+            logging.error("Error in _renderDeferred(): %s" % err)
+            return
+
+        logging.debug("Attemping to render %svalid request %r"
+                      % ('' if valid else 'in', request))
+        if valid is True:
+            try:
+                rendered = self.resource.render(request)
+            except Exception as err:  # pragma: no cover
+                rendered = replaceErrorPage(err)
+        else:
+            logging.info("Client failed a CAPTCHA; redirecting to %s"
+                         % request.uri)
+            rendered = redirectTo(request.uri, request)
+
+        try:
+            request.write(rendered)
+            request.finish()
+        except Exception as err:  # pragma: no cover
+            logging.exception(err)
+
+        return request
+
     def getCaptchaImage(self, request):
         """Get a CAPTCHA image from the remote reCaptcha server.
 
