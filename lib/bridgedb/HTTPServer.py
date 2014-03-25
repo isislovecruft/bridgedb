@@ -16,9 +16,9 @@ import os
 
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-from twisted.web.server import Site
 from twisted.python import filepath
 from twisted.web import resource
+from twisted.web import server
 from twisted.web import static
 from twisted.web.util import redirectTo
 
@@ -789,7 +789,7 @@ def addWebServer(cfg, dist, sched):
     else:
         httpdist.putChild('bridges', bridgesResource)
 
-    site = Site(httpdist)
+    site = server.Site(httpdist)
 
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
