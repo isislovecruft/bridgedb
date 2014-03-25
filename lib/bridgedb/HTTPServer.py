@@ -419,8 +419,11 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_challenge_field'``, and the other,
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
-        :rtupe: bool
-        :returns: True, if the CAPTCHA solution was valid; False otherwise.
+        :rtupe: :api:`twisted.internet.defer.Deferred`
+        :returns: the returned deferred will callback with a tuple of
+                (``bool``, :api:`twisted.web.server.Request`). If the CAPTCHA
+            solution was valid, a tuple will contain ``(True, request)``;
+            otherwise, it will contain ``(False, request)``.
         """
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
@@ -429,18 +432,18 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         logging.debug("Captcha from %r. Parameters: %r"
                       % (Util.logSafely(clientIP), request.args))
 
-        def checkResponse(solution, clientIP):
+        def checkResponse(solution, request):
             if solution.is_valid:
                 logging.info("Valid CAPTCHA solution from %r."
                              % Util.logSafely(clientIP))
-                return True
+                return (True, request)
             else:
                 logging.info("Invalid CAPTCHA solution from %r: %r"
                              % (Util.logSafely(clientIP), solution.error_code))
-                return False
+                return (False, request)
 
         d = txrecaptcha.submit(challenge, response, self.recaptchaPrivKey,
-                               remoteIP).addCallback(checkResponse, clientIP)
+                               remoteIP).addCallback(checkResponse, request)
         return d
 
     def render_GET(self, request):
