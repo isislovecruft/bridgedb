@@ -503,11 +503,15 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_challenge_field'``, and the other,
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
-        :rtype: str
-        :returns: A rendered HTML page containing a ReCaptcha challenge image
-                  for the client to solve.
+        :returns: :api:`twisted.web.server.NOT_DONE_YET`, in order to handle
+            the ``Deferred`` returned from :meth:`checkSolution`. Eventually,
+            when the ``Deferred`` request is done being processed,
+            :meth:`_renderDeferred` will handle rendering and displaying the
+            HTML to the client.
         """
-        return CaptchaProtectedResource.render_POST(self, request)
+        d = self.checkSolution(request)
+        d.addCallback(self._renderDeferred)
+        return server.NOT_DONE_YET
 
 
 class WebResourceOptions(resource.Resource):
