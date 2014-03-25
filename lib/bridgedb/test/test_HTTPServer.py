@@ -59,7 +59,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         self.protectedResource = HTTPServer.WebResourceBridges(self.dist,
                                                                self.sched)
         self.captchaResource = HTTPServer.CaptchaProtectedResource(
-            useForwardedHeader=True, resource=self.protectedResource)
+            useForwardedHeader=True, protectedResource=self.protectedResource)
         self.root.putChild(self.pagename, self.captchaResource)
 
     def test_render_GET_noCaptcha(self):
@@ -155,7 +155,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
             hmacKey='abcdefghijklmnopqrstuvwxyz012345',
             captchaDir='captchas',
             useForwardedHeader=True,
-            resource=self.protectedResource)
+            protectedResource=self.protectedResource)
 
         self.root.putChild(self.pagename, self.captchaResource)
 
@@ -281,7 +281,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             recaptchaPubKey='23',
             remoteip='111.111.111.111',
             useForwardedHeader=True,
-            resource=self.protectedResource)
+            protectedResource=self.protectedResource)
 
         self.root.putChild(self.pagename, self.captchaResource)
 

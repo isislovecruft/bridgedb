@@ -16,11 +16,11 @@ import os
 
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-import twisted.web.resource
 from twisted.web.server import Site
+from twisted.python import filepath
+from twisted.web import resource
 from twisted.web import static
 from twisted.web.util import redirectTo
-from twisted.python import filepath
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
@@ -28,11 +28,12 @@ import bridgedb.Util as Util
 
 from bridgedb import captcha
 from bridgedb import crypto
-from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
+from bridgedb import txrecaptcha
+from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
-from bridgedb import txrecaptcha
 
 from ipaddr import IPv4Address, IPv6Address
 from random import randint
@@ -111,15 +112,15 @@ def replaceErrorPage(error, template_name=None):
     return rendered
 
 
-class CaptchaProtectedResource(twisted.web.resource.Resource):
+class CaptchaProtectedResource(resource.Resource):
     """A general resource protected by some form of CAPTCHA."""
 
     isLeaf = True
 
-    def __init__(self, useForwardedHeader=False, resource=None):
-        twisted.web.resource.Resource.__init__(self)
+    def __init__(self, useForwardedHeader=False, protectedResource=None):
+        resource.Resource.__init__(self)
         self.useForwardedHeader = useForwardedHeader
-        self.resource = resource
+        self.resource = protectedResource
 
     def getClientIP(self, request):
         ip = None
@@ -235,8 +236,9 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     """
 
     def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
-                 captchaDir='', useForwardedHeader=False, resource=None):
-        """Protect a **resource** via this one, using a local CAPTCHA cache.
+                 captchaDir='', useForwardedHeader=False,
+                 protectedResource=None):
+        """Protect a resource via this one, using a local CAPTCHA cache.
 
         :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
             verifying the client's solution to the CAPTCHA. See
@@ -253,11 +255,12 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
             are stored. See the ``GIMP_CAPTCHA_DIR`` config setting.
         :param bool useForwardedHeader: If ``True``, obtain the client's IP
             address from the ``X-Forwarded-For`` HTTP header.
-        :type resource: :api:`twisted.web.resource.Resource`
-        :param resource: The resource to serve if the client successfully
-            passes the CAPTCHA challenge.
+        :type protectedResource: :api:`twisted.web.resource.Resource`
+        :param protectedResource: The resource to serve if the client
+            successfully passes the CAPTCHA challenge.
         """
-        CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+        CaptchaProtectedResource.__init__(self, useForwardedHeader,
+                                          protectedResource)
         self.secretKey = secretKey
         self.publicKey = publicKey
         self.hmacKey = hmacKey
@@ -358,8 +361,9 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
     """
 
     def __init__(self, recaptchaPrivKey='', recaptchaPubKey='', remoteip='',
-                 useForwardedHeader=False, resource=None):
-        CaptchaProtectedResource.__init__(self, useForwardedHeader, resource)
+                 useForwardedHeader=False, protectedResource=None):
+        CaptchaProtectedResource.__init__(self, useForwardedHeader,
+                                          protectedResource)
         self.recaptchaPrivKey = recaptchaPrivKey
         self.recaptchaPubKey = recaptchaPubKey
         self.recaptchaRemoteIP = remoteip
@@ -472,7 +476,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         return CaptchaProtectedResource.render_POST(self, request)
 
 
-class WebResourceOptions(twisted.web.resource.Resource):
+class WebResourceOptions(resource.Resource):
     """This resource is used by Twisted Web to give a web page with
        additional options that the user may use to specify the criteria
        the returned bridges should meet.
@@ -482,7 +486,7 @@ class WebResourceOptions(twisted.web.resource.Resource):
     def __init__(self):
         """Create a new WebResource for the Options page"""
         gettext.install("bridgedb", unicode=True)
-        twisted.web.resource.Resource.__init__(self)
+        resource.Resource.__init__(self)
 
     def render_GET(self, request):
         rtl = False
@@ -501,7 +505,7 @@ class WebResourceOptions(twisted.web.resource.Resource):
     render_POST = render_GET
 
 
-class WebResourceBridges(twisted.web.resource.Resource):
+class WebResourceBridges(resource.Resource):
     """This resource is used by Twisted Web to give a web page with some
        bridges in response to a request."""
 
@@ -524,7 +528,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
             fingerprint in the response?
         """
         gettext.install("bridgedb", unicode=True)
-        twisted.web.resource.Resource.__init__(self)
+        resource.Resource.__init__(self)
         self.distributor = distributor
         self.schedule = schedule
         self.nBridgesToGive = N
@@ -693,7 +697,7 @@ class WebResourceBridges(twisted.web.resource.Resource):
         return rendered
 
 
-class WebRoot(twisted.web.resource.Resource):
+class WebRoot(resource.Resource):
     """The parent resource of all other documents hosted by the webserver."""
 
     isLeaf = True
@@ -743,7 +747,7 @@ def addWebServer(cfg, dist, sched):
     :type sched: :class:`bridgedb.Time.IntervalSchedule`
     :param sched: DOCDOC
     """
-    httpdist = twisted.web.resource.Resource()
+    httpdist = resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
                       static.File(os.path.join(template_root, 'robots.txt')))
@@ -751,9 +755,10 @@ def addWebServer(cfg, dist, sched):
                       static.File(os.path.join(template_root, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
 
-    resource = WebResourceBridges(dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-                   cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                   includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
+    bridgesResource = WebResourceBridges(
+        dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
+        cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
+        includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
 
     if cfg.RECAPTCHA_ENABLED:
         protected = ReCaptchaProtectedResource(
@@ -761,7 +766,7 @@ def addWebServer(cfg, dist, sched):
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
                 remoteip=cfg.RECAPTCHA_REMOTEIP,
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                resource=resource)
+                protectedResource=bridgesResource)
         httpdist.putChild('bridges', protected)
 
     elif cfg.GIMP_CAPTCHA_ENABLED:
@@ -779,10 +784,10 @@ def addWebServer(cfg, dist, sched):
             hmacKey=hmacKey,
             captchaDir=cfg.GIMP_CAPTCHA_DIR,
             useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-            resource=resource)
+            protectedResource=bridgesResource)
         httpdist.putChild('bridges', protected)
     else:
-        httpdist.putChild('bridges', resource)
+        httpdist.putChild('bridges', bridgesResource)
 
     site = Site(httpdist)
 
