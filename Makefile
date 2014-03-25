@@ -30,6 +30,7 @@ force-install:
 uninstall:
 	touch installed-files.txt
 	cat installed-files.txt | xargs rm -rf
+	rm installed-files.txt
 
 reinstall: uninstall force-install
 
