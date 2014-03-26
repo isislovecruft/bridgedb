@@ -266,11 +266,6 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
         a :class:`ReCaptchaProtectedResource`.
         """
-        # Create our cached CAPTCHA directory:
-        self.captchaDir = 'captchas'
-        if not os.path.isdir(self.captchaDir):
-            os.makedirs(self.captchaDir)
-
         # Set up our resources to fake a minimal HTTP(S) server:
         self.pagename = b'captcha.html'
         self.root = Resource()
