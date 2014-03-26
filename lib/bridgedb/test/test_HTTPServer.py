@@ -400,8 +400,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', '') 
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
-                         'refresh')
+        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
 
     def test_render_POST_wrongSolution(self):
         """render_POST() with a wrong 'captcha_response_field' should return
@@ -415,8 +414,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', expectedResponse) 
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
-                         'refresh')
+        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
 
 
 class DummyBridge(object):
