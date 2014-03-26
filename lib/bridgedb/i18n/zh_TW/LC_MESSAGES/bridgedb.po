@@ -1,0 +1,100 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2014-02-28 16:31+0000\n"
+"Last-Translator: 修銘 張 <cges30901@gmail.com>\n"
+"Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/torproject/language/zh_TW/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: zh_TW\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "什麼是網橋？"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s 網橋中繼 %s 是 Tor 中繼，可以幫助您規避審查。"
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "我需要使用其他方式獲取網橋！"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "獲取公開的網橋地址還有另一種方式：使用 %s 或 %s 電子郵件發送電子郵件至 %s，並在郵件正文中包含文字「get bridges」。"
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "網橋無法正常運行，我需要幫助！"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "如果Tor 無法正常運行，請發送電子郵件至 %s。請在郵件中提供盡可能詳細的訊息，例如：使用的網橋列表，所用的軟體包檔案名稱/版本，Tor 所顯示的信息等等。"
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "如需使用以上地址，請打開 Vidalia 網路設定，點選「我的 ISP 阻擋了對 Tor 網路的連接\"，然後依次添加網橋地址。"
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "目前無可用的網橋中繼"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "請將你的瀏覽器升級為 Firefox"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "請輸入圖中的兩個單字"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "第 1 步"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "獲取 %s Tor Browser Bundle %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "第 2 步"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "獲取 %s bridges %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "第 3 步"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "現在 %s 將網橋添加到 Tor %s"

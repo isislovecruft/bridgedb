@@ -1,0 +1,102 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+# ghostishev, 2014
+# AVATOR <sclub2018@yandex.ua>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2014-03-13 10:40+0000\n"
+"Last-Translator: ghostishev\n"
+"Language-Team: Ukrainian (http://www.transifex.com/projects/p/torproject/language/uk/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Що таке ретранслятор типу міст?"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Мости %s це ретранслятори Tor, які допомагають обійти цензуру."
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Мені потрібен альтернативний спосіб отримання списку мостів!"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "Інший спосіб знайти публічний міст - надіслати листа (з адреси %s або %s) на %s з одним рядком 'get bridges' в тілі листа."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Мої мости не працюють! Допоможіть!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Якщо Tor не працює - напишіть %s. Опишіть проблему якомога більш докладно, Введіть список використаних мостів, ім'я файлу / версію, яку ви використовували, повідомлення про помилки та інше."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "Для використання рядків вище, відкрийте сторінку Vidalia налаштування Мережі, і натисніть\n\"Мій провайдер Інтернет блокує з'єднання з мережею Tor\". Потім додайте кожну адресу моста\nза раз."
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "На цей час немає доступних мостів"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Оновіть ваш браузер до Firefox"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "Введіть два слова"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Крок 1"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Отримайте %s пакет Tor Browser %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Крок 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Отримайте %s мости %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Крок 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Тепер %s додайте мости в Tor %s"

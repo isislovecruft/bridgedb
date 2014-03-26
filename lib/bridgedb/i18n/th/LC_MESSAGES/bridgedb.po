@@ -40,7 +40,7 @@ msgid ""
 "Another way to find public bridge addresses is to send an email (from a %s "
 "or a %s address) to %s with the line 'get bridges' by itself in the body of "
 "the mail."
-msgstr "อีกหนึ่งช่องทาง สำหรับค้นหาที่อยู่ของสะพานสาธารณะ สามารถทำได้ผ่านการส่งอีเมล (จาก %s หรือ ที่อยู่ %s) ไปสู่ %s ด้วยเส้นทาง \"การเข้าถึงสะพาน\" ภายในเนื้อหาของอีเมล"
+msgstr "อีกหนึ่งช่องทาง สำหรับค้นหาที่อยู่ของสะพานสาธารณะ สามารถทำได้ผ่านการส่งอีเมล (จาก %s หรือ ที่อยู่ %s) ไปสู่ %s ด้วยเส้นทาง \"\n\"การเข้าถึงสะพาน\" ภายในเนื้อหาของอีเมล"
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
