@@ -23,6 +23,7 @@ import ipaddr
 from BeautifulSoup import BeautifulSoup
 
 from twisted.internet import reactor
+from twisted.internet import task
 from twisted.trial import unittest
 from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
@@ -296,6 +297,58 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
                 delay.cancel()
             except (AlreadyCalled, AlreadyCancelled):
                 pass
+
+    def test_renderDeferred_invalid(self):
+        """:meth:`_renderDeferred` should redirect a ``Request`` (after the
+        CAPTCHA was NOT xsuccessfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIsInstance(request, DummyRequest)
+            soup = BeautifulSoup(b''.join(request.written)).find('meta')['http-equiv']
+            self.assertEqual(soup, 'refresh')
+
+        d = task.deferLater(reactor, 0, lambda x: x, (False, self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
+
+    def test_renderDeferred_valid(self):
+        """:meth:`_renderDeferred` should correctly render a ``Request`` (after
+        the CAPTCHA has been successfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIsInstance(request, DummyRequest)
+            html = b''.join(request.written)
+            self.assertSubstring('No bridges currently available', html)
+
+        d = task.deferLater(reactor, 0, lambda x: x, (True, self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
+
+    def test_renderDeferred_nontuple(self):
+        """:meth:`_renderDeferred` should correctly render a ``Request`` (after
+        the CAPTCHA has been successfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIs(request, None)
+
+        d = task.deferLater(reactor, 0, lambda x: x, (self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
 
     def test_checkSolution_blankFields(self):
         """:meth:`HTTPServer.ReCaptchaProtectedResource.checkSolution` should
