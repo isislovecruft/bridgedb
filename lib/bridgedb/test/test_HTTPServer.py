@@ -641,3 +641,29 @@ class WebResourceBridgesTests(unittest.TestCase):
             self.assertIsInstance(int(port), int)
             self.assertGreater(int(port), 0)
             self.assertLessEqual(int(port), 65535)
+
+
+class WebResourceOptionsTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.HTTPServer.WebResourceOptions`."""
+
+    def setUp(self):
+        """Create a :class:`HTTPServer.WebResourceOptions`."""
+        # Set up our resources to fake a minimal HTTP(S) server:
+        self.pagename = b'options.html'
+        self.root = Resource()
+        self.optionsResource = HTTPServer.WebResourceOptions()
+        self.root.putChild(self.pagename, self.optionsResource)
+
+    def test_render_GET_RTLlang(self):
+        """Test rendering a request for obfs3 bridges in Arabic."""
+        request = DummyRequest(["bridges?transport=obfs3"])
+        request.method = b'GET'
+        request.getClientIP = lambda: '3.3.3.3'
+        request.headers.update({'accept-language': 'he'})
+        # We actually have to set the request args manually when using a
+        # DummyRequest:
+        request.args.update({'transport': 'obfs2'})
+
+        page = self.optionsResource.render(request)
+        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring("מהם גשרים?", page)
