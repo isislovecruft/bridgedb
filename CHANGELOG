@@ -1,10 +1,15 @@
-Changes in version 0.1.6 - 2014-03-17
+Changes in version 0.1.6 - 2014-03-26
 BridgeDB 0.1.6 includes fixes for the following bugs:
+	* FIXES #11196 BridgeDB should use leekspin
 	* FIXES #11218 ReCaptchaProtectedResource.checkSolution()
 		doesn't expect a deferred
 	* FIXES #11219 BridgeDB's twisted version doesn´t have a
 		`t.w.client.HTTPConnectionPool` class
+	* FIXES #11231 BridgeDB's txrecaptcha returns the "No bridges
+		available!" page if 'captcha_response_field' is blank
 
+And includes the following general changes:
+	* ADDS several new translations languages.
 
 Changes in version 0.1.5 - 2014-02-27
 BridgeDB 0.1.5 includes fixes for the following bugs:
