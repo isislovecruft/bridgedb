@@ -544,9 +544,6 @@ class WebResourceOptions(resource.Resource):
             rtl = usingRTLLang(request)
         except Exception as err:  # pragma: no cover
             logging.exception(err)
-            logging.error("The gettext files were not properly installed.")
-            logging.info("To install translations, try doing `python " \
-                         "setup.py compile_catalog`.")
 
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return lookup.get_template('options.html').render(rtl=rtl)
