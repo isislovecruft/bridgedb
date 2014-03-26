@@ -64,7 +64,7 @@ _geoipdb = '/usr/share/GeoIP/GeoIP.dat'
 
 try:
     # Make sure we have the database before trying to import the module:
-    if not os.path.isfile(_geoipdb):
+    if not os.path.isfile(_geoipdb):  # pragma: no cover
         raise EnvironmentError("Could not find %r. On Debian-based systems, "\
                                "please install the geoip-database package."
                                % _geoipdb)
@@ -74,7 +74,7 @@ try:
     import pygeoip
     geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
     logging.info("GeoIP database loaded")
-except Exception as err:
+except Exception as err:  # pragma: no cover
     logging.warn("Error while loading geoip module: %r" % err)
     geoip = None
 
@@ -162,7 +162,7 @@ class CaptchaProtectedResource(resource.Resource):
         try:
             challenge = request.args['captcha_challenge_field'][0]
             response = request.args['captcha_response_field'][0]
-        except:
+        except Exception:  # pragma: no cover
             return redirectTo(request.URLPath(), request)
         return (challenge, response)
 
@@ -314,7 +314,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
             capt.get()
         except captcha.GimpCaptchaError as error:
             logging.error(error)
-        except Exception as error:
+        except Exception as error:  # pragma: no cover
             logging.error("Unhandled error while retrieving Gimp captcha!")
             logging.exception(error)
 
@@ -466,7 +466,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
                       % (Util.logSafely(clientIP), request.args))
 
         def checkResponse(solution, request):
-            if solution.is_valid:
+            if solution.is_valid:  # pragma: no cover
                 logging.info("Valid CAPTCHA solution from %r."
                              % Util.logSafely(clientIP))
                 return (True, request)
@@ -531,7 +531,7 @@ class WebResourceOptions(resource.Resource):
 
         try:
             rtl = usingRTLLang(request)
-        except Exception as err:
+        except Exception as err:  # pragma: no cover
             logging.exception(err)
             logging.error("The gettext files were not properly installed.")
             logging.info("To install translations, try doing `python " \
