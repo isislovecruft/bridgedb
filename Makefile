@@ -30,6 +30,7 @@ force-install:
 uninstall:
 	touch installed-files.txt
 	cat installed-files.txt | xargs rm -rf
+	rm installed-files.txt
 
 reinstall: uninstall force-install
 
@@ -44,5 +45,5 @@ clean:
 
 coverage:
 	-coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
-	-coverage report
-	-coverage html
+	-coverage report --rcfile=".coveragerc"
+	-coverage html --rcfile=".coveragerc"

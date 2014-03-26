@@ -75,12 +75,18 @@ class BridgeDBCliTest(unittest.TestCase):
         bridgedbScript = bridgedbScript[0]
         print("Running bridgedb script %r..." % bridgedbScript)
 
+        os.chdir(runDir)  # we have to do this to get files to end up there
         print("Running `bridgedb mock' to generate mock bridge descriptors...")
-        mockProc = Popen([bridgedbScript, 'mock',
-                          '-n', '50',
-                          '-r', runDir])
+        mockProc = Popen([bridgedbScript, 'mock', '-n', '50'])
         mockProcCode = mockProc.wait()
         print("`bridgedb mock' exited with status code %d" % int(mockProcCode))
+        os.chdir(here)
+
+        # See ticket #11216, cached-extrainfo* files should not be parsed
+        # cumulatively.
+        eidesc  = pjoin(runDir, 'cached-extrainfo')
+        eindesc = pjoin(runDir, 'cached-extrainfo.new')
+        self.doCopyFile(eindesc, eidesc, 'duplicated cached-extrainfo(.new)')
 
         print("Running `bridgedb' to test server startups...")
         bridgedbProc = Popen([bridgedbScript, '-r', runDir])

@@ -34,7 +34,8 @@ span {
   <ul class="nav nav-pills pull-right">
     <h3 class="muted">BridgeDB</h3>
   </ul>
-  <img src="/assets/tor.svg" height="10%" width="15%"/>
+  <a href="https://www.torproject.org"><img src="/assets/tor.svg"
+                                            height="10%" width="15%"/></a>
 
 </div>
 
@@ -104,11 +105,14 @@ ${self.body()}
 <div class="footer">
   <p>&copy; The Tor Project</p>
   <p>
-    <a href="https://gitweb.torproject.org/bridgedb.git">${_("Source Code")}</a>
-    &middot
     <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">${_("Report a Bug")}</a>
     &middot
-    <a href="mailto:isis@torproject.org">${_("Contact")}</a>
+    <a href="https://gitweb.torproject.org/bridgedb.git/blob_plain/HEAD:/CHANGELOG">
+        ${_("Change Log")}</a>
+    &middot
+    <a href="https://gitweb.torproject.org/bridgedb.git">${_("Source Code")}</a>
+    &middot
+    <a href="mailto:help@rt.torproject.org">${_("Contact")}</a>
   </p>
 </div>
 

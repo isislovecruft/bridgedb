@@ -413,17 +413,25 @@ def normalizeEmail(addr, domainmap, domainrules):
 
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
-       request and the current time period.
+    request and the current time period.
+
+    :type splitter: :class:`~bridgedb.Bridges.BridgeRing`
+    :ivar splitter: A hashring to hold all the bridges we hand out.
     """
-    ## Fields:
-    ##   emailHmac -- an hmac function used to order email addresses within
-    ##       a ring.
-    ##   ring -- a BridgeRing object to hold all the bridges we hand out.
-    ##   store -- a database object to remember what we've given to whom.
-    ##   domainmap -- a map from lowercase domains that we support mail from
-    ##       to their canonical forms.
+
     def __init__(self, key, domainmap, domainrules,
                  answerParameters=None):
+        """Create a bridge distributor which uses email.
+
+        :type emailHmac: callable
+        :param emailHmac: An hmac function used to order email addresses
+            within a ring. See :func:`~bridgedb.crypto.getHMACFunc`.
+        :param dict domainmap: A map from lowercase domains that we support
+            mail from to their canonical forms. See `EMAIL_DOMAIN_MAP` option
+            in `bridgedb.conf`.
+        :param domainrules: DOCDOC
+        :param answerParameters: DOCDOC
+        """
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
 

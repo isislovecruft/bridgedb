@@ -1,0 +1,104 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+# adamse <adamslovacek@gmail.com>, 2013
+# Elisa <valhalla@gishpuppy.com>, 2011
+# Sanky <gsanky+transifex@gmail.com>, 2011
+# Radog <bensch.radek@gmail.com>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2013-10-26 11:20+0000\n"
+"Last-Translator: Radog <bensch.radek@gmail.com>\n"
+"Language-Team: Czech (http://www.transifex.com/projects/p/torproject/language/cs/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "Co jsou mosty?"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "%s Bridge relays % jsou Tor relé které pomáhají obejít cenzuru."
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "Chci mosty zjistit jiným způsobem!"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "Další cesta k nalezení veřejných adres mostů je posláním emailem (od %s nebo %s adresy)  %s s textem 'get bridges' v těle mailu."
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "Mé mosty nefungují. Potřebuji pomoc!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "Jestliže Váš Tor nefunguje, napište email %s. Pokuste se zahrnout co nejvíce informací o Vašem případu, napište seznam mostů, které používáte, název balíku/verze kterou používáte a zprávy které Vám Tor vypisuje, atd."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "Řádky nahoře použíjte ve programu Vidalia, nastavení sítě. Klepněte na \"Můj poskytovatel blokuje připojení přes síť TOR\". Poté na každý řádek vložte právě jednu adresu mostu."
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "Žádné dostupné mosty"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "Aktualizujte svůj Firefox prohližeč"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "Vepište dvě slova"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "Krok 1"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Získej %s balík Tor prohlížeče %s"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "Krok 2"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Získej %s mosty %s"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "Krok 3"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "Nyní %s přidej mosty do Tor %s"
