@@ -23,6 +23,7 @@ import ipaddr
 from BeautifulSoup import BeautifulSoup
 
 from twisted.internet import reactor
+from twisted.internet import task
 from twisted.trial import unittest
 from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
@@ -59,7 +60,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         self.protectedResource = HTTPServer.WebResourceBridges(self.dist,
                                                                self.sched)
         self.captchaResource = HTTPServer.CaptchaProtectedResource(
-            useForwardedHeader=True, resource=self.protectedResource)
+            useForwardedHeader=True, protectedResource=self.protectedResource)
         self.root.putChild(self.pagename, self.captchaResource)
 
     def test_render_GET_noCaptcha(self):
@@ -155,7 +156,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
             hmacKey='abcdefghijklmnopqrstuvwxyz012345',
             captchaDir='captchas',
             useForwardedHeader=True,
-            resource=self.protectedResource)
+            protectedResource=self.protectedResource)
 
         self.root.putChild(self.pagename, self.captchaResource)
 
@@ -266,11 +267,6 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
         a :class:`ReCaptchaProtectedResource`.
         """
-        # Create our cached CAPTCHA directory:
-        self.captchaDir = 'captchas'
-        if not os.path.isdir(self.captchaDir):
-            os.makedirs(self.captchaDir)
-
         # Set up our resources to fake a minimal HTTP(S) server:
         self.pagename = b'captcha.html'
         self.root = Resource()
@@ -281,7 +277,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             recaptchaPubKey='23',
             remoteip='111.111.111.111',
             useForwardedHeader=True,
-            resource=self.protectedResource)
+            protectedResource=self.protectedResource)
 
         self.root.putChild(self.pagename, self.captchaResource)
 
@@ -302,6 +298,58 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             except (AlreadyCalled, AlreadyCancelled):
                 pass
 
+    def test_renderDeferred_invalid(self):
+        """:meth:`_renderDeferred` should redirect a ``Request`` (after the
+        CAPTCHA was NOT xsuccessfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIsInstance(request, DummyRequest)
+            soup = BeautifulSoup(b''.join(request.written)).find('meta')['http-equiv']
+            self.assertEqual(soup, 'refresh')
+
+        d = task.deferLater(reactor, 0, lambda x: x, (False, self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
+
+    def test_renderDeferred_valid(self):
+        """:meth:`_renderDeferred` should correctly render a ``Request`` (after
+        the CAPTCHA has been successfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIsInstance(request, DummyRequest)
+            html = b''.join(request.written)
+            self.assertSubstring('No bridges currently available', html)
+
+        d = task.deferLater(reactor, 0, lambda x: x, (True, self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
+
+    def test_renderDeferred_nontuple(self):
+        """:meth:`_renderDeferred` should correctly render a ``Request`` (after
+        the CAPTCHA has been successfully solved) which results from a
+        ``Deferred``'s callback.
+        """
+        self.request.method = b'POST'
+
+        def testCB(request):
+            """Check the ``Request`` returned from ``_renderDeferred``."""
+            self.assertIs(request, None)
+
+        d = task.deferLater(reactor, 0, lambda x: x, (self.request))
+        d.addCallback(self.captchaResource._renderDeferred)
+        d.addCallback(testCB)
+        return d
+
     def test_checkSolution_blankFields(self):
         """:meth:`HTTPServer.ReCaptchaProtectedResource.checkSolution` should
         return a redirect if is the solution field is blank.
@@ -310,9 +358,9 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_challenge_field', '')
         self.request.addArg('captcha_response_field', '') 
         
-        self.assertIs(False,
-                      self.successResultOf(
-                          self.captchaResource.checkSolution(self.request)))
+        self.assertEqual((False, self.request),
+                         self.successResultOf(
+                             self.captchaResource.checkSolution(self.request)))
 
     def test_getRemoteIP_useRandomIP(self):
         """Check that removing our remoteip setting produces a random IP."""
@@ -352,8 +400,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', '') 
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
-                         'refresh')
+        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
 
     def test_render_POST_wrongSolution(self):
         """render_POST() with a wrong 'captcha_response_field' should return
@@ -367,8 +414,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', expectedResponse) 
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
-                         'refresh')
+        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
 
 
 class DummyBridge(object):

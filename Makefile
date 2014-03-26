@@ -45,5 +45,5 @@ clean:
 
 coverage:
 	-coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
-	-coverage report
-	-coverage html
+	-coverage report --rcfile=".coveragerc"
+	-coverage html --rcfile=".coveragerc"
