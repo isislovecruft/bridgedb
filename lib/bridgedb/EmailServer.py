@@ -21,6 +21,7 @@ from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 import twisted.mail.smtp
+from twisted.internet.error import ConnectionRefusedError
 
 from zope.interface import implements
 
@@ -235,6 +236,17 @@ def buildSpamWarningTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
     return msg_template 
 
+def _ebReplyToMailFailure(fail):
+    """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
+
+    :param fail: A :api:`twisted.python.failure.Failure` which occurred during
+        the transaction.
+    """
+    logging.debug("EmailServer._ebReplyToMailFailure() called with %r" % fail)
+    error = fail.getErrorMessage() or "unknown failure."
+    logging.exception("replyToMail Failure: %s" % error)
+    return None
+
 def replyToMail(lines, ctx):
     """Reply to an incoming email. Maybe.
 
@@ -262,7 +274,10 @@ def replyToMail(lines, ctx):
 
     d = Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
-                                                  response, d)
+                                                  response, d, retries=0,
+                                                  timeout=30)
+    d.addErrback(_ebReplyToMailFailure)
+    logging.info("Sending reply to %r", Util.logSafely(sendToUser))
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
 
     return d
