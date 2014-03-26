@@ -466,6 +466,17 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
                       % (Util.logSafely(clientIP), request.args))
 
         def checkResponse(solution, request):
+            """Check the :class:`txrecaptcha.RecaptchaResponse`.
+
+            :type solution: :class:`txrecaptcha.RecaptchaResponse`.
+            :param solution: The client's CAPTCHA solution, after it has been
+                submitted to the reCaptcha API server.
+            """
+            # This valid CAPTCHA result from this function cannot be reliably
+            # unittested, because it's callbacked to from the deferred
+            # returned by ``txrecaptcha.submit``, the latter of which would
+            # require networking (as well as automated CAPTCHA
+            # breaking). Hence, the 'no cover' pragma.
             if solution.is_valid:  # pragma: no cover
                 logging.info("Valid CAPTCHA solution from %r."
                              % Util.logSafely(clientIP))
