@@ -5,6 +5,9 @@ Changes in version 0.1.7 -
                 significantly increased the availability of bridgedb,
                 as a result.
 
+And includes the following general changes:
+        * BUMPS leekspin version to 0.1.3
+
 Changes in version 0.1.6 - 2014-03-26
 BridgeDB 0.1.6 includes fixes for the following bugs:
 	* FIXES #11196 BridgeDB should use leekspin
