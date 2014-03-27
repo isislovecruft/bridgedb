@@ -87,6 +87,9 @@ class BridgeDBCliTest(unittest.TestCase):
         eidesc  = pjoin(runDir, 'cached-extrainfo')
         eindesc = pjoin(runDir, 'cached-extrainfo.new')
         self.doCopyFile(eindesc, eidesc, 'duplicated cached-extrainfo(.new)')
+        self.assertTrue(os.path.isfile(eidesc))
+        self.assertTrue(os.path.isfile(eindesc))
+
 
         print("Running `bridgedb' to test server startups...")
         # Sorry Windows users
