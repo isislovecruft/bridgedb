@@ -609,10 +609,14 @@ def startup(options):
         state.save()
 
         if inThread:
+            # XXX shutdown the distributors if they were previously running
+            # and should now be disabled
             if ipDistributorTmp:
-                reactor.callFromThread(replaceBridgeRings, ipDistributor, ipDistributorTmp)
+                reactor.callFromThread(replaceBridgeRings,
+                                       ipDistributor, ipDistributorTmp)
             if emailDistributorTmp:
-                reactor.callFromThread(replaceBridgeRings, emailDistributor, emailDistributorTmp)
+                reactor.callFromThread(replaceBridgeRings,
+                                       emailDistributor, emailDistributorTmp)
         else:
             # We're still starting up. Return these distributors so
             # they are configured in the outer-namespace
