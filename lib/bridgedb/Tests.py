@@ -206,7 +206,7 @@ class EmailBridgeDistTests(unittest.TestCase):
     def setUp(self):
         self.fd, self.fname = tempfile.mkstemp()
         self.db = bridgedb.Storage.Database(self.fname)
-        bridgedb.Storage.setGlobalDB(self.db)
+        bridgedb.Storage.setDB(self.db)
         self.cur = self.db._conn.cursor()
 
     def tearDown(self):
@@ -672,7 +672,7 @@ class BridgeStabilityTests(unittest.TestCase):
     def setUp(self):
         self.fd, self.fname = tempfile.mkstemp()
         self.db = bridgedb.Storage.Database(self.fname)
-        bridgedb.Storage.setGlobalDB(self.db)
+        bridgedb.Storage.setDB(self.db)
         self.cur = self.db._conn.cursor()
 
     def tearDown(self):

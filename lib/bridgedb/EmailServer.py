@@ -1,3 +1,4 @@
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_EmailServer -*-
 # BridgeDB by Nick Mathewson.
 # Copyright (c) 2007-2013, The Tor Project, Inc.
 # See LICENSE for licensing information
@@ -6,8 +7,10 @@
 This module implements the email interface to the bridge database.
 """
 
-from StringIO import StringIO
-import MimeWriter
+from __future__ import unicode_literals
+
+from email import message
+from io import StringIO
 import gettext
 import gpgme
 import logging
@@ -21,6 +24,7 @@ from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 import twisted.mail.smtp
+from twisted.internet.error import ConnectionRefusedError
 
 from zope.interface import implements
 
@@ -235,6 +239,17 @@ def buildSpamWarningTemplate(t):
                     + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
     return msg_template 
 
+def _ebReplyToMailFailure(fail):
+    """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
+
+    :param fail: A :api:`twisted.python.failure.Failure` which occurred during
+        the transaction.
+    """
+    logging.debug("EmailServer._ebReplyToMailFailure() called with %r" % fail)
+    error = fail.getErrorMessage() or "unknown failure."
+    logging.exception("replyToMail Failure: %s" % error)
+    return None
+
 def replyToMail(lines, ctx):
     """Reply to an incoming email. Maybe.
 
@@ -262,7 +277,10 @@ def replyToMail(lines, ctx):
 
     d = Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
-                                                  response, d)
+                                                  response, d, retries=0,
+                                                  timeout=30)
+    d.addErrback(_ebReplyToMailFailure)
+    logging.info("Sending reply to %r", Util.logSafely(sendToUser))
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
 
     return d
@@ -415,17 +433,19 @@ def addSMTPServer(cfg, dist, sched):
 def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         gpgContext=None):
 
-    f = StringIO()
-    w = MimeWriter.MimeWriter(f)
-    w.addheader("From", fromAddr)
-    w.addheader("To", clientAddr)
-    w.addheader("Message-ID", twisted.mail.smtp.messageid())
+    msg = message.Message()
+    msg.add_header("From", fromAddr)
+    msg.add_header("To", clientAddr)
+    msg.add_header("Message-ID", twisted.mail.smtp.messageid())
     if not subject.startswith("Re:"): subject = "Re: %s"%subject
-    w.addheader("Subject", subject)
+    msg.add_header("Subject", subject)
     if msgID:
-        w.addheader("In-Reply-To", msgID)
-    w.addheader("Date", twisted.mail.smtp.rfc822date())
-    mailbody = w.startbody("text/plain")
+        msg.add_header("In-Reply-To", msgID)
+    msg.add_header("Date", twisted.mail.smtp.rfc822date())
+    msg.set_default_type("text/plain")
+    headers = [': '.join(m) for m in msg.items()]
+    mail = StringIO("\r\n".join(headers))
+    mail.writelines(unicode(msg.as_string()))
 
     # gpg-clearsign messages
     if gpgContext:
@@ -435,20 +455,20 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
         if (len(sigs) != 1):
             logging.warn('Failed to sign message!')
         signature.seek(0)
-        [mailbody.write(l) for l in signature]
+        [mail.write(l) for l in signature]
     else:
-        mailbody.write(body)
+        mail.write(body)
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
     # disabled:
     if not Util.safe_logging:
-        f.seek(0)
-        logging.debug("Email contents:\n%s" % f.read())
+        mail.seek(0)
+        logging.debug("Email contents:\n%s" % mail.read())
     else:
         logging.debug("Email text for %r created." % Util.logSafely(clientAddr))
-    f.seek(0)
+    mail.seek(0)
 
-    return clientAddr, f
+    return clientAddr, mail
 
 def getGPGContext(cfg):
     """Import a key from a file and initialise a context for GnuPG operations.
