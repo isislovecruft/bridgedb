@@ -7,7 +7,7 @@ Changes in version 0.1.7 -
         * FIXES #11370 We were using an old (and deprecated) module when
                 we created our email responses. Now we use the newer
                 version. This should only affect internal functionality
-                And should not result in any noticable user-visible changes.
+                and should not result in any noticable user-visible changes.
         * FIXES #11377 CAPTCHAs on BridgeDB's HTTPS interface are now
                 case-insensitive. Patch thanks to Kostas Jakeliunas.
 
