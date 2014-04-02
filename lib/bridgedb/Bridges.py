@@ -1,8 +1,13 @@
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Bridges -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: see AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+# :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""
-This module has low-level functionality for parsing bridges and arranging
-them in rings.
+"""This module has low-level functionality for parsing bridges and arranging
+them into hashrings for distributors.
 """
 
 import binascii
