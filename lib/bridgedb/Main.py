@@ -275,8 +275,9 @@ def loadConfig(configFile=None, configCls=None):
         exec compiled in configuration
 
     if itsSafeToUseLogging:
-        logging.debug("New configuration settings:\n%s"
-                      % pprint(configuration, depth=4))
+        logging.debug("New configuration settings:")
+        logging.debug("\n".join(["{0} = {1}".format(key, value)
+                                 for key, value in configuration.items()]))
 
     # Create a :class:`Conf` from the settings stored within the local scope
     # of the ``configuration`` dictionary:
