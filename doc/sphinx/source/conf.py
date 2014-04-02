@@ -44,7 +44,6 @@ import bridgedb.Storage
 import bridgedb.test
 import bridgedb.Tests
 import bridgedb.util
-import gen_bridge_descriptors
 
 
 class Mock(object):

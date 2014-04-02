@@ -23,4 +23,3 @@ bridgedb
     bridgedb.Tests
     bridgedb.txrecaptcha
     bridgedb.util
-    gen_bridge_descriptors
