@@ -264,11 +264,6 @@ def loadConfig(configFile=None, configCls=None):
         configuration.update(**oldConfig)  # Load current settings
         logging.info("Reloading over in-memory configurations...")
 
-    if (len(configuration) > 0) and itsSafeToUseLogging:
-        logging.debug("Old configuration settings:")
-        logging.debug("\n".join(["{key} = {value}".format(key, value)
-                                 for key, value in configuration]))
-
     conffile = configFile
     if (configFile is None) and ('CONFIG_FILE' in configuration):
         conffile = configuration['CONFIG_FILE']
