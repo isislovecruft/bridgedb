@@ -16,8 +16,6 @@ import logging
 import logging.handlers
 import gettext
 
-from pprint import pprint
-
 from twisted.internet import reactor
 
 from bridgedb import crypto
@@ -267,8 +265,9 @@ def loadConfig(configFile=None, configCls=None):
         logging.info("Reloading over in-memory configurations...")
 
     if (len(configuration) > 0) and itsSafeToUseLogging:
-        logging.debug("Old configuration settings:\n%s"
-                      % pprint(configuration, depth=4))
+        logging.debug("Old configuration settings:")
+        logging.debug("\n".join(["{key} = {value}".format(key, value)
+                                 for key, value in configuration]))
 
     conffile = configFile
     if (configFile is None) and ('CONFIG_FILE' in configuration):
