@@ -81,6 +81,20 @@ BridgeDB 0.1.1 includes fixes for the following bugs:
 	* FIXES #9127 Users can't ask for ipv6 bridges with the new bridgedb
 		interface
 	* FIXES #9988 Refactor BridgeDB's use of `sha` module to use `hashlib`
+	* FIXES #10724 Most of the time spent in testing, as well as most
+		of the time spent when "BridgeDB is down" (i.e. when I reply
+		with "BridgeDB is single-threaded (see #5232) and is parsing
+		millions of descriptors"), is within the same
+		`bridgedb.Stability.addOrUpdateBridgeHistory()` function (see
+		#10724). This function is pretty brutal on CPU and memory, is
+		blocking, and it needs to runs thousands and thousands of
+		times whenever BridgeDB is restarted (every half hour). The
+		algorithm within that function has a time complexity increasing
+		linearithmically relative to the number of bridges and timestamps
+		already within the database. [0]
+		This patch adds a config option to disable/enable running
+		the `addOrUpdateBridgeHistory()` function.
+	        [0]: https://en.wikipedia.org/wiki/Time_complexity#Linearithmic_time
 	* FIXES #10737 POST arguments to bridges.torproject.org are dropped if
 		entering a CAPTCHA fails
 
