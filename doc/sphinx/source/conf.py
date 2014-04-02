@@ -43,6 +43,7 @@ import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.test
 import bridgedb.Tests
+import bridgedb.txrecaptcha
 import bridgedb.util
 
 
