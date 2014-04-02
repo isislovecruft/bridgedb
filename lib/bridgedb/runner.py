@@ -22,15 +22,16 @@ import sys
 def generateDescriptors(count=None, rundir=None):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
-    This will run ``scripts/gen_bridge_descriptors`` to create bridge server
-    descriptors, bridge extra-info descriptors, and networkstatus document.
+    This will run Leekspin_ to create bridge server descriptors, bridge
+    extra-info descriptors, and networkstatus document.
 
-    ** NOTE: **
-        This function can take a very long time to run, especially in headless
-        environments where entropy sources are minimal, because it creates the
-        keys for each mocked OR, which are embedded in the server descriptors,
-        used to calculate the OR fingerprints, and sign the descriptors, among
-        other things.
+    .. warning: This function can take a very long time to run, especially in
+        headless environments where entropy sources are minimal, because it
+        creates the keys for each mocked OR, which are embedded in the server
+        descriptors, used to calculate the OR fingerprints, and sign the
+        descriptors, among other things.
+
+    .. _Leekspin: https://gitweb.torproject.org/user/isis/leekspin.git
 
     :param integer count: Number of mocked bridges to generate descriptor
         for. (default: 3)
