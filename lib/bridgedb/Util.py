@@ -22,4 +22,3 @@ def logSafely(val):
         return "[scrubbed]"
     else:
         return val
-
