@@ -683,7 +683,7 @@ def parseStatusFile(networkstatusFile):
         elif ID and line.startswith("a "):
             try:
                 addr, portlist = networkstatus.parseALine(line, toHex(ID))
-            except networkstatus.ParseNetstatusError as error:
+            except networkstatus.NetworkstatusParsingError as error:
                 logging.error(error)
             else:
                 if (addr is not None) and (portlist is not None):
