@@ -21,5 +21,6 @@ bridgedb
     bridgedb.Stability
     bridgedb.Storage
     bridgedb.Tests
-    bridgedb.Util
+    bridgedb.txrecaptcha
+    bridgedb.util
     gen_bridge_descriptors

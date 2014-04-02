@@ -1,9 +1,9 @@
-.. _Util:
+.. _util:
 
-bridgedb.Util
+bridgedb.util
 -------------
 
-.. automodule:: bridgedb.Util
+.. automodule:: bridgedb.util
     :members:
     :undoc-members:
     :show-inheritance:

@@ -14,7 +14,7 @@
 
 import bridgedb.Bridges
 import bridgedb.Storage
-import bridgedb.Util as Util
+import bridgedb.util as util
 
 import logging
 import re
@@ -235,7 +235,7 @@ class IPBasedDistributor(Distributor):
                  for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
-                     % (N, Util.logSafely(ip)))
+                     % (N, util.logSafely(ip)))
 
         if not bridgeFilterRules:
             bridgeFilterRules=[]
@@ -251,7 +251,7 @@ class IPBasedDistributor(Distributor):
 
         area = self.areaMapper(ip)
         logging.debug("IP mapped to area:\t%s"
-                      % Util.logSafely("{0}.0/24".format(area)))
+                      % util.logSafely("{0}.0/24".format(area)))
 
         key1 = ''
         pos = 0
@@ -267,7 +267,7 @@ class IPBasedDistributor(Distributor):
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, Util.logSafely(area))
+                logging.info("category<%s>%s", epoch, util.logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
@@ -485,19 +485,19 @@ class EmailBasedDistributor(Distributor):
             lastSaw = db.getEmailTime(emailaddress)
 
             logging.info("Attempting to return for %d bridges for %s..."
-                         % (N, Util.logSafely(emailaddress)))
+                         % (N, util.logSafely(emailaddress)))
 
             if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
                 logging.info("Client %s sent duplicate request within %d seconds."
-                             % (Util.logSafely(emailaddress), MAX_EMAIL_RATE))
+                             % (util.logSafely(emailaddress), MAX_EMAIL_RATE))
                 if wasWarned:
                     logging.info(
                         "Client was already warned about duplicate requests.")
                     raise IgnoreEmail("Client was warned",
-                                      Util.logSafely(emailaddress))
+                                      util.logSafely(emailaddress))
                 else:
                     logging.info("Sending duplicate request warning to %s..."
-                                 % Util.logSafely(emailaddress))
+                                 % util.logSafely(emailaddress))
                     db.setWarnedEmail(emailaddress, True, now)
                     db.commit()
 

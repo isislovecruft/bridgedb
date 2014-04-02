@@ -24,11 +24,11 @@ from twisted.web.util import redirectTo
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
-import bridgedb.Util as Util
 
 from bridgedb import captcha
 from bridgedb import crypto
 from bridgedb import txrecaptcha
+from bridgedb import util
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
@@ -287,7 +287,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         valid = captcha.GimpCaptcha.check(challenge, solution,
                                           self.secretKey, clientHMACKey)
         logging.debug("%sorrect captcha from %r: %r." % (
-            "C" if valid else "Inc", Util.logSafely(clientIP), solution))
+            "C" if valid else "Inc", util.logSafely(clientIP), solution))
 
         return valid
 
@@ -463,7 +463,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         remoteIP = self.getRemoteIP()
 
         logging.debug("Captcha from %r. Parameters: %r"
-                      % (Util.logSafely(clientIP), request.args))
+                      % (util.logSafely(clientIP), request.args))
 
         def checkResponse(solution, request):
             """Check the :class:`txrecaptcha.RecaptchaResponse`.
@@ -479,11 +479,11 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             # breaking). Hence, the 'no cover' pragma.
             if solution.is_valid:  # pragma: no cover
                 logging.info("Valid CAPTCHA solution from %r."
-                             % Util.logSafely(clientIP))
+                             % util.logSafely(clientIP))
                 return (True, request)
             else:
                 logging.info("Invalid CAPTCHA solution from %r: %r"
-                             % (Util.logSafely(clientIP), solution.error_code))
+                             % (util.logSafely(clientIP), solution.error_code))
                 return (False, request)
 
         d = txrecaptcha.submit(challenge, response, self.recaptchaPrivKey,
@@ -669,7 +669,7 @@ class WebResourceBridges(resource.Resource):
             unblocked = False
 
         logging.info("Replying to web request from %s. Parameters were %r"
-                     % (Util.logSafely(ip), request.args))
+                     % (util.logSafely(ip), request.args))
 
         rules = []
         bridgeLines = None

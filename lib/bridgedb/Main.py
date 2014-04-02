@@ -26,7 +26,7 @@ import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
-import bridgedb.Util as Util
+from bridgedb import util
 
 
 def configureLogging(cfg):
@@ -41,7 +41,7 @@ def configureLogging(cfg):
     logfile = getattr(cfg, 'LOGFILE', "")
     logfile_count = getattr(cfg, 'LOGFILE_COUNT', 5)
     logfile_rotate_size = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
-    Util.set_safe_logging(safelogging)
+    util.set_safe_logging(safelogging)
 
     logging.getLogger().setLevel(level)
     if logfile:

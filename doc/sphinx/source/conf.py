@@ -43,7 +43,7 @@ import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.test
 import bridgedb.Tests
-import bridgedb.Util
+import bridgedb.util
 import gen_bridge_descriptors
 
 
