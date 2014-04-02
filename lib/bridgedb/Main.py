@@ -261,7 +261,7 @@ def loadConfig(configFile=None, configCls=None):
     if configCls:
         itsSafeToUseLogging = True
         oldConfig = configCls.__dict__
-        configuration.update(**oldConfig) # Load current settings
+        configuration.update(**oldConfig)  # Load current settings
         logging.info("Reloading over in-memory configurations...")
 
     if (len(configuration) > 0) and itsSafeToUseLogging:
