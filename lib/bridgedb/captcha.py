@@ -203,7 +203,7 @@ class GimpCaptcha(Captcha):
         finally:
             if validHMAC:
                 decrypted = secretKey.decrypt(original)
-                if solution == decrypted:
+                if solution.lower() == decrypted.lower():
                     return True
             return False
 
