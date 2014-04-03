@@ -235,7 +235,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     """
 
     def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
-                 captchaDir='', useForwardedHeader=False,
+                 captchaDir='', captchaLifetime=900, useForwardedHeader=False,
                  protectedResource=None):
         """Protect a resource via this one, using a local CAPTCHA cache.
 
@@ -252,6 +252,8 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
             ``GIMP_CAPTCHA_HMAC_KEYFILE`` option in the config file.
         :param str captchaDir: The directory where the cached CAPTCHA images
             are stored. See the ``GIMP_CAPTCHA_DIR`` config setting.
+        :param number captchaLifetime: Approximately how long (in seconds) we
+            will accept a CAPTCHA response after issuing the challenge.
         :param bool useForwardedHeader: If ``True``, obtain the client's IP
             address from the ``X-Forwarded-For`` HTTP header.
         :type protectedResource: :api:`twisted.web.resource.Resource`
@@ -264,6 +266,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         self.publicKey = publicKey
         self.hmacKey = hmacKey
         self.captchaDir = captchaDir
+        self.captchaLifetime = captchaLifetime
 
     def checkSolution(self, request):
         """Process a solved CAPTCHA by sending rehashing the solution together with
@@ -283,9 +286,8 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         """
         challenge, solution = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
-        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
         valid = captcha.GimpCaptcha.check(challenge, solution,
-                                          self.secretKey, clientHMACKey)
+                                          self.hmacKey, clientIP)
         logging.debug("%sorrect captcha from %r: %r." % (
             "C" if valid else "Inc", Util.logSafely(clientIP), solution))
 
@@ -307,9 +309,10 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         """
         # Create a new HMAC key, specific to requests from this client:
         clientIP = self.getClientIP(request)
-        clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
         capt = captcha.GimpCaptcha(self.secretKey, self.publicKey,
-                                   clientHMACKey, self.captchaDir)
+                                   self.hmacKey, self.captchaDir,
+                                   self.captchaLifetime,
+                                   clientIP)
         try:
             capt.get()
         except captcha.GimpCaptchaError as error:
@@ -819,7 +822,7 @@ def addWebServer(cfg, dist, sched):
         # Get the HMAC secret key for CAPTCHA challenges and create a new key
         # from it for use on the server:
         captchaKey = crypto.getKey(cfg.GIMP_CAPTCHA_HMAC_KEYFILE)
-        hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key")
+        hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key-v2")
 
         # Load or create our encryption keys:
         secretKey, publicKey = crypto.getRSAKey(cfg.GIMP_CAPTCHA_RSA_KEYFILE)
@@ -829,6 +832,7 @@ def addWebServer(cfg, dist, sched):
             publicKey=publicKey,
             hmacKey=hmacKey,
             captchaDir=cfg.GIMP_CAPTCHA_DIR,
+            captchaLifetime=cfg.GIMP_CAPTCHA_LIFETIME_SECONDS,
             useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
             protectedResource=bridgesResource)
         httpdist.putChild('bridges', protected)

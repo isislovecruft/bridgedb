@@ -38,13 +38,14 @@ from base64 import urlsafe_b64decode
 import logging
 import random
 import os
+import time
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
 
 from zope.interface import Interface, Attribute, implements
 
-from bridgedb import crypto
+from bridgedb import crypto, list_encoder
 from bridgedb.txrecaptcha import API_SSL_SERVER
 
 
@@ -136,11 +137,15 @@ class ReCaptcha(Captcha):
         self.image = urllib2.urlopen(imgurl).read()          # pragma: no cover
 
 
+def quantize_int(i, granularity):
+    i = int(i)
+    return (i // granularity) * granularity
+
 class GimpCaptcha(Captcha):
     """A cached CAPTCHA image which was created with Gimp."""
 
     def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
-                 cacheDir=None):
+                 cacheDir=None, captchaLifetime=900, clientIP=None):
         """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
 
         :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
@@ -148,10 +153,14 @@ class GimpCaptcha(Captcha):
         :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
             creating the ``captcha_challenge_field`` string to give to a
             client.
-        :param bytes hmacKey: A client-specific HMAC secret key.
+        :param bytes hmacKey: An HMAC secret key.
         :param str cacheDir: The local directory which pre-generated CAPTCHA
             images have been stored in. This can be set via the
             ``GIMP_CAPTCHA_DIR`` setting in the config file.
+        :param number captchaLifetime: Approximately how long (in seconds) we
+            will accept a CAPTCHA response after issuing the challenge.
+        :param str clientIP: The IP address from which we received the client's
+            request for bridges.
         :raises GimpCaptchaError: if **cacheDir** is not a directory.
         :raises GimpCaptchaKeyError: if any of **secretKey**, **publicKey**,
             or **hmacKey** is invalid, or missing.
@@ -169,66 +178,147 @@ class GimpCaptcha(Captcha):
         self.secretKey = secretKey
         self.publicKey = publicKey
         self.cacheDir = cacheDir
+        self.captchaLifetime = captchaLifetime
         self.hmacKey = hmacKey
+        self.clientIP = clientIP
         self.answer = None
 
     @classmethod
-    def check(cls, challenge, solution, secretKey, hmacKey):
+    def verifyHMACList(cls, hmacKey, x, mac):
+        return crypto.verifyHMAC(hmacKey, list_encoder.encode(x), mac)
+
+    @classmethod
+    def mutilateAnswerExperimental(cls, answer):
+        """Fold all potentially confusable characters in **answer** to a
+        canonical choice."""
+        # XXX If this type of folding turns out to be a good idea,
+        #     the map should be configurable.
+        confusables = ['fF', 'pP', 'zZ2', 'jJ']
+        def fold_confusables(ch):
+            for confusable_set in confusables:
+                if ch in confusable_set:
+                    ch = confusable_set[0]
+                    pass
+                pass
+            return ch
+        return ''.join(map(fold_confusables, answer))
+
+    @classmethod
+    def check(cls, challenge, solution, hmacKey, clientIP,
+              currentTime=time.time()):
         """Check a client's CAPTCHA **solution** against the **challenge**.
 
         :param str challenge: The contents of the
             ``'captcha_challenge_field'`` HTTP form field.
         :param str solution: The client's proposed solution to the CAPTCHA
             that they were presented with.
-        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
-            verifying the client's solution to the CAPTCHA.
         :param bytes hmacKey: A private key for generating HMACs.
+        :param str clientIP: The IP address from which the client's CAPTCHA
+            response was sent.
+        :param number currentTime: The current time, in the format returned by
+            time.time.
         :rtype: bool
         :returns: True if the CAPTCHA solution was correct.
         """
-        validHMAC = False
-
-        if not solution:
-            return validHMAC
-
         logging.debug("Checking CAPTCHA solution %r against challenge %r"
                       % (solution, challenge))
         try:
-            decoded = urlsafe_b64decode(challenge)
-            hmac, original = decoded.split(';', 1)
-            validHMAC = crypto.verifyHMAC(hmacKey, original, hmac)
+            challenge_list = list_encoder.decode(urlsafe_b64decode(challenge))
+            if challenge_list[0] == 'captcha-challenge-v2':
+                aad = challenge_list[1]
+                assert isinstance(aad, list)
+                mac_lower = challenge_list[2]
+                mac_plain = challenge_list[3]
+                mac_experimental = challenge_list[4]
+                assert aad[0] == 'captcha-challenge-v2-aad'
+                expire_time_str = aad[1]
+                expire_time = int(expire_time_str)
+                challenge_client_ip = aad[2]
+                # done parsing the challenge; now validate it
+                if clientIP != challenge_client_ip:
+                    return False
+                if currentTime > expire_time:
+                    return False
+                mac_lower_contents = ['captcha-challenge-v2-response-lower',
+                                      aad,
+                                      response.lower()]
+                mac_plain_contents = ['captcha-challenge-v2-response-plain',
+                                      aad,
+                                      response]
+                mac_exp_contents = [
+                    'captcha-challenge-v2-response-experimental',
+                    aad,
+                    self.mutilateAnswerExperimental(response)]
+                matched_lower = self.verifyHMACList(hmacKey,
+                                                    mac_lower_contents,
+                                                    mac_lower)
+                matched_plain = self.verifyHMACList(hmacKey,
+                                                    mac_plain_contents,
+                                                    mac_plain)
+                matched_exp = self.verifyHMACList(hmacKey,
+                                                  mac_exp_contents,
+                                                  mac_experimental)
+                logging.info(('Received CAPTCHA solution matched lower? %r, ' +
+                              'plain? %r, experimental folding? %r') %
+                             (matched_lower, matched_plain, matched_exp))
+                return matched_lower or matched_plain or matched_exp
+            else:
+                return False
+            pass
         except Exception as error:
             logging.exception(error)
             return False
-        finally:
-            if validHMAC:
-                decrypted = secretKey.decrypt(original)
-                if crypto.verifyEqual(solution.lower(), decrypted):
-                    return True
-            return False
 
-    def createChallenge(self, answer):
-        """Encrypt the CAPTCHA **answer** and HMAC the encrypted data.
+    def hmacList(self, x):
+        return crypto.getHMAC(self.hmacKey, list_encoder.encode(x))
 
-        Take a string containing the answer to a CAPTCHA and encrypts it to
-        :attr:`publicKey`. The resulting encrypted blob is then HMACed with a
-        client-specific :attr:`hmacKey`. These two strings are then joined
-        together in the form:
-
-                HMAC ";" ENCRYPTED_ANSWER
-
-        and lastly base64-encoded (in a URL safe manner).
+    def createChallenge(self, answer, now=time.time()):
+        """Create a challenge blob for the answer **answer**,
+        computing the expiration time based on **now**.
 
         :param str answer: The answer to a CAPTCHA.
+        :param number now: Now.  Accepted as a parameter to permit
+            unit testing.
         :rtype: str
-        :returns: An HMAC of, as well as a string containing the URL-safe,
-            base64-encoded encrypted **answer**.
+        :returns: A URL-safe, base64-encoded challenge blob.
         """
-        encrypted = self.publicKey.encrypt(answer.lower())
-        hmac = crypto.getHMAC(self.hmacKey, encrypted)
-        challenge = hmac + ';' + encrypted
-        encoded = urlsafe_b64encode(challenge)
-        return encoded
+        # XXX This is a horrible format.  If this were a real
+        #     programming language like C, and I had access to a
+        #     crypto library that implemented sane primitives, I would
+        #     encrypt the challenge with something like NaCl's
+        #     secretbox (but with AAD), and do all the comparisons in
+        #     constant time.  But this isn't C, and the only
+        #     cryptographic primitive available that I trust is HMAC.
+        #
+        # XXX Really, this should be using HMAC-SHA-256, not the
+        #     long-obsolete HMAC-SHA-1 that BridgeDB has used since
+        #     t=-∞ to map each client address to a pool location.
+        expire_time = quantize_int(now + self.captchaLifetime, 30)
+        expire_time_str = str(expire_time)
+        challenge_aad_list = ['captcha-challenge-v2-aad',
+                              expire_time_str,
+                              self.clientIP]
+        mac_lower_contents = ['captcha-challenge-v2-response-lower',
+                              challenge_aad_list,
+                              answer.lower()]
+        mac_plain_contents = ['captcha-challenge-v2-response-plain',
+                              challenge_aad_list,
+                              answer]
+        answer_experimental = self.mutilateAnswerExperimental(answer)
+        mac_experimental_contents = [
+            'captcha-challenge-v2-response-experimental',
+            challenge_aad_list,
+            self.mutilateAnswerExperimental(answer)]
+        mac_lower = self.hmacList(mac_lower_contents)
+        mac_plain = self.hmacList(mac_plain_contents)
+        mac_experimental = self.hmacList(mac_experimental_contents)
+        challenge_list = ['captcha-challenge-v2',
+                          challenge_aad_list,
+                          mac_lower,
+                          mac_plain,
+                          mac_experimental]
+        challenge = urlsafe_b64encode(list_encoder.encode(challenge_list))
+        return challenge
 
     def get(self):
         """Get a random CAPTCHA from the cache directory.
