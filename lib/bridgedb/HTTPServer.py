@@ -278,7 +278,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_challenge_field'``, and the other,
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
-        :rtupe: bool
+        :rtype: bool
         :returns: True, if the CAPTCHA solution was valid; False otherwise.
         """
         challenge, solution = self.extractClientSolution(request)
