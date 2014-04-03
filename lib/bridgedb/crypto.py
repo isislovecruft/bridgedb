@@ -48,6 +48,17 @@ from twisted.internet import ssl
 DIGESTMOD = hashlib.sha1
 
 
+ephemeral_hmac_key = OpenSSL.rand.bytes(32)
+
+def getEphemeralHMACKey():
+    """Return an ephemeral HMAC key which is never written to disk.
+
+    For use in internal operations only, e.g. equality comparison
+    without leaking useful information about the comparands to a
+    side-channel attacker."""
+    return ephemeral_hmac_key
+
+
 class RSAKeyGenerationError(Exception):
     """Raised when there was an error creating an RSA keypair."""
 
@@ -193,6 +204,18 @@ def getHMACFunc(key, hex=True):
         else:
             return h_tmp.digest()
     return hmac_fn
+
+def verifyEqual(a, b):
+    """Return a == b, without leaking useful information about a or b.
+
+    a and b must be (non-Unicode) strings."""
+    ha = getHMAC(getEphemeralHMACKey(), a)
+    hb = getHMAC(getEphemeralHMACKey(), b)
+    return (ha == hb)
+
+def verifyHMAC(key, value, mac):
+    """Return mac == getHMAC(key, value), without leaking useful information."""
+    return verifyEqual(getHMAC(key, value), mac)
 
 
 class SSLVerifyingContextFactory(ssl.CertificateOptions):
