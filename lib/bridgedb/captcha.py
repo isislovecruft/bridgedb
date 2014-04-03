@@ -199,6 +199,7 @@ class GimpCaptcha(Captcha):
             validHMAC = crypto.verifyHMAC(hmacKey, original, hmac)
         except Exception as error:
             logging.exception(error)
+            return False
         finally:
             if validHMAC:
                 decrypted = secretKey.decrypt(original)
