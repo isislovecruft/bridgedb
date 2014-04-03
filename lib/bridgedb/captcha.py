@@ -196,8 +196,7 @@ class GimpCaptcha(Captcha):
         try:
             decoded = urlsafe_b64decode(challenge)
             hmac, original = decoded.split(';', 1)
-            verified = crypto.getHMAC(hmacKey, original)
-            validHMAC = verified == hmac
+            validHMAC = crypto.verifyHMAC(hmacKey, original, hmac)
         except Exception as error:
             logging.exception(error)
         finally:
