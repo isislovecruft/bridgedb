@@ -202,7 +202,7 @@ class GimpCaptcha(Captcha):
         finally:
             if validHMAC:
                 decrypted = secretKey.decrypt(original)
-                if solution.lower() == decrypted.lower():
+                if solution.lower() == decrypted:
                     return True
             return False
 
@@ -223,7 +223,7 @@ class GimpCaptcha(Captcha):
         :returns: An HMAC of, as well as a string containing the URL-safe,
             base64-encoded encrypted **answer**.
         """
-        encrypted = self.publicKey.encrypt(answer)
+        encrypted = self.publicKey.encrypt(answer.lower())
         hmac = crypto.getHMAC(self.hmacKey, encrypted)
         challenge = hmac + ';' + encrypted
         encoded = urlsafe_b64encode(challenge)
