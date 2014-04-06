@@ -16,7 +16,8 @@ import re
 import rfc822
 import time
 
-from ipaddr import IPv4Address, IPv6Address
+from ipaddr import IPv4Address
+from ipaddr import IPv6Address
 
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
@@ -26,14 +27,15 @@ from twisted.internet.error import ConnectionRefusedError
 
 from zope.interface import implements
 
-import bridgedb.Dist
 import bridgedb.util as util
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
-from bridgedb.Filters import filterBridgesByIP6, filterBridgesByIP4
+from bridgedb import Dist
+from bridgedb import I18n
+from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
-import bridgedb.I18n as I18n
 
 class MailFile:
     """A file-like object used to hand rfc822.Message a list of lines
