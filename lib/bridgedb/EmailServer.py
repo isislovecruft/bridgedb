@@ -3,9 +3,7 @@
 # Copyright (c) 2007-2013, The Tor Project, Inc.
 # See LICENSE for licensing information
 
-"""
-This module implements the email interface to the bridge database.
-"""
+"""This module implements the email interface to the bridge database."""
 
 from __future__ import unicode_literals
 
