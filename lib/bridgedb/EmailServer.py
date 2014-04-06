@@ -102,21 +102,27 @@ def getMailResponse(lines, ctx):
         _, addrdomain = bridgedb.Dist.extractAddrSpec(clientAddr.lower())
     except BadEmail:
         logging.info("Ignoring bad address on incoming email.")
-        return None,None
+        return None, None
+
     if not addrdomain:
         logging.info("Couldn't parse domain from %r", util.logSafely(clientAddr))
+
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
+
     if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
         logging.info("Unrecognized email domain %r", util.logSafely(addrdomain))
-        return None,None
+        return None, None
+
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
+
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
         # to get the first, so we use getheaders() instead.
         dkimHeaders = msg.getheaders("X-DKIM-Authentication-Results")
         dkimHeader = "<no header>"
-        if dkimHeaders: dkimHeader = dkimHeaders[0]
+        if dkimHeaders:
+            dkimHeader = dkimHeaders[0]
         if not dkimHeader.startswith("pass"):
             logging.info("Got a bad dkim header (%r) on an incoming mail; "
                          "rejecting it.", dkimHeader)
@@ -139,7 +145,8 @@ def getMailResponse(lines, ctx):
         # ignore all lines before the subject header
         if "subject" in ln.strip().lower():
             skippedheaders = True
-        if not skippedheaders: continue
+        if not skippedheaders:
+            continue
 
         if "ipv6" in ln.strip().lower():
             ipv6 = True
@@ -169,7 +176,8 @@ def getMailResponse(lines, ctx):
 
     if unblocked:
         rules.append(filterBridgesByNotBlockedIn(unblocked,
-            addressClass, transport))
+                                                 addressClass,
+                                                 transport))
 
     try:
         interval = ctx.schedule.getInterval(time.time())
@@ -185,59 +193,57 @@ def getMailResponse(lines, ctx):
 
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
-        body  = buildSpamWarningTemplate(t) % (bridgedb.Dist.MAX_EMAIL_RATE / 3600)
+        body = buildSpamWarningTemplate(t) % (Dist.MAX_EMAIL_RATE / 3600)
         return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
                 gpgContext=ctx.gpgContext)
 
     except IgnoreEmail, e:
         logging.info("Got a mail too frequently; ignoring %r: %s.",
                       util.logSafely(clientAddr), e)
-        return None, None 
+        return None, None
 
     except BadEmail, e:
         logging.info("Got a mail from a bad email address %r: %s.",
                      util.logSafely(clientAddr), e)
-        return None, None 
+        return None, None
 
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
-        answer = "".join("  %s\n" %b.getConfigLine(
+        answer = "".join("  %s\n" % b.getConfigLine(
             includeFingerprint=with_fp,
             addressClass=addressClass,
             transport=transport,
-            request=clientAddr
-            ) for b in bridges)
+            request=clientAddr) for b in bridges)
     else:
         answer = "(no bridges currently available)"
 
     body = buildMessageTemplate(t) % answer
     # Generate the message.
     return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
-            gpgContext=ctx.gpgContext)
-
+                        gpgContext=ctx.gpgContext)
 
 def buildMessageTemplate(t):
-    msg_template =  t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[0]) + "\n\n" \
-                    + "%s\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n"
-                    # list supported commands, e.g. ipv6, transport
+    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[0]) + "\n\n" \
+                   + "%s\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n"
+    # list supported commands, e.g. ipv6, transport
     msg_template = msg_template \
-                    + "  " + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n" \
-                    + "  " + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
+                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n" \
+                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
     return msg_template
 
 def buildSpamWarningTemplate(t):
-    msg_template =  t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[10]) + "\n\n" \
-                    + "%s " \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[11]) + "\n\n" \
-                    + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
-    return msg_template 
+    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[10]) + "\n\n" \
+                   + "%s " \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[11]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
+    return msg_template
 
 def _ebReplyToMailFailure(fail):
     """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
@@ -282,7 +288,6 @@ def replyToMail(lines, ctx):
     d.addErrback(_ebReplyToMailFailure)
     logging.info("Sending reply to %r", util.logSafely(sendToUser))
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
-
     return d
 
 def getLocaleFromPlusAddr(address):
@@ -312,10 +317,10 @@ def getLocaleFromRequest(request):
 
 class MailContext:
     """Helper object that holds information used by email subsystem."""
+
     def __init__(self, cfg, dist, sched):
         # Reject any RCPT TO lines that aren't to this user.
-        self.username = (cfg.EMAIL_USERNAME or
-                         "bridges")
+        self.username = (cfg.EMAIL_USERNAME or "bridges")
         # Reject any mail longer than this.
         self.maximumSize = 32*1024
         # Use this server for outgoing mail.
@@ -373,17 +378,20 @@ class MailMessage:
 class MailDelivery:
     """Plugs into Twisted Mail and handles SMTP commands."""
     implements(twisted.mail.smtp.IMessageDelivery)
+
     def setBridgeDBContext(self, ctx):
         self.ctx = ctx
+
     def receivedHeader(self, helo, origin, recipients):
         #XXXX what is this for? what should it be?
         return "Received: BridgeDB"
     def validateFrom(self, helo, origin):
         return origin
+
     def validateTo(self, user):
-        """If the local user that was addressed isn't our configured local 
-           user or doesn't contain a '+' with a prefix matching the local
-           configured user: Yell
+        """If the local user that was addressed isn't our configured local user
+        or doesn't contain a '+' with a prefix matching the local configured
+        user: Yell.
         """
         u = user.dest.local
         # Hasplus? If yes, strip '+foo'
