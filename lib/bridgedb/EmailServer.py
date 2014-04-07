@@ -23,7 +23,6 @@ from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 import twisted.mail.smtp
-from twisted.internet.error import ConnectionRefusedError
 
 from zope.interface import implements
 
