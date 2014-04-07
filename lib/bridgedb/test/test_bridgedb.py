@@ -95,8 +95,8 @@ class BridgeDBCliTest(unittest.TestCase):
         # Sorry Windows users
         devnull = open('/dev/null', 'w')
         bridgedbProc = Popen([bridgedbScript, '-r', runDir], stdout=devnull)
-        print("Waiting 30 seconds while bridgedb loads...")
-        time.sleep(30)
+        print("Waiting 10 seconds while bridgedb loads...")
+        time.sleep(10)
         assignments = pjoin(runDir, 'assignments.log')
         self.assertTrue(os.path.isfile(assignments))
         os.unlink(assignments)
