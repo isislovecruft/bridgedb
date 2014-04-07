@@ -372,7 +372,7 @@ class MailMessage(object):
         """Called if we die partway through reading a message."""
         pass
 
-class MailDelivery:
+class MailDelivery(object):
     """Plugs into Twisted Mail and handles SMTP commands."""
     implements(smtp.IMessageDelivery)
 
