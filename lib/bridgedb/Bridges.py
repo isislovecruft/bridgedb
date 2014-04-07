@@ -23,10 +23,10 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
-from bridgedb import util
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+from bridgedb.safelog import logSafely
 
 try:
     from cStringIO import StringIO
@@ -1035,7 +1035,7 @@ class BridgeRing(BridgeHolder):
             else:
                 logging.debug(
                     "Got duplicate bridge %r in main hashring for position %r."
-                    % (util.logSafely(k.encode('hex')), pos.encode('hex')))
+                    % (logSafely(k.encode('hex')), pos.encode('hex')))
         keys = keys[:N]
         keys.sort()
 
@@ -1280,12 +1280,12 @@ class FilteredBridgeSplitter(BridgeHolder):
         if not bridge.running:
             logging.warn(
                 "Skipping hashring insertion for non-running bridge: '%s'"
-                % util.logSafely(bridge.fingerprint))
+                % logSafely(bridge.fingerprint))
             return
 
         index = 0
         logging.debug("Inserting %s into splitter"
-                      % (util.logSafely(bridge.fingerprint)))
+                      % (logSafely(bridge.fingerprint)))
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
                 self.bridges[index] = bridge
@@ -1297,7 +1297,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             if filterFn(bridge):
                 subring.insert(bridge)
                 logging.debug("Inserted bridge '%s' into '%s' sub hashring"
-                              % (util.logSafely(bridge.fingerprint), ringname))
+                              % (logSafely(bridge.fingerprint), ringname))
 
     def extractFilterNames(self, ringname):
         """Get the names of the filters applied to a particular sub hashring.

@@ -26,10 +26,10 @@ from twisted.mail import smtp
 
 from zope.interface import implements
 
-import bridgedb.util as util
 from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb import Dist
 from bridgedb import I18n
+from bridgedb import safelog
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -104,13 +104,13 @@ def getMailResponse(lines, ctx):
         return None, None
 
     if not addrdomain:
-        logging.info("Couldn't parse domain from %r", util.logSafely(clientAddr))
+        logging.info("Couldn't parse domain from %r" % clientAddr)
 
     if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
         addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
 
     if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
-        logging.info("Unrecognized email domain %r", util.logSafely(addrdomain))
+        logging.warn("Unrecognized email domain %r", addrdomain)
         return None, None
 
     rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
@@ -188,7 +188,7 @@ def getMailResponse(lines, ctx):
     # Handle rate limited email
     except TooSoonEmail as err:
         logging.info("Got a mail too frequently; warning '%s': %s."
-                     % (util.logSafely(clientAddr), err))
+                     % (clientAddr, err))
 
         # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
@@ -198,12 +198,12 @@ def getMailResponse(lines, ctx):
 
     except IgnoreEmail as err:
         logging.info("Got a mail too frequently; ignoring '%s': %s."
-                     % (util.logSafely(clientAddr), err))
+                     % (clientAddr, err))
         return None, None
 
     except BadEmail as err:
         logging.info("Got a mail from a bad email address '%s': %s."
-                     % (util.logSafely(clientAddr), err))
+                     % (clientAddr, err))
         return None, None
 
     if bridges:
@@ -273,8 +273,8 @@ def replyToMail(lines, ctx):
     sendToUser, response = getMailResponse(lines, ctx)
 
     if response is None:
-        logging.debug("getMailResponse() said not to reply to %s, so I won't."
-                      % util.logSafely(sendToUser))
+        logging.debug("We don't really feel like talking to %s right now."
+                      % sendToUser)
         return
 
     response.seek(0)
@@ -283,7 +283,7 @@ def replyToMail(lines, ctx):
     factory = smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
                                      response, d, retries=0, timeout=30)
     d.addErrback(_ebReplyToMailFailure)
-    logging.info("Sending reply to %r", util.logSafely(sendToUser))
+    logging.info("Sending reply to %s" % sendToUser)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
     return d
 
@@ -355,7 +355,7 @@ class MailMessage(object):
     def lineReceived(self, line):
         """Called when we get another line of an incoming message."""
         self.nBytes += len(line)
-        if not util.safe_logging:
+        if not safelog.safe_logging:
             logging.debug("> %s", line.rstrip("\r\n"))
         if self.nBytes > self.ctx.maximumSize:
             self.ignoring = True
@@ -467,11 +467,11 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
     # disabled:
-    if not util.safe_logging:
+    if not safelog.safe_logging:
         mail.seek(0)
         logging.debug("Email contents:\n%s" % mail.read())
     else:
-        logging.debug("Email text for %r created." % util.logSafely(clientAddr))
+        logging.debug("Email text for %r created." % clientAddr)
     mail.seek(0)
 
     return clientAddr, mail

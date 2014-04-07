@@ -22,13 +22,13 @@ from ipaddr import IPAddress
 import bridgedb.Bridges
 import bridgedb.Storage
 
-from bridgedb import util
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.safelog import logSafely
 
 
 def uniformMap(ip):
@@ -237,7 +237,7 @@ class IPBasedDistributor(Distributor):
                  for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
-                     % (N, util.logSafely(ip)))
+                     % (N, ip))
 
         if not bridgeFilterRules:
             bridgeFilterRules=[]
@@ -253,7 +253,7 @@ class IPBasedDistributor(Distributor):
 
         area = self.areaMapper(ip)
         logging.debug("IP mapped to area:\t%s"
-                      % util.logSafely("{0}.0/24".format(area)))
+                      % logSafely("{0}.0/24".format(area)))
 
         key1 = ''
         pos = 0
@@ -269,7 +269,7 @@ class IPBasedDistributor(Distributor):
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, util.logSafely(area))
+                logging.info("category<%s>%s", epoch, logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
@@ -477,8 +477,9 @@ class EmailBasedDistributor(Distributor):
         try:
             emailaddress = normalizeEmail(emailaddress, self.domainmap,
                                           self.domainrules)
-        except BadEmail:
-            return [] #XXXX log the exception
+        except BadEmail as err:
+            logging.warn(err)
+            return []
         if emailaddress is None:
             return [] #XXXX raise an exception.
 
@@ -487,19 +488,17 @@ class EmailBasedDistributor(Distributor):
             lastSaw = db.getEmailTime(emailaddress)
 
             logging.info("Attempting to return for %d bridges for %s..."
-                         % (N, util.logSafely(emailaddress)))
+                         % (N, emailaddress))
 
             if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
                 logging.info("Client %s sent duplicate request within %d seconds."
-                             % (util.logSafely(emailaddress), MAX_EMAIL_RATE))
+                             % (emailaddress, MAX_EMAIL_RATE))
                 if wasWarned:
                     logging.info(
                         "Client was already warned about duplicate requests.")
-                    raise IgnoreEmail("Client was warned",
-                                      util.logSafely(emailaddress))
+                    raise IgnoreEmail("Client was warned", emailaddress)
                 else:
-                    logging.info("Sending duplicate request warning to %s..."
-                                 % util.logSafely(emailaddress))
+                    logging.info("Sending duplicate request warning.")
                     db.setWarnedEmail(emailaddress, True, now)
                     db.commit()
 

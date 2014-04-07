@@ -20,6 +20,7 @@ from twisted.internet import reactor
 
 from bridgedb import crypto
 from bridgedb import persistent
+from bridgedb import safelog
 from bridgedb import util
 from bridgedb.parse import options
 
@@ -40,7 +41,7 @@ def configureLogging(cfg):
     logfile = getattr(cfg, 'LOGFILE', "")
     logfile_count = getattr(cfg, 'LOGFILE_COUNT', 5)
     logfile_rotate_size = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
-    util.set_safe_logging(safelogging)
+    safelog.setSafeLogging(safelogging)
 
     logging.getLogger().setLevel(level)
     if logfile:
@@ -238,9 +239,9 @@ def loadConfig(configFile=None, configCls=None):
     .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
 
     :ivar boolean itsSafeToUseLogging: This is called in :func:`startup`
-        before :func:`configureLogging`. When called from ``startup``, the
-        ``configCls`` parameter is not given, because that is the first time
-        that a :class:`Conf` is created. If a :class:`logging.Logger` is
+        before :func:`safelog.configureLogging`. When called from ``startup``,
+        the ``configCls`` parameter is not given, because that is the first
+        time that a :class:`Conf` is created. If a :class:`logging.Logger` is
         created in this function, then logging will not be correctly
         configured, therefore, if the ``configCls`` parameter is not given,
         then it's the first time this function has been called and it is
@@ -456,10 +457,10 @@ def startup(options):
 
     # Set up logging as early as possible. We cannot import from the bridgedb
     # package any of our modules which import :mod:`logging` and start using
-    # it, at least, not until :func:`configureLogging` is called. Otherwise a
-    # default handler that logs to the console will be created by the imported
-    # module, and all further calls to :func:`logging.basicConfig` will be
-    # ignored.
+    # it, at least, not until :func:`safelog.configureLogging` is
+    # called. Otherwise a default handler that logs to the console will be
+    # created by the imported module, and all further calls to
+    # :func:`logging.basicConfig` will be ignored.
     configureLogging(config)
 
     if options['dump-bridges'] or (options.subCommand is not None):

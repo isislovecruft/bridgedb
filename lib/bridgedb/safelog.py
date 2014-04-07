@@ -32,6 +32,7 @@ Module Overview:
 ::
  safelog
   |
+  |_setSafeLogging - Enable or disable safelogging globally.
   |_logSafely - Utility for manually sanitising a portion of a log message
   |
   |_BaseSafelogFilter - Base class for log message sanitisation filters
