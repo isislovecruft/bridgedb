@@ -181,20 +181,26 @@ def isIPAddress(ip, compressed=True):
 def _isIPv(version, ip):
     """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
+    .. warning: Do *not* put any calls to the logging module in this function,
+        or else an infinite recursion will occur when the call is made, due
+        the the log :class:`~logging.Filter`s in :mod:`~bridgedb.safelog`
+        using this function to validate matches from the regular expression
+        for IP addresses.
+
     :param integer version: The IPv[4|6] version to check; must be either
-        ``4`` or ``6``.
+        ``4`` or ``6``. Any other value will be silently changed to ``4``.
     :param ip: The IP address to check. May be an any type which
                :class:`ipaddr.IPAddress` will accept.
     :rtype: boolean
     :returns: ``True``, if the address is an IPv4 address.
     """
     try:
-        ip = ipaddr.IPAddress(ip, version=version)
-    except ipaddr.AddressValueError:
-        logging.debug("Address %s seems not to be IPv%d." % (ip, version))
+        ipaddr.IPAddress(ip, version=version)
+    except (ipaddr.AddressValueError, Exception):
         return False
     else:
         return True
+    return False
 
 def isIPv4(ip):
     """Check if an address is IPv4.
