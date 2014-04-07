@@ -14,6 +14,13 @@ import textwrap
 import time
 import os
 
+from ipaddr import IPv4Address
+from ipaddr import IPv6Address
+
+import mako.exceptions
+from mako.template import Template
+from mako.lookup import TemplateLookup
+
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 from twisted.python import filepath
@@ -35,11 +42,7 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
 
-from ipaddr import IPv4Address, IPv6Address
 from random import randint
-import mako.exceptions
-from mako.template import Template
-from mako.lookup import TemplateLookup
 
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
