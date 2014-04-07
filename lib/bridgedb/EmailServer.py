@@ -442,12 +442,12 @@ def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
     msg = message.Message()
     msg.add_header("From", fromAddr)
     msg.add_header("To", clientAddr)
-    msg.add_header("Message-ID", twisted.mail.smtp.messageid())
+    msg.add_header("Message-ID", smtp.messageid())
     if not subject.startswith("Re:"): subject = "Re: %s"%subject
     msg.add_header("Subject", subject)
     if msgID:
         msg.add_header("In-Reply-To", msgID)
-    msg.add_header("Date", twisted.mail.smtp.rfc822date())
+    msg.add_header("Date", smtp.rfc822date())
     msg.set_default_type("text/plain")
     headers = [': '.join(m) for m in msg.items()]
     mail = StringIO("\r\n".join(headers))
