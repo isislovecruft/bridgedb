@@ -39,6 +39,7 @@ import bridgedb.I18n
 import bridgedb.Main
 import bridgedb.persistent
 import bridgedb.runner
+import bridgedb.safelog
 import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.test
