@@ -343,8 +343,7 @@ class MailContext:
         self.cfg = cfg
 
 class MailMessage(object):
-    """Plugs into the Twisted Mail and receives an incoming message.
-       Once the message is in, we reply or we don't. """
+    """Plugs into the Twisted Mail and receives an incoming message."""
     implements(smtp.IMessage)
 
     def __init__(self, ctx):
