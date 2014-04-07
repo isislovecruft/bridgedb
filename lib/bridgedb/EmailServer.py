@@ -402,6 +402,7 @@ class MailDelivery(object):
 class MailFactory(smtp.SMTPFactory):
     """Plugs into Twisted Mail; creates a new MailDelivery whenever we get
        a connection on the SMTP port."""
+
     def __init__(self, *a, **kw):
         smtp.SMTPFactory.__init__(self, *a, **kw)
         self.delivery = MailDelivery()
