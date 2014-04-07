@@ -19,8 +19,8 @@ import time
 from ipaddr import IPv4Address
 from ipaddr import IPv6Address
 
+from twisted.internet import defer
 from twisted.internet import reactor
-from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 import twisted.mail.smtp
 from twisted.internet.error import ConnectionRefusedError
@@ -281,7 +281,7 @@ def replyToMail(lines, ctx):
     response.seek(0)
     logging.info("Sending reply to %r", util.logSafely(sendToUser))
 
-    d = Deferred()
+    d = defer.Deferred()
     factory = twisted.mail.smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
                                                   response, d, retries=0,
                                                   timeout=30)
@@ -369,7 +369,7 @@ class MailMessage:
         """Called when we receive the end of a message."""
         if not self.ignoring:
             replyToMail(self.lines, self.ctx)
-        return twisted.internet.defer.succeed(None)
+        return defer.succeed(None)
 
     def connectionLost(self):
         """Called if we die partway through reading a message."""
