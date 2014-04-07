@@ -312,7 +312,7 @@ def getLocaleFromRequest(request):
         lang = lang[0]
     return I18n.getLang(lang) 
 
-class MailContext:
+class MailContext(object):
     """Helper object that holds information used by email subsystem."""
 
     def __init__(self, cfg, dist, sched):
