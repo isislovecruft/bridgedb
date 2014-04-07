@@ -278,7 +278,6 @@ def replyToMail(lines, ctx):
         return
 
     response.seek(0)
-    logging.info("Sending reply to %r", util.logSafely(sendToUser))
 
     d = defer.Deferred()
     factory = smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
