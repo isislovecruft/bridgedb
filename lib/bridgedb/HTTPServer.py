@@ -9,6 +9,7 @@ This module implements the web (http, https) interfaces to the bridge database.
 import base64
 import gettext
 import logging
+import random
 import re
 import textwrap
 import time
@@ -42,7 +43,6 @@ from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
 
-from random import randint
 
 
 template_root = os.path.join(os.path.dirname(__file__),'templates')
@@ -439,8 +439,8 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             remoteIP = self.recaptchaRemoteIP
         else:
             # generate a random IP for the captcha submission
-            remoteIP = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
-                                        randint(1,255),randint(1,255))
+            remoteIP = IPv4Address(random.randint(0, 2**32-1)).compressed
+
         return remoteIP
 
     def checkSolution(self, request):
