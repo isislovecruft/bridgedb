@@ -20,14 +20,13 @@ from twisted.internet import reactor
 
 from bridgedb import crypto
 from bridgedb import persistent
+from bridgedb import util
 from bridgedb.parse import options
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
-from bridgedb import util
-
 
 def configureLogging(cfg):
     """Set up Python's logging subsystem based on the configuratino.
