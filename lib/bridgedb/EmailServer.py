@@ -22,7 +22,7 @@ from ipaddr import IPv6Address
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
-import twisted.mail.smtp
+from twisted.mail import smtp
 
 from zope.interface import implements
 
@@ -281,9 +281,8 @@ def replyToMail(lines, ctx):
     logging.info("Sending reply to %r", util.logSafely(sendToUser))
 
     d = defer.Deferred()
-    factory = twisted.mail.smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
-                                                  response, d, retries=0,
-                                                  timeout=30)
+    factory = smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
+                                     response, d, retries=0, timeout=30)
     d.addErrback(_ebReplyToMailFailure)
     logging.info("Sending reply to %r", util.logSafely(sendToUser))
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
@@ -346,7 +345,7 @@ class MailContext:
 class MailMessage:
     """Plugs into the Twisted Mail and receives an incoming message.
        Once the message is in, we reply or we don't. """
-    implements(twisted.mail.smtp.IMessage)
+    implements(smtp.IMessage)
 
     def __init__(self, ctx):
         """Create a new MailMessage from a MailContext."""
@@ -376,7 +375,7 @@ class MailMessage:
 
 class MailDelivery:
     """Plugs into Twisted Mail and handles SMTP commands."""
-    implements(twisted.mail.smtp.IMessageDelivery)
+    implements(smtp.IMessageDelivery)
 
     def setBridgeDBContext(self, ctx):
         self.ctx = ctx
@@ -398,14 +397,14 @@ class MailDelivery:
         if idx != -1:
             u = u[:idx]
         if u != self.ctx.username:
-            raise twisted.mail.smtp.SMTPBadRcpt(user)
+            raise smtp.SMTPBadRcpt(user)
         return lambda: MailMessage(self.ctx)
 
-class MailFactory(twisted.mail.smtp.SMTPFactory):
+class MailFactory(smtp.SMTPFactory):
     """Plugs into Twisted Mail; creates a new MailDelivery whenever we get
        a connection on the SMTP port."""
     def __init__(self, *a, **kw):
-        twisted.mail.smtp.SMTPFactory.__init__(self, *a, **kw)
+        smtp.SMTPFactory.__init__(self, *a, **kw)
         self.delivery = MailDelivery()
 
     def setBridgeDBContext(self, ctx):
@@ -413,7 +412,7 @@ class MailFactory(twisted.mail.smtp.SMTPFactory):
         self.delivery.setBridgeDBContext(ctx)
 
     def buildProtocol(self, addr):
-        p = twisted.mail.smtp.SMTPFactory.buildProtocol(self, addr)
+        p = smtp.SMTPFactory.buildProtocol(self, addr)
         p.delivery = self.delivery
         return p
 
