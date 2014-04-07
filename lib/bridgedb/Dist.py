@@ -12,15 +12,17 @@
 
 """This module has functions to decide which bridges to hand out to whom."""
 
-import bridgedb.Bridges
-import bridgedb.Storage
-import bridgedb.util as util
-
 import logging
 import re
 import time
-from ipaddr import IPv6Address, IPAddress
 
+from ipaddr import IPv6Address
+from ipaddr import IPAddress
+
+import bridgedb.Bridges
+import bridgedb.Storage
+
+from bridgedb import util
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.Filters import filterAssignBridgesToRing
