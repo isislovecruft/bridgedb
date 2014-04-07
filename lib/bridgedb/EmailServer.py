@@ -342,7 +342,7 @@ class MailContext:
 
         self.cfg = cfg
 
-class MailMessage:
+class MailMessage(object):
     """Plugs into the Twisted Mail and receives an incoming message.
        Once the message is in, we reply or we don't. """
     implements(smtp.IMessage)
