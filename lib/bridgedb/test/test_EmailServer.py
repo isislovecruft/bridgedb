@@ -26,7 +26,9 @@ from bridgedb.EmailServer import MailContext
 from bridgedb.Time import NoSchedule
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
+
 from twisted.python import log
+from twisted.internet import defer
 from twisted.trial import unittest
 
 
@@ -130,7 +132,7 @@ class EmailGnuPGTest(unittest.TestCase):
         ctx = EmailServer.getGPGContext(self.config)
         self.assertTrue(ctx is None)
 
-class EmailCompositionTests(unittest.TestCase):
+class EmailResponseTests(unittest.TestCase):
     """Tests for :func:`bridgedb.EmailServer.getMailResponse`."""
 
     def setUp(self):
@@ -266,6 +268,44 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertIsInstance(ret[1], StringIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
+
+
+class EmailReplyTests(unittest.TestCase):
+    """Tests for ``EmailServer.replyToMail()``."""
+
+    def setUp(self):
+        """Create fake email, distributor, and associated context data."""
+        configuration = {}
+        TEST_CONFIG_FILE.seek(0)
+        compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
+        exec compiled in configuration
+        self.config = Conf(**configuration)
+
+        # TODO: Add headers if we start validating them
+        self.lines = ["From: %s@%s.com",
+                      "To: bridges@example.net",
+                      "Subject: testing",
+                      "\n",
+                      "get bridges"]
+        self.distributor = FakeDistributor('key', {}, {}, [])
+        self.ctx = MailContext(self.config, self.distributor, NoSchedule())
+
+    def test_replyToMail(self):
+        self.skip = True
+        raise unittest.SkipTest("We'll have to fake the EmailServer for this one,"\
+                                " it requires a TCP connection to localhost.")
+
+        def callback(reply):
+            self.assertSubstring("Here are your bridges", reply)
+
+        lines = copy.copy(self.lines)
+        lines[0] = self.lines[0] % ("testing", "example")
+        reply = EmailServer.replyToMail(lines, self.ctx)
+
+        self.assertIsInstance(reply, defer.Deferred)
+
+        reply.addCallback(callback)
+        return reply
 
 class EmailServerServiceTests(unittest.TestCase):
     def setUp(self):
