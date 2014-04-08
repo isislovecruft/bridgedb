@@ -153,7 +153,7 @@ class GimpCaptchaTests(unittest.TestCase):
                                 self.cacheDir)
         challenge = c.createChallenge('w00t')
         decoded = urlsafe_b64decode(challenge)
-        self.assertTrue(decoded.find(';') >= 1)
+        self.assertTrue(decoded)
 
     def test_createChallenge_hmacValid(self):
         """The HMAC in createChallenge() return value should be valid."""
@@ -161,7 +161,8 @@ class GimpCaptchaTests(unittest.TestCase):
                                 self.cacheDir)
         challenge = c.createChallenge('ShouldHaveAValidHMAC')
         decoded = urlsafe_b64decode(challenge)
-        hmac, orig = decoded.split(';', 1)
+        hmac = decoded[:20]
+        orig = decoded[20:]
         correctHMAC = crypto.getHMAC(self.hmacKey, orig)
         self.assertEquals(hmac, correctHMAC)
 
@@ -172,7 +173,8 @@ class GimpCaptchaTests(unittest.TestCase):
         answer = 'ThisAnswerShouldDecryptToThis'
         challenge = c.createChallenge(answer)
         decoded = urlsafe_b64decode(challenge)
-        hmac, orig = decoded.split(';', 1)
+        hmac = decoded[:20]
+        orig = decoded[20:]
         correctHMAC = crypto.getHMAC(self.hmacKey, orig)
         self.assertEqual(hmac, correctHMAC)
         decrypted = self.sekrit.decrypt(orig)
@@ -232,6 +234,90 @@ class GimpCaptchaTests(unittest.TestCase):
         c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
                                 self.cacheDir)
         image, challenge = c.get()
+        challengeBadB64 = challenge.rstrip('==') + "\x42\x42\x42"
         self.assertEquals(
-            c.check(challenge.rstrip('=='), c.answer, c.secretKey, c.hmacKey),
+            c.check(challenge, c.answer, c.secretKey, c.hmacKey),
+            True)
+        self.assertEquals(
+            c.check(challengeBadB64, c.answer, c.secretKey, c.hmacKey),
+            False)
+
+    def test_check_caseInsensitive_lowercase(self):
+        """A correct answer in lowercase characters should return True."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        solution = c.answer.lower()
+        self.assertEquals(
+            c.check(challenge, solution, c.secretKey, c.hmacKey),
+            True)
+
+    def test_check_caseInsensitive_uppercase(self):
+        """A correct answer in uppercase characters should return True."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        solution = c.answer.upper()
+        self.assertEquals(
+            c.check(challenge, solution, c.secretKey, c.hmacKey),
+            True)
+
+    def test_check_encoding_utf8(self):
+        """A correct answer in utf-8 lowercase should return True."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        solution = c.answer.encode('utf8')
+        self.assertEquals(
+            c.check(challenge, solution, c.secretKey, c.hmacKey),
+            True)
+
+    def test_check_encoding_ascii(self):
+        """A correct answer in utf-8 lowercase should return True."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        solution = c.answer.encode('ascii')
+        self.assertEquals(
+            c.check(challenge, solution, c.secretKey, c.hmacKey),
+            True)
+
+    def test_check_encoding_unicode(self):
+        """A correct answer in utf-8 lowercase should return True."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        solution = unicode(c.answer)
+        self.assertEquals(
+            c.check(challenge, solution, c.secretKey, c.hmacKey),
+            True)
+
+    def test_check_missingHMACbytes(self):
+        """A challenge that is missing part of the HMAC should return False."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        challengeBadHMAC = challenge[:10] + challenge[20:]
+        self.assertEquals(
+            c.check(challengeBadHMAC, c.answer, c.secretKey, c.hmacKey),
+            False)
+
+    def test_check_missingAnswerbytes(self):
+        """Partial encrypted answers in challenges should return False."""
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        challengeBadOrig = challenge[:20] + challenge[30:]
+        self.assertEquals(
+            c.check(challengeBadOrig, c.answer, c.secretKey, c.hmacKey),
+            False)
+
+    def test_check_badHMACkey(self):
+        """A challenge with a bad HMAC key should return False."""
+        hmacKeyBad = crypto.getKey('test_gimpCaptcha_badHMACkey')
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        self.assertEquals(
+            c.check(challenge, c.answer, c.secretKey, hmacKeyBad),
             False)
