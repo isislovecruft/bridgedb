@@ -8,9 +8,9 @@
 from __future__ import unicode_literals
 
 from email import message
-from io import StringIO
 import gettext
 import gpgme
+import io
 import logging
 import re
 import rfc822
@@ -315,6 +315,47 @@ def getLocaleFromRequest(request):
         lang = lang[0]
     return I18n.getLang(lang) 
 
+def composeEmail(fromAddr, clientAddr, subject, body,
+                 msgID=None, gpgContext=None):
+
+    if not subject.startswith("Re:"):
+        subject = "Re: %s" % subject
+
+    msg = smtp.rfc822.Message(io.StringIO())
+    msg.setdefault("From", fromAddr)
+    msg.setdefault("To", clientAddr)
+    msg.setdefault("Message-ID", smtp.messageid())
+    msg.setdefault("Subject", subject)
+    if msgID:
+        msg.setdefault("In-Reply-To", msgID)
+    msg.setdefault("Date", smtp.rfc822date())
+    msg.setdefault('Content-Type', 'text/plain; charset="utf-8"')
+    headers = [': '.join(m) for m in msg.items()]
+
+    mail = io.BytesIO()
+    mail.writelines(buffer("\r\n".join(headers)))
+    mail.writelines(buffer("\r\n"))
+    mail.writelines(buffer("\r\n"))
+
+    if not gpgContext:
+        mail.write(buffer(body))
+    else:
+        signature, siglist = gpgSignMessage(gpgContext, body)
+        if signature:
+            mail.writelines(buffer(signature))
+    mail.seek(0)
+
+    # Only log the email text (including all headers) if SAFE_LOGGING is
+    # disabled:
+    if not safelog.safe_logging:
+        logging.debug("Email contents:\n\n%s" % mail.read())
+        mail.seek(0)
+    else:
+        logging.debug("Email text for %r created." % clientAddr)
+
+    return clientAddr, mail
+
+
 class MailContext(object):
     """Helper object that holds information used by email subsystem."""
 
@@ -439,45 +480,9 @@ def addSMTPServer(cfg, dist, sched):
     lc.start(1800, now=False)
     return factory
 
-def composeEmail(fromAddr, clientAddr, subject, body, msgID=False,
-        gpgContext=None):
 
-    msg = message.Message()
-    msg.add_header("From", fromAddr)
-    msg.add_header("To", clientAddr)
-    msg.add_header("Message-ID", smtp.messageid())
-    if not subject.startswith("Re:"): subject = "Re: %s"%subject
-    msg.add_header("Subject", subject)
-    if msgID:
-        msg.add_header("In-Reply-To", msgID)
-    msg.add_header("Date", smtp.rfc822date())
-    msg.set_default_type("text/plain")
-    headers = [': '.join(m) for m in msg.items()]
-    mail = StringIO("\r\n".join(headers))
-    mail.writelines(unicode(msg.as_string()))
 
-    # gpg-clearsign messages
-    if gpgContext:
-        signature = StringIO()
-        plaintext = StringIO(body)
-        sigs = gpgContext.sign(plaintext, signature, gpgme.SIG_MODE_CLEAR)
-        if (len(sigs) != 1):
-            logging.warn('Failed to sign message!')
-        signature.seek(0)
-        [mail.write(l) for l in signature]
-    else:
-        mail.write(body)
 
-    # Only log the email text (including all headers) if SAFE_LOGGING is
-    # disabled:
-    if not safelog.safe_logging:
-        mail.seek(0)
-        logging.debug("Email contents:\n%s" % mail.read())
-    else:
-        logging.debug("Email text for %r created." % clientAddr)
-    mail.seek(0)
-
-    return clientAddr, mail
 
 def getGPGContext(cfg):
     """Import a key from a file and initialise a context for GnuPG operations.
@@ -520,8 +525,8 @@ def getGPGContext(cfg):
         ctx.signers = [ctx.get_key(fingerprint)]
 
         logging.info("Testing signature created with GnuPG key...")
-        message = StringIO('Test')
-        new_sigs = ctx.sign(message, StringIO(), gpgme.SIG_MODE_CLEAR)
+        message = io.StringIO('Test')
+        new_sigs = ctx.sign(message, io.StringIO(), gpgme.SIG_MODE_CLEAR)
         if not len(new_sigs) == 1:
             raise gpgme.GpgmeError(
                 "Testing was unable to produce a signature with GnuPG key.")
