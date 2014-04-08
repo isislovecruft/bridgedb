@@ -18,6 +18,7 @@ bridgedb
     bridgedb.parse
     bridgedb.persistent
     bridgedb.runner
+    bridgedb.safelog
     bridgedb.Stability
     bridgedb.Storage
     bridgedb.Tests

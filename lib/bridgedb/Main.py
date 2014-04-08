@@ -13,13 +13,13 @@ import signal
 import sys
 import time
 import logging
-import logging.handlers
 import gettext
 
 from twisted.internet import reactor
 
 from bridgedb import crypto
 from bridgedb import persistent
+from bridgedb import safelog
 from bridgedb import util
 from bridgedb.parse import options
 
@@ -28,42 +28,6 @@ import bridgedb.Dist as Dist
 import bridgedb.Time as Time
 import bridgedb.Storage
 
-def configureLogging(cfg):
-    """Set up Python's logging subsystem based on the configuratino.
-    """
-
-    # Turn on safe logging by default
-    safelogging = getattr(cfg, 'SAFELOGGING', True)
-
-    level = getattr(cfg, 'LOGLEVEL', 'WARNING')
-    level = getattr(logging, level)
-    logfile = getattr(cfg, 'LOGFILE', "")
-    logfile_count = getattr(cfg, 'LOGFILE_COUNT', 5)
-    logfile_rotate_size = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
-    util.set_safe_logging(safelogging)
-
-    logging.getLogger().setLevel(level)
-    if logfile:
-        handler = logging.handlers.RotatingFileHandler(logfile, 'a',
-                                                       logfile_rotate_size,
-                                                       logfile_count)
-        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s',
-                                      "%b %d %H:%M:%S")
-        handler.setFormatter(formatter)
-        logging.getLogger().addHandler(handler)
-
-    logging.info("Logger Started.")
-    logging.info("Level: %s", level)
-    if logfile:
-        logging.info("Log File: %s", os.path.abspath(logfile))
-        logging.info("Log File Count: %d", logfile_count)
-        logging.info("Rotate Logs After Size: %d",  logfile_rotate_size)
-    else:
-        logging.info("Logging to stderr")
-    if safelogging:
-        logging.info("Safe Logging: Enabled")
-    else:
-        logging.warn("Safe Logging: Disabled")
 
 def load(state, splitter, clear=False):
     """Read and parse all descriptors, and load into a bridge splitter.
@@ -238,9 +202,9 @@ def loadConfig(configFile=None, configCls=None):
     .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
 
     :ivar boolean itsSafeToUseLogging: This is called in :func:`startup`
-        before :func:`configureLogging`. When called from ``startup``, the
-        ``configCls`` parameter is not given, because that is the first time
-        that a :class:`Conf` is created. If a :class:`logging.Logger` is
+        before :func:`safelog.configureLogging`. When called from ``startup``,
+        the ``configCls`` parameter is not given, because that is the first
+        time that a :class:`Conf` is created. If a :class:`logging.Logger` is
         created in this function, then logging will not be correctly
         configured, therefore, if the ``configCls`` parameter is not given,
         then it's the first time this function has been called and it is
@@ -456,11 +420,11 @@ def startup(options):
 
     # Set up logging as early as possible. We cannot import from the bridgedb
     # package any of our modules which import :mod:`logging` and start using
-    # it, at least, not until :func:`configureLogging` is called. Otherwise a
-    # default handler that logs to the console will be created by the imported
-    # module, and all further calls to :func:`logging.basicConfig` will be
-    # ignored.
-    configureLogging(config)
+    # it, at least, not until :func:`safelog.configureLogging` is
+    # called. Otherwise a default handler that logs to the console will be
+    # created by the imported module, and all further calls to
+    # :func:`logging.basicConfig` will be ignored.
+    util.configureLogging(config)
 
     if options['dump-bridges'] or (options.subCommand is not None):
         runSubcommand(options, config)
