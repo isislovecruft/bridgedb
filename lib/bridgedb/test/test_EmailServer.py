@@ -20,10 +20,10 @@ from io import StringIO
 import copy
 
 from bridgedb import EmailServer
-from bridgedb.Dist import BadEmail
 from bridgedb.Dist import EmailBasedDistributor
 from bridgedb.EmailServer import MailContext
 from bridgedb.Time import NoSchedule
+from bridgedb.parse.addr import BadEmail
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
 

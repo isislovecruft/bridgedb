@@ -232,10 +232,11 @@ class EmailBridgeDistTests(unittest.TestCase):
 
     def testUnsupportedDomain(self):
         db = self.db
-        self.assertRaises(bridgedb.Dist.UnsupportedDomain,
-                bridgedb.Dist.normalizeEmail, 'bad@email.com',
-                {'example.com':'example.com'},
-                {'example.com':[]}) 
+        self.assertRaises(bridgedb.parse.addr.UnsupportedDomain,
+                          bridgedb.parse.addr.normalizeEmail,
+                          'bad@email.com',
+                          {'example.com':'example.com'},
+                          {'example.com':[]})
 
 class IPBridgeDistTests(unittest.TestCase):
     def dumbAreaMapper(self, ip):

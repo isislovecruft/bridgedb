@@ -26,7 +26,6 @@ from twisted.mail import smtp
 
 from zope.interface import implements
 
-from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb import Dist
 from bridgedb import I18n
 from bridgedb import safelog
@@ -34,6 +33,10 @@ from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.parse import addr
+from bridgedb.parse.addr import BadEmail
+from bridgedb.parse.addr import UnsupportedDomain
+from bridgedb.parse.addr import canonicalizeEmailDomain
 
 
 class MailFile:
@@ -97,23 +100,24 @@ def getMailResponse(lines, ctx):
     lang = getLocaleFromPlusAddr(clientToaddr)
     t = I18n.getLang(lang)
 
+    canon = ctx.cfg.EMAIL_DOMAIN_MAP
+    for domain, rule in ctx.cfg.EMAIL_DOMAIN_RULES.items():
+        if domain not in canon.keys():
+            canon[domain] = domain
+    for domain in ctx.cfg.EMAIL_DOMAINS:
+        canon[domain] = domain
+
     try:
-        _, addrdomain = Dist.extractAddrSpec(clientAddr.lower())
-    except BadEmail:
-        logging.info("Ignoring bad address on incoming email.")
+        _, clientDomain = addr.extractEmailAddress(clientAddr.lower())
+        canonical = canonicalizeEmailDomain(clientDomain, canon)
+    except UnsupportedDomain as error:
+        logging.warn(error)
+        return None, None
+    except BadEmail as error:
+        logging.warn(error)
         return None, None
 
-    if not addrdomain:
-        logging.info("Couldn't parse domain from %r" % clientAddr)
-
-    if addrdomain and ctx.cfg.EMAIL_DOMAIN_MAP:
-        addrdomain = ctx.cfg.EMAIL_DOMAIN_MAP.get(addrdomain, addrdomain)
-
-    if addrdomain not in ctx.cfg.EMAIL_DOMAINS:
-        logging.warn("Unrecognized email domain %r", addrdomain)
-        return None, None
-
-    rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(addrdomain, [])
+    rules = ctx.cfg.EMAIL_DOMAIN_RULES.get(canonical, [])
 
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
@@ -123,8 +127,8 @@ def getMailResponse(lines, ctx):
         if dkimHeaders:
             dkimHeader = dkimHeaders[0]
         if not dkimHeader.startswith("pass"):
-            logging.info("Got a bad dkim header (%r) on an incoming mail; "
-                         "rejecting it.", dkimHeader)
+            logging.info("Rejecting bad DKIM header on incoming email: %r "
+                         % dkimHeader)
             return None, None
 
     # Was the magic string included
@@ -186,17 +190,16 @@ def getMailResponse(lines, ctx):
             bridgeFilterRules=bridgeFilterRules)
 
     # Handle rate limited email
-    except TooSoonEmail as err:
+    except Dist.TooSoonEmail as err:
         logging.info("Got a mail too frequently; warning '%s': %s."
                      % (clientAddr, err))
 
-        # Compose a warning email
         # MAX_EMAIL_RATE is in seconds, convert to hours
         body = buildSpamWarningTemplate(t) % (Dist.MAX_EMAIL_RATE / 3600)
         return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
                 gpgContext=ctx.gpgContext)
 
-    except IgnoreEmail as err:
+    except Dist.IgnoreEmail as err:
         logging.info("Got a mail too frequently; ignoring '%s': %s."
                      % (clientAddr, err))
         return None, None
