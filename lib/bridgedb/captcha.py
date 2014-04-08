@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #_____________________________________________________________________________
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
