@@ -134,7 +134,7 @@ class EmailCompositionTests(unittest.TestCase):
     """Tests for :func:`bridgedb.EmailServer.getMailResponse`."""
 
     def setUp(self):
-        """Create fake email and associated data"""
+        """Create fake email, distributor, and associated context data."""
         configuration = {}
         TEST_CONFIG_FILE.seek(0)
         compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
@@ -142,40 +142,45 @@ class EmailCompositionTests(unittest.TestCase):
         self.config = Conf(**configuration)
 
         # TODO: Add headers if we start validating them
-        self.lines = ["From: %s@%s.com", "To: %s@example.net",
-                      "Subject: testing", "\n", "get bridges"]
+        self.lines = ["From: %s@%s.com",
+                      "To: bridges@example.net",
+                      "Subject: testing",
+                      "\n",
+                      "get bridges"]
         self.distributor = FakeDistributor('key', {}, {}, [])
         self.ctx = MailContext(self.config, self.distributor, NoSchedule())
 
-    def test_getMailResponseNoFrom(self):
+    def test_getMailResponse_noFrom(self):
+        """A received email without a "From:" or "Sender:" header shouldn't
+        receive a response.
+        """
         lines = self.lines
         lines[0] = ""
-        lines[1] = self.lines[1] % "bridges"
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], None)
         self.assertEqual(ret[1], None)
 
-    def test_getMailResponseBadAddress(self):
+    def test_getMailResponse_badAddress(self):
         lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing?", "example")
-        lines[1] = self.lines[1] % "bridges"
-        lines[2] = ""
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
-        #lines[0] = self.lines[0] % ("<>>", "example")
-        lines[0] = "From: %s@%s.com" % ("<>>", "example")
+        lines[0] = self.lines[0] % ("testing*.?\"", "example")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], None)
         self.assertEqual(ret[1], None)
 
-    def test_getMailResponseInvalidDomain(self):
+    def test_getMailResponse_anotherBadAddress(self):
+        lines = copy.copy(self.lines)
+        lines[0] = "From: Mallory %s@%s.com" % ("<>>", "example")
+        ret = EmailServer.getMailResponse(lines, self.ctx)
+        self.assertIsInstance(ret, tuple)
+        self.assertEqual(len(ret), 2)
+        self.assertEqual(ret[0], None)
+        self.assertEqual(ret[1], None)
+
+    def test_getMailResponse_invalidDomain(self):
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exa#mple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
@@ -183,6 +188,9 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], None)
         self.assertEqual(ret[1], None)
+
+    def test_getMailResponse_anotherInvalidDomain(self):
+        lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exam+ple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self.assertIsInstance(ret, tuple)
@@ -190,7 +198,10 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertEqual(ret[0], None)
         self.assertEqual(ret[1], None)
 
-    def test_getMailResponseDKIM(self):
+    def test_getMailResponse_DKIM_badDKIMheader(self):
+        """An email with an appended 'X-DKIM-Authentication-Result:' header should not
+        receive a response.
+        """
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "gmail")
         lines.append("X-DKIM-Authentication-Result: ")
@@ -199,7 +210,11 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], None)
         self.assertEqual(ret[1], None)
+
+    def test_getMailResponse_DKIM(self):
+        lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
+        lines.append("X-DKIM-Authentication-Result: ")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
@@ -208,7 +223,8 @@ class EmailCompositionTests(unittest.TestCase):
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
-    def test_getMailResponseMailContent(self):
+    def test_getMailResponse_bridges_obfs(self):
+        """A request for 'transport obfs' should receive a response."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("transport obfs")
@@ -219,6 +235,12 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertIsInstance(ret[1], StringIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
+
+    def test_getMailResponse_bridges_obfsobfswebz(self):
+        """We should only pay attention to the first in a crazy request."""
+        lines = copy.copy(self.lines)
+        lines[0] = self.lines[0] % ("testing", "example")
+        lines.append("transport obfs")
         lines.append("transport obfs")
         lines.append("unblocked webz")
         ret = EmailServer.getMailResponse(lines, self.ctx)
@@ -228,6 +250,14 @@ class EmailCompositionTests(unittest.TestCase):
         self.assertIsInstance(ret[1], StringIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
+
+    def test_getMailResponse_bridges_obfsobfswebzipv6(self):
+        """We should *still* only pay attention to the first request."""
+        lines = copy.copy(self.lines)
+        lines[0] = self.lines[0] % ("testing", "example")
+        lines.append("transport obfs")
+        lines.append("transport obfs")
+        lines.append("unblocked webz")
         lines.append("ipv6")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self.assertIsInstance(ret, tuple)
