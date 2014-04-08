@@ -554,8 +554,7 @@ class WebResourceOptions(resource.Resource):
 
 
 class WebResourceBridges(resource.Resource):
-    """This resource is used by Twisted Web to give a web page with some
-       bridges in response to a request."""
+    """This resource displays bridge lines in response to a request."""
 
     isLeaf = True
 
