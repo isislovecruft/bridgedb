@@ -321,3 +321,13 @@ class GimpCaptchaTests(unittest.TestCase):
         self.assertEquals(
             c.check(challenge, c.answer, c.secretKey, hmacKeyBad),
             False)
+
+    def test_check_badRSAkey(self):
+        """A challenge with a bad RSA secret key should return False."""
+        secretKeyBad, publicKeyBad = crypto.getRSAKey('test_gimpCaptcha_badRSAkey')
+        c = captcha.GimpCaptcha(self.sekrit, self.publik, self.hmacKey,
+                                self.cacheDir)
+        image, challenge = c.get()
+        self.assertEquals(
+            c.check(challenge, c.answer, secretKeyBad, c.hmacKey),
+            False)

@@ -203,9 +203,13 @@ class GimpCaptcha(Captcha):
             return False
         finally:
             if validHMAC:
-                decrypted = secretKey.decrypt(original)
-                if solution.lower() == decrypted.lower():
-                    return True
+                try:
+                    decrypted = secretKey.decrypt(original)
+                except Exception as error:
+                    logging.warn(error.message)
+                else:
+                    if solution.lower() == decrypted.lower():
+                        return True
             return False
 
     def createChallenge(self, answer):
