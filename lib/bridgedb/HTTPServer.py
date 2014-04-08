@@ -528,10 +528,10 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
 
 
 class WebResourceOptions(resource.Resource):
-    """This resource is used by Twisted Web to give a web page with
-       additional options that the user may use to specify the criteria
-       the returned bridges should meet.
+    """A resource with additional options which a client may use to specify the
+    which bridge types should be returned by :class:`WebResourceBridges`.
     """
+
     isLeaf = True
 
     def __init__(self):
