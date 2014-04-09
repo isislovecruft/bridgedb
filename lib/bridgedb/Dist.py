@@ -543,8 +543,8 @@ class EmailBasedDistributor(Distributor):
     def cleanDatabase(self):
         with bridgedb.Storage.getDB() as db:
             try:
-                db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
-                db.cleanWarnedEmails(time.time()-MAX_EMAIL_RATE)
+                db.cleanEmailedBridges(time.time() - MAX_EMAIL_RATE)
+                db.cleanWarnedEmails(time.time() - MAX_EMAIL_RATE)
             except:
                 db.rollback()
                 raise
