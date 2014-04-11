@@ -21,29 +21,37 @@ span,p,h3,h4 {
     text-align: right;
     direction: rtl;
 }
-
 span {
     float: right;
 }
 </style>
-%endif
+% endif
 
 </head>
 <body>
   <div class="container-narrow">
     <div class="masthead">
-      <ul class="nav nav-pills pull-right">
-        <!--<h3 class="muted">BridgeDB</h3> -->
-        <a href="https://bridges.torproject.org/"><img src="/assets/bridgedb.png"
-                                                       height="100%"
-                                                       width="100%" /></a>
-      </ul>
-      <a href="https://www.torproject.org"><img src="/assets/tor.svg"
-                                                height="10%" width="15%"/></a>
+      <div class="nav nav-tabs">
+        <div class="nav navbar-header">
+          <a  class="navbar-brand" href="../">BridgeDB</a>
+        </div>
+        <ul class="nav navbar-nav pull-right">
+          <li>
+            <a href="https://www.torproject.org">The Tor Project</a>
+          </li>
+        </ul>
+      </div>
+      <p style="float: left; text-align: left;
+                margin-left: -23%; margin-bottom: -30%;">
+        <a href="https://www.torproject.org">
+          <img src="/assets/tor-roots-blue.svg"
+               height="23%" width="23%"/></a>
+      </p>
     </div>
-<hr>
+
 
 ${self.body()}
+
 
 <div class="faq">
   <div class="row-fluid marketing">
