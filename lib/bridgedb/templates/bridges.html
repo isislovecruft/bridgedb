@@ -1,19 +1,86 @@
-﻿## -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 <%inherit file="base.html"/>
 
-<h2> Bridges </h2>
-<br />
+<div class="container-fluid"
+     style="width: 98%; align: center; margin: auto;">
+  <div class="container-fluid"
+       style="padding: 2%">
+    <h2>${_("Bridges")}</h2>
+  </div>
+</div>
+
 % if answer:
-<pre>
+<div class="container-fluid" style="width: 98%; align: center; margin: auto;">
+<div class="container-fluid" style="padding: 1px">
+<div class="well well-lg">
+<p style="font-family: Menlo,Monaco,Consolas,monospace;
+          font-size: 95%;">
 ${answer}
-</pre>
-<br \>
-<p>
-<p>
-${_("""To use the above lines, go to Vidalia's Network settings page, and """ \
-    """click "My ISP blocks connections to the Tor network". Then add """ \
-    """each bridge address one at a time.""")}
 </p>
+</div>
+</div>
+</div>
+<br \>
+
+<div class="container-fluid"
+     style="width: 100%; align: center; margin: auto;">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">${_("""How to start using your bridges""")}</h3>
+    </div>
+    <br />
+
+    <div class="container-fluid" id="howto" style="align-content: left;">
+      <p>
+${_("""To use the above lines, follow the instructions on the""" \
+    """ %s %s download page %s to start %s.""") % \
+   ("""<a href="https://www.torproject.org/projects/torbrowser.html.en#downloads-beta" target="_blank">""",
+    """Tor Browser""", """</a>""", """Tor Browser""")}
+${_("""When the "Tor Network Settings" dialogue pops up,""" \
+    """ click "Configure" and follow the wizard until it asks:""")}
+      </p>
+      <br />
+      <div class="bs-component">
+        <blockquote>
+          <p>
+${_(""" Does your Internet Service Provider (ISP) block or""" \
+    """ otherwise censor connections to the Tor Network?""")}
+          </p>
+        </blockquote>
+      </div>
+      <p>
+${_(""" Select "Yes" and click "Next" in order to configure your""" \
+    """ new bridges. Select "Enter custom bridges", and copy and""" \
+    """ paste the bridges lines shown above into the text input""" \
+    """ box. Finally, click "Connect", and you should be good""" \
+    """ to go! If you experience trouble, try clicking""" \
+    """ the "Help" button in the "Tor Network Settings" wizard for""" \
+    """ further assistance.""")}
+      </p>
+    </div>
+  </div>
+</div>
+
 % else:
-<h3> ${_("No bridges currently available")} </h3>
+<div class="bs-component" style="width: 80%; margin: auto;">
+  <div class="alert alert-dismissable alert-danger">
+    <p style="text-align: center; font-size: 115%;">
+      <br />
+      <strong>
+        <em class="primary">${_("""Uh oh, spaghettios!""")}</em>
+      </strong>
+      <br />
+    </p>
+    <p style="text-align: center;">
+      ${_("""There currently aren't any bridges available...""")}
+      ${_(""" Perhaps you should try %s going back %s and choosing a""" \
+          """ different bridge type!""") % \
+         ("""<a class="alert-link" href="options">""", """</a>""")}
+    </p>
+  </div>
+</div>
+<br />
+
 % endif
+
+<hr />
