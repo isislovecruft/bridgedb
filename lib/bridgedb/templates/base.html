@@ -62,36 +62,6 @@ ${self.body()}
            ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
     </p>
 
-    <h4>${_("I need a different type of bridge!")}</h4>
-    <p>
-      ${_("BridgeDB can provide bridges with either IPv4 or IPv6 addresses.")}
-    </p>
-
-    <!-- Buttons for IP version selection -->
-    <p>
-      <div class="pt-container" style="margin: 20px 20px 20px">
-        <div class="btn-toolbar" style="text-align: center; margin: 0;">
-          <div class="btn-group">
-            <a href="./bridges">
-              <button class="btn btn-default" type="button">
-                ${_("Get IPv4 bridges")}
-              </button>
-            </a>
-            <a href="./bridges?ipv6=true">
-              <button class="btn btn-default" type="button">
-                 ${_("Get IPv6 bridges")}
-              </button>
-            </a>
-            <a href="./options">
-              <button class="btn btn-default" type="button">
-                 ${_("Advanced Options")}
-              </button>
-            </a>
-          </div>
-        </div>
-      </div>
-    </p>
-
     <h4>${_("I need an alternative way of getting bridges!")}</h4>
     <p>${_("Another way to find public bridge addresses is to send an email "
            "(from a %s or a %s address) to %s with the line 'get bridges' by "
