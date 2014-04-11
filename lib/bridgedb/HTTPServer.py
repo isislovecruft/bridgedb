@@ -553,6 +553,31 @@ class WebResourceOptions(resource.Resource):
     render_POST = render_GET
 
 
+class WebResourceHowto(resource.Resource):
+    """A resource which explains how to use bridges."""
+
+    isLeaf = True
+
+    def __init__(self):
+        """Create a new WebResource for the Options page"""
+        gettext.install("bridgedb", unicode=True)
+        resource.Resource.__init__(self)
+
+    def render_GET(self, request):
+        rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
+
+        try:
+            rtl = translations.usingRTLLang(langs)
+        except Exception as err:  # pragma: no cover
+            logging.exception(err)
+
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        return lookup.get_template('howto.html').render(rtl=rtl)
+
+    render_POST = render_GET
+
+
 class WebResourceBridges(resource.Resource):
     """This resource displays bridge lines in response to a request."""
 
@@ -801,6 +826,7 @@ def addWebServer(cfg, dist, sched):
     httpdist.putChild('assets',
                       static.File(os.path.join(template_root, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
+    httpdist.putChild('howto', WebResourceHowto())
 
     bridgesResource = WebResourceBridges(
         dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
