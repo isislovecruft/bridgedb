@@ -3,14 +3,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>BridgeDB &middot;</title>
+<title>BridgeDB</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Bridge IP database">
 <meta name="author" content="The Tor Project">
 
 <!-- Le styles -->
-<link href="/assets/bootstrap.min.css" rel="stylesheet">
-<link href="/assets/custom.css" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+<!--[if IE 7]>
+  <link rel="stylesheet" href="/assets/css/font-awesome-ie7.min.css">
+<![endif]-->
 
 % if rtl:
 <style>
@@ -18,29 +21,37 @@ span,p,h3,h4 {
     text-align: right;
     direction: rtl;
 }
-
 span {
     float: right;
 }
 </style>
-%endif
+% endif
 
 </head>
 <body>
   <div class="container-narrow">
     <div class="masthead">
-      <ul class="nav nav-pills pull-right">
-        <!--<h3 class="muted">BridgeDB</h3> -->
-        <a href="https://bridges.torproject.org/"><img src="/assets/bridgedb.png"
-                                                       height="100%"
-                                                       width="100%" /></a>
-      </ul>
-      <a href="https://www.torproject.org"><img src="/assets/tor.svg"
-                                                height="10%" width="15%"/></a>
+      <div class="nav nav-tabs">
+        <div class="nav navbar-header">
+          <a  class="navbar-brand" href="../">BridgeDB</a>
+        </div>
+        <ul class="nav navbar-nav pull-right">
+          <li>
+            <a href="https://www.torproject.org">The Tor Project</a>
+          </li>
+        </ul>
+      </div>
+      <p style="float: left; text-align: left;
+                margin-left: -23%; margin-bottom: -30%;">
+        <a href="https://www.torproject.org">
+          <img src="/assets/tor-roots-blue.svg"
+               height="23%" width="23%"/></a>
+      </p>
     </div>
-<hr>
+
 
 ${self.body()}
+
 
 <div class="faq">
   <div class="row-fluid marketing">
@@ -49,36 +60,6 @@ ${self.body()}
     <p>${_("%s Bridge relays %s are Tor relays that help you circumvent "
            "censorship.") % \
            ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
-    </p>
-
-    <h4>${_("I need a different type of bridge!")}</h4>
-    <p>
-      ${_("BridgeDB can provide bridges with either IPv4 or IPv6 addresses.")}
-    </p>
-
-    <!-- Buttons for IP version selection -->
-    <p>
-      <div class="pt-container" style="margin: 20px 20px 20px">
-        <div class="btn-toolbar" style="text-align: center; margin: 0;">
-          <div class="btn-group">
-            <a href="./bridges">
-              <button class="btn btn-default" type="button">
-                ${_("Get IPv4 bridges")}
-              </button>
-            </a>
-            <a href="./bridges?ipv6=true">
-              <button class="btn btn-default" type="button">
-                 ${_("Get IPv6 bridges")}
-              </button>
-            </a>
-            <a href="./options">
-              <button class="btn btn-default" type="button">
-                 ${_("Advanced Options")}
-              </button>
-            </a>
-          </div>
-        </div>
-      </div>
     </p>
 
     <h4>${_("I need an alternative way of getting bridges!")}</h4>

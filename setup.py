@@ -181,7 +181,13 @@ def get_template_files():
     include_patterns = ['*.html',
                         '*.txt',
                         '*.asc',
-                        'assets/*']
+                        'assets/*.png',
+                        'assets/*.svg',
+                        'assets/css/*.css',
+                        'assets/font/*.woff',
+                        'assets/font/*.ttf',
+                        'assets/font/*.svg',
+                        'assets/font/*.eot']
     template_files = []
 
     for include_pattern in include_patterns:

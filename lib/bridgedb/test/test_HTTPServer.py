@@ -267,6 +267,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
         a :class:`ReCaptchaProtectedResource`.
         """
+        self.timeout = 10.0  # Can't take longer than that, right?
         # Set up our resources to fake a minimal HTTP(S) server:
         self.pagename = b'captcha.html'
         self.root = Resource()
@@ -327,7 +328,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             """Check the ``Request`` returned from ``_renderDeferred``."""
             self.assertIsInstance(request, DummyRequest)
             html = b''.join(request.written)
-            self.assertSubstring('No bridges currently available', html)
+            self.assertSubstring('Uh oh, spaghettios!', html)
 
         d = task.deferLater(reactor, 0, lambda x: x, (True, self.request))
         d.addCallback(self.captchaResource._renderDeferred)
@@ -534,11 +535,11 @@ class WebResourceBridgesTests(unittest.TestCase):
         :rtype: list
         :returns: A list of the bridge lines contained on the **page**.
         """
-        # The bridge lines are contained in a <pre> tag:
-        soup = BeautifulSoup(page).find('pre')
-        soup = str(soup).replace('<pre>', '').strip()
-        soup = str(soup).replace('</pre>', '').strip()
-        bridges = [b.strip() for b in soup.splitlines()]
+        # The bridge lines are contained in a <div class='well well-lg'> tag:
+        soup = BeautifulSoup(page)
+        well = soup.find('div', {'class': 'well well-lg'}).find('p')
+        content = well.renderContents().strip()
+        bridges = [b.strip() for b in content.splitlines()]
         return bridges
 
     def test_render_GET_vanilla(self):
@@ -550,7 +551,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         page = self.bridgesResource.render(request)
 
         # The response should explain how to use the bridge lines:
-        self.assertSubstring("To use the above lines", page)
+        self.assertTrue("To enter bridges into Tor Browser" in str(page))
 
         for b in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
@@ -579,7 +580,7 @@ class WebResourceBridgesTests(unittest.TestCase):
 
         page = self.bridgesResource.render(request)
         self.bridgesResource.useForwardedHeader = False  # Reset it
-        self.assertSubstring("To use the above lines", page)
+        self.assertSubstring("To enter bridges into", page)
 
     def test_render_GET_RTLlang(self):
         """Test rendering a request for obfs3 bridges in Arabic."""
@@ -593,7 +594,8 @@ class WebResourceBridgesTests(unittest.TestCase):
 
         page = self.bridgesResource.render(request)
         self.assertSubstring("direction: rtl", page)
-        self.assertSubstring("لاستخدام الأسطر أعلاه", page)
+        self.assertSubstring(
+            "إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي", page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
@@ -631,7 +633,8 @@ class WebResourceBridgesTests(unittest.TestCase):
         """)
         #self.assertNotSubstring("html", page)
 
-        for bridgeLine in self.parseBridgesFromHTMLPage(page):
+        bridgeLines = self.parseBridgesFromHTMLPage(page)
+        for bridgeLine in bridgeLines:
             bridgeLine = bridgeLine.split(' ')
             self.assertEqual(len(bridgeLine), 2)
 

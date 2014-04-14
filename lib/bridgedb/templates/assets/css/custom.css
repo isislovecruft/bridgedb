@@ -6,7 +6,7 @@ body {
 /* Custom container */
 .container-narrow {
     margin: 0 auto;
-    max-width: 700px;
+    max-width: 675px;
 }
 .container-narrow > hr {
     margin: 30px 0;
@@ -79,7 +79,7 @@ margin-bottom: 10px;
 }
 
 .step-title {
-color: #9da0a4;
+color: #808080;
 font-size: 18px;
 font-weight: 100;
 }

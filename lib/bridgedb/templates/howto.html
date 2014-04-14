@@ -1,29 +1,12 @@
 ## -*- coding: utf-8 -*-
+
 <%inherit file="base.html"/>
 
 <div class="container-fluid"
      style="width: 98%; align: center; margin: auto;">
-  <div class="container-fluid"
-       style="padding: 2%">
-    <h2>${_("Bridges")}</h2>
-  </div>
-</div>
-
-% if answer:
-<div class="container-fluid" style="width: 98%; align: center; margin: auto;">
-<div class="container-fluid" style="padding: 1px">
-<div class="well well-lg">
-<p style="font-family: Menlo,Monaco,Consolas,monospace;
-          font-size: 95%;">
-${answer}
-</p>
-</div>
-</div>
-</div>
-<br \>
-
 <div class="container-fluid"
-     style="width: 100%; align: center; margin: auto;">
+     style="width: 95%; align: center;
+            padding-top: 10%; padding-left: 5%; padding-right: 5%;">
   <div class="panel panel-primary">
     <div class="panel-heading">
       <h3 class="panel-title">${_("""How to start using your bridges""")}</h3>
@@ -34,7 +17,7 @@ ${answer}
       <p>
 ${_("""To enter bridges into %s, follow the instructions on the""" \
     """ %s %s download page %s to start %s.""") % \
-   ("""Tor Browser""",
+   ("""Tor Browser""", 
     """<a href="https://www.torproject.org/projects/torbrowser.html.en#downloads-beta" target="_blank">""",
     """Tor Browser""", """</a>""", """Tor Browser""")}
 ${_("""When the "Tor Network Settings" dialogue pops up,""" \
@@ -61,27 +44,4 @@ ${_(""" Select "Yes" and click "Next" in order to configure your""" \
     </div>
   </div>
 </div>
-
-% else:
-<div class="bs-component" style="width: 80%; margin: auto;">
-  <div class="alert alert-dismissable alert-danger">
-    <p style="text-align: center; font-size: 115%;">
-      <br />
-      <strong>
-        <em class="primary">${_("""Uh oh, spaghettios!""")}</em>
-      </strong>
-      <br />
-    </p>
-    <p style="text-align: center;">
-      ${_("""There currently aren't any bridges available...""")}
-      ${_(""" Perhaps you should try %s going back %s and choosing a""" \
-          """ different bridge type!""") % \
-         ("""<a class="alert-link" href="options">""", """</a>""")}
-    </p>
-  </div>
 </div>
-<br />
-
-% endif
-
-<hr />
