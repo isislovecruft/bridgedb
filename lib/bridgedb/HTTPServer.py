@@ -44,10 +44,7 @@ from bridgedb.parse import headers
 from bridgedb.safelog import logSafely
 
 
-
-template_root = os.path.join(os.path.dirname(__file__),'templates')
-logging.debug("Set template root to %s" % template_root)
-
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__),'templates')
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 # Setting `filesystem_checks` to False is recommended for production servers,
@@ -57,13 +54,14 @@ rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 # recompiled). `collection_size` sets the number of compiled templates which
 # are cached before the least recently used ones are removed. See:
 # http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
-lookup = TemplateLookup(directories=[template_root],
+lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         output_encoding='utf-8',
                         filesystem_checks=False,
                         collection_size=500)
 
 
 _geoipdb = '/usr/share/GeoIP/GeoIP.dat'
+logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
 try:
     # Make sure we have the database before trying to import the module:
@@ -822,9 +820,9 @@ def addWebServer(cfg, dist, sched):
     httpdist = resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
-                      static.File(os.path.join(template_root, 'robots.txt')))
+                      static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
     httpdist.putChild('assets',
-                      static.File(os.path.join(template_root, 'assets/')))
+                      static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
     httpdist.putChild('howto', WebResourceHowto())
 
