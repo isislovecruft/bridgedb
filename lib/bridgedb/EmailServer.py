@@ -432,8 +432,21 @@ class MailDelivery(object):
         self.ctx = ctx
 
     def receivedHeader(self, helo, origin, recipients):
-        #XXXX what is this for? what should it be?
-        return "Received: BridgeDB"
+        """Create the ``Received:`` header for an incoming email.
+
+        :type helo: tuple
+        :param helo: The lines received during SMTP client HELO.
+        :type origin: :api:`twisted.mail.smtp.Address`
+        :param origin: The email address of the sender.
+        :type recipients: list
+        :param recipients: A list of :api:`twisted.mail.smtp.User` instances.
+        """
+        cameFrom = "%s (%s [%s])" % (helo[0] or origin, helo[0], helo[1])
+        cameFor = ', '.join(["<{0}>".format(recp.dest) for recp in recipients])
+        hdr = str("Received: from %s for %s; %s" % (cameFrom, cameFor,
+                                                    smtp.rfc822date()))
+        return hdr
+
     def validateFrom(self, helo, origin):
         return origin
 
