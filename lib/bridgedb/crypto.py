@@ -347,6 +347,32 @@ def getGPGContext(cfg):
 
     return ctx
 
+def gpgSignMessage(gpgmeCtx, messageString, mode=None):
+    """Sign a **messageString** with a GPGME context.
+
+    :param gpgmeCtx: A ``gpgme.Context`` initialised with the appropriate
+        settings.
+    :param str messageString: The message to sign.
+    :param mode: The signing mode. (default: ``gpgme.SIG_MODE_CLEAR``)
+    :rtype: tuple
+    :returns: A 2-tuple of ``(signature, list)``, where:
+        * ``signature`` is the ascii-armored signature text.
+        * ``list`` is a list of ``gpgme.NewSignature``s.
+
+    .. warning:: The returned signature text and list *may* be empty, if no
+        signature was created.
+    """
+    if not mode:
+        mode = gpgme.SIG_MODE_CLEAR
+
+    msgFile = io.StringIO(unicode(messageString))
+    sigFile = io.StringIO()
+    sigList = gpgmeCtx.sign(msgFile, sigFile, mode)
+    sigFile.seek(0)
+    signature = sigFile.read()
+
+    return (signature, sigList)
+
 
 class SSLVerifyingContextFactory(ssl.CertificateOptions):
     """``OpenSSL.SSL.Context`` factory which does full certificate-chain and

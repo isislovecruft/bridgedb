@@ -29,6 +29,7 @@ from bridgedb import Dist
 from bridgedb import I18n
 from bridgedb import safelog
 from bridgedb.crypto import getGPGContext
+from bridgedb.crypto import gpgSignMessage
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
