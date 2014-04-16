@@ -16,7 +16,7 @@ from __future__ import print_function
 import os
 import shutil
 
-from io import StringIO
+import io
 import copy
 
 from bridgedb import EmailServer
@@ -32,7 +32,7 @@ from twisted.internet import defer
 from twisted.trial import unittest
 
 
-TEST_CONFIG_FILE = StringIO(unicode("""\
+TEST_CONFIG_FILE = io.StringIO(unicode("""\
 EMAIL_DIST = True
 EMAIL_GPG_SIGNING_ENABLED = True
 EMAIL_GPG_SIGNING_KEY = 'TESTING.subkeys.sec'
@@ -51,6 +51,20 @@ EMAIL_FROM_ADDR = "bridges@localhost"
 EMAIL_BIND_IP = "127.0.0.1"
 EMAIL_PORT = 5225
 """))
+
+def _createMailContext(distributor=None):
+    configuration = {}
+    TEST_CONFIG_FILE.seek(0)
+    compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
+    exec compiled in configuration
+    config = Conf(**configuration)
+
+    if not distributor:
+        distributor = FakeDistributor('key', {}, {}, [])
+
+    ctx = MailContext(config, distributor, NoSchedule())
+    return ctx
+
 
 class FakeDistributor(EmailBasedDistributor):
     def __init__(self, key, domainmap, domainrules, answerParameters=None,
@@ -132,17 +146,12 @@ class EmailGnuPGTest(unittest.TestCase):
         ctx = EmailServer.getGPGContext(self.config)
         self.assertTrue(ctx is None)
 
+
 class EmailResponseTests(unittest.TestCase):
     """Tests for :func:`bridgedb.EmailServer.getMailResponse`."""
 
     def setUp(self):
         """Create fake email, distributor, and associated context data."""
-        configuration = {}
-        TEST_CONFIG_FILE.seek(0)
-        compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
-        exec compiled in configuration
-        self.config = Conf(**configuration)
-
         # TODO: Add headers if we start validating them
         self.lines = ["From: %s@%s.com",
                       "To: bridges@example.net",
@@ -150,7 +159,7 @@ class EmailResponseTests(unittest.TestCase):
                       "\n",
                       "get bridges"]
         self.distributor = FakeDistributor('key', {}, {}, [])
-        self.ctx = MailContext(self.config, self.distributor, NoSchedule())
+        self.ctx = _createMailContext(self.distributor)
 
     def test_getMailResponse_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
@@ -221,7 +230,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], StringIO)
+        self.assertIsInstance(ret[1], io.BytesIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -234,7 +243,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], StringIO)
+        self.assertIsInstance(ret[1], io.BytesIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -249,7 +258,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], StringIO)
+        self.assertIsInstance(ret[1], io.BytesIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -265,7 +274,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertIsInstance(ret, tuple)
         self.assertEqual(len(ret), 2)
         self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], StringIO)
+        self.assertIsInstance(ret[1], io.BytesIO)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -275,12 +284,6 @@ class EmailReplyTests(unittest.TestCase):
 
     def setUp(self):
         """Create fake email, distributor, and associated context data."""
-        configuration = {}
-        TEST_CONFIG_FILE.seek(0)
-        compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
-        exec compiled in configuration
-        self.config = Conf(**configuration)
-
         # TODO: Add headers if we start validating them
         self.lines = ["From: %s@%s.com",
                       "To: bridges@example.net",
@@ -288,7 +291,7 @@ class EmailReplyTests(unittest.TestCase):
                       "\n",
                       "get bridges"]
         self.distributor = FakeDistributor('key', {}, {}, [])
-        self.ctx = MailContext(self.config, self.distributor, NoSchedule())
+        self.ctx = _createMailContext(self.distributor)
 
     def test_replyToMail(self):
         self.skip = True
@@ -306,6 +309,7 @@ class EmailReplyTests(unittest.TestCase):
 
         reply.addCallback(callback)
         return reply
+
 
 class EmailServerServiceTests(unittest.TestCase):
     def setUp(self):
