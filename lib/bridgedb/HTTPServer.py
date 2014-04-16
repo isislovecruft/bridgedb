@@ -45,6 +45,7 @@ from bridgedb.safelog import logSafely
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__),'templates')
+GEOIP_DBFILE = '/usr/share/GeoIP/GeoIP.dat'
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 # Setting `filesystem_checks` to False is recommended for production servers,
@@ -58,22 +59,19 @@ lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         output_encoding='utf-8',
                         filesystem_checks=False,
                         collection_size=500)
-
-
-_geoipdb = '/usr/share/GeoIP/GeoIP.dat'
 logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
 try:
     # Make sure we have the database before trying to import the module:
-    if not os.path.isfile(_geoipdb):  # pragma: no cover
+    if not os.path.isfile(GEOIP_DBFILE):  # pragma: no cover
         raise EnvironmentError("Could not find %r. On Debian-based systems, "\
                                "please install the geoip-database package."
-                               % _geoipdb)
+                               % GEOIP_DBFILE)
     # This is a "pure" python version which interacts with the Maxmind GeoIP
     # API (version 1). It requires, in Debian, the libgeoip-dev and
     # geoip-database packages.
     import pygeoip
-    geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
+    geoip = pygeoip.GeoIP(GEOIP_DBFILE, flags=pygeoip.MEMORY_CACHE)
     logging.info("GeoIP database loaded")
 except Exception as err:  # pragma: no cover
     logging.warn("Error while loading geoip module: %r" % err)
