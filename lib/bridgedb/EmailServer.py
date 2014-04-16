@@ -28,6 +28,7 @@ from zope.interface import implements
 from bridgedb import Dist
 from bridgedb import I18n
 from bridgedb import safelog
+from bridgedb.crypto import getGPGContext
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -500,68 +501,3 @@ def addSMTPServer(cfg, dist, sched):
     lc = LoopingCall(dist.cleanDatabase)
     lc.start(1800, now=False)
     return factory
-
-
-
-
-
-def getGPGContext(cfg):
-    """Import a key from a file and initialise a context for GnuPG operations.
-
-    The key should not be protected by a passphrase, and should have the
-    signing flag enabled.
-
-    :type cfg: :class:`bridgedb.persistent.Conf`
-    :param cfg: The loaded config file.
-    :rtype: :class:`gpgme.Context` or None
-    :returns: A GPGME context with the signers initialized by the keyfile
-        specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or
-        None if the option was not enabled, or was unable to initialize.
-    """
-    try:
-        # must have enabled signing and specified a key file
-        if not cfg.EMAIL_GPG_SIGNING_ENABLED or not cfg.EMAIL_GPG_SIGNING_KEY:
-            return None
-    except AttributeError:
-        return None
-
-    keyfile = None
-    ctx = gpgme.Context()
-
-    try:
-        logging.debug("Opening GPG keyfile %s..." % cfg.EMAIL_GPG_SIGNING_KEY)
-        keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
-        key = ctx.import_(keyfile)
-
-        if not (len(key.imports) > 0):
-            logging.debug(
-                "Unexpected result from gpgme.Context.import_(): %r" % key)
-            raise gpgme.GpgmeError("Could not import GnuPG key from file %r"
-                                   % cfg.EMAIL_GPG_SIGNING_KEY)
-
-        fingerprint = key.imports[0][0]
-        logging.info("GPG Key with fingerprint %s imported" % fingerprint)
-
-        ctx.armor = True
-        ctx.signers = [ctx.get_key(fingerprint)]
-
-        logging.info("Testing signature created with GnuPG key...")
-        message = io.StringIO('Test')
-        new_sigs = ctx.sign(message, io.StringIO(), gpgme.SIG_MODE_CLEAR)
-        if not len(new_sigs) == 1:
-            raise gpgme.GpgmeError(
-                "Testing was unable to produce a signature with GnuPG key.")
-
-    except (IOError, OSError) as error:
-        logging.debug(error)
-        logging.error("Could not open or read from GnuPG key file %r!"
-                      % cfg.EMAIL_GPG_SIGNING_KEY)
-        ctx = None
-    except gpgme.GpgmeError as error:
-        logging.exception(error)
-        ctx = None
-    finally:
-        if keyfile and not keyfile.closed:
-            keyfile.close()
-
-    return ctx
