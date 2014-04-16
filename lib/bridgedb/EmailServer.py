@@ -276,22 +276,25 @@ def replyToMail(lines, ctx):
     :param list lines: A list of lines from an incoming email message.
     :type ctx: :class:`MailContext`
     :param ctx: The configured context for the email server.
+    :rtype: :api:`twisted.internet.defer.Deferred`
+    :returns: A ``Deferred`` which will callback when the response has been
+        successfully sent, or errback if an error occurred while sending the
+        email.
     """
     logging.info("Got an email; deciding whether to reply.")
     sendToUser, response = getMailResponse(lines, ctx)
 
+    d = defer.Deferred()
+
     if response is None:
-        logging.debug("We don't really feel like talking to %s right now."
-                      % sendToUser)
-        return
+        logging.debug("We don't feel like talking to %s." % sendToUser)
+        return d
 
     response.seek(0)
-
-    d = defer.Deferred()
+    logging.info("Sending reply to %s" % sendToUser)
     factory = smtp.SMTPSenderFactory(ctx.smtpFromAddr, sendToUser,
                                      response, d, retries=0, timeout=30)
     d.addErrback(_ebReplyToMailFailure)
-    logging.info("Sending reply to %s" % sendToUser)
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
     return d
 
