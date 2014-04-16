@@ -13,7 +13,6 @@ import gpgme
 import io
 import logging
 import re
-import rfc822
 import time
 
 from ipaddr import IPv4Address
@@ -39,19 +38,6 @@ from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
 
 
-class MailFile:
-    """A file-like object used to hand rfc822.Message a list of lines
-       as though it were reading them from a file."""
-    def __init__(self, lines):
-        self.lines = lines
-        self.idx = 0
-    def readline(self):
-        try :
-            line = self.lines[self.idx]
-            self.idx += 1
-            return line
-        except IndexError:
-            return ""
 
 def getBridgeDBEmailAddrFromList(ctx, address_list):
     """Loop through a list of (full name, email address) pairs and look up our
@@ -77,27 +63,50 @@ def getMailResponse(lines, ctx):
        will receive the response, and a readable filelike object containing
        the response.  Return None,None if we shouldn't answer.
     """
+    raw = io.StringIO()
+    raw.writelines([unicode('{0}\n'.format(line)) for line in lines])
+    raw.seek(0)
+
+    msg = smtp.rfc822.Message(raw)
     # Extract data from the headers.
-    msg = rfc822.Message(MailFile(lines))
-    subject = msg.getheader("Subject", None)
-    if not subject: subject = "[no subject]"
-    clientFromAddr = msg.getaddr("From")
-    clientSenderAddr = msg.getaddr("Sender")
+    msgID = msg.getheader("Message-ID", None)
+    subject = msg.getheader("Subject", None) or "[no subject]"
+
+    fromHeader = msg.getaddr("From")
+    senderHeader = msg.getaddr("Sender")
+
+    clientAddrHeader = None
+    try:
+        clientAddrHeader = fromHeader[1]
+    except (IndexError, TypeError, AttributeError):
+        pass
+
+    if not clientAddrHeader:
+        logging.warn("No From header on incoming mail.")
+        try:
+            clientAddrHeader = senderHeader[1]
+        except (IndexError, TypeError, AttributeError):
+            pass
+
+    if not clientAddrHeader:
+        logging.warn("No Sender header on incoming mail.")
+        return None, None
+
+    try:
+        clientAddr = addr.normalizeEmail(clientAddrHeader,
+                                         ctx.cfg.EMAIL_DOMAIN_MAP,
+                                         ctx.cfg.EMAIL_DOMAIN_RULES)
+    except (UnsupportedDomain, BadEmail) as error:
+        logging.warn(error)
+        return None, None
+
     # RFC822 requires at least one 'To' address
     clientToList = msg.getaddrlist("To")
-    clientToaddr = getBridgeDBEmailAddrFromList(ctx, clientToList)
-    msgID = msg.getheader("Message-ID", None)
-    if clientSenderAddr and clientSenderAddr[1]:
-        clientAddr = clientSenderAddr[1]
-    elif clientFromAddr and clientFromAddr[1]:
-        clientAddr = clientFromAddr[1]
-    else:
-        logging.info("No From or Sender header on incoming mail.")
-        return None,None
+    clientToAddr = getBridgeDBEmailAddrFromList(ctx, clientToList)
 
     # Look up the locale part in the 'To:' address, if there is one and get
     # the appropriate Translation object
-    lang = getLocaleFromPlusAddr(clientToaddr)
+    lang = getLocaleFromPlusAddr(clientToAddr)
     t = I18n.getLang(lang)
 
     canon = ctx.cfg.EMAIL_DOMAIN_MAP
@@ -110,10 +119,7 @@ def getMailResponse(lines, ctx):
     try:
         _, clientDomain = addr.extractEmailAddress(clientAddr.lower())
         canonical = canonicalizeEmailDomain(clientDomain, canon)
-    except UnsupportedDomain as error:
-        logging.warn(error)
-        return None, None
-    except BadEmail as error:
+    except (UnsupportedDomain, BadEmail) as error:
         logging.warn(error)
         return None, None
 
@@ -209,6 +215,7 @@ def getMailResponse(lines, ctx):
                      % (clientAddr, err))
         return None, None
 
+    answer = "(no bridges currently available)"
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
         answer = "".join("  %s\n" % b.getConfigLine(
@@ -216,8 +223,6 @@ def getMailResponse(lines, ctx):
             addressClass=addressClass,
             transport=transport,
             request=clientAddr) for b in bridges)
-    else:
-        answer = "(no bridges currently available)"
 
     body = buildMessageTemplate(t) % answer
     # Generate the message.
