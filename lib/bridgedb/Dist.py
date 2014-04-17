@@ -28,7 +28,18 @@ from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.parse import addr
+from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.safelog import logSafely
+
+
+MAX_EMAIL_RATE = 3*3600
+
+class IgnoreEmail(addr.BadEmail):
+    """Raised when we get requests from this address after rate warning."""
+
+class TooSoonEmail(addr.BadEmail):
+    """Raised when we got a request from this address too recently."""
 
 
 def uniformMap(ip):
@@ -322,103 +333,6 @@ class IPBasedDistributor(Distributor):
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
 
-
-# These characters are the ones that RFC2822 allows.
-#ASPECIAL = '!#$%&*+-/=?^_`{|}~'
-#ASPECIAL += "\\\'"
-# These are the ones we're pretty sure we can handle right.
-ASPECIAL = '-_+/=_~'
-
-ACHAR = r'[\w%s]' % "".join("\\%s"%c for c in ASPECIAL)
-DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR,ACHAR)
-DOMAIN = r'\w+(?:\.\w+)*'
-ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
-
-SPACE_PAT = re.compile(r'\s+')
-ADDRSPEC_PAT = re.compile(ADDRSPEC)
-
-MAX_EMAIL_RATE = 3*3600
-
-class BadEmail(Exception):
-    """Exception raised when we get a bad email address."""
-    def __init__(self, msg, email):
-        Exception.__init__(self, msg)
-        self.email = email
-
-class UnsupportedDomain(BadEmail):
-    """Exception raised when we get an email address from a domain we
-       don't know."""
-
-class TooSoonEmail(BadEmail):
-    """Raised when we got a request from this address too recently."""
-
-class IgnoreEmail(BadEmail):
-    """Raised when we get requests from this address after rate warning."""
-
-def extractAddrSpec(addr):
-    """Given an email From line, try to extract and parse the addrspec
-       portion.  Returns localpart,domain on success; raises BadEmail
-       on failure.
-    """
-    orig_addr = addr
-    addr = SPACE_PAT.sub(' ', addr)
-    addr = addr.strip()
-    # Only works on usual-form addresses; raises BadEmail on weird
-    # address form.  That's okay, since we'll only get those when
-    # people are trying to fool us.
-    if '<' in addr:
-        # Take the _last_ index of <, so that we don't need to bother
-        # with quoting tricks.
-        idx = addr.rindex('<')
-        addr = addr[idx:]
-        m = re.search(r'<([^>]*)>', addr)
-        if m is None:
-            raise BadEmail("Couldn't extract address spec", orig_addr)
-        addr = m.group(1)
-
-    # At this point, addr holds a putative addr-spec.  We only allow the
-    # following form:
-    #   addr-spec = local-part "@" domain
-    #   local-part = dot-atom
-    #   domain = dot-atom
-    #
-    # In particular, we are disallowing: obs-local-part, obs-domain,
-    # comment, obs-FWS,
-    #
-    # Other forms exist, but none of the incoming services we recognize
-    # support them.
-    addr = addr.replace(" ", "")
-    m = ADDRSPEC_PAT.match(addr)
-    if not m:
-        raise BadEmail("Bad address spec format", orig_addr)
-    localpart, domain = m.groups()
-    return localpart, domain
-
-def normalizeEmail(addr, domainmap, domainrules):
-    """Given the contents of a from line, and a map of supported email
-       domains (in lowercase), raise BadEmail or return a normalized
-       email address.
-    """
-    addr = addr.lower()
-    localpart, domain = extractAddrSpec(addr)
-    if domainmap is not None:
-        domain = domainmap.get(domain, None)
-        if domain is None:
-            raise UnsupportedDomain("Domain not supported", addr)
-
-    #XXXX Do these rules also hold for Yahoo?
-
-    # addr+foo@ is an alias for addr@
-    idx = localpart.find('+')
-    if idx >= 0:
-        localpart = localpart[:idx]
-    rules = domainrules.get(domain, [])
-    if 'ignore_dots' in rules:
-        # j.doe@ is the same as jdoe@.
-        localpart = localpart.replace(".", "")
-
-    return "%s@%s"%(localpart, domain)
-
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
     request and the current time period.
@@ -475,12 +389,13 @@ class EmailBasedDistributor(Distributor):
             bridgeFilterRules=[]
         now = time.time()
         try:
-            emailaddress = normalizeEmail(emailaddress, self.domainmap,
-                                          self.domainrules)
-        except BadEmail as err:
+            emailaddress = addr.normalizeEmail(emailaddress, self.domainmap,
+                                               self.domainrules)
+        except addr.BadEmail as err:
             logging.warn(err)
             return []
-        if emailaddress is None:
+
+        if not emailaddress:
             return [] #XXXX raise an exception.
 
         with bridgedb.Storage.getDB() as db:
