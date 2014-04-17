@@ -1,19 +1,57 @@
 Changes in version 0.1.7 -
-        * FIXES #5232 Perform long running and blocking transactions
-                in background threads. Primarily this moves bridge
-                descriptor reparsing into another thread and
-                significantly increased the availability of BridgeDB,
-                as a result.
-        * FIXES #11370 We were using an old (and deprecated) module when
-                we created our email responses. Now we use the newer
-                version. This should only affect internal functionality
-                And should not result in any noticable user-visible changes.
+        * FIXES #5232 Perform long running and blocking transactions in
+                background threads. Primarily this moves bridge descriptor
+                reparsing into another thread, which significantly increases
+                the availability of BridgeDB.
+        * FIXES #9119 BridgeDB's logger now automatically sanitises all email
+                and IP addresses when the SAFELOGGING config option is enabled.
+        * FIXES #9875 BridgeDB logger now has 100% unittest coverage.
+        * FIXES #10803 Vidalia is no longer mentioned on
+                https://bridges.torproject.org, and instead there are new
+                instructions on how to enter bridges into TBB>=3.5 (with
+                TorLauncher).
+        * FIXES #11346 The web interface now has a homepage link. By clicking
+                "BridgeDB" in the upper left corner, users can go back to the
+                start of TBB downloading and bridge selection instructions at
+                https://bridges.torproject.org.
+        * FIXES #11370 We were using an old (and deprecated) module when we
+                created our email responses. Now we use the newer version.
         * FIXES #11377 CAPTCHAs on BridgeDB's HTTPS interface are now
-                case-insensitive. Patch thanks to Kostas Jakeliunas.
+                case-insensitive.
+                Thanks to Kostas Jakeliunas for the patch.
+        * FIXES #11522 fixes several issues with encodings and exception
+                handling in the email distributor.
 
 And includes the following general changes:
-        * BUMPS leekspin version to 0.1.3
-
+        * NEW interface design for https://bridges.torproject.org, including
+                updated CSS stylesheets, fonts, and HTML templates. In
+                particular, the https://bridges.torproject.org/options page has
+                been redesigned completely.
+                Thanks to Xengi for providing a modified design of the "roots"
+                Tor Project logo, which is used to link to
+                https://www.torproject.org.
+        * CHANGES the TBB download link on the main web interface page to link
+                to the new TBB-3.6.x-beta bundles, which include patches by
+                David Fifield to unify TBB and PTTBB into one browser, so that
+                Pluggable Transports (PTs) are only enabled when the user
+                includes a bridge line which uses that PT.
+        * FIXES plaintext responses on https://bridges.torproject.org,
+                these can be requested by using the 'format' HTTP parameter,
+                like so: https://bridges.torproject.org/bridges?format=plain
+        * FIXES the logging of all lines of (including headers!) of incoming
+                emails.
+        * FIXES logfile rotation so that the files are only reable/writable
+                by the running process owner, and no other user.
+        * CHANGES the data format used for encrypted-then-HMACed CAPTCHAs
+                to assume that the HMAC is the first 20 bytes. Before we
+                assumed that the HMAC was separated from the encrypted data
+                with a ';' character, which causes intermittent issues with
+                some encoding and CAPTCHA solution values.
+        * REFACTORS some of the translations handling code, so that soon emails
+                will be translated (see #7550), and
+                https://bridges.torproject.org should have a "Select Language"
+                button (see #9678).
+        * BUMPS leekspin version to 0.1.3.
 
 Changes in version 0.1.6 - 2014-03-26
 BridgeDB 0.1.6 includes fixes for the following bugs:
