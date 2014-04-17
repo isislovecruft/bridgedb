@@ -201,17 +201,14 @@ def getMailResponse(lines, ctx):
     except Dist.TooSoonEmail as err:
         logging.info("Got a mail too frequently; warning '%s': %s."
                      % (clientAddr, err))
-
         # MAX_EMAIL_RATE is in seconds, convert to hours
         body = buildSpamWarningTemplate(t) % (Dist.MAX_EMAIL_RATE / 3600)
         return composeEmail(ctx.fromAddr, clientAddr, subject, body, msgID,
-                gpgContext=ctx.gpgContext)
-
+                            gpgContext=ctx.gpgContext)
     except Dist.IgnoreEmail as err:
         logging.info("Got a mail too frequently; ignoring '%s': %s."
                      % (clientAddr, err))
         return None, None
-
     except BadEmail as err:
         logging.info("Got a mail from a bad email address '%s': %s."
                      % (clientAddr, err))
