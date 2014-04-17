@@ -199,32 +199,36 @@ class EmailResponseTests(unittest.TestCase):
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_badAddress(self):
+        """Don't respond to RFC2822 malformed source addresses."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing*.?\"", "example")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_anotherBadAddress(self):
+        """Don't respond to RFC2822 malformed source addresses."""
         lines = copy.copy(self.lines)
         lines[0] = "From: Mallory %s@%s.com" % ("<>>", "example")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_invalidDomain(self):
+        """Don't respond to RFC2822 malformed source addresses."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exa#mple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_anotherInvalidDomain(self):
+        """Don't respond to RFC2822 malformed source addresses."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exam+ple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_DKIM_badDKIMheader(self):
-        """An email with an appended 'X-DKIM-Authentication-Result:' header should not
-        receive a response.
+        """An email with an 'X-DKIM-Authentication-Result:' header appended
+        after the body should not receive a response.
         """
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "gmail")
@@ -233,6 +237,7 @@ class EmailResponseTests(unittest.TestCase):
         self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_DKIM(self):
+        """An email with a good DKIM header should be responded to."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("X-DKIM-Authentication-Result: ")
@@ -241,8 +246,8 @@ class EmailResponseTests(unittest.TestCase):
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
-    def test_getMailResponse_bridges_obfs(self):
-        """A request for 'transport obfs' should receive a response."""
+    def test_getMailResponse_bridges_obfs3(self):
+        """A request for 'transport obfs3' should receive a response."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("transport obfs")
@@ -252,7 +257,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
     def test_getMailResponse_bridges_obfsobfswebz(self):
-        """We should only pay attention to the first in a crazy request."""
+        """We should only pay attention to the *last* in a crazy request."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("transport obfs")
@@ -264,7 +269,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
     def test_getMailResponse_bridges_obfsobfswebzipv6(self):
-        """We should *still* only pay attention to the first request."""
+        """We should *still* only pay attention to the *last* request."""
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("transport obfs")
