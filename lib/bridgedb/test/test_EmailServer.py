@@ -169,7 +169,7 @@ class EmailResponseTests(unittest.TestCase):
         """Create fake email, distributor, and associated context data."""
         # TODO: Add headers if we start validating them
         self.lines = ["From: %s@%s.com",
-                      "To: bridges@example.net",
+                      "To: bridges@localhost",
                       "Subject: testing",
                       "",
                       "get bridges"]
@@ -182,7 +182,7 @@ class EmailResponseTests(unittest.TestCase):
         self.assertEqual(reply[0], None)
         self.assertEqual(reply[1], None)
 
-    def _isTwoTupleOfAddrAndClass(self, reply, address="testing@example.com",
+    def _isTwoTupleOfAddrAndClass(self, reply, address="testing@localhost",
                                   klass=io.StringIO):
         self.assertIsInstance(reply, tuple)
         self.assertEqual(len(reply), 2)
@@ -239,30 +239,30 @@ class EmailResponseTests(unittest.TestCase):
     def test_getMailResponse_DKIM(self):
         """An email with a good DKIM header should be responded to."""
         lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "example")
-        lines.append("X-DKIM-Authentication-Result: ")
+        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines.insert(3, "X-DKIM-Authentication-Result: ")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
-        self.assertNotEqual(mail.find("no bridges currently"), -1)
+        self.assertEqual(mail.find("no bridges currently"), -1)
 
     def test_getMailResponse_bridges_obfs3(self):
         """A request for 'transport obfs3' should receive a response."""
         lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "example")
-        lines.append("transport obfs")
+        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines[4] = "transport obfs3"
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
-        self.assertNotEqual(mail.find("no bridges currently"), -1)
+        self.assertEqual(mail.find("no bridges currently"), -1)
 
     def test_getMailResponse_bridges_obfsobfswebz(self):
         """We should only pay attention to the *last* in a crazy request."""
         lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "example")
-        lines.append("transport obfs")
-        lines.append("transport obfs")
-        lines.append("unblocked webz")
+        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines[4] = "unblocked webz"
+        lines.append("transport obfs2")
+        lines.append("transport obfs3")
         ret = EmailServer.getMailResponse(lines, self.ctx)
         self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
@@ -271,9 +271,8 @@ class EmailResponseTests(unittest.TestCase):
     def test_getMailResponse_bridges_obfsobfswebzipv6(self):
         """We should *still* only pay attention to the *last* request."""
         lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "example")
-        lines.append("transport obfs")
-        lines.append("transport obfs")
+        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines[4] = "transport obfs3"
         lines.append("unblocked webz")
         lines.append("ipv6")
         ret = EmailServer.getMailResponse(lines, self.ctx)
