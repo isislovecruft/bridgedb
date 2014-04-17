@@ -25,6 +25,7 @@ from bridgedb.EmailServer import MailContext
 from bridgedb.Time import NoSchedule
 from bridgedb.parse.addr import BadEmail
 from bridgedb.persistent import Conf
+from bridgedb.test.test_HTTPServer import DummyBridge
 from bridgedb.test.util import fileCheckDecorator
 
 from twisted.python import log
@@ -34,9 +35,13 @@ from twisted.trial import unittest
 
 TEST_CONFIG_FILE = io.StringIO(unicode("""\
 EMAIL_DIST = True
+EMAIL_INCLUDE_FINGERPRINTS = True
 EMAIL_GPG_SIGNING_ENABLED = True
 EMAIL_GPG_SIGNING_KEY = 'TESTING.subkeys.sec'
-EMAIL_DOMAIN_MAP = {}
+EMAIL_DOMAIN_MAP = {
+   'googlemail.com': 'gmail.com',
+   'mail.google.com': 'gmail.com',
+}
 EMAIL_DOMAIN_RULES = {
    'gmail.com': ["ignore_dots", "dkim"],
    'example.com': [],
@@ -60,25 +65,35 @@ def _createMailContext(distributor=None):
     config = Conf(**configuration)
 
     if not distributor:
-        distributor = FakeDistributor('key', {}, {}, [])
+        distributor = DummyEmailDistributor(
+            domainmap=config.EMAIL_DOMAIN_MAP,
+            domainrules=config.EMAIL_DOMAIN_RULES)
 
     ctx = MailContext(config, distributor, NoSchedule())
     return ctx
 
 
-class FakeDistributor(EmailBasedDistributor):
-    def __init__(self, key, domainmap, domainrules, answerParameters=None,
-                 bridges=None):
-        super(FakeDistributor, self).__init__(key, domainmap, domainrules,
-            answerParameters)
-        if bridges:
-            self.bridges = bridges
-        else:
-            self.bridges = []
+class DummyEmailDistributor(object):
+    """A mocked :class:`bridgedb.Dist.EmailBasedDistributor` which is used to
+    test :class:`bridgedb.EmailServer`.
+    """
 
-    def getBridgesForEmail(self, emailaddr, epoch, N=1,
-         parameters=None, countryCode=None, bridgeFilterRules=None):
-        return self.bridges[:N]
+    def __init__(self, key=None, domainmap=None, domainrules=None,
+                 answerParameters=None):
+        """None of the parameters are really used, except ``ctx`` ― they are
+        just there to retain an identical method signature.
+        """
+        self.key = self.__class__.__name__
+        self.domainmap = domainmap
+        self.domainrules = domainrules
+        self.answerParameters = answerParameters
+
+    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
+                           countryCode=None, bridgeFilterRules=None):
+        """Needed because it's called in
+        :meth:`WebResourceBridges.getBridgesForIP`.
+        """
+        return [DummyBridge() for _ in xrange(N)]
 
 
 class EmailGnuPGTest(unittest.TestCase):
@@ -158,8 +173,7 @@ class EmailResponseTests(unittest.TestCase):
                       "Subject: testing",
                       "\n",
                       "get bridges"]
-        self.distributor = FakeDistributor('key', {}, {}, [])
-        self.ctx = _createMailContext(self.distributor)
+        self.ctx = _createMailContext()
 
     def test_getMailResponse_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
@@ -290,8 +304,7 @@ class EmailReplyTests(unittest.TestCase):
                       "Subject: testing",
                       "\n",
                       "get bridges"]
-        self.distributor = FakeDistributor('key', {}, {}, [])
-        self.ctx = _createMailContext(self.distributor)
+        self.ctx = _createMailContext()
 
     def test_replyToMail(self):
         self.skip = True
@@ -313,20 +326,14 @@ class EmailReplyTests(unittest.TestCase):
 
 class EmailServerServiceTests(unittest.TestCase):
     def setUp(self):
-        configuration = {}
-        TEST_CONFIG_FILE.seek(0)
-        compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
-        exec compiled in configuration
-        self.config = Conf(**configuration)
-
         # TODO: Add headers if we start validating them
         self.lines = ["From: %s@%s.com", "To: %s@example.net",
                       "Subject: testing", "\n", "get bridges"]
-        self.distributor = FakeDistributor('key', {}, {}, [])
-        self.ctx = MailContext(self.config, self.distributor, NoSchedule())
+        self.distributor = DummyEmailDistributor('key', {}, {}, [])
+        self.ctx = _createMailContext(self.distributor)
 
     def test_receiveMail(self):
         self.skip = True
         raise unittest.SkipTest("Not finished yet")
         from twisted.internet import reactor
-        EmailServer.addSMTPServer(self.config, self.distributor, NoSchedule)
+        EmailServer.addSMTPServer(self.ctx.cfg, self.distributor, NoSchedule)
