@@ -171,7 +171,7 @@ class EmailResponseTests(unittest.TestCase):
         self.lines = ["From: %s@%s.com",
                       "To: bridges@example.net",
                       "Subject: testing",
-                      "\n",
+                      "",
                       "get bridges"]
         self.ctx = _createMailContext()
 
