@@ -214,7 +214,7 @@ def getMailResponse(lines, ctx):
                      % (clientAddr, err))
         return None, None
 
-    answer = "(no bridges currently available)"
+    answer = "(no bridges currently available)\n"
     if bridges:
         with_fp = ctx.cfg.EMAIL_INCLUDE_FINGERPRINTS
         answer = "".join("  %s\n" % b.getConfigLine(
