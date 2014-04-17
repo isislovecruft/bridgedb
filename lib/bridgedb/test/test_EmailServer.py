@@ -175,6 +175,20 @@ class EmailResponseTests(unittest.TestCase):
                       "get bridges"]
         self.ctx = _createMailContext()
 
+    def _isTwoTupleOfNone(self, reply):
+        """Check that a return value is ``(None, None)``."""
+        self.assertIsInstance(reply, tuple)
+        self.assertEqual(len(reply), 2)
+        self.assertEqual(reply[0], None)
+        self.assertEqual(reply[1], None)
+
+    def _isTwoTupleOfAddrAndClass(self, reply, address="testing@example.com",
+                                  klass=io.StringIO):
+        self.assertIsInstance(reply, tuple)
+        self.assertEqual(len(reply), 2)
+        self.assertEqual(reply[0], address)
+        self.assertIsInstance(reply[1], klass)
+
     def test_getMailResponse_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
         receive a response.
@@ -182,46 +196,31 @@ class EmailResponseTests(unittest.TestCase):
         lines = self.lines
         lines[0] = ""
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_badAddress(self):
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing*.?\"", "example")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_anotherBadAddress(self):
         lines = copy.copy(self.lines)
         lines[0] = "From: Mallory %s@%s.com" % ("<>>", "example")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_invalidDomain(self):
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exa#mple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_anotherInvalidDomain(self):
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "exam+ple")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_DKIM_badDKIMheader(self):
         """An email with an appended 'X-DKIM-Authentication-Result:' header should not
@@ -231,20 +230,14 @@ class EmailResponseTests(unittest.TestCase):
         lines[0] = self.lines[0] % ("testing", "gmail")
         lines.append("X-DKIM-Authentication-Result: ")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], None)
-        self.assertEqual(ret[1], None)
+        self._isTwoTupleOfNone(ret)
 
     def test_getMailResponse_DKIM(self):
         lines = copy.copy(self.lines)
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("X-DKIM-Authentication-Result: ")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], io.BytesIO)
+        self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -254,10 +247,7 @@ class EmailResponseTests(unittest.TestCase):
         lines[0] = self.lines[0] % ("testing", "example")
         lines.append("transport obfs")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], io.BytesIO)
+        self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -269,10 +259,7 @@ class EmailResponseTests(unittest.TestCase):
         lines.append("transport obfs")
         lines.append("unblocked webz")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], io.BytesIO)
+        self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
@@ -285,10 +272,7 @@ class EmailResponseTests(unittest.TestCase):
         lines.append("unblocked webz")
         lines.append("ipv6")
         ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.assertIsInstance(ret, tuple)
-        self.assertEqual(len(ret), 2)
-        self.assertEqual(ret[0], "testing@example.com")
-        self.assertIsInstance(ret[1], io.BytesIO)
+        self._isTwoTupleOfAddrAndClass(ret)
         mail = ret[1].getvalue()
         self.assertNotEqual(mail.find("no bridges currently"), -1)
 
