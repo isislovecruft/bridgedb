@@ -35,6 +35,7 @@ import bridgedb.I18n as I18n
 
 from bridgedb import captcha
 from bridgedb import crypto
+from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
@@ -537,9 +538,10 @@ class WebResourceOptions(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
 
         try:
-            rtl = usingRTLLang(request)
+            rtl = translations.usingRTLLang(langs)
         except Exception as err:  # pragma: no cover
             logging.exception(err)
 
@@ -660,7 +662,8 @@ class WebResourceBridges(resource.Resource):
             if countryCode:
                 logging.debug("Client request from GeoIP CC: %s" % countryCode)
 
-        rtl = usingRTLLang(request)
+        langs = translations.getLocaleFromHTTPRequest(request)
+        rtl = translations.usingRTLLang(langs)
         if rtl:
             logging.debug("Rendering RTL response.")
 
@@ -780,9 +783,10 @@ class WebRoot(resource.Resource):
         :param request: An incoming request.
         """
         rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
 
         try:
-            rtl = usingRTLLang(request)
+            rtl = translations.usingRTLLang(langs)
         except Exception as err:
             logging.exception(err)
             logging.error("The gettext files were not properly installed.")
@@ -879,87 +883,3 @@ def addWebServer(cfg, dist, sched):
             raise SystemExit(error)
 
     return site
-
-def usingRTLLang(request):
-    """Check if we should translate the text into a RTL language
-
-    Retrieve the headers from the request. Obtain the Accept-Language header
-    and decide if we need to translate the text. Install the requisite
-    languages via gettext, if so. Then, manually check which languages we
-    support. Choose the first language from the header that we support and
-    return True if it is a RTL language, else return False.
-
-    :type request: :api:`twisted.web.server.Request`
-    :param request: An incoming request.
-    :rtype: bool
-    :returns: ``True`` if the preferred language is right-to-left; ``False``
-              otherwise.
-    """
-    langs = setLocaleFromRequestHeader(request)
-
-    # Grab only the language (first two characters) so we know if the language
-    # is read right-to-left
-    #langs = [ lang[:2] for lang in langs ]
-    lang = getAssumedChosenLang(langs)
-    if lang in rtl_langs:
-        return True
-    return False
-
-def getAssumedChosenLang(langs):
-    """Return the first language in **langs** that we support.
-
-    :param list langs: All requested languages
-    :rtype: str
-    :returns: A country code for the client's preferred language.
-    """
-    i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
-    path = filepath.FilePath(i18npath)
-    assert path.isdir()
-
-    lang = 'en-US'
-    supp_langs = path.listdir() + ['en']
-    for l in langs:
-        if l in supp_langs:
-            lang = l
-            break
-    return lang
-
-def setLocaleFromRequestHeader(request):
-    """Retrieve the languages from the accept-language header and install them.
-
-    Parse the languages in the header, and attempt to install the first one in
-    the list. If that fails, we receive a :class:`gettext.NullTranslation`
-    object, if it worked then we have a :class:`gettext.GNUTranslation`
-    object. Whichever one we end up with, get the other languages and add them
-    as fallbacks to the first. Lastly, install this chain of translations.
-
-    :type request: :api:`twisted.web.server.Request`
-    :param request: An incoming request from a client.
-    :rtype: list
-    :returns: All requested languages.
-    """
-    logging.debug("Getting client 'Accept-Language' header...")
-    header = request.getHeader('accept-language')
-
-    if header is None:
-        logging.debug("Client sent no 'Accept-Language' header. Using fallback.")
-        header = 'en,en-US'
-
-    localedir = os.path.join(os.path.dirname(__file__), 'i18n/')
-    langs = headers.parseAcceptLanguage(header)
-    ## XXX the 'Accept-Language' header is potentially identifying
-    logging.debug("Client Accept-Language (top 5): %s" % langs[:5])
-
-    try:
-        language = gettext.translation("bridgedb", localedir=localedir,
-                                       languages=langs, fallback=True)
-        for lang in langs:
-            language.add_fallback(gettext.translation("bridgedb",
-                                                      localedir=localedir,
-                                                      languages=langs,
-                                                      fallback=True))
-    except IOError as error:
-        logging.error(error.message)
-
-    language.install(unicode=True)
-    return langs

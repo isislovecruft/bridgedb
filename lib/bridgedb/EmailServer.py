@@ -30,6 +30,7 @@ from bridgedb.Dist import BadEmail, TooSoonEmail, IgnoreEmail
 from bridgedb import Dist
 from bridgedb import I18n
 from bridgedb import safelog
+from bridgedb import translations
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -94,8 +95,8 @@ def getMailResponse(lines, ctx):
 
     # Look up the locale part in the 'To:' address, if there is one and get
     # the appropriate Translation object
-    lang = getLocaleFromPlusAddr(clientToaddr)
-    t = I18n.getLang(lang)
+    lang = translations.getLocaleFromPlusAddr(clientToaddr)
+    t = translations.installTranslations(lang)
 
     try:
         _, addrdomain = Dist.extractAddrSpec(clientAddr.lower())
@@ -287,30 +288,6 @@ def replyToMail(lines, ctx):
     reactor.connectTCP(ctx.smtpServer, ctx.smtpPort, factory)
     return d
 
-def getLocaleFromPlusAddr(address):
-    """See whether the user sent his email to a 'plus' address, for 
-       instance to bridgedb+fa@tpo. Plus addresses are the current 
-       mechanism to set the reply language
-    """
-    replyLocale = "en"
-    r = '.*(<)?(\w+\+(\w+)@\w+(?:\.\w+)+)(?(1)>)'
-    match = re.match(r, address)
-    if match:
-        replyLocale = match.group(3)
-
-    return replyLocale
-
-def getLocaleFromRequest(request):
-    # See if we did get a request for a certain locale, otherwise fall back
-    # to 'en':
-    # Try evaluating the path /foo first, then check if we got a ?lang=foo
-    default_lang = lang = "en"
-    if len(request.path) > 1:
-        lang = request.path[1:]
-    if lang == default_lang:
-        lang = request.args.get("lang", [default_lang])
-        lang = lang[0]
-    return I18n.getLang(lang) 
 
 class MailContext(object):
     """Helper object that holds information used by email subsystem."""
