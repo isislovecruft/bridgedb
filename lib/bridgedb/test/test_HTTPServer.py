@@ -535,9 +535,9 @@ class WebResourceBridgesTests(unittest.TestCase):
         :rtype: list
         :returns: A list of the bridge lines contained on the **page**.
         """
-        # The bridge lines are contained in a <div class='well well-lg'> tag:
+        # The bridge lines are contained in a <div class='bridges'> tag:
         soup = BeautifulSoup(page)
-        well = soup.find('div', {'class': 'well well-lg'}).find('p')
+        well = soup.find('div', {'class': 'bridge-lines'})
         content = well.renderContents().strip()
         bridges = [b.strip() for b in content.splitlines()]
         return bridges
