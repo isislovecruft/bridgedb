@@ -109,22 +109,18 @@ class BucketManager:
         self.unallocatedList = []
         self.unallocated_available = False
         self.distributor_prefix = PSEUDO_DISTRI_PREFIX
-        self.db = bridgedb.Storage.Database(self.cfg.DB_FILE+".sqlite",
-                                            self.cfg.DB_FILE)
-
-    def __del__(self):
-        self.db.close()
 
     def addToUnallocatedList(self, hex_key):
         """Add a bridge by hex_key into the unallocated pool
         """
-        try:
-            self.db.updateDistributorForHexKey("unallocated", hex_key)
-        except:
-            self.db.rollback()
-            raise
-        else:
-            self.db.commit()
+        with bridgedb.Storage.getDB() as db:
+            try:
+                db.updateDistributorForHexKey("unallocated", hex_key)
+            except:
+                db.rollback()
+                raise
+            else:
+                db.commit()
         self.unallocatedList.append(hex_key)
         self.unallocated_available = True
 
@@ -144,17 +140,18 @@ class BucketManager:
         # Mark pseudo-allocators in the database as such
         allocator_name = bucket.name
         #print "KEY: %d NAME: %s" % (hex_key, allocator_name)
-        try:
-            self.db.updateDistributorForHexKey(allocator_name, hex_key)
-        except:
-            self.db.rollback()
-            # Ok, this seems useless, but for consistancy's sake, we'll 
-            # re-assign the bridge from this missed db update attempt to the
-            # unallocated list. Remember? We pop()'d it before.
-            self.addToUnallocatedList(hex_key)
-            raise
-        else:
-            self.db.commit()
+        with bridgedb.Storage.getDB() as db:
+            try:
+                db.updateDistributorForHexKey(allocator_name, hex_key)
+            except:
+                db.rollback()
+                # Ok, this seems useless, but for consistancy's sake, we'll
+                # re-assign the bridge from this missed db update attempt to the
+                # unallocated list. Remember? We pop()'d it before.
+                self.addToUnallocatedList(hex_key)
+                raise
+            else:
+                db.commit()
         bucket.allocated += 1
         if len(self.unallocatedList) < 1:
             self.unallocated_available = False
@@ -171,7 +168,8 @@ class BucketManager:
             self.bucketList.append(d)
 
         # Loop through all bridges and sort out distributors
-        allBridges = self.db.getAllBridges()
+        with bridgedb.Storage.getDB() as db:
+            allBridges = db.getAllBridges()
         for bridge in allBridges:
             if bridge.distributor == "unallocated":
                 self.addToUnallocatedList(bridge.hex_key)
@@ -215,38 +213,40 @@ class BucketManager:
         logging.debug("Dumping bridge assignments to file: %r" % filename)
         # get the bridge histories and sort by Time On Same Address
         bridgeHistories = []
-        for b in bridges:
-            bh = self.db.getBridgeHistory(b.hex_key)
-            if bh: bridgeHistories.append(bh)
-        bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
-            y.weightedFractionalUptime))
+        with bridgedb.Storage.getDB() as db:
+            for b in bridges:
+                bh = db.getBridgeHistory(b.hex_key)
+                if bh: bridgeHistories.append(bh)
+            bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
+                y.weightedFractionalUptime))
 
-        # for a bridge, get the list of countries it might not work in
-        blocklist = dict()
-        if getattr(self.cfg, "COUNTRY_BLOCK_FILE", None) is not None:
-            f = open(self.cfg.COUNTRY_BLOCK_FILE, 'r')
-            for ID,address,portlist,countries in bridgedb.Bridges.parseCountryBlockFile(f):
-                blocklist[toHex(ID)] = countries
-            f.close()
+            # for a bridge, get the list of countries it might not work in
+            blocklist = dict()
+            if getattr(self.cfg, "COUNTRY_BLOCK_FILE", None) is not None:
+                f = open(self.cfg.COUNTRY_BLOCK_FILE, 'r')
+                for ID,address,portlist,countries in bridgedb.Bridges.parseCountryBlockFile(f):
+                    blocklist[toHex(ID)] = countries
+                f.close()
 
-        try:
-            f = open(filename, 'w')
-            for bh in bridgeHistories:
-                days = bh.tosa / long(60*60*24)
-                line = "%s:%s\t(%d %s)" %  \
-                        (bh.ip, bh.port, days,  _("""days at this address"""))
-                if str(bh.fingerprint) in blocklist.keys():
-                    line = line + "\t%s: (%s)" % (_("""(Might be blocked)"""),
-                            ",".join(blocklist[bh.fingerprint]),)
-                f.write(line + '\n')
-            f.close()
-        except IOError:
-            print "I/O error: %s" % filename
+            try:
+                f = open(filename, 'w')
+                for bh in bridgeHistories:
+                    days = bh.tosa / long(60*60*24)
+                    line = "%s:%s\t(%d %s)" %  \
+                            (bh.ip, bh.port, days,  _("""days at this address"""))
+                    if str(bh.fingerprint) in blocklist.keys():
+                        line = line + "\t%s: (%s)" % (_("""(Might be blocked)"""),
+                                ",".join(blocklist[bh.fingerprint]),)
+                    f.write(line + '\n')
+                f.close()
+            except IOError:
+                print "I/O error: %s" % filename
 
     def dumpBridges(self):
         """Dump all known file distributors to files, sort by distributor
         """
-        allBridges = self.db.getAllBridges()
+        with bridgedb.Storage.getDB() as db:
+            allBridges = db.getAllBridges()
         bridgeDict = {}
         # Sort returned bridges by distributor
         for bridge in allBridges:

@@ -9,10 +9,18 @@ This module implements the web (http, https) interfaces to the bridge database.
 import base64
 import gettext
 import logging
+import random
 import re
 import textwrap
 import time
 import os
+
+from ipaddr import IPv4Address
+from ipaddr import IPv6Address
+
+import mako.exceptions
+from mako.template import Template
+from mako.lookup import TemplateLookup
 
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
@@ -24,27 +32,21 @@ from twisted.web.util import redirectTo
 
 import bridgedb.Dist
 import bridgedb.I18n as I18n
-import bridgedb.Util as Util
 
 from bridgedb import captcha
 from bridgedb import crypto
+from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
-
-from ipaddr import IPv4Address, IPv6Address
-from random import randint
-import mako.exceptions
-from mako.template import Template
-from mako.lookup import TemplateLookup
+from bridgedb.safelog import logSafely
 
 
-template_root = os.path.join(os.path.dirname(__file__),'templates')
-logging.debug("Set template root to %s" % template_root)
-
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__),'templates')
+GEOIP_DBFILE = '/usr/share/GeoIP/GeoIP.dat'
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 # Setting `filesystem_checks` to False is recommended for production servers,
@@ -54,25 +56,23 @@ rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 # recompiled). `collection_size` sets the number of compiled templates which
 # are cached before the least recently used ones are removed. See:
 # http://docs.makotemplates.org/en/latest/usage.html#using-templatelookup
-lookup = TemplateLookup(directories=[template_root],
+lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         output_encoding='utf-8',
                         filesystem_checks=False,
                         collection_size=500)
-
-
-_geoipdb = '/usr/share/GeoIP/GeoIP.dat'
+logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
 try:
     # Make sure we have the database before trying to import the module:
-    if not os.path.isfile(_geoipdb):  # pragma: no cover
+    if not os.path.isfile(GEOIP_DBFILE):  # pragma: no cover
         raise EnvironmentError("Could not find %r. On Debian-based systems, "\
                                "please install the geoip-database package."
-                               % _geoipdb)
+                               % GEOIP_DBFILE)
     # This is a "pure" python version which interacts with the Maxmind GeoIP
     # API (version 1). It requires, in Debian, the libgeoip-dev and
     # geoip-database packages.
     import pygeoip
-    geoip = pygeoip.GeoIP(_geoipdb, flags=pygeoip.MEMORY_CACHE)
+    geoip = pygeoip.GeoIP(GEOIP_DBFILE, flags=pygeoip.MEMORY_CACHE)
     logging.info("GeoIP database loaded")
 except Exception as err:  # pragma: no cover
     logging.warn("Error while loading geoip module: %r" % err)
@@ -286,8 +286,8 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
         valid = captcha.GimpCaptcha.check(challenge, solution,
                                           self.secretKey, clientHMACKey)
-        logging.debug("%sorrect captcha from %r: %r." % (
-            "C" if valid else "Inc", Util.logSafely(clientIP), solution))
+        logging.debug("%sorrect captcha from %r: %r."
+                      % ("C" if valid else "Inc", clientIP, solution))
 
         return valid
 
@@ -436,8 +436,8 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             remoteIP = self.recaptchaRemoteIP
         else:
             # generate a random IP for the captcha submission
-            remoteIP = '%d.%d.%d.%d' % (randint(1,255),randint(1,255),
-                                        randint(1,255),randint(1,255))
+            remoteIP = IPv4Address(random.randint(0, 2**32-1)).compressed
+
         return remoteIP
 
     def checkSolution(self, request):
@@ -463,7 +463,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         remoteIP = self.getRemoteIP()
 
         logging.debug("Captcha from %r. Parameters: %r"
-                      % (Util.logSafely(clientIP), request.args))
+                      % (clientIP, request.args))
 
         def checkResponse(solution, request):
             """Check the :class:`txrecaptcha.RecaptchaResponse`.
@@ -478,12 +478,11 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             # require networking (as well as automated CAPTCHA
             # breaking). Hence, the 'no cover' pragma.
             if solution.is_valid:  # pragma: no cover
-                logging.info("Valid CAPTCHA solution from %r."
-                             % Util.logSafely(clientIP))
+                logging.info("Valid CAPTCHA solution from %r." % clientIP)
                 return (True, request)
             else:
                 logging.info("Invalid CAPTCHA solution from %r: %r"
-                             % (Util.logSafely(clientIP), solution.error_code))
+                             % (clientIP, solution.error_code))
                 return (False, request)
 
         d = txrecaptcha.submit(challenge, response, self.recaptchaPrivKey,
@@ -526,10 +525,10 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
 
 
 class WebResourceOptions(resource.Resource):
-    """This resource is used by Twisted Web to give a web page with
-       additional options that the user may use to specify the criteria
-       the returned bridges should meet.
+    """A resource with additional options which a client may use to specify the
+    which bridge types should be returned by :class:`WebResourceBridges`.
     """
+
     isLeaf = True
 
     def __init__(self):
@@ -539,9 +538,10 @@ class WebResourceOptions(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
 
         try:
-            rtl = usingRTLLang(request)
+            rtl = translations.usingRTLLang(langs)
         except Exception as err:  # pragma: no cover
             logging.exception(err)
 
@@ -551,9 +551,33 @@ class WebResourceOptions(resource.Resource):
     render_POST = render_GET
 
 
+class WebResourceHowto(resource.Resource):
+    """A resource which explains how to use bridges."""
+
+    isLeaf = True
+
+    def __init__(self):
+        """Create a new WebResource for the Options page"""
+        gettext.install("bridgedb", unicode=True)
+        resource.Resource.__init__(self)
+
+    def render_GET(self, request):
+        rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
+
+        try:
+            rtl = translations.usingRTLLang(langs)
+        except Exception as err:  # pragma: no cover
+            logging.exception(err)
+
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        return lookup.get_template('howto.html').render(rtl=rtl)
+
+    render_POST = render_GET
+
+
 class WebResourceBridges(resource.Resource):
-    """This resource is used by Twisted Web to give a web page with some
-       bridges in response to a request."""
+    """This resource displays bridge lines in response to a request."""
 
     isLeaf = True
 
@@ -638,7 +662,8 @@ class WebResourceBridges(resource.Resource):
             if countryCode:
                 logging.debug("Client request from GeoIP CC: %s" % countryCode)
 
-        rtl = usingRTLLang(request)
+        langs = translations.getLocaleFromHTTPRequest(request)
+        rtl = translations.usingRTLLang(langs)
         if rtl:
             logging.debug("Rendering RTL response.")
 
@@ -669,7 +694,7 @@ class WebResourceBridges(resource.Resource):
             unblocked = False
 
         logging.info("Replying to web request from %s. Parameters were %r"
-                     % (Util.logSafely(ip), request.args))
+                     % (ip, request.args))
 
         rules = []
         bridgeLines = None
@@ -758,9 +783,10 @@ class WebRoot(resource.Resource):
         :param request: An incoming request.
         """
         rtl = False
+        langs = translations.getLocaleFromHTTPRequest(request)
 
         try:
-            rtl = usingRTLLang(request)
+            rtl = translations.usingRTLLang(langs)
         except Exception as err:
             logging.exception(err)
             logging.error("The gettext files were not properly installed.")
@@ -796,10 +822,11 @@ def addWebServer(cfg, dist, sched):
     httpdist = resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
-                      static.File(os.path.join(template_root, 'robots.txt')))
+                      static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
     httpdist.putChild('assets',
-                      static.File(os.path.join(template_root, 'assets/')))
+                      static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
+    httpdist.putChild('howto', WebResourceHowto())
 
     bridgesResource = WebResourceBridges(
         dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
@@ -856,87 +883,3 @@ def addWebServer(cfg, dist, sched):
             raise SystemExit(error)
 
     return site
-
-def usingRTLLang(request):
-    """Check if we should translate the text into a RTL language
-
-    Retrieve the headers from the request. Obtain the Accept-Language header
-    and decide if we need to translate the text. Install the requisite
-    languages via gettext, if so. Then, manually check which languages we
-    support. Choose the first language from the header that we support and
-    return True if it is a RTL language, else return False.
-
-    :type request: :api:`twisted.web.server.Request`
-    :param request: An incoming request.
-    :rtype: bool
-    :returns: ``True`` if the preferred language is right-to-left; ``False``
-              otherwise.
-    """
-    langs = setLocaleFromRequestHeader(request)
-
-    # Grab only the language (first two characters) so we know if the language
-    # is read right-to-left
-    #langs = [ lang[:2] for lang in langs ]
-    lang = getAssumedChosenLang(langs)
-    if lang in rtl_langs:
-        return True
-    return False
-
-def getAssumedChosenLang(langs):
-    """Return the first language in **langs** that we support.
-
-    :param list langs: All requested languages
-    :rtype: str
-    :returns: A country code for the client's preferred language.
-    """
-    i18npath = os.path.join(os.path.dirname(__file__), 'i18n')
-    path = filepath.FilePath(i18npath)
-    assert path.isdir()
-
-    lang = 'en-US'
-    supp_langs = path.listdir() + ['en']
-    for l in langs:
-        if l in supp_langs:
-            lang = l
-            break
-    return lang
-
-def setLocaleFromRequestHeader(request):
-    """Retrieve the languages from the accept-language header and install them.
-
-    Parse the languages in the header, and attempt to install the first one in
-    the list. If that fails, we receive a :class:`gettext.NullTranslation`
-    object, if it worked then we have a :class:`gettext.GNUTranslation`
-    object. Whichever one we end up with, get the other languages and add them
-    as fallbacks to the first. Lastly, install this chain of translations.
-
-    :type request: :api:`twisted.web.server.Request`
-    :param request: An incoming request from a client.
-    :rtype: list
-    :returns: All requested languages.
-    """
-    logging.debug("Getting client 'Accept-Language' header...")
-    header = request.getHeader('accept-language')
-
-    if header is None:
-        logging.debug("Client sent no 'Accept-Language' header. Using fallback.")
-        header = 'en,en-US'
-
-    localedir = os.path.join(os.path.dirname(__file__), 'i18n/')
-    langs = headers.parseAcceptLanguage(header)
-    ## XXX the 'Accept-Language' header is potentially identifying
-    logging.debug("Client Accept-Language (top 5): %s" % langs[:5])
-
-    try:
-        language = gettext.translation("bridgedb", localedir=localedir,
-                                       languages=langs, fallback=True)
-        for lang in langs:
-            language.add_fallback(gettext.translation("bridgedb",
-                                                      localedir=localedir,
-                                                      languages=langs,
-                                                      fallback=True))
-    except IOError as error:
-        logging.error(error.message)
-
-    language.install(unicode=True)
-    return langs

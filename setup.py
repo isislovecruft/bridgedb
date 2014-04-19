@@ -181,7 +181,13 @@ def get_template_files():
     include_patterns = ['*.html',
                         '*.txt',
                         '*.asc',
-                        'assets/*']
+                        'assets/*.png',
+                        'assets/*.svg',
+                        'assets/css/*.css',
+                        'assets/font/*.woff',
+                        'assets/font/*.ttf',
+                        'assets/font/*.svg',
+                        'assets/font/*.eot']
     template_files = []
 
     for include_pattern in include_patterns:
@@ -277,7 +283,7 @@ setuptools.setup(
     scripts=['scripts/bridgedb'],
     extras_require={'test': ["sure==1.2.2",
                              "coverage==3.7",
-                             "leekspin==0.1.1"]},
+                             "leekspin==0.1.3"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,

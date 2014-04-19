@@ -13,19 +13,22 @@
 
 ** Module Overview: **
 
-..
+::
   parse
    ||_ parse.addr
-   |   |_ isIPAddress - Check if an arbitrary string is an IP address.
-   |   |_ isIPv4 - Check if an arbitrary string is an IPv4 address.
-   |   |_ isIPv6 - Check if an arbitrary string is an IPv6 address.
-   |   \_ isValidIP - Check that an IP address is valid.
+   |    | |_ extractEmailAddress - Validate a :rfc:2822 email address.
+   |    | |_ isIPAddress - Check if an arbitrary string is an IP address.
+   |    | |_ isIPv4 - Check if an arbitrary string is an IPv4 address.
+   |    | |_ isIPv6 - Check if an arbitrary string is an IPv6 address.
+   |    | \_ isValidIP - Check that an IP address is valid.
+   |    |
+   |    |_ :class:`PortList` - A container class for validated port ranges.
    |
-   |__ :mod:`bridgedbparse.headers`
+   |__ :mod:`bridgedb.parse.headers`
    |__ :mod:`bridgedb.parse.options`
    \__ :mod:`bridgedb.parse.versions`
 
-..
+::
 
 Private IP Address Ranges:
 ''''''''''''''''''''''''''
@@ -147,12 +150,119 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
+import re
+
 import ipaddr
 
+
+#: These are the special characters which RFC2822 allows within email addresses:
+#ASPECIAL = '!#$%&*+-/=?^_`{|}~' + "\\\'"
+#: These are the ones we're pretty sure we can handle right:
+ASPECIAL = '-_+/=_~'
+ACHAR = r'[\w%s]' % "".join("\\%s" % c for c in ASPECIAL)
+DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR, ACHAR)
+DOMAIN = r'\w+(?:\.\w+)*'
+ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
+SPACE_PAT = re.compile(r'\s+')
+#: A compiled regex with matches RFC2822 email address strings:
+ADDRSPEC_PAT = re.compile(ADDRSPEC)
+
+
+class BadEmail(Exception):
+    """Exception raised when we get a bad email address."""
+    def __init__(self, msg, email):
+        Exception.__init__(self, msg)
+        self.email = email
 
 class InvalidPort(ValueError):
     """Raised when a given port number is invalid."""
 
+class UnsupportedDomain(ValueError):
+    """Raised when we get an email address from an unsupported domain."""
+
+
+def canonicalizeEmailDomain(domain, domainmap):
+    """Decide if an email was sent from a permitted domain.
+
+    :param str domain: The domain portion of an email address to validate. It
+        will be checked that it is one of the domains allowed to email
+        requests for bridges to the
+        :class:`~bridgedb.Dist.EmailBasedDistributor`.
+    :param dict domainmap: A map of permitted alternate domains (in lowercase)
+        to their canonical domain names (in lowercase). This can be configured
+        with the ``EMAIL_DOMAIN_MAP`` option in ``bridgedb.conf``, for
+        example::
+            EMAIL_DOMAIN_MAP = {'mail.google.com': 'gmail.com',
+                                'googlemail.com': 'gmail.com'}
+    :raises UnsupportedDomain: if the domain portion of the email address is
+        not within the map of alternate to canonical allowed domain names.
+    :rtype: str
+    :returns: The canonical domain name for the email address.
+    """
+    permitted = None
+
+    try:
+        permitted = domainmap.get(domain)
+    except AttributeError:
+        logging.debug("Got non-dict for 'domainmap' parameter: %r" % domainmap)
+
+    if not permitted:
+        raise UnsupportedDomain("Domain not permitted: %s" % domain)
+
+    return permitted
+
+def extractEmailAddress(emailaddr):
+    """Given an email address, obtained, for example, via a ``From:`` or
+    ``Sender:`` email header, try to extract and parse (according to
+    :rfc:2822) the username and domain portions. Returns ``(username,
+    domain)`` on success; raises BadEmail on failure.
+
+    We only allow the following form::
+        ADDRSPEC := LOCAL_PART "@" DOMAIN
+        LOCAL_PART := DOTATOM
+        DOMAIN := DOTATOM
+
+    In particular, we are disallowing: obs-local-part, obs-domain, comment,
+    and obs-FWS. Other forms exist, but none of the incoming services we
+    recognize support them.
+
+    :param emailaddr: An email address to validate.
+    :raises BadEmail: if the **emailaddr** couldn't be validated or parsed.
+    :rtype: tuple
+    :returns: A tuple of the validated email address, containing the mail
+        username and the domain::
+            (LOCALPART, DOMAIN)
+    """
+    orig = emailaddr
+
+    try:
+        addr = SPACE_PAT.sub(' ', emailaddr).strip()
+    except TypeError as error:
+        logging.debug(error)
+        raise BadEmail("Can't extract address from object type %r!"
+                       % type(orig), orig)
+
+    # Only works on usual-form addresses; raises BadEmail on weird
+    # address form.  That's okay, since we'll only get those when
+    # people are trying to fool us.
+    if '<' in addr:
+        # Take the _last_ index of <, so that we don't need to bother
+        # with quoting tricks.
+        idx = addr.rindex('<')
+        addr = addr[idx:]
+        m = re.search(r'<([^>]*)>', addr)
+        if m is None:
+            raise BadEmail("Couldn't extract address spec", orig)
+        addr = m.group(1)
+
+    # At this point, addr holds a putative addr-spec.
+    addr = addr.replace(" ", "")
+    m = ADDRSPEC_PAT.match(addr)
+    if not m:
+        raise BadEmail("Bad address spec format", orig)
+
+    localpart, domain = m.groups()
+    return localpart, domain
 
 def isIPAddress(ip, compressed=True):
     """Check if an arbitrary string is an IP address, and that it's valid.
@@ -181,20 +291,26 @@ def isIPAddress(ip, compressed=True):
 def _isIPv(version, ip):
     """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
+    .. warning: Do *not* put any calls to the logging module in this function,
+        or else an infinite recursion will occur when the call is made, due
+        the the log :class:`~logging.Filter`s in :mod:`~bridgedb.safelog`
+        using this function to validate matches from the regular expression
+        for IP addresses.
+
     :param integer version: The IPv[4|6] version to check; must be either
-        ``4`` or ``6``.
+        ``4`` or ``6``. Any other value will be silently changed to ``4``.
     :param ip: The IP address to check. May be an any type which
                :class:`ipaddr.IPAddress` will accept.
     :rtype: boolean
     :returns: ``True``, if the address is an IPv4 address.
     """
     try:
-        ip = ipaddr.IPAddress(ip, version=version)
-    except ipaddr.AddressValueError:
-        logging.debug("Address %s seems not to be IPv%d." % (ip, version))
+        ipaddr.IPAddress(ip, version=version)
+    except (ipaddr.AddressValueError, Exception):
         return False
     else:
         return True
+    return False
 
 def isIPv4(ip):
     """Check if an address is IPv4.
@@ -268,6 +384,53 @@ def isValidIP(ip):
                       % (ip.version, ip, explain))
         return False
     return True
+
+def normalizeEmail(emailaddr, domainmap, domainrules, ignorePlus=True):
+    """Normalise an email address according to the processing rules for its
+    canonical originating domain.
+
+    The email address, **emailaddr**, will be parsed and validated, and then
+    checked that it originated from one of the domains allowed to email
+    requests for bridges to the :class:`~bridgedb.Dist.EmailBasedDistributor`
+    via the :func:`canonicaliseEmailDomain` function.
+
+    :param str emailaddr: An email address to normalise.
+    :param dict domainmap: A map of permitted alternate domains (in lowercase)
+        to their canonical domain names (in lowercase). This can be configured
+        with the ``EMAIL_DOMAIN_MAP`` option in ``bridgedb.conf``, for
+        example::
+            EMAIL_DOMAIN_MAP = {'mail.google.com': 'gmail.com',
+                                'googlemail.com': 'gmail.com'}
+    :param dict domainrules: A mapping of canonical permitted domain names to
+        a list of rules which should be applied to processing them, for
+        example::
+            EMAIL_DOMAIN_RULES = {'gmail.com': ["ignore_dots", "dkim"]
+        Currently, ``"ignore_dots"`` means that all ``"."`` characters will be
+        removed from the local part of the validated email address.
+    :param bool ignorePlus: If ``True``, assume that
+        ``blackhole+kerr@torproject.org`` is an alias for
+        ``blackhole@torproject.org``, and remove everything after the first
+        ``'+'`` character.
+    :raises BadEmail: if the email address could not be parsed or validated.
+    :rtype: str
+    :returns: The validated, normalised email address, if it was from a
+        permitted domain. Otherwise, returns an empty string.
+    """
+    emailaddr = emailaddr.lower()
+    localpart, domain = extractEmailAddress(emailaddr)
+    canonical = canonicalizeEmailDomain(domain, domainmap)
+
+    if ignorePlus:
+        idx = localpart.find('+')
+        if idx >= 0:
+            localpart = localpart[:idx]
+
+    rules = domainrules.get(canonical, [])
+    if 'ignore_dots' in rules:
+        localpart = localpart.replace(".", "")
+
+    normalized = "%s@%s" % (localpart, domain)
+    return normalized
 
 
 class PortList(object):

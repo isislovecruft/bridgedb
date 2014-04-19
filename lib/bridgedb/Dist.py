@@ -1,19 +1,26 @@
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2009, The Tor Project, Inc.
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Dist -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Nick Mathewson
+#           Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           Matthew Finkel 0x017DD169EA793BE2 <sysrqb@torproject.org>
+# :copyright: (c) 2013-2014, Isis Lovecruft
+#             (c) 2013-2014, Matthew Finkel
+#             (c) 2007-2014, The Tor Project, Inc.
+# :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""
-This module has functions to decide which bridges to hand out to whom.
-"""
-
-import bridgedb.Bridges
-import bridgedb.Storage
-import bridgedb.Util as Util
+"""This module has functions to decide which bridges to hand out to whom."""
 
 import logging
 import re
 import time
-from ipaddr import IPv6Address, IPAddress
+
+from ipaddr import IPv6Address
+from ipaddr import IPAddress
+
+import bridgedb.Bridges
+import bridgedb.Storage
 
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
@@ -21,6 +28,18 @@ from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.parse import addr
+from bridgedb.parse.addr import UnsupportedDomain
+from bridgedb.safelog import logSafely
+
+
+MAX_EMAIL_RATE = 3*3600
+
+class IgnoreEmail(addr.BadEmail):
+    """Raised when we get requests from this address after rate warning."""
+
+class TooSoonEmail(addr.BadEmail):
+    """Raised when we got a request from this address too recently."""
 
 
 def uniformMap(ip):
@@ -229,7 +248,7 @@ class IPBasedDistributor(Distributor):
                  for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
-                     % (N, Util.logSafely(ip)))
+                     % (N, ip))
 
         if not bridgeFilterRules:
             bridgeFilterRules=[]
@@ -245,7 +264,7 @@ class IPBasedDistributor(Distributor):
 
         area = self.areaMapper(ip)
         logging.debug("IP mapped to area:\t%s"
-                      % Util.logSafely("{0}.0/24".format(area)))
+                      % logSafely("{0}.0/24".format(area)))
 
         key1 = ''
         pos = 0
@@ -261,7 +280,7 @@ class IPBasedDistributor(Distributor):
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, Util.logSafely(area))
+                logging.info("category<%s>%s", epoch, logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
@@ -313,103 +332,6 @@ class IPBasedDistributor(Distributor):
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
-
-
-# These characters are the ones that RFC2822 allows.
-#ASPECIAL = '!#$%&*+-/=?^_`{|}~'
-#ASPECIAL += "\\\'"
-# These are the ones we're pretty sure we can handle right.
-ASPECIAL = '-_+/=_~'
-
-ACHAR = r'[\w%s]' % "".join("\\%s"%c for c in ASPECIAL)
-DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR,ACHAR)
-DOMAIN = r'\w+(?:\.\w+)*'
-ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
-
-SPACE_PAT = re.compile(r'\s+')
-ADDRSPEC_PAT = re.compile(ADDRSPEC)
-
-MAX_EMAIL_RATE = 3*3600
-
-class BadEmail(Exception):
-    """Exception raised when we get a bad email address."""
-    def __init__(self, msg, email):
-        Exception.__init__(self, msg)
-        self.email = email
-
-class UnsupportedDomain(BadEmail):
-    """Exception raised when we get an email address from a domain we
-       don't know."""
-
-class TooSoonEmail(BadEmail):
-    """Raised when we got a request from this address too recently."""
-
-class IgnoreEmail(BadEmail):
-    """Raised when we get requests from this address after rate warning."""
-
-def extractAddrSpec(addr):
-    """Given an email From line, try to extract and parse the addrspec
-       portion.  Returns localpart,domain on success; raises BadEmail
-       on failure.
-    """
-    orig_addr = addr
-    addr = SPACE_PAT.sub(' ', addr)
-    addr = addr.strip()
-    # Only works on usual-form addresses; raises BadEmail on weird
-    # address form.  That's okay, since we'll only get those when
-    # people are trying to fool us.
-    if '<' in addr:
-        # Take the _last_ index of <, so that we don't need to bother
-        # with quoting tricks.
-        idx = addr.rindex('<')
-        addr = addr[idx:]
-        m = re.search(r'<([^>]*)>', addr)
-        if m is None:
-            raise BadEmail("Couldn't extract address spec", orig_addr)
-        addr = m.group(1)
-
-    # At this point, addr holds a putative addr-spec.  We only allow the
-    # following form:
-    #   addr-spec = local-part "@" domain
-    #   local-part = dot-atom
-    #   domain = dot-atom
-    #
-    # In particular, we are disallowing: obs-local-part, obs-domain,
-    # comment, obs-FWS,
-    #
-    # Other forms exist, but none of the incoming services we recognize
-    # support them.
-    addr = addr.replace(" ", "")
-    m = ADDRSPEC_PAT.match(addr)
-    if not m:
-        raise BadEmail("Bad address spec format", orig_addr)
-    localpart, domain = m.groups()
-    return localpart, domain
-
-def normalizeEmail(addr, domainmap, domainrules):
-    """Given the contents of a from line, and a map of supported email
-       domains (in lowercase), raise BadEmail or return a normalized
-       email address.
-    """
-    addr = addr.lower()
-    localpart, domain = extractAddrSpec(addr)
-    if domainmap is not None:
-        domain = domainmap.get(domain, None)
-        if domain is None:
-            raise UnsupportedDomain("Domain not supported", addr)
-
-    #XXXX Do these rules also hold for Yahoo?
-
-    # addr+foo@ is an alias for addr@
-    idx = localpart.find('+')
-    if idx >= 0:
-        localpart = localpart[:idx]
-    rules = domainrules.get(domain, [])
-    if 'ignore_dots' in rules:
-        # j.doe@ is the same as jdoe@.
-        localpart = localpart.replace(".", "")
-
-    return "%s@%s"%(localpart, domain)
 
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
@@ -467,65 +389,66 @@ class EmailBasedDistributor(Distributor):
             bridgeFilterRules=[]
         now = time.time()
         try:
-            emailaddress = normalizeEmail(emailaddress, self.domainmap,
-                                          self.domainrules)
-        except BadEmail:
-            return [] #XXXX log the exception
-        if emailaddress is None:
+            emailaddress = addr.normalizeEmail(emailaddress, self.domainmap,
+                                               self.domainrules)
+        except addr.BadEmail as err:
+            logging.warn(err)
+            return []
+
+        if not emailaddress:
             return [] #XXXX raise an exception.
 
-        db = bridgedb.Storage.getDB()
-        wasWarned = db.getWarnedEmail(emailaddress)
-        lastSaw = db.getEmailTime(emailaddress)
+        with bridgedb.Storage.getDB() as db:
+            wasWarned = db.getWarnedEmail(emailaddress)
+            lastSaw = db.getEmailTime(emailaddress)
 
-        logging.info("Attempting to return for %d bridges for %s..."
-                     % (N, Util.logSafely(emailaddress)))
+            logging.info("Attempting to return for %d bridges for %s..."
+                         % (N, emailaddress))
 
-        if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
-            logging.info("Client %s sent duplicate request within %d seconds."
-                         % (Util.logSafely(emailaddress), MAX_EMAIL_RATE))
-            if wasWarned:
-                logging.info(
-                    "Client was already warned about duplicate requests.")
-                raise IgnoreEmail("Client was warned",
-                                  Util.logSafely(emailaddress))
+            if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
+                logging.info("Client %s sent duplicate request within %d seconds."
+                             % (emailaddress, MAX_EMAIL_RATE))
+                if wasWarned:
+                    logging.info(
+                        "Client was already warned about duplicate requests.")
+                    raise IgnoreEmail("Client was warned", emailaddress)
+                else:
+                    logging.info("Sending duplicate request warning.")
+                    db.setWarnedEmail(emailaddress, True, now)
+                    db.commit()
+
+                raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+
+            # warning period is over
+            elif wasWarned:
+                db.setWarnedEmail(emailaddress, False)
+
+            pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
+
+            ring = None
+            ruleset = frozenset(bridgeFilterRules)
+            if ruleset in self.splitter.filterRings.keys():
+                logging.debug("Cache hit %s" % ruleset)
+                _, ring = self.splitter.filterRings[ruleset]
             else:
-                logging.info("Sending duplicate request warning to %s..."
-                             % Util.logSafely(emailaddress))
-                db.setWarnedEmail(emailaddress, True, now)
-                db.commit()
+                # cache miss, add new ring
+                logging.debug("Cache miss %s" % ruleset)
 
-            raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+                # add new ring
+                key1 = getHMAC(self.splitter.key,
+                                                 "Order-Bridges-In-Ring")
+                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                # debug log: cache miss
+                self.splitter.addRing(ring, ruleset,
+                                      filterBridgesByRules(bridgeFilterRules),
+                                      populate_from=self.splitter.bridges)
 
-        # warning period is over
-        elif wasWarned:
-            db.setWarnedEmail(emailaddress, False)
+            numBridgesToReturn = getNumBridgesPerAnswer(ring,
+                                                        max_bridges_per_answer=N)
+            result = ring.getBridges(pos, numBridgesToReturn)
 
-        pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
-
-        ring = None
-        ruleset = frozenset(bridgeFilterRules)
-        if ruleset in self.splitter.filterRings.keys():
-            logging.debug("Cache hit %s" % ruleset)
-            _, ring = self.splitter.filterRings[ruleset]
-        else:
-            # cache miss, add new ring
-            logging.debug("Cache miss %s" % ruleset)
-
-            # add new ring
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
-            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            # debug log: cache miss
-            self.splitter.addRing(ring, ruleset,
-                                  filterBridgesByRules(bridgeFilterRules),
-                                  populate_from=self.splitter.bridges)
-
-        numBridgesToReturn = getNumBridgesPerAnswer(ring,
-                                                    max_bridges_per_answer=N)
-        result = ring.getBridges(pos, numBridgesToReturn)
-
-        db.setEmailTime(emailaddress, now)
-        db.commit()
+            db.setEmailTime(emailaddress, now)
+            db.commit()
 
         return result
 
@@ -533,15 +456,15 @@ class EmailBasedDistributor(Distributor):
         return len(self.splitter)
 
     def cleanDatabase(self):
-        db = bridgedb.Storage.getDB()
-        try:
-            db.cleanEmailedBridges(time.time()-MAX_EMAIL_RATE)
-            db.cleanWarnedEmails(time.time()-MAX_EMAIL_RATE)
-        except:
-            db.rollback()
-            raise
-        else:
-            db.commit()
+        with bridgedb.Storage.getDB() as db:
+            try:
+                db.cleanEmailedBridges(time.time() - MAX_EMAIL_RATE)
+                db.cleanWarnedEmails(time.time() - MAX_EMAIL_RATE)
+            except:
+                db.rollback()
+                raise
+            else:
+                db.commit()
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)

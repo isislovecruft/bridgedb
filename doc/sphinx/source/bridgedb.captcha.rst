@@ -1,3 +1,5 @@
+.. _captcha:
+
 bridgedb.captcha
 ----------------
 

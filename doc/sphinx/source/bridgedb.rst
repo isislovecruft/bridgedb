@@ -18,8 +18,9 @@ bridgedb
     bridgedb.parse
     bridgedb.persistent
     bridgedb.runner
+    bridgedb.safelog
     bridgedb.Stability
     bridgedb.Storage
     bridgedb.Tests
-    bridgedb.Util
-    gen_bridge_descriptors
+    bridgedb.txrecaptcha
+    bridgedb.util

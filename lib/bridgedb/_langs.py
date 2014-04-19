@@ -10,6 +10,8 @@
 
 """_langs.py - Storage for information on installed language support."""
 
+RTL_LANGS = ('ar', 'he', 'fa', 'gu_IN', 'ku')
+
 
 def get_langs():
     """Return a list of two-letter country codes of translations which were

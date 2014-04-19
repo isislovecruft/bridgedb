@@ -178,8 +178,8 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
 
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', expectedChallenge)
-        self.request.addArg('captcha_response_field', expectedResponse) 
-        
+        self.request.addArg('captcha_response_field', expectedResponse)
+
         response = self.captchaResource.extractClientSolution(self.request)
         (challenge, response) = response
         self.assertEqual(challenge, expectedChallenge)
@@ -192,8 +192,8 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
 
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', expectedChallenge)
-        self.request.addArg('captcha_response_field', expectedResponse) 
-        
+        self.request.addArg('captcha_response_field', expectedResponse)
+
         valid = self.captchaResource.checkSolution(self.request)
         self.assertFalse(valid)
 
@@ -238,7 +238,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
         """
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', '')
-        self.request.addArg('captcha_response_field', '') 
+        self.request.addArg('captcha_response_field', '')
 
         page = self.captchaResource.render_POST(self.request)
         self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
@@ -253,7 +253,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
 
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', expectedChallenge)
-        self.request.addArg('captcha_response_field', expectedResponse) 
+        self.request.addArg('captcha_response_field', expectedResponse)
 
         page = self.captchaResource.render_POST(self.request)
         self.assertEqual(BeautifulSoup(page).find('meta')['http-equiv'],
@@ -267,6 +267,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
         a :class:`ReCaptchaProtectedResource`.
         """
+        self.timeout = 10.0  # Can't take longer than that, right?
         # Set up our resources to fake a minimal HTTP(S) server:
         self.pagename = b'captcha.html'
         self.root = Resource()
@@ -327,7 +328,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             """Check the ``Request`` returned from ``_renderDeferred``."""
             self.assertIsInstance(request, DummyRequest)
             html = b''.join(request.written)
-            self.assertSubstring('No bridges currently available', html)
+            self.assertSubstring('Uh oh, spaghettios!', html)
 
         d = task.deferLater(reactor, 0, lambda x: x, (True, self.request))
         d.addCallback(self.captchaResource._renderDeferred)
@@ -356,8 +357,8 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', '')
-        self.request.addArg('captcha_response_field', '') 
-        
+        self.request.addArg('captcha_response_field', '')
+
         self.assertEqual((False, self.request),
                          self.successResultOf(
                              self.captchaResource.checkSolution(self.request)))
@@ -397,7 +398,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', '')
-        self.request.addArg('captcha_response_field', '') 
+        self.request.addArg('captcha_response_field', '')
 
         page = self.captchaResource.render_POST(self.request)
         self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
@@ -411,7 +412,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
 
         self.request.method = b'POST'
         self.request.addArg('captcha_challenge_field', expectedChallenge)
-        self.request.addArg('captcha_response_field', expectedResponse) 
+        self.request.addArg('captcha_response_field', expectedResponse)
 
         page = self.captchaResource.render_POST(self.request)
         self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
@@ -534,11 +535,11 @@ class WebResourceBridgesTests(unittest.TestCase):
         :rtype: list
         :returns: A list of the bridge lines contained on the **page**.
         """
-        # The bridge lines are contained in a <pre> tag:
-        soup = BeautifulSoup(page).find('pre')
-        soup = str(soup).replace('<pre>', '').strip()
-        soup = str(soup).replace('</pre>', '').strip()
-        bridges = [b.strip() for b in soup.splitlines()]
+        # The bridge lines are contained in a <div class='bridges'> tag:
+        soup = BeautifulSoup(page)
+        well = soup.find('div', {'class': 'bridge-lines'})
+        content = well.renderContents().strip()
+        bridges = [b.strip() for b in content.splitlines()]
         return bridges
 
     def test_render_GET_vanilla(self):
@@ -550,7 +551,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         page = self.bridgesResource.render(request)
 
         # The response should explain how to use the bridge lines:
-        self.assertSubstring("To use the above lines", page)
+        self.assertTrue("To enter bridges into Tor Browser" in str(page))
 
         for b in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
@@ -579,33 +580,51 @@ class WebResourceBridgesTests(unittest.TestCase):
 
         page = self.bridgesResource.render(request)
         self.bridgesResource.useForwardedHeader = False  # Reset it
-        self.assertSubstring("To use the above lines", page)
+
+        # The response should explain how to use the bridge lines:
+        self.assertTrue("To enter bridges into Tor Browser" in str(page))
 
     def test_render_GET_RTLlang(self):
-        """Test rendering a request for obfs3 bridges in Arabic."""
-        request = DummyRequest(["bridges?transport=obfs3"])
+        """Test rendering a request for plain bridges in Arabic."""
+        request = DummyRequest([b"bridges?transport=obfs3"])
         request.method = b'GET'
         request.getClientIP = lambda: '3.3.3.3'
-        request.headers.update({'accept-language': 'ar'})
-        # We actually have to set the request args manually when using a
-        # DummyRequest:
-        request.args.update({'transport': 'obfs3'})
+        # For some strange reason, the 'Accept-Language' value *should not* be
+        # a list, unlike all the other headers and args…
+        request.headers.update({'accept-language': 'ar,en,en_US,'})
 
         page = self.bridgesResource.render(request)
         self.assertSubstring("direction: rtl", page)
-        self.assertSubstring("لاستخدام الأسطر أعلاه", page)
+        self.assertSubstring(
+            "إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي", page)
+
+        for bridgeLine in self.parseBridgesFromHTMLPage(page):
+            # Check that each bridge line had the expected number of fields:
+            bridgeLine = bridgeLine.split(' ')
+            self.assertEqual(len(bridgeLine), 2)
+
+    def test_render_GET_RTLlang_obfs3(self):
+        """Test rendering a request for obfs3 bridges in Farsi."""
+        request = DummyRequest([b"bridges?transport=obfs3"])
+        request.method = b'GET'
+        request.getClientIP = lambda: '3.3.3.3'
+        request.headers.update({'accept-language': 'fa,en,en_US,'})
+        # We actually have to set the request args manually when using a
+        # DummyRequest:
+        request.args.update({'transport': ['obfs3']})
+
+        page = self.bridgesResource.render(request)
+        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring(
+            # "I need an alternative way to get bridges!"
+            "به یک راه دیگر برای دریافت پل‌ها احتیاج دارم!",
+            page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
             bridgeLine = bridgeLine.split(' ')
             self.assertEqual(len(bridgeLine), 3)
-
-            print("""
-            FIXME: The first field should be the transport method:
-            DummyBridge.getConfigLine() receives transport='o', not 'obfs3'.
-            What the hell?
-            """)
-            #self.assertEqual(bridgeLine[0], 'obfs3')
+            self.assertEqual(bridgeLine[0], 'obfs3')
 
             # Check that the IP and port seem okay:
             ip, port = bridgeLine[1].rsplit(':')
@@ -614,24 +633,29 @@ class WebResourceBridgesTests(unittest.TestCase):
             self.assertGreater(int(port), 0)
             self.assertLessEqual(int(port), 65535)
 
+
     def test_renderAnswer_textplain(self):
         """If the request format specifies 'plain', we should return content
         with mimetype 'text/plain'.
         """
         request = DummyRequest([self.pagename])
-        request.args.update({'format': 'plain'})
+        request.args.update({'format': ['plain']})
         request.getClientIP = lambda: '4.4.4.4'
         request.method = b'GET'
 
         page = self.bridgesResource.render(request)
+        self.assertTrue("html" not in str(page))
 
-        print("""
-        FIXME: The result page should have a mimetype of 'text/plain', and yet
-        it's still HTML.
-        """)
-        #self.assertNotSubstring("html", page)
+        # We just need to strip and split it because it looks like:
+        #
+        #   94.235.85.233:9492 0d9d0547c3471cddc473f7288a6abfb54562dc06
+        #   255.225.204.145:9511 1fb89d618b3a12afe3529fd072127ea08fb50466
+        #
+        # (Yes, there are two leading spaces at the beginning of each line)
+        #
+        bridgeLines = [line.strip() for line in page.strip().split('\n')]
 
-        for bridgeLine in self.parseBridgesFromHTMLPage(page):
+        for bridgeLine in bridgeLines:
             bridgeLine = bridgeLine.split(' ')
             self.assertEqual(len(bridgeLine), 2)
 
@@ -662,7 +686,7 @@ class WebResourceOptionsTests(unittest.TestCase):
         request.headers.update({'accept-language': 'he'})
         # We actually have to set the request args manually when using a
         # DummyRequest:
-        request.args.update({'transport': 'obfs2'})
+        request.args.update({'transport': ['obfs2']})
 
         page = self.optionsResource.render(request)
         self.assertSubstring("direction: rtl", page)

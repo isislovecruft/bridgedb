@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #_____________________________________________________________________________
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
@@ -195,16 +195,21 @@ class GimpCaptcha(Captcha):
                       % (solution, challenge))
         try:
             decoded = urlsafe_b64decode(challenge)
-            hmac, original = decoded.split(';', 1)
+            hmac = decoded[:20]
+            original = decoded[20:]
             verified = crypto.getHMAC(hmacKey, original)
             validHMAC = verified == hmac
-        except Exception as error:
-            logging.exception(error)
+        except Exception:
+            return False
         finally:
             if validHMAC:
-                decrypted = secretKey.decrypt(original)
-                if solution == decrypted:
-                    return True
+                try:
+                    decrypted = secretKey.decrypt(original)
+                except Exception as error:
+                    logging.warn(error.message)
+                else:
+                    if solution.lower() == decrypted.lower():
+                        return True
             return False
 
     def createChallenge(self, answer):
@@ -217,7 +222,8 @@ class GimpCaptcha(Captcha):
 
                 HMAC ";" ENCRYPTED_ANSWER
 
-        and lastly base64-encoded (in a URL safe manner).
+        where the HMAC MUST be the first 20 bytes. Lastly base64-encoded (in a
+        URL safe manner).
 
         :param str answer: The answer to a CAPTCHA.
         :rtype: str
@@ -226,7 +232,7 @@ class GimpCaptcha(Captcha):
         """
         encrypted = self.publicKey.encrypt(answer)
         hmac = crypto.getHMAC(self.hmacKey, encrypted)
-        challenge = hmac + ';' + encrypted
+        challenge = hmac + encrypted
         encoded = urlsafe_b64encode(challenge)
         return encoded
 

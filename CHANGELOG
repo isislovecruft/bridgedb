@@ -1,142 +1,211 @@
-Changes in version 0.1.6 - 2014-03-26
-BridgeDB 0.1.6 includes fixes for the following bugs:
-	* FIXES #11196 BridgeDB should use leekspin
-	* FIXES #11218 ReCaptchaProtectedResource.checkSolution()
-		doesn't expect a deferred
-	* FIXES #11219 BridgeDB's twisted version doesn´t have a
-		`t.w.client.HTTPConnectionPool` class
-	* FIXES #11231 BridgeDB's txrecaptcha returns the "No bridges
-		available!" page if 'captcha_response_field' is blank
+Changes in version 0.2.0 - 2014-04-19
+        * FIXES #5232 Perform long running and blocking transactions in
+                background threads. Primarily this moves bridge descriptor
+                reparsing into another thread, which significantly increases
+                the availability of BridgeDB.
+        * FIXES #9119 BridgeDB's logger now automatically sanitises all email
+                and IP addresses when the SAFELOGGING config option is enabled.
+        * FIXES #9875 BridgeDB logger now has 100% unittest coverage.
+        * FIXES #10803 Vidalia is no longer mentioned on
+                https://bridges.torproject.org, and instead there are new
+                instructions on how to enter bridges into TBB>=3.5 (with
+                TorLauncher).
+        * FIXES #11346 The web interface now has a homepage link. By clicking
+                "BridgeDB" in the upper left corner, users can go back to the
+                start of TBB downloading and bridge selection instructions at
+                https://bridges.torproject.org.
+        * FIXES #11370 We were using an old (and deprecated) module when we
+                created our email responses. Now we use the newer version.
+        * FIXES #11377 CAPTCHAs on BridgeDB's HTTPS interface are now
+                case-insensitive.
+                Thanks to Kostas Jakeliunas for the patch.
+        * FIXES #11522 fixes several issues with encodings and exception
+                handling in the email distributor.
 
 And includes the following general changes:
-	* ADDS several new translations languages.
+        * NEW interface design for https://bridges.torproject.org, including
+                updated CSS stylesheets, fonts, and HTML templates. In
+                particular, the https://bridges.torproject.org/options page has
+                been redesigned completely.
+                Thanks to Xengi for providing a modified design of the "roots"
+                Tor Project logo, which is used to link to
+                https://www.torproject.org.
+        * CHANGES the TBB download link on the main web interface page to link
+                to the new TBB-3.6.x-beta bundles, which include patches by
+                David Fifield to unify TBB and PTTBB into one browser, so that
+                Pluggable Transports (PTs) are only enabled when the user
+                includes a bridge line which uses that PT.
+        * FIXES plaintext responses on https://bridges.torproject.org,
+                these can be requested by using the 'format' HTTP parameter,
+                like so: https://bridges.torproject.org/bridges?format=plain
+        * FIXES the logging of all lines of (including headers!) of incoming
+                emails.
+        * FIXES logfile rotation so that the files are only reable/writable
+                by the running process owner, and no other user.
+        * CHANGES the data format used for encrypted-then-HMACed CAPTCHAs
+                to assume that the HMAC is the first 20 bytes. Before we
+                assumed that the HMAC was separated from the encrypted data
+                with a ';' character, which causes intermittent issues with
+                some encoding and CAPTCHA solution values.
+        * REFACTORS some of the translations handling code, so that soon emails
+                will be translated (see #7550), and
+                https://bridges.torproject.org should have a "Select Language"
+                button (see #9678).
+        * BUMPS leekspin version to 0.1.3.
+
+Changes in version 0.1.6 - 2014-03-26
+BridgeDB 0.1.6 includes fixes for the following bugs:
+        * FIXES #11196 BridgeDB should use leekspin
+        * FIXES #11218 ReCaptchaProtectedResource.checkSolution()
+                doesn't expect a deferred
+        * FIXES #11219 BridgeDB's twisted version doesn´t have a
+                `t.w.client.HTTPConnectionPool` class
+        * FIXES #11231 BridgeDB's txrecaptcha returns the "No bridges
+                available!" page if 'captcha_response_field' is blank
+
+And includes the following general changes:
+        * ADDS several new translations languages.
 
 Changes in version 0.1.5 - 2014-02-27
 BridgeDB 0.1.5 includes fixes for the following bugs:
-	* FIXES #9264 Problem with transport lines in BridgeDB's bridge
-		pool assignment files
-	* FIXES #10809 reCAPTCHA on bridges.torproject.org are impossible
-		to solve for humans
-	* FIXES #10834 Configurable reCAPTCHA remoteip
-	* FIXES #11127 reCaptcha verification is hardcoded to use
-		plaintext HTTP
+        * FIXES #9264 Problem with transport lines in BridgeDB's bridge
+                pool assignment files
+        * FIXES #10809 reCAPTCHA on bridges.torproject.org are impossible
+                to solve for humans
+        * FIXES #10834 Configurable reCAPTCHA remoteip
+        * FIXES #11127 reCaptcha verification is hardcoded to use
+                plaintext HTTP
 
 And includes the following general changes:
-	* CHANGES the way the client's IP address is reported to the
-	reCaptcha API server. Previously, for each client request, a
-	completely random IP address was generated, and BridgeDB lied to
-	the reCaptcha server by sending this random IP and saying that it
-	was the client's IP. With these changes, BridgeDB can be
-	configured to report a static IP address (it's own IP) as the
-	client's IP, in the hopes that the IP whitelisting used by
-	reCaptcha makes the returned CAPTCHAs less impossible to solve.
-	* ADDS the ability to use a local cache of CAPTCHAs created by
-	scripting Gimp with Python. See:
-	https://github.com/isislovecruft/gimp-captcha
-	* USES TLS during CAPTCHA solution verification when using
-	reCaptcha.
+        * CHANGES the way the client's IP address is reported to the
+        reCaptcha API server. Previously, for each client request, a
+        completely random IP address was generated, and BridgeDB lied to
+        the reCaptcha server by sending this random IP and saying that it
+        was the client's IP. With these changes, BridgeDB can be
+        configured to report a static IP address (it's own IP) as the
+        client's IP, in the hopes that the IP whitelisting used by
+        reCaptcha makes the returned CAPTCHAs less impossible to solve.
+        * ADDS the ability to use a local cache of CAPTCHAs created by
+        scripting Gimp with Python. See:
+        https://github.com/isislovecruft/gimp-captcha
+        * USES TLS during CAPTCHA solution verification when using
+        reCaptcha.
 
 
 Changes in version 0.1.4 - 2014-02-21
 BridgeDB 0.1.4 includes fixes for the following bugs:
-	* FIXES an RTL encoding issue in the "Step 2" text on index.html
-		of the HTTPS distributor.
+        * FIXES an RTL encoding issue in the "Step 2" text on index.html
+                of the HTTPS distributor.
 
 
 Changes in version 0.1.3 - 2014-02-21
 BridgeDB 0.1.3 includes fixes for the following bugs:
-	* FIXES #9264 Problem with transport lines in BridgeDB's bridge
-		pool assignment files
-	* FIXES a bug caused by attempts to convert descriptor digests
-		which could not be parsed into hexadecimal.
-	* FIXES a unicode decoding error within the bridgedb.persistent
-		module.
-	* REMOVES continuous integration testing for Python 2.6.
+        * FIXES #9264 Problem with transport lines in BridgeDB's bridge
+                pool assignment files
+        * FIXES a bug caused by attempts to convert descriptor digests
+                which could not be parsed into hexadecimal.
+        * FIXES a unicode decoding error within the bridgedb.persistent
+                module.
+        * REMOVES continuous integration testing for Python 2.6.
 
 Including the following general changes:
-	* ADD volunteer page text for GSoC 2014 applications.
+        * ADD volunteer page text for GSoC 2014 applications.
 
 
 Changes in version 0.1.2 - 2014-02-05
 BridgeDB 0.1.2 includes fixes for the following bugs:
-	* FIXES #10811 BridgeDB's assignments.log files are not being updated
+        * FIXES #10811 BridgeDB's assignments.log files are not being updated
 
 
 Changes in version 0.1.1 - 2014-02-03
 BridgeDB 0.1.1 includes fixes for the following bugs:
-	* FIXES #9127 Users can't ask for ipv6 bridges with the new bridgedb
-		interface
-	* FIXES #9988 Refactor BridgeDB's use of `sha` module to use `hashlib`
-	* FIXES #10737 POST arguments to bridges.torproject.org are dropped if
-		entering a CAPTCHA fails
+        * FIXES #9127 Users can't ask for ipv6 bridges with the new bridgedb
+                interface
+        * FIXES #9988 Refactor BridgeDB's use of `sha` module to use `hashlib`
+        * FIXES #10724 Most of the time spent in testing, as well as most
+                of the time spent when "BridgeDB is down" (i.e. when I reply
+                with "BridgeDB is single-threaded (see #5232) and is parsing
+                millions of descriptors"), is within the same
+                `bridgedb.Stability.addOrUpdateBridgeHistory()` function (see
+                #10724). This function is pretty brutal on CPU and memory, is
+                blocking, and it needs to runs thousands and thousands of
+                times whenever BridgeDB is restarted (every half hour). The
+                algorithm within that function has a time complexity increasing
+                linearithmically relative to the number of bridges and timestamps
+                already within the database. [0]
+                This patch adds a config option to disable/enable running
+                the `addOrUpdateBridgeHistory()` function.
+                [0]: https://en.wikipedia.org/wiki/Time_complexity#Linearithmic_time
+        * FIXES #10737 POST arguments to bridges.torproject.org are dropped if
+                entering a CAPTCHA fails
 
 Including the following general changes:
-	* ADDS A general simple error page to display rather than
-		webserver tracebacks. See #6127.
-	* MOVES The recently added BridgeDB specification file
-		('doc/bridge-db-spec.txt') to the torspec repo:
-		https://gitweb.torproject.org/torspec.git
-	* FIXES template caching for the web interface.
+        * ADDS A general simple error page to display rather than
+                webserver tracebacks. See #6127.
+        * MOVES The recently added BridgeDB specification file
+                ('doc/bridge-db-spec.txt') to the torspec repo:
+                https://gitweb.torproject.org/torspec.git
+        * FIXES template caching for the web interface.
 
 
 Changes in version 0.1.0 - 2014-01-14
 BridgeDB 0.1.0 includes fixes for the following bugs:
-	* FIXES #1606 Write a BridgeDB spec
-	* FIXES #3573 bridges.torproject.org doesn't have a robots.txt
-	* FIXES #6127 bridges.tpo runs in development mode
-	* FIXES #9013 BridgeDB should pass pluggable transport
-		shared-secrets to clients
-	* FIXES #9157 Persian and Arabic should be right aligned on bridges.tpo
-	* FIXES #9462 BridgeDB netstatus descriptor parsers need refactoring
-	* FIXES #9959 BridgeDB seems to be missing English translations
-	* FIXES #9865 Add automated code coverage report generation
-	* FIXES #9872 Create a test runner for BridgeDB unittests
-	* FIXES #9873 Convert BridgeDB's old unittests to use twisted.trial
-	* FIXES #9937 Create fake non-sanitised bridge descriptors for
-		BridgeDB testing purposes
-	* FIXES #10333 Indexing list-like objects by 0L in
-		Bridges.getConfigLine
-	* FIXES #10446 BridgeDB is/was using a GeoIP module which is
-		incompatible with virtualenvs
-	* FIXES #10559 BridgeDB writes `keyid=` before fingerprints
+        * FIXES #1606 Write a BridgeDB spec
+        * FIXES #3573 bridges.torproject.org doesn't have a robots.txt
+        * FIXES #6127 bridges.tpo runs in development mode
+        * FIXES #9013 BridgeDB should pass pluggable transport
+                shared-secrets to clients
+        * FIXES #9157 Persian and Arabic should be right aligned on bridges.tpo
+        * FIXES #9462 BridgeDB netstatus descriptor parsers need refactoring
+        * FIXES #9959 BridgeDB seems to be missing English translations
+        * FIXES #9865 Add automated code coverage report generation
+        * FIXES #9872 Create a test runner for BridgeDB unittests
+        * FIXES #9873 Convert BridgeDB's old unittests to use twisted.trial
+        * FIXES #9937 Create fake non-sanitised bridge descriptors for
+                BridgeDB testing purposes
+        * FIXES #10333 Indexing list-like objects by 0L in
+                Bridges.getConfigLine
+        * FIXES #10446 BridgeDB is/was using a GeoIP module which is
+                incompatible with virtualenvs
+        * FIXES #10559 BridgeDB writes `keyid=` before fingerprints
 
 Including the following general changes:
-	* ADD Numerous unittests and automated continuous integration testing.
-	* ADD Patches by sysrqb to correctly render right-to-left languages.
-	* FIXES fallback languages for translations.
-	* ADD Sphinx makefiles, substantial amounts of documentation.
-	* ADD Documentations builds (currently at
-	      https://para.noid.cat/bridgedb)
+        * ADD Numerous unittests and automated continuous integration testing.
+        * ADD Patches by sysrqb to correctly render right-to-left languages.
+        * FIXES fallback languages for translations.
+        * ADD Sphinx makefiles, substantial amounts of documentation.
+        * ADD Documentations builds (currently at
+              https://para.noid.cat/bridgedb)
 
 
 Changes in version 0.0.1 - 2013-08-20
 BridgeDB 0.0.1 includes fixes for the following bugs:
-	* FIXES #5332 Update BridgeDB documentation with deployment
-		instructions
-	* FIXES #9156 BridgeDB: Users try to add obfsbridges to their
-		normal TBB
-	These commits were added to fix a compatibility issue with
-	Vidalia, though they may be reverted to switch back to the old
-	behaviour of returning bridge lines in the form:
-	  Bridge [transport_method] address:port [keyid=fingerprint] [K=v] […]
-	in order to work with torrc files and the new TBB-3.x packages
-	which use TorLauncher instead of Vidalia.
-	* PARTIAL FIX #9264 Problem with transport lines in BridgeDB's
-	          bridge pool assignment files.
-	* FIXES #9425 Create and document a better BridgeDB (re)deployment
-		strategy
+        * FIXES #5332 Update BridgeDB documentation with deployment
+                instructions
+        * FIXES #9156 BridgeDB: Users try to add obfsbridges to their
+                normal TBB
+        These commits were added to fix a compatibility issue with
+        Vidalia, though they may be reverted to switch back to the old
+        behaviour of returning bridge lines in the form:
+          Bridge [transport_method] address:port [keyid=fingerprint] [K=v] […]
+        in order to work with torrc files and the new TBB-3.x packages
+        which use TorLauncher instead of Vidalia.
+        * PARTIAL FIX #9264 Problem with transport lines in BridgeDB's
+                  bridge pool assignment files.
+        * FIXES #9425 Create and document a better BridgeDB (re)deployment
+                strategy
 
 Including the following general changes:
-	* UPDATE translations files with finished files from Transifex for
-	the strings for the newly-refactored web interface created by
-	gsathya.
-	* ADD an automatic version-numbering system as part of developing
-	a better deployment strategy.
-	* CHANGE setup.py script to automatically install Python-based
-	dependencies from requirements.txt.
-	* REMOVE MANIFEST.in and put equivalent 'include' directives into
-	setup.py (the less places we have for manually keeping track of
-	files, the better).
-	* REMOVE the "bridge " prefix from the lines returned on the web
-	interface.
+        * UPDATE translations files with finished files from Transifex for
+        the strings for the newly-refactored web interface created by
+        gsathya.
+        * ADD an automatic version-numbering system as part of developing
+        a better deployment strategy.
+        * CHANGE setup.py script to automatically install Python-based
+        dependencies from requirements.txt.
+        * REMOVE MANIFEST.in and put equivalent 'include' directives into
+        setup.py (the less places we have for manually keeping track of
+        files, the better).
+        * REMOVE the "bridge " prefix from the lines returned on the web
+        interface.
 

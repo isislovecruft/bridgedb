@@ -1,39 +1,169 @@
-﻿## -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 <%inherit file="base.html"/>
 
-<br />
-<br />
-<p><h2><a href="bridges">${_("""Just Give Me Bridges!""")}</a></h2>
-</p>
-<br /><br /><br />
-<hr />
-<p>
-<h3> ${_("""Advanced Options""")}</h3>
-<form action="bridges" method="GET">
-<div style="float: left;">
-<p>${_("""Do you need IPv6 addresses?""")}
-</p>
-## TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses"
-<input type="checkbox" name="ipv6" value="yes">${_("""Yes!""")}</input>
-<br />
-<br />
-</div><div style="float: right;">
-<p>${_("""Do you need a specific pluggable transport?""")}</p>
-<select name="transport">
-<option name="none" value="0">
-## TRANSLATORS: Please do not translate the pluggable transport names
-## (obfs2, obfs3, etc)
-  ${_("""No""")}
-</option>
-<option value="obfs2">${_("""Yes, obfs2""")}</option>
-<option value="obfs3">${_("""Yes, obfs3""")}</option>
-<!--<option value="scramblesuit">${_("""Yes, scramblesuit""")}</option>-->
-</select>
+<div class="container-fluid"
+     style="width: 96%; align: center; margin: 2%">
+  <div class="container-fluid" style="padding: 2%">
+  <p>
+    <h2>${_("""Get Bridges!""")}</h2>
+  </p>
+  </div>
+  <div class="container-fluid"
+       style="width: 100%; align: center; padding: 2%;">
+    <p>
+      ${_(" BridgeDB can provide bridges with several %s types of %s, which can"
+          " help obfuscate your connections to the Tor Network, making it more"
+          " difficult for anyone watching your internet traffic to determine"
+          " that you are using Tor.") % \
+         ("""<a href="https://www.torproject.org/docs/pluggable-transports.html">""",
+          """Pluggable Transports</a>""")}
+    </p>
+    <p>
+      ${_("Some bridges with IPv6 addresses are also available, though some"
+          " %s aren't IPv6 compatible.") % \
+         ("""Pluggable Transports""")}
+    </p>
+    <p>
+      ${_(" Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s"
+          " without any %s %s which maybe doesn't sound as cool, but they can"
+          " still help to circumvent internet censorship in many cases.") % \
+         ("""&#8212""", """Pluggable Transports""", """&#8212""")}
+<!-- The '&#8212' char is a literal emdash ('―'), but it's also XML parseable. -->
+    </p>
+    <div class="container-fluid" style="align: center: margin: 2%;">
+      <div style="align: center; padding: 5%;">
+        <p class="bs-component">
+          <a href="./bridges">
+            <button class="btn btn-success btn-lg btn-block"
+                    type="button"
+                    accesskey="j">
+            <!-- TRANSLATORS: Please ignore the '%s' surrounding single
+                  letters at the beginning of words. These are used for
+                  underlining HTML5 accesskeys, for assisting users in
+                  selecting elements. -->
+            ${_("""%sJ%sust give me bridges!""") % ("""<u>""", """</u>""")}
+            </button>
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BEGIN "Advanced Options" panel for bridge type -->
+<div class="container-fluid"
+     style="width: 96%; align: center; margin-left: 2%; margin-right: 2%;">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">${_("""Advanced Options""")}</h3>
+    </div>
+
+    <!-- BEGIN bridge options selection form -->
+    <form class="form-horizontal" id="advancedOptions" action="bridges" method="GET">
+      <fieldset>
+        <div class="container-fluid" id="instructions" style="align-content: left;">
+          <legend style="font-size: 112%">
+            <br />
+            <p>${_("""Please select options for bridge type:""")}</p>
+          </legend>
+        </div>
+
+        <div class="container-fluid">
+          <!-- BEGIN first options row -->
+          <div class="row" style="width: 98%; height: inherit; margin: auto;">
+
+            <!-- BEGIN left column, first row -->
+            <div class="container-fluid col-lg-2"
+                 style="float: left; width: 50%; height: inherit;">
+              <div class="step" style="height: inherit;">
+                <div class="form-group">
+                  <label class="control-label"
+                         for="transport"
+                          style="text-align: inherit;">
+                    ${_("""Do you need a %s?""") % ("""Pluggable <u>T</u>ransport""")}
+                  </label>
+                  <div class="container-fluid col-lg-4">
+                    <div class="btn-group" style="float: left; padding: 2%;">
+                      <select class="btn btn-primary btn-sm dropdown"
+                              form="advancedOptions"
+                              id="transport"
+                              name="transport"
+                              data-toggle="dropdown"
+                              type="button"
+                              accesskey="t">
+                        ${_("""No""")}
+<option label="none"  value="0"        >${_("none")}</option>
+<!-- TRANSLATORS: Please do not translate the pluggable transport names --
+  --              (obfs2, obfs3, etc)                                   -->
+<option label="obfs2" value="obfs2"              >obfs2</option>
+<option label="obfs3" value="obfs3"   selected   >obfs3</option>
+<option label="scramblesuit" value="scramblesuit">scramblesuit</option>
+<!-- XXX I think we should call it "fte" internally and in the bridge lines --
+  -- we return, and call it "fteproxy" when users are selecting it, because --
+  -- "fteproxy" likely has more "brandname recognition" due to              --
+  -- https://fteproxy.org/                                                  -->
+<option label="fte"   value="fte"     disabled   >fteproxy</option>
+<option label="meek"  value="meek"    disabled   >meek</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- END left column, first row -->
+
+            <!-- BEGIN right column, first row -->
+            <div class="container-fluid col-lg-2"
+                 style="float: right; width: 50%; height: inherit;">
+              <div class="step"
+                   style="height: inherit; margin-right: 1%;">
+                <div class="form-group">
+                  <label class="control-label"
+                         for="ipv6"
+                         style="text-align: inherit;">
+                    ${_("""Do you need IPv6 addresses?""")}
+                  </label>
+                  <div class="container-fluid col-lg-4">
+                    <div class="checkbox"
+                         style="float: left;">
+                      <div class="input-group"
+                           style="float: left; padding: 2%;">
+                        <input name="ipv6"
+                               id="ipv6"
+                               form="advancedOptions"
+                               type="checkbox"
+                               value="yes"
+                               accesskey="y" />
+                          <!-- TRANSLATORS: Translate "Yes!" as in "Yes! I do
+                               need IPv6 addresses". -->
+                          ${_("""%sY%ses!""") % ("""<u>""", """</u>""")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>  <!-- END left column, first row -->
+          </div>
+
+        </div> <!-- END first row -->
+      </fieldset>
+
+      <!-- BEGIN second options row -->
+      <div class="row"
+           style="width: 98%; height: inherit;
+                  margin-left: auto; margin-right: auto; padding: 2%;">
+        <div class="container-fluid col-lg-2"
+             style="width: 50%; text-align: center;">
+          <p>
+            <button class="btn btn-primary btn-lg btn-block"
+                    accesskey="g">
+              ${_("""%sG%set Bridges""") % ("""<u>""", """</u>""")}
+            </button>
+          </p>
+        </div>
+      </div>
+    </form> <!-- END bridge options selection form -->
+  </div> <!-- END advanced options panel (a.k.a. the lined boxy thing --
+           -- surrounding the options)                                -->
 </div>
 <br />
-<br />
-<br />
-<br />
-<p><button>${_("""Get Bridges""")}</button></p>
-</form>
 <hr>

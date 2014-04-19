@@ -12,8 +12,10 @@ def getLang(lang, localedir=os.path.expanduser("~") + "/share/locale"):
 
 def _(text):
     """This is necessary because strings are translated when they're imported.
-       Otherwise this would make it impossible to switch languages more than 
-       once
+    Otherwise this would make it impossible to switch languages more than
+    once.
+
+    :returns: The **text**.
     """
     return text
 

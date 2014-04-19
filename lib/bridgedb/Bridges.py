@@ -1,8 +1,13 @@
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Bridges -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: see AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+# :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""
-This module has low-level functionality for parsing bridges and arranging
-them in rings.
+"""This module has low-level functionality for parsing bridges and arranging
+them into hashrings for distributors.
 """
 
 import binascii
@@ -17,11 +22,11 @@ import random
 
 import bridgedb.Storage
 import bridgedb.Bucket
-import bridgedb.Util as Util
 
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+from bridgedb.safelog import logSafely
 
 try:
     from cStringIO import StringIO
@@ -308,38 +313,38 @@ class Bridge(object):
         A bridge is 'familiar' if 1/8 of all active bridges have appeared
         more recently than it, or if it has been around for a Weighted Time of 8 days.
         """
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).familiar
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).familiar
 
     @property
     def wfu(self):
         """Weighted Fractional Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
 
     @property
     def weightedTime(self):
         """Weighted Time"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedTime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedTime
 
     @property
     def wmtbac(self):
         """Weighted Mean Time Between Address Change"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).wmtbac
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).wmtbac
 
     @property
     def tosa(self):
         """the Time On Same Address (TOSA)"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).tosa
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).tosa
 
     @property
     def weightedUptime(self):
         """Weighted Uptime"""
-        db = bridgedb.Storage.getDB()
-        return db.getBridgeHistory(self.fingerprint).weightedUptime
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
 
 def getDescriptorDigests(desc):
     """Return the SHA-1 hash hexdigests of all descriptor descs
@@ -678,7 +683,7 @@ def parseStatusFile(networkstatusFile):
         elif ID and line.startswith("a "):
             try:
                 addr, portlist = networkstatus.parseALine(line, toHex(ID))
-            except networkstatus.ParseNetstatusError as error:
+            except networkstatus.NetworkstatusParsingError as error:
                 logging.error(error)
             else:
                 if (addr is not None) and (portlist is not None):
@@ -1030,7 +1035,7 @@ class BridgeRing(BridgeHolder):
             else:
                 logging.debug(
                     "Got duplicate bridge %r in main hashring for position %r."
-                    % (Util.logSafely(k.encode('hex')), pos.encode('hex')))
+                    % (logSafely(k.encode('hex')), pos.encode('hex')))
         keys = keys[:N]
         keys.sort()
 
@@ -1122,19 +1127,19 @@ class UnallocatedHolder(BridgeHolder):
         self.fingerprints = []
 
     def dumpAssignments(self, f, description=""):
-        db = bridgedb.Storage.getDB()
-        allBridges = db.getAllBridges()
-        for bridge in allBridges:
-            if bridge.hex_key not in self.fingerprints:
-                continue
-            dist = bridge.distributor
-            desc = [ description ]
-            if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
-                dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
-                desc.append("bucket=%s" % dist)
-            elif dist != "unallocated":
-                continue
-            f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
+        with bridgedb.Storage.getDB() as db:
+            allBridges = db.getAllBridges()
+            for bridge in allBridges:
+                if bridge.hex_key not in self.fingerprints:
+                    continue
+                dist = bridge.distributor
+                desc = [ description ]
+                if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
+                    dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
+                    desc.append("bucket=%s" % dist)
+                elif dist != "unallocated":
+                    continue
+                f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
 
 class BridgeSplitter(BridgeHolder):
     """A BridgeHolder that splits incoming bridges up based on an hmac,
@@ -1186,7 +1191,6 @@ class BridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         assert self.rings
-        db = bridgedb.Storage.getDB()
 
         for s in self.statsHolders:
             s.insert(bridge)
@@ -1205,16 +1209,17 @@ class BridgeSplitter(BridgeHolder):
 
         validRings = self.rings + self.pseudoRings
 
-        ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
+        with bridgedb.Storage.getDB() as db:
+            ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
                                              validRings)
-        db.commit()
+            db.commit()
 
-        # Pseudo distributors are always held in the "unallocated" ring
-        if ringname in self.pseudoRings:
-            ringname = "unallocated"
+            # Pseudo distributors are always held in the "unallocated" ring
+            if ringname in self.pseudoRings:
+                ringname = "unallocated"
 
-        ring = self.ringsByName.get(ringname)
-        ring.insert(bridge)
+            ring = self.ringsByName.get(ringname)
+            ring.insert(bridge)
 
     def dumpAssignments(self, f, description=""):
         for name,ring in self.ringsByName.iteritems():
@@ -1275,12 +1280,12 @@ class FilteredBridgeSplitter(BridgeHolder):
         if not bridge.running:
             logging.warn(
                 "Skipping hashring insertion for non-running bridge: '%s'"
-                % Util.logSafely(bridge.fingerprint))
+                % logSafely(bridge.fingerprint))
             return
 
         index = 0
         logging.debug("Inserting %s into splitter"
-                      % (Util.logSafely(bridge.fingerprint)))
+                      % (logSafely(bridge.fingerprint)))
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
                 self.bridges[index] = bridge
@@ -1292,7 +1297,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             if filterFn(bridge):
                 subring.insert(bridge)
                 logging.debug("Inserted bridge '%s' into '%s' sub hashring"
-                              % (Util.logSafely(bridge.fingerprint), ringname))
+                              % (logSafely(bridge.fingerprint), ringname))
 
     def extractFilterNames(self, ringname):
         """Get the names of the filters applied to a particular sub hashring.
