@@ -10,11 +10,17 @@
 
 """crypto - BridgeDB general cryptographic utilities.
 
-**Module Overview:**
-
-..
+Module Overview:
+````````````````
+::
   crypto
-   |_getKey() - Load the master key from a file, or create a new one.
+   |_getGPGContext() - Get a pre-configured GPGME context.
+   |_getHMAC() - Compute an HMAC with some key for some data.
+   |_getHMACFunc() - Get a callable for producing HMACs with the given key.
+   |_getKey() - Load the master HMAC key from a file, or create a new one.
+   |_getRSAKey() - Load an RSA key from a file, or create a new one.
+   |_gpgSignMessage() - Sign a message string according to a GPGME context.
+   |_writeKeyToFile() - Write to a file readable only by the process owner.
    |
    \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
       |                           certificate chains and matches hostnames.
@@ -23,7 +29,7 @@
       |_getHostnameFromURL() - Parses the hostname from the request URL.
       \_verifyHostname() - Check that the cert CN matches the request
                            hostname.
-
+::
 """
 
 from __future__ import absolute_import
