@@ -1,10 +1,13 @@
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2009, The Tor Project, Inc.
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Time -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Nick Mathewson
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+# :license: see LICENSE for licensing information
 
-"""
-This module implements functions for dividing time into chunks.
-"""
+
+"""This module implements functions for dividing time into chunks."""
 
 import calendar
 import time
