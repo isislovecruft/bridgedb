@@ -6,6 +6,7 @@ bridgedb.parse
 .. contents:: bridgedb.parse
     :depth: 3
 
+.. automodule:: bridgedb.parse.__init__
 .. automodule:: bridgedb.parse.addr
 .. automodule:: bridgedb.parse.headers
 .. automodule:: bridgedb.parse.networkstatus
