@@ -174,8 +174,8 @@ class BaseOptions(usage.Options):
 
     @staticmethod
     def findRundirAndConfigFile(rundir=None, config=None):
-        """Find the abspath of the config file and runtime directory, or find
-        suitable defaults.
+        """Find the absolute path of the config file and runtime directory, or
+        find suitable defaults.
 
         Attempts to set the absolute path of the runtime directory. If the
         config path is relative, its absolute path is set relative to the
