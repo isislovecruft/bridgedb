@@ -242,15 +242,15 @@ def canonicalizeEmailDomain(domain, domainmap):
     return permitted
 
 def extractEmailAddress(emailaddr):
-    """Given an email address, obtained, for example, via a ``From:`` or
+    """Given an email address, obtained for example, via a ``From:`` or
     ``Sender:`` email header, try to extract and parse (according to
-    :rfc:2822) the username and domain portions. Returns ``(username,
-    domain)`` on success; raises BadEmail on failure.
+    :rfc:`2822`) the local and domain portions.
 
     We only allow the following form::
-        ADDRSPEC := LOCAL_PART "@" DOMAIN
+
         LOCAL_PART := DOTATOM
         DOMAIN := DOTATOM
+        ADDRSPEC := LOCAL_PART "@" DOMAIN
 
     In particular, we are disallowing: obs-local-part, obs-domain, comment,
     and obs-FWS. Other forms exist, but none of the incoming services we
@@ -258,10 +258,9 @@ def extractEmailAddress(emailaddr):
 
     :param emailaddr: An email address to validate.
     :raises BadEmail: if the **emailaddr** couldn't be validated or parsed.
-    :rtype: tuple
     :returns: A tuple of the validated email address, containing the mail
-        username and the domain::
-            (LOCALPART, DOMAIN)
+        local part and the domain::
+            (LOCAL_PART, DOMAIN)
     """
     orig = emailaddr
 
