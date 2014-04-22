@@ -25,6 +25,10 @@ bridgedb.parse.versions
 from twisted.python import util as txutil
 
 
+class InvalidVersionStringFormat(ValueError):
+    """Raised when a version string is not in a parseable format."""
+
+
 class Version(txutil.Version):
     """Holds, parses, and does comparison operations for version numbers.
 
@@ -66,9 +70,8 @@ class Version(txutil.Version):
             version number for.
         """
         if version.find('.') == -1:
-            print("Version.__init__(): %r doesn't look like a version string!"
-                  % version.__repr__())
-
+            raise InvalidVersionStringFormat(
+                "Invalid delimiters in version string: %r" % version)
         major, minor, micro, prerelease = ['' for x in xrange(4)]
 
         components = version.split('.')
