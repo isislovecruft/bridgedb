@@ -12,13 +12,14 @@
 """Parsers for Tor version number strings.
 
 .. py:module:: bridgedb.parse.versions
-   :synopsis: Parsers for Tor version number strings.
+    :synopsis: Parsers for Tor version number strings.
 
 bridgedb.parse.versions
 =======================
 ::
 
- Version - Holds, parses, and does comparison operations for package version numbers.
+  Version - Holds, parses, and does comparison operations for package
+            version numbers.
 ..
 """
 
