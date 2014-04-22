@@ -23,7 +23,7 @@ import binascii
 
 
 class InvalidBase64(ValueError):
-    """Cannot decode base64 value."""
+    """Raised if parsing or decoding cannot continue due to invalid base64."""
 
 
 def padBase64(b64string):
