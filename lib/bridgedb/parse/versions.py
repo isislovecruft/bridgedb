@@ -45,10 +45,25 @@ class Version(txutil.Version):
 
         Comparisons may be computed between instances of :class:`Version`s.
 
-        :param string version: One of ``SERVER_VERSIONS``.
-        :param string package: The package or program which we are creating a
-            version number for, i.e. for "tor-0.2.5.1-alpha" the ``package``
-            would be "tor".
+        >>> from bridgedb.parse.versions import Version
+        >>> v1 = Version("0.2.3.25", package="tor")
+        >>> v1.base()
+        '0.2.3.25'
+        >>> v1.package
+        'tor'
+        >>> v2 = Version("0.2.5.1-alpha", package="tor")
+        >>> v2
+        Version(package=tor, major=0, minor=2, micro=5, prerelease=1-alpha)
+        >>> v1 == v2
+        False
+        >>> v2 > v1
+        True
+
+        :param str version: A Tor version string specifier, i.e. one taken
+            from either the ``client-versions`` or ``server-versions`` lines
+            within a Tor ``cached-consensus`` file.
+        :param str package: The package or program which we are creating a
+            version number for.
         """
         if version.find('.') == -1:
             print("Version.__init__(): %r doesn't look like a version string!"
