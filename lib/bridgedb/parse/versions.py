@@ -28,11 +28,16 @@ from twisted.python import util as txutil
 class Version(txutil.Version):
     """Holds, parses, and does comparison operations for version numbers.
 
-    :attr string major: The major version number.
-    :attr string minor: The minor version number.
-    :attr string micro: The micro version number.
-    :attr string prerelease: Sometime, another number, though often suffixed
-        with a `-`, `+`, or `#`.
+    :attr str package: The package name, if available.
+    :attr int major: The major version number.
+    :attr int minor: The minor version number.
+    :attr int micro: The micro version number.
+    :attr str prerelease: The **prerelease** specifier isn't always present,
+        though when it is, it's usually separated from the main
+        ``major.minor.micro`` part of the version string with a ``-``, ``+``,
+        or ``#`` character. Sometimes the **prerelease** is another number,
+        although often it can be a word specifying the release state,
+        i.e. ``+alpha``, ``-rc2``, etc.
     """
 
     def __init__(self, version, package=None):
