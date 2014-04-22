@@ -9,22 +9,11 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Modules for parsing data.
+'''Package containing modules for parsing data.
 
-** Package Overview: **
-
-..
-  parse
-   ||_ parse.addr
-   |   |_ isIPAddress - Check if an arbitrary string is an IP address.
-   |   |_ isIPv4 - Check if an arbitrary string is an IPv4 address.
-   |   |_ isIPv6 - Check if an arbitrary string is an IPv6 address.
-   |   \_ isValidIP - Check that an IP address is valid.
-   |
-   |__ :mod:`bridgedbparse.headers`
-   |__ :mod:`bridgedb.parse.options`
-   \__ :mod:`bridgedb.parse.versions`
-"""
+.. py:module:: bridgedb.parse
+    :synopsis: Package containing modules for parsing data.
+'''
 
 from __future__ import absolute_import
 from __future__ import print_function
