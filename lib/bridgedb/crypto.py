@@ -243,6 +243,20 @@ def getHMACFunc(key, hex=True):
     return hmac_fn
 
 def _createGPGMEErrorInterpreters():
+    """Create a mapping of GPGME ERRNOs ←→ human-readable error names/causes.
+
+    This function is called automatically when :mod:`this module
+    <bridgedb.crypto>` is loaded. The resulting dictionary mapping is stored
+    as :attr:`~bridgedb.crypto.gpgmeErrorTranslations`, and is used by
+    :exc:`~bridgedb.crypto.LessCrypticGPGMEError`.
+
+    :returns: A dict of::
+          {str(ERRNO): [ERRORNAME, ANOTHER_ERRORNAME, …],
+           …,
+           str(ERRORNAME): str(ERRNO),
+           …}
+        for all known error numbers and error names/causes.
+    """
     errorDict = {}
     errorAttrs = []
 
