@@ -56,9 +56,9 @@ def parseUnpaddedBase64(field):
     The **field** will be re-padded, if need be, and then base64 decoded.
 
     :param str field: Should be some base64-encoded thing, with any trailing
-                      '=' characters removed.
-    :raises: :exc:`InvalidBase64`, if there is an error in either unpadding or
-             decoding **field**.
+        ``=``-characters removed.
+    :raises InvalidBase64: if there is an error in either unpadding or decoding
+        **field**.
     :rtype: str
     :returns: The base64-decoded **field**.
     """
