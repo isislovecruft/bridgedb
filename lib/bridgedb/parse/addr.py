@@ -184,15 +184,17 @@ import ipaddr
 
 
 #: These are the special characters which RFC2822 allows within email addresses:
-#ASPECIAL = '!#$%&*+-/=?^_`{|}~' + "\\\'"
-#: These are the ones we're pretty sure we can handle right:
+#:     ASPECIAL = '!#$%&*+-/=?^_`{|}~' + "\\\'"
+#: …But these are the only ones we're confident that we can handle correctly:
+#:     ASPECIAL = '-_+/=_~'
 ASPECIAL = '-_+/=_~'
 ACHAR = r'[\w%s]' % "".join("\\%s" % c for c in ASPECIAL)
 DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR, ACHAR)
 DOMAIN = r'\w+(?:\.\w+)*'
 ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
+# A compiled regexp which matches on any type and ammount of whitespace:
 SPACE_PAT = re.compile(r'\s+')
-#: A compiled regex with matches RFC2822 email address strings:
+# A compiled regexp which matches RFC2822 email address strings:
 ADDRSPEC_PAT = re.compile(ADDRSPEC)
 
 
