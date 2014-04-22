@@ -9,14 +9,17 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""bridgedb.parse.headers -- Parsers for HTTP and Email headers.
+"""Parsers for HTTP and Email headers.
 
-** Module Overview: **
+.. py:module:: bridgedb.parse.headers
+    :synopsis: Parsers for HTTP and Email headers.
 
+bridgedb.parse.headers
+=======================
 ::
 
  parseAcceptLanguage - Parse the contents of a client 'Accept-Language' header
-
+..
 """
 
 def parseAcceptLanguage(header):
@@ -24,15 +27,15 @@ def parseAcceptLanguage(header):
 
     Parse the header in the following manner:
 
-      0. If ``header`` is None or an empty string, return an empty list.
-      1. Split the ``header`` string on any commas.
-      2. Chop of the RFC2616 quality/level suffix. We ignore these, and just
-         use the order of the list as the preference order, without any
-         parsing of quality/level assignments.
-      3. Add a fallback language of the same type if it is missing. For
-         example, if we only got ['es-ES', 'de-DE'], add 'es' after 'es-ES'
-         and add 'de' after 'de-DE'.
-      4. Change all hyphens to underscores.
+    1. If ``header`` is None or an empty string, return an empty list.
+    2. Split the ``header`` string on any commas.
+    3. Chop of the RFC2616 quality/level suffix. We ignore these, and just
+       use the order of the list as the preference order, without any
+       parsing of quality/level assignments.
+    4. Add a fallback language of the same type if it is missing. For
+       example, if we only got ['es-ES', 'de-DE'], add 'es' after 'es-ES'
+       and add 'de' after 'de-DE'.
+    5. Change all hyphens to underscores.
 
     :param string header: The contents of an 'Accept-Language' header, i.e. as
         if taken from :api:`twisted.web.server.Request.getHeader`.
