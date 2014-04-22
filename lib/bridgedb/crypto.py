@@ -279,6 +279,11 @@ def _createGPGMEErrorInterpreters():
 
     return errorDict
 
+#: This is a dictionary which holds a translation of GPGME ERRNOs ←→ all known
+#: names/causes for that ERRNO, and vice versa. It is created automatically,
+#: via the :func:`_createGPGMEErrorInterpreters` function, when this module is
+#: loaded so that :exc:`LessCrypticGPGMEError` can use it to display
+#: human-readable information about why GPGME borked itself on something.
 gpgmeErrorTranslations = _createGPGMEErrorInterpreters()
 
 def getGPGContext(cfg):
