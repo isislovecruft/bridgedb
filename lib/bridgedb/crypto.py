@@ -8,27 +8,33 @@
 #             (c) 2007-2014, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""crypto - BridgeDB general cryptographic utilities.
+"""BridgeDB general cryptographic utilities.
 
-Module Overview:
-````````````````
+.. py:module:: bridgedb.crypto
+   :synopsis: This module contains general utilities for working with external
+       cryptographic tools and libraries, including OpenSSL and GnuPG. It also
+       includes utilities for creating callable HMAC functions, generating
+       HMACs for data, and generating and/or storing key material.
+
+Module Overview
+~~~~~~~~~~~~~~~
 ::
-  crypto
-   |_getGPGContext() - Get a pre-configured GPGME context.
-   |_getHMAC() - Compute an HMAC with some key for some data.
-   |_getHMACFunc() - Get a callable for producing HMACs with the given key.
-   |_getKey() - Load the master HMAC key from a file, or create a new one.
-   |_getRSAKey() - Load an RSA key from a file, or create a new one.
-   |_gpgSignMessage() - Sign a message string according to a GPGME context.
-   |_writeKeyToFile() - Write to a file readable only by the process owner.
-   |
-   \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
-      |                           certificate chains and matches hostnames.
-      |_getContext() - Retrieve an SSL context configured for certificate
-      |                verification.
-      |_getHostnameFromURL() - Parses the hostname from the request URL.
-      \_verifyHostname() - Check that the cert CN matches the request
-                           hostname.
+    crypto
+     |_getGPGContext() - Get a pre-configured GPGME context.
+     |_getHMAC() - Compute an HMAC with some key for some data.
+     |_getHMACFunc() - Get a callable for producing HMACs with the given key.
+     |_getKey() - Load the master HMAC key from a file, or create a new one.
+     |_getRSAKey() - Load an RSA key from a file, or create a new one.
+     |_gpgSignMessage() - Sign a message string according to a GPGME context.
+     |_writeKeyToFile() - Write to a file readable only by the process owner.
+     |
+     \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
+        |                           certificate chains and matches hostnames.
+        |_getContext() - Retrieve an SSL context configured for certificate
+        |                verification.
+        |_getHostnameFromURL() - Parses the hostname from the request URL.
+        \_verifyHostname() - Check that the cert CN matches the request
+                             hostname.
 ::
 """
 
