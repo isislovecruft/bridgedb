@@ -30,10 +30,10 @@ def padBase64(b64string):
     """Re-add any stripped equals sign character padding to a b64 string.
 
     :param string b64string: A base64-encoded string which might have had its
-        trailing equals sign padding removed.
-    :raises: :exc:`ValueError` if there was any error while manipulating the
+        trailing equals sign (``=``) padding removed.
+    :raises ValueError: if there was any error while manipulating the string.
+    :returns: A properly-padded (according to the base64 spec: :rfc:`4648`)
         string.
-    :returns: A properly-padded (according to base64) string.
     """
     addchars  = 0
     try:
