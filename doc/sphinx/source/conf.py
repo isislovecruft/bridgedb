@@ -115,7 +115,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BridgeDB'
-copyright = u'2013, The Tor Project, Inc'
+copyright = u'2014, The Tor Project, Inc'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
