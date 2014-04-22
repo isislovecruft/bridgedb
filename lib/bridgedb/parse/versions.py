@@ -72,19 +72,21 @@ class Version(txutil.Version):
         if version.find('.') == -1:
             raise InvalidVersionStringFormat(
                 "Invalid delimiters in version string: %r" % version)
-        major, minor, micro, prerelease = ['' for x in xrange(4)]
 
+        package = package if package is not None else str()
+        major, minor, micro = [int() for _ in range(3)]
+        prerelease = str()
         components = version.split('.')
         if len(components) > 0:
             try:
-                prerelease = components.pop()
-                micro      = components.pop()
-                minor      = components.pop()
-                major      = components.pop()
+                prerelease = str(components.pop())
+                micro      = int(components.pop())
+                minor      = int(components.pop())
+                major      = int(components.pop())
             except IndexError:
                 pass
         super(Version, self).__init__(package, major, minor, micro, prerelease)
-        
+
     def base(self):
         """Get the base version number (with prerelease).
 
@@ -92,8 +94,8 @@ class Version(txutil.Version):
         :returns: A version number, without the package/program name, and with
             the prefix (if available). For example: '0.2.5.1-alpha'.
         """
-        prerelease = getPrefixedPrerelease()
-        return '%d.%d.%d%s' % (self.major, self.minor, self.micro, prerelease)
+        pre = self.getPrefixedPrerelease()
+        return '%s.%s.%s%s' % (self.major, self.minor, self.micro, pre)
 
     def getPrefixedPrerelease(self, separator='.'):
         """Get the prerelease string, prefixed by the separator ``prefix``.
@@ -105,11 +107,15 @@ class Version(txutil.Version):
         """
         pre = ''
         if self.prerelease is not None:
-            pre = prefix + self.prerelease
+            pre = separator + self.prerelease
         return pre
 
     def __repr__(self):
-        prerelease = getPrefixedPrerelease('')
-        return '%s(package=%r, major=%d, minor=%d, micro=%d, prerelease=%s)' \
-            % (self.__class__.__name__, str(self.package),
-               self.major, self.minor, self.micro, self.prerelease)
+        prerelease = self.getPrefixedPrerelease('')
+        return '%s(package=%s, major=%s, minor=%s, micro=%s, prerelease=%s)' \
+            % (str(self.__class__.__name__),
+               str(self.package),
+               str(self.major),
+               str(self.minor),
+               str(self.micro),
+               str(prerelease))
