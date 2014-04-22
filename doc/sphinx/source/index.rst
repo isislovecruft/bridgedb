@@ -6,12 +6,23 @@
 Welcome to BridgeDB's documentation!
 ====================================
 
-Contents:
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Tor Bridge Descriptor Formats:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. toctree::
     :maxdepth: 4
 
+    descriptors
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BridgeDB Package and Module Documentation:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. toctree::
+    :maxdepth: 3
+
     bridgedb
+
 
 Todo List
 =========

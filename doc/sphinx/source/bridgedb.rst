@@ -1,5 +1,6 @@
-bridgedb
-========
+
+BridgeDB Package and Module Documentation
+=========================================
 
 .. .. currentmodule:: bridgedb
 .. autosummary::
