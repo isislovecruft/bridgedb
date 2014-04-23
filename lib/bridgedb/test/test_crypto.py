@@ -14,6 +14,8 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import gpgme
+import io
 import logging
 import os
 import shutil
@@ -81,6 +83,27 @@ class GetKeyTests(unittest.TestCase):
                          key (in hex): %s
                          SEKRIT_KEY (in hex): %s"""
                          % (key.encode('hex'), SEKRIT_KEY.encode('hex')))
+
+
+class LessCrypticGPGMEErrorTests(unittest.TestCase):
+    """Unittests for :class:`bridgedb.crypto.LessCrypticGPGMEError`."""
+
+    def test_error1(self):
+        """libgpgme will raise an error when given an io.StringIO for the
+        message or sigfile.
+        """
+        message = io.StringIO(unicode(self.id()))
+        sigfile = io.StringIO()
+
+        lessCryptic = None
+        ctx = gpgme.Context()
+
+        try:
+            ctx.sign(message, sigfile)
+        except gpgme.GpgmeError as error:
+            lessCryptic = crypto.LessCrypticGPGMEError(error)
+
+        self.assertTrue('Invalid argument' in lessCryptic.message)
 
 
 class SSLVerifyingContextFactoryTests(unittest.TestCase,
