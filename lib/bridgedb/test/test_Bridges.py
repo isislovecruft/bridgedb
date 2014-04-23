@@ -101,8 +101,40 @@ class BridgeClassTest(unittest.TestCase):
         self.assertTrue(bridge.running)
         self.assertTrue(bridge.stable)
 
-#    def test_isBlocked(self):
-        
+    def test_getConfigLine_vanilla_withoutFingerprint(self):
+        """Should return a config line without a fingerprint."""
+        bridge = Bridges.Bridge('nofpr', '23.23.23.23', 2323, self.fingerprint,
+                                or_addresses=self.or_addresses)
+        bridgeLine = bridge.getConfigLine()
+        ip = bridgeLine.split(':')[0]
+        self.assertTrue(ipaddr.IPAddress(ip))
+
+    def test_getConfigLine_vanilla_withFingerprint(self):
+        """Should return a config line with a fingerprint."""
+        bridge = Bridges.Bridge('fpr', '23.23.23.23', 2323,
+                                id_digest=self.id_digest,
+                                or_addresses=self.or_addresses)
+        bridgeLine = bridge.getConfigLine(includeFingerprint=True)
+        self.assertSubstring(self.fingerprint, bridgeLine)
+        ip = bridgeLine.split(':')[0]
+        self.assertTrue(ipaddr.IPAddress(ip))
+
+    def test_getConfigLine_scramblesuit_withFingerprint(self):
+        """Should return a scramblesuit config line with a fingerprint."""
+        bridge = Bridges.Bridge('philipkdick', '23.23.23.23', 2323,
+                                id_digest=self.id_digest,
+                                or_addresses=self.or_addresses)
+        ptArgs = {'password': 'NEQGQYLUMUQGK5TFOJ4XI2DJNZTS4LRO'}
+        pt = Bridges.PluggableTransport(bridge, 'scramblesuit',
+                                        ipaddr.IPAddress('42.42.42.42'), 4242,
+                                        ptArgs)
+        bridge.transports.append(pt)
+        bridgeLine = bridge.getConfigLine(includeFingerprint=True,
+                                          transport='scramblesuit')
+        ptArgsList = ' '.join(["{0}={1}".format(k,v) for k,v in ptArgs.items()])
+        self.assertEqual("scramblesuit 42.42.42.42:4242 %s %s"
+                         % (self.fingerprint, ptArgsList),
+                         bridgeLine)
 
     def test_getDescriptorDigests(self):
         sha1hash = hashlib.sha1()
