@@ -211,7 +211,7 @@ class GetGPGContextTest(unittest.TestCase):
         here          = os.getcwd()
         topDir        = here.rstrip('_trial_temp')
         self.runDir   = os.path.join(here, 'rundir')
-        self.gpgMoved = os.path.join(self.runDir, 'TESTING.subkeys.sec')
+        self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
         self.gpgFile  = os.path.join(topDir, 'gnupghome',
                                      'TESTING.subkeys.sec')
 
@@ -234,9 +234,7 @@ class GetGPGContextTest(unittest.TestCase):
 
     def test_getGPGContext_good_keyfile(self):
         """Test EmailServer.getGPGContext() with a good key filename."""
-        self.skip = True
-        raise unittest.SkipTest("see ticket #5264")
-
+        self.setKey(self.gpgMoved)
         ctx = crypto.getGPGContext(self.config)
         self.assertIsInstance(ctx, crypto.gpgme.Context)
 
