@@ -80,7 +80,7 @@ def configureLogging(cfg):
     level = getattr(cfg, 'LOGLEVEL', 'WARNING')
     logLevel = getattr(logging, level, 0)
     logStderr = getattr(cfg, 'LOG_TO_STDERR', False)
-    logfileName = getattr(cfg, 'LOGFILE', "")
+    logfileName = getattr(cfg, 'LOGFILE', "bridgedb.log")
     logfileCount = getattr(cfg, 'LOGFILE_COUNT', 3) - 1
     logfileRotateSize = getattr(cfg, 'LOGFILE_ROTATE_SIZE', 10000000)
     logThreads = getattr(cfg, 'LOG_THREADS', False)
