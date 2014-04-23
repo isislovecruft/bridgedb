@@ -79,6 +79,49 @@ class CanonicalizeEmailDomainTests(unittest.TestCase):
         self.assertEquals(canonical, 'example.com')
 
 
+class ExtractEmailAddressTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.extractEmailAddress`."""
+
+    def test_23(self):
+        """The email address int(23) should raise a BadEmail error."""
+        self.assertRaises(addr.BadEmail,
+                          addr.extractEmailAddress,
+                          int(23))
+
+    def test_lessThanChars(self):
+        """The email address 'Alice <alice@riseup.net>' should return
+        ('alice', 'riseup.net').
+        """
+        local, domain = addr.extractEmailAddress('Alice <alice@riseup.net>')
+        self.assertEqual(local, 'alice')
+        self.assertEqual(domain, 'riseup.net')
+
+    def test_extraLessThanChars(self):
+        """The email address 'Mallory <mal<lory@riseup.net>' should return
+        ('lory', 'riseup.net')
+        """
+        local, domain = addr.extractEmailAddress('Mallory <mal<lory@riseup.net>')
+        self.assertEqual(local, 'lory')
+        self.assertEqual(domain, 'riseup.net')
+
+    def test_extraLessAndGreaterThanChars(self):
+        """The email address 'Mallory <mal><>>lory@riseup.net>' should raise a
+        BadEmail error.
+        """
+        self.assertRaises(addr.BadEmail,
+                          addr.extractEmailAddress,
+                          'Mallory <mal><>>lory@riseup.net>')
+
+    def test_extraAppendedEmailAddress(self):
+        """The email address 'Mallory <mallory@riseup.net><mallory@gmail.com>'
+        should use the last address.
+        """
+        local, domain = addr.extractEmailAddress(
+            'Mallory <mallory@riseup.net><mallory@gmail.com>')
+        self.assertEqual(local, 'mallory')
+        self.assertEqual(domain, 'gmail.com')
+
+
 class ParseAddrIsIPAddressTests(unittest.TestCase):
     """Unittests for :func:`bridgedb.parse.addr.isIPAddress`.
 
