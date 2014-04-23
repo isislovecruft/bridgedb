@@ -61,6 +61,24 @@ from twisted.internet import ssl
 #: The hash digest to use for HMACs.
 DIGESTMOD = hashlib.sha1
 
+# Test to see if we have the old or new style buffer() interface. Trying
+# to use an old-style buffer on Python2.7 prior to version 2.7.5 will produce:
+#
+#     TypeError: 'buffer' does not have the buffer interface
+#
+#: ``True`` if we have the new-style
+#: `buffer <https://docs.python.org/2/c-api/buffer.html>` interface.
+NEW_BUFFER_INTERFACE = False
+try:
+    io.BytesIO(buffer('test'))
+except TypeError:
+    logging.warn(
+        "This Python version is too old! "\
+        "It doesn't support new-style buffer interfaces: "\
+        "https://mail.python.org/pipermail/python-dev/2010-October/104917.html")
+else:
+    NEW_BUFFER_INTERFACE = True
+
 
 class RSAKeyGenerationError(Exception):
     """Raised when there was an error creating an RSA keypair."""
@@ -395,8 +413,13 @@ def gpgSignMessage(gpgmeCtx, messageString, mode=None):
     if not mode:
         mode = gpgme.SIG_MODE_CLEAR
 
-    msgFile = io.BytesIO(buffer(messageString))
-    sigFile = io.BytesIO()
+    if NEW_BUFFER_INTERFACE:
+        msgFile = io.BytesIO(buffer(messageString))
+        sigFile = io.BytesIO()
+    else:
+        msgFile = io.StringIO(unicode(messageString))
+        sigFile = io.StringIO()
+
     sigList = gpgmeCtx.sign(msgFile, sigFile, mode)
     sigFile.seek(0)
     signature = sigFile.read()
