@@ -89,12 +89,6 @@ def is_valid_fingerprint(fp):
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
-def chopString(s, size):
-    """Generator. Given a string and a length, divide the string into pieces
-       of no more than that length.
-    """
-    for pos in xrange(0, len(s), size):
-        yield s[pos:pos+size]
 
 class Bridge(object):
     """Holds information for a single bridge
