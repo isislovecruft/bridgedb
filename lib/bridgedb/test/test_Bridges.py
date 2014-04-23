@@ -61,21 +61,40 @@ class BridgeClassTest(unittest.TestCase):
                               self.ip, self.orport,
                               fingerprint=invalid_fingerprint)
 
-    def test_Bridgehelperfunctions(self):
+    def test_getID(self):
         bridge = Bridges.Bridge(self.nickname, self.ip, self.orport,
                                 self.fingerprint)
         self.assertEqual(self.id_digest, bridge.getID())
 
+    def test_setDescriptorDigest(self):
+        """Test setting the server-descriptor digest value."""
+        bridge = Bridges.Bridge(self.nickname, self.ip, self.orport,
+                                self.fingerprint)
         testtext = 'thisisatest'
         bridge.setDescriptorDigest(testtext)
         self.assertEqual(bridge.desc_digest, testtext)
+
+    def test_setExtraInfoDigest(self):
+        """Test setting the extra-info digest value."""
+        bridge = Bridges.Bridge(self.nickname, self.ip, self.orport,
+                                self.fingerprint)
+        testtext = 'thisisatest'
         bridge.setExtraInfoDigest(testtext)
         self.assertEqual(bridge.ei_digest, testtext)
+
+    def test_setVerified(self):
+        """Test setting the `verified` attribute on a Bridge."""
+        bridge = Bridges.Bridge(self.nickname, self.ip, self.orport,
+                                self.fingerprint)
         bridge.setVerified()
         self.assertTrue(bridge.isVerified())
         self.assertTrue(bridge.verified)
         self.assertEqual(self.id_digest, bridge.getID())
 
+    def test_setRunningStable(self):
+        """Test setting the `running` and `stable` attributes on a Bridge."""
+        bridge = Bridges.Bridge(self.nickname, self.ip, self.orport,
+                                self.fingerprint)
         self.assertFalse(bridge.running)
         self.assertFalse(bridge.stable)
         bridge.setStatus(True, True)
