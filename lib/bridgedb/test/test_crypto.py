@@ -171,7 +171,8 @@ class GPGContextTests(unittest.TestCase):
         topDir        = here.rstrip('_trial_temp')
         self.runDir   = os.path.join(here, 'rundir')
         self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
-        self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
+        self.gpgExpr  = os.path.join(topDir, 'gnupghome',
+                                     'TESTING.subkeys.sec.EXPIRED-2013-09-11')
 
         if not os.path.isdir(self.runDir):
             os.makedirs(self.runDir)
@@ -196,6 +197,12 @@ class GPGContextTests(unittest.TestCase):
     def test_getGPGContext_bad_keyfile(self):
         """Test EmailServer.getGPGContext() with a missing key filename."""
         self.makeBadKey()
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)
+
+    def test_getGPGContext_expired_keyfile(self):
+        """getGPGContext() with an expired key should return None."""
+        self.setKey(self.gpgExpr)
         ctx = crypto.getGPGContext(self.config)
         self.assertTrue(ctx is None)
 
