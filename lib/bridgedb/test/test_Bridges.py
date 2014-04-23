@@ -3,31 +3,38 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: please also see AUTHORS file
-# :copyright: (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2007-2014, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """Unittests for the :mod:`bridgedb.EmailServer` module."""
 
-from twisted.trial import unittest
+import ipaddr
 from binascii import a2b_hex
+
+from twisted.trial import unittest
+
 from bridgedb import Bridges
+from bridgedb.parse.addr import PortList
+
 import hashlib
 try:
     from cStringIO import StringIO
 except ImportError:
     from io import StringIO
 
+
 class BridgeClassTest(unittest.TestCase):
     """Tests for :class:`bridgedb.Bridges.Bridge`."""
 
     def setUp(self):
         self.nickname = 'unnamed'
-        self.ip = '127.0.0.1'
+        self.ip = ipaddr.IPAddress('127.0.0.1')
         self.orport = '9001'
         self.fingerprint = 'a1cc8dfef1fa11af9c40af1054df9daf45250556'
         self.id_digest = a2b_hex(self.fingerprint)
-        self.or_addresses = {}
+        self.or_addresses = {ipaddr.IPAddress('6.6.6.6'): PortList(6666),
+                             ipaddr.IPAddress('42.1.42.1'): PortList(443)}
 
     def test_init(self):
         try:
