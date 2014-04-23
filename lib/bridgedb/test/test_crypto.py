@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 import gpgme
 import io
 import logging
+import math
 import os
 import shutil
 
@@ -104,6 +105,35 @@ class LessCrypticGPGMEErrorTests(unittest.TestCase):
             lessCryptic = crypto.LessCrypticGPGMEError(error)
 
         self.assertTrue('Invalid argument' in lessCryptic.message)
+
+    def test_noGpgmeErrorArgs(self):
+        """A gpgme.GpgmeError() without error code args should result in a
+        'Could not get error code from gpgme.GpgmeError!' message.
+        """
+        error = gpgme.GpgmeError()
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertEqual(lessCryptic.message,
+                         'Could not get error code from gpgme.GpgmeError!')
+
+    def test_unknownErrorSource(self):
+        """A gpgme.GpgmeError() without a recognisable error source should say
+        that the error source is 'UNKNOWN'.
+        """
+        msg = "These numbers make more sense than libgpgme's error codes."
+        error = gpgme.GpgmeError(math.pi, math.e, msg)
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertSubstring('UNKNOWN', lessCryptic.message)
+        self.assertSubstring(msg, lessCryptic.message)
+
+    def test_unknownErrorCode(self):
+        """A gpgme.GpgmeError() without a recognisable error code should say
+        that the error code is 'UNKNOWN'.
+        """
+        msg = "These numbers make more sense than libgpgme's error codes."
+        error = gpgme.GpgmeError(math.pi, math.e, msg)
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertSubstring('UNKNOWN', lessCryptic.message)
+        self.assertSubstring(msg, lessCryptic.message)
 
 
 class SSLVerifyingContextFactoryTests(unittest.TestCase,
