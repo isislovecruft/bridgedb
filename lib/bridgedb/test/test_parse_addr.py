@@ -45,6 +45,40 @@ IP6UniqueLocal = "fc00::"
 IP6SiteLocal = "fec0::"
 
 
+class CanonicalizeEmailDomainTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.canonicalizeEmailDomain`."""
+
+    def test_nonDict(self):
+        """Using a non-dict domainmap as a parameter to
+        canonicalizeEmailDomain() should log an AttributeError and then raise
+        an UnsupportedDomain error.
+        """
+        domainmap = 'example.com'
+        domain = 'fubar.com'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.canonicalizeEmailDomain,
+                          domain, domainmap)
+
+    def test_notPermitted(self):
+        """A domain not in the domainmap of allowed domains should raise an
+        UnsupportedDomain error.
+        """
+        domainmap = {'foo.example.com': 'example.com'}
+        domain = 'bar.example.com'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.canonicalizeEmailDomain,
+                          domain, domainmap)
+
+    def test_permitted(self):
+        """A domain in the domainmap of allowed domains should return the
+        canonical domain.
+        """
+        domainmap = {'foo.example.com': 'example.com'}
+        domain = 'foo.example.com'
+        canonical = addr.canonicalizeEmailDomain(domain, domainmap)
+        self.assertEquals(canonical, 'example.com')
+
+
 class ParseAddrIsIPAddressTests(unittest.TestCase):
     """Unittests for :func:`bridgedb.parse.addr.isIPAddress`.
 
