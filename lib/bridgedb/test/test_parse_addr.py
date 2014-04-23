@@ -122,6 +122,63 @@ class ExtractEmailAddressTests(unittest.TestCase):
         self.assertEqual(domain, 'gmail.com')
 
 
+class NormalizeEmailTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.normalizeEmail`."""
+
+    def test_permitted(self):
+        """A valid email address from a permitted domain should return
+        unchanged.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual(emailaddr, normalized)
+
+    def test_notPermitted(self):
+        """A valid email address from a non-permitted domain should raise an
+        UnsupportedDomain error.
+        """
+        domainrules = {}
+        domainmap = {'bar.example.com': 'example.com'}
+        emailaddr = 'Alice <alice@foo.example.com>'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.normalizeEmail,
+                          emailaddr, domainmap, domainrules)
+
+    def test_ignoreDots(self):
+        """A valid email address with a '.' should remove the '.' if
+        'ignore_dots' is in domainrules.
+        """
+        domainrules = {'example.com': 'ignore_dots'}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice.bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual('alicebridges@foo.example.com', normalized)
+
+    def test_ignorePlus(self):
+        """A valid email address with a '+' and some extra stuff, from a
+        permitted domain, should remove the '+' stuff if 'ignore_plus' is
+        enabled.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice+bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual('alice@foo.example.com', normalized)
+
+    def test_dontIgnorePlus(self):
+        """A valid email address with a '+' and some extra stuff, from a
+        permitted domain, should return unchanged if 'ignore_plus' is disabled.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice+bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules,
+                                         ignorePlus=False)
+        self.assertEqual(emailaddr, normalized)
+
+
 class ParseAddrIsIPAddressTests(unittest.TestCase):
     """Unittests for :func:`bridgedb.parse.addr.isIPAddress`.
 
