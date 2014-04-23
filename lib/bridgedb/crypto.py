@@ -343,8 +343,7 @@ def getGPGContext(cfg):
         ctx.signers = (bridgedbKey,)
 
         logging.debug("Testing signature created with GnuPG key...")
-        testMessage = "Testing 1 2 3"
-        signatureText, sigs = gpgSignMessage(ctx, testMessage)
+        signatureText, sigs = gpgSignMessage(ctx, "Testing 1 2 3")
 
         if not len(sigs) == 1:
             raise PythonicGpgmeError("Testing couldn't produce a signature "\
@@ -396,8 +395,8 @@ def gpgSignMessage(gpgmeCtx, messageString, mode=None):
     if not mode:
         mode = gpgme.SIG_MODE_CLEAR
 
-    msgFile = io.StringIO(unicode(messageString))
-    sigFile = io.StringIO()
+    msgFile = io.BytesIO(buffer(messageString))
+    sigFile = io.BytesIO()
     sigList = gpgmeCtx.sign(msgFile, sigFile, mode)
     sigFile.seek(0)
     signature = sigFile.read()
