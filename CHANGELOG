@@ -1,3 +1,14 @@
+Changes in version 0.2.1 -
+        *
+
+And includes the following general changes:
+        * UPDATE Italian (it) gettext file.
+                Thanks to Francesca Ciceri.
+        * ADD Welsh (cy) translations.
+                Thanks to huwwaters and littlegreykida.
+        * ADD Slovak (sk) translations.
+                Thanks to Michelozzo and Svistwarrior273.
+
 Changes in version 0.2.0 - 2014-04-19
         * FIXES #5232 Perform long running and blocking transactions in
                 background threads. Primarily this moves bridge descriptor
