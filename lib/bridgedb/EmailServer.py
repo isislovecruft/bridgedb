@@ -230,26 +230,22 @@ def getMailResponse(lines, ctx):
                         gpgContext=ctx.gpgContext)
 
 def buildMessageTemplate(t):
-    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[0]) + "\n\n" \
-                   + "%s\n" \
+    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[0]) + "\n\n" \
                    + t.gettext(I18n.BRIDGEDB_TEXT[1]) + "\n\n" \
+                   + "%s\n" \
                    + t.gettext(I18n.BRIDGEDB_TEXT[2]) + "\n\n" \
                    + t.gettext(I18n.BRIDGEDB_TEXT[3]) + "\n\n" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[17])+ "\n\n"
+                   + t.gettext(I18n.BRIDGEDB_TEXT[4]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[5])+ "\n\n"
     # list supported commands, e.g. ipv6, transport
     msg_template = msg_template \
-                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[18])+ "\n" \
-                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[19])+ "\n\n" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[6]) + "\n\n"
+                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[6])+ "\n" \
+                   + "  " + t.gettext(I18n.BRIDGEDB_TEXT[7])+ "\n\n"
     return msg_template
 
 def buildSpamWarningTemplate(t):
-    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[5]) + "\n\n" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[10]) + "\n\n" \
-                   + "%s " \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[11]) + "\n\n" \
-                   + t.gettext(I18n.BRIDGEDB_TEXT[12]) + "\n\n"
+    msg_template = t.gettext(I18n.BRIDGEDB_TEXT[0]) + "\n\n" \
+                   + t.gettext(I18n.BRIDGEDB_TEXT[8] % "%s") + "\n\n"
     return msg_template
 
 def _ebReplyToMailFailure(fail):
