@@ -163,8 +163,8 @@ def get_supported_langs():
     with open(repo_langs, 'r') as langsfile:
         for line in langsfile.readlines():
             if line.startswith('supported'):
-                line = "supported = %s\n" % supported
-                #print("REWROTE supported langs: %s" % line)
+                # Change the 'supported' list() into a set():
+                line = "supported = set(%s)\n" % supported
             new_langs_lines.append(line)
     with open(repo_langs, 'w') as newlangsfile:
         for line in new_langs_lines:
