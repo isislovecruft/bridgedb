@@ -37,6 +37,12 @@ reinstall: uninstall force-install
 translations:
 	./maint/get-completed-translations
 
+docs:
+	python setup.py build_sphinx
+
+clean-docs:
+	-rm -rf build/sphinx
+
 clean:
 	-rm -rf build
 	-rm -rf dist
