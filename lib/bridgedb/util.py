@@ -111,7 +111,7 @@ def configureLogging(cfg):
                         'level': logLevel,
                         'formatter': 'default',
                         'filters': logFilters},
-            'rotating': {'()': _getRotatingFileHandler,
+            'rotating': {'()': _getRotatingFileHandler(),
                          'level': logLevel,
                          'formatter': 'default',
                          'filters': logFilters,
