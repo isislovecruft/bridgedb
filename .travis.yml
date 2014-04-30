@@ -30,8 +30,7 @@ install:
   - make install
 
 script:
-  - coverage run --rcfile=".coveragerc" $(which trial) ./lib/bridgedb/test/test_*.py
-  - coverage report --rcfile=".coveragerc"
+  - make coverage-test
 
 after_success:
   - coveralls
