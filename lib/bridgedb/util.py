@@ -11,6 +11,8 @@
 
 """Common utilities for BridgeDB."""
 
+from functools import partial
+
 import logging
 import logging.config
 import logging.handlers
@@ -33,16 +35,16 @@ def _getLogHandlers(logToFile=True, logToStderr=True):
         logHandlers.append('console')
     return logHandlers
 
-def _getRotatingFileHandler(filename, mode='a', filesize=1000000, filecount=0,
+def _getRotatingFileHandler(filename, mode='a', maxBytes=1000000, backupCount=0,
                             encoding='utf-8', uid=None, gid=None):
     """Get a :class:`logging.RotatingFileHandler` with a logfile which is
     readable+writable only by the given **uid** and **gid**.
 
     :param str filename: The full path to the log file.
     :param str mode: The mode to open **filename** with. (default: ``'a'``)
-    :param int filesize: Rotate logfiles after they have grown to this size in
+    :param int maxBytes: Rotate logfiles after they have grown to this size in
         bytes.
-    :param int filecount: The number of logfiles to keep in rotation.
+    :param int backupCount: The number of logfiles to keep in rotation.
     :param str encoding: The encoding for the logfile.
     :param int uid: The owner UID to set on the logfile.
     :param int gid: The GID to set on the logfile.
@@ -59,10 +61,12 @@ def _getRotatingFileHandler(filename, mode='a', filesize=1000000, filecount=0,
     os.chown(filename, uid, gid)
     os.chmod(filename, os.ST_WRITE | os.ST_APPEND)
 
-    fileHandler = logging.handlers.RotatingFileHandler(filename, mode,
-                                                       maxBytes=filesize,
-                                                       backupCount=filecount,
-                                                       encoding=encoding)
+    fileHandler = partial(logging.handlers.RotatingFileHandler,
+                          filename,
+                          mode,
+                          maxBytes=maxBytes,
+                          backupCount=backupCount,
+                          encoding=encoding)
     return fileHandler
 
 def configureLogging(cfg):
@@ -111,15 +115,12 @@ def configureLogging(cfg):
                         'level': logLevel,
                         'formatter': 'default',
                         'filters': logFilters},
-            'rotating': {'()': _getRotatingFileHandler(),
+            'rotating': {'()': _getRotatingFileHandler(logfileName, 'a',
+                                                       logfileRotateSize,
+                                                       logfileCount),
                          'level': logLevel,
                          'formatter': 'default',
-                         'filters': logFilters,
-                         # The values below are passed to the handler creator,
-                         # :func:`getChownedFileHandler`, as kwargs:
-                         'filename': logfileName,
-                         'filesize': logfileRotateSize,
-                         'filecount': logfileCount},
+                         'filters': logFilters},
         },
         'root': {
             'handlers': _getLogHandlers(logfileName, logStderr),
