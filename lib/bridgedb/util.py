@@ -59,7 +59,14 @@ def _getRotatingFileHandler(filename, mode='a', maxBytes=1000000, backupCount=0,
     if not os.path.exists(filename):
         open(filename, 'a').close()
     os.chown(filename, uid, gid)
-    os.chmod(filename, os.ST_WRITE | os.ST_APPEND)
+    try:
+        os.chmod(filename, os.ST_WRITE | os.ST_APPEND)
+    except AttributeError:
+        logging.error("""
+    XXX FIXME: Travis chokes on `os.ST_WRITE` saying that the module doesn't
+               have that attribute, for some reason:
+    https://travis-ci.org/isislovecruft/bridgedb/builds/24145963#L1601""")
+        os.chmod(filename, 384)
 
     fileHandler = partial(logging.handlers.RotatingFileHandler,
                           filename,
