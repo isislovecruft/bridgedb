@@ -31,6 +31,7 @@ from bridgedb import safelog
 from bridgedb import translations
 from bridgedb.crypto import getGPGContext
 from bridgedb.crypto import gpgSignMessage
+from bridgedb.crypto import NEW_BUFFER_INTERFACE
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByTransport
@@ -314,17 +315,23 @@ def composeEmail(fromAddr, clientAddr, subject, body,
     msg.setdefault('Content-Type', 'text/plain; charset="utf-8"')
     headers = [': '.join(m) for m in msg.items()]
 
-    mail = io.BytesIO()
-    mail.writelines(buffer("\r\n".join(headers)))
-    mail.writelines(buffer("\r\n"))
-    mail.writelines(buffer("\r\n"))
+    if NEW_BUFFER_INTERFACE:
+        mail = io.BytesIO()
+        buff = buffer
+    else:
+        mail = io.StringIO()
+        buff = unicode
+
+    mail.writelines(buff("\r\n".join(headers)))
+    mail.writelines(buff("\r\n"))
+    mail.writelines(buff("\r\n"))
 
     if not gpgContext:
-        mail.write(buffer(body))
+        mail.write(buff(body))
     else:
         signature, siglist = gpgSignMessage(gpgContext, body)
         if signature:
-            mail.writelines(buffer(signature))
+            mail.writelines(buff(signature))
     mail.seek(0)
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
