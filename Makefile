@@ -49,7 +49,11 @@ clean:
 	-rm -rf lib/bridgedb.egg-info
 	-rm -rf _trial_temp
 
-coverage:
+coverage-test:
 	-coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
 	-coverage report --rcfile=".coveragerc"
+
+coverage-html:
 	-coverage html --rcfile=".coveragerc"
+
+coverage: coverage-test coverage-html
