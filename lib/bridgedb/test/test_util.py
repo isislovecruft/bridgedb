@@ -50,7 +50,7 @@ class MiscLoggingUtilTests(unittest.TestCase):
         logHandler = util._getRotatingFileHandler(filename)
         self.assertTrue(os.path.isfile(filename))
         self.assertEqual(os.stat_result(os.stat(filename)).st_mode, 33152)
-        self.assertIsInstance(logHandler,
+        self.assertIsInstance(logHandler(),
                               util.logging.handlers.RotatingFileHandler)
 
     def test_configureLogging(self):
