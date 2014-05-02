@@ -31,10 +31,10 @@ from twisted.web import static
 from twisted.web.util import redirectTo
 
 import bridgedb.Dist
-import bridgedb.I18n as I18n
 
 from bridgedb import captcha
 from bridgedb import crypto
+from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4

@@ -14,7 +14,6 @@ BridgeDB Package and Module Documentation
     bridgedb.EmailServer
     bridgedb.Filters
     bridgedb.HTTPServer
-    bridgedb.I18n
     bridgedb.Main
     bridgedb.parse
     bridgedb.persistent
@@ -22,6 +21,7 @@ BridgeDB Package and Module Documentation
     bridgedb.safelog
     bridgedb.Stability
     bridgedb.Storage
+    bridgedb.strings
     bridgedb.Tests
     bridgedb.txrecaptcha
     bridgedb.util

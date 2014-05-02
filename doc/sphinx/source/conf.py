@@ -35,13 +35,13 @@ import bridgedb.Dist
 import bridgedb.EmailServer
 import bridgedb.Filters
 import bridgedb.HTTPServer
-import bridgedb.I18n
 import bridgedb.Main
 import bridgedb.persistent
 import bridgedb.runner
 import bridgedb.safelog
 import bridgedb.Stability
 import bridgedb.Storage
+import bridgedb.strings
 import bridgedb.test
 import bridgedb.Tests
 import bridgedb.txrecaptcha
