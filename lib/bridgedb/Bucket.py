@@ -232,11 +232,11 @@ class BucketManager:
                 f = open(filename, 'w')
                 for bh in bridgeHistories:
                     days = bh.tosa / long(60*60*24)
-                    line = "%s:%s\t(%d %s)" %  \
-                            (bh.ip, bh.port, days,  _("""days at this address"""))
+                    line = "%s:%s\t(%d days at this address)" %  \
+                           (bh.ip, bh.port, days)
                     if str(bh.fingerprint) in blocklist.keys():
-                        line = line + "\t%s: (%s)" % (_("""(Might be blocked)"""),
-                                ",".join(blocklist[bh.fingerprint]),)
+                        line = line + "\t(Might be blocked): (%s)" % \
+                               ",".join(blocklist[bh.fingerprint])
                     f.write(line + '\n')
                 f.close()
             except IOError:
