@@ -828,6 +828,8 @@ def addWebServer(cfg, dist, sched):
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
                       static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
+    httpdist.putChild('keys',
+                      static.File(os.path.join(TEMPLATE_DIR, 'bridgedb.asc')))
     httpdist.putChild('assets',
                       static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
