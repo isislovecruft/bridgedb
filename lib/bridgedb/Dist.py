@@ -41,6 +41,12 @@ class IgnoreEmail(addr.BadEmail):
 class TooSoonEmail(addr.BadEmail):
     """Raised when we got a request from this address too recently."""
 
+class EmailRequestedHelp(Exception):
+    """Raised when a client has emailed requesting help."""
+
+class EmailRequestedKey(Exception):
+    """Raised when an incoming email requested a copy of our GnuPG keys."""
+
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
