@@ -380,10 +380,15 @@ class EmailBasedDistributor(Distributor):
     def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
                            countryCode=None, bridgeFilterRules=None):
         """Return a list of bridges to give to a user.
-           emailaddress -- the user's email address, as given in a from line.
-           epoch -- the time period when we got this request.  This can
-               be any string, so long as it changes with every period.
-           N -- the number of bridges to try to give back.
+
+        :param str emailaddress: The user's email address, as given in a
+            :header:`From:` line.
+        :param epoch: The time period when we got this request. This can be
+            any string, so long as it changes with every period.
+        :param int N: The number of bridges to try to give back.
+        :param parameters: DOCDOC
+        :param countryCode: DOCDOC
+        :param bridgeFilterRules: DOCDOC
         """
         if not bridgeFilterRules:
             bridgeFilterRules=[]
