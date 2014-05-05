@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.EmailServer` module."""
+"""Unittests for the :mod:`bridgedb.email.server` module."""
 
 from __future__ import print_function
 
@@ -19,9 +19,9 @@ import shutil
 import io
 import copy
 
-from bridgedb import EmailServer
 from bridgedb.Dist import EmailBasedDistributor
-from bridgedb.EmailServer import MailContext
+from bridgedb.email import server
+from bridgedb.email.server import MailContext
 from bridgedb.Time import NoSchedule
 from bridgedb.parse.addr import BadEmail
 from bridgedb.persistent import Conf
@@ -80,8 +80,8 @@ class DummyEmailDistributor(object):
 
     def __init__(self, key=None, domainmap=None, domainrules=None,
                  answerParameters=None):
-        """None of the parameters are really used, except ``ctx`` ― they are
-        just there to retain an identical method signature.
+        """None of the parameters are really used, ― they are just there to retain an
+        identical method signature.
         """
         self.key = self.__class__.__name__
         self.domainmap = domainmap
@@ -90,9 +90,6 @@ class DummyEmailDistributor(object):
 
     def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
                            countryCode=None, bridgeFilterRules=None):
-        """Needed because it's called in
-        :meth:`WebResourceBridges.getBridgesForIP`.
-        """
         return [DummyBridge() for _ in xrange(N)]
 
 
