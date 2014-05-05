@@ -1,5 +1,7 @@
 ## -*- coding: utf-8 -*-
+
 <%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', answer=0, **kwargs"/>
 
 <div class="container-fluid"
      style="width: 98%; align: center; margin: auto;">
@@ -78,7 +80,6 @@ ${_(""" Select "Yes" and click "Next" in order to configure your""" \
   </div>
 </div>
 <br />
-
 % endif
 
 <hr />

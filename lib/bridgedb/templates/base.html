@@ -1,6 +1,10 @@
 ## -*- coding: utf-8 -*-
+
+<%namespace name="base" file="base.html" inheritable="True"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <title>BridgeDB</title>
@@ -50,7 +54,7 @@ span {
     </div>
 
 
-${self.body()}
+${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
 
 
 <div class="faq">
