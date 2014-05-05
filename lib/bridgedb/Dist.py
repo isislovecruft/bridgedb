@@ -377,8 +377,8 @@ class EmailBasedDistributor(Distributor):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1,
-            parameters=None, countryCode=None, bridgeFilterRules=None):
+    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
+                           countryCode=None, bridgeFilterRules=None):
         """Return a list of bridges to give to a user.
            emailaddress -- the user's email address, as given in a from line.
            epoch -- the time period when we got this request.  This can
