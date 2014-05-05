@@ -115,8 +115,9 @@ EMAIL_COMMANDS = {
     "get ipv6":             _("Request IPv6 bridges."),
     # TRANLATORS: Please DO NOT tranlate the word the word "TYPE".
     "get transport [TYPE]": _("Request a Pluggable Transport by TYPE."),
-    #"subscribe":            _("Subscribe to receive new bridges once per week")
-    #"unsubscribe":          _("Cancel a subscription to new bridges")
+    "get key":              _("Get a copy of BridgeDB's public GnuPG key."),
+    #"subscribe":            _("Subscribe to receive new bridges once per week"),
+    #"unsubscribe":          _("Cancel a subscription to new bridges"),
 }
 
 #-----------------------------------------------------------------------------
