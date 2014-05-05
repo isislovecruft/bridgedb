@@ -399,15 +399,18 @@ class EmailBasedDistributor(Distributor):
         if not bridgeFilterRules:
             bridgeFilterRules=[]
         now = time.time()
-        try:
-            emailaddress = addr.normalizeEmail(emailaddress, self.domainmap,
-                                               self.domainrules)
-        except addr.BadEmail as err:
-            logging.warn(err)
-            return []
 
-        if not emailaddress:
-            return [] #XXXX raise an exception.
+        emailaddr = None
+        try:
+            emailaddr = addr.normalizeEmail(emailaddress,
+                                            self.domainmap,
+                                            self.domainrules)
+            if not emailaddr:
+                raise addr.BadEmail("Couldn't normalize email address: %r"
+                                    % emailaddress)
+        except addr.BadEmail as error:
+            logging.warn(error)
+            return []
 
         with bridgedb.Storage.getDB() as db:
             wasWarned = db.getWarnedEmail(emailaddress)
