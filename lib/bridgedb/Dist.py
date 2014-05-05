@@ -419,19 +419,19 @@ class EmailBasedDistributor(Distributor):
             logging.info("Attempting to return for %d bridges for %s..."
                          % (N, emailaddress))
 
-            if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
-                logging.info("Client %s sent duplicate request within %d seconds."
-                             % (emailaddress, MAX_EMAIL_RATE))
-                if wasWarned:
-                    logging.info(
-                        "Client was already warned about duplicate requests.")
-                    raise IgnoreEmail("Client was warned", emailaddress)
-                else:
-                    logging.info("Sending duplicate request warning.")
-                    db.setWarnedEmail(emailaddress, True, now)
-                    db.commit()
-
-                raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+            if lastSaw is not None:
+                if (lastSaw + MAX_EMAIL_RATE) >= now:
+                    wait = (lastSaw + MAX_EMAIL_RATE) - now
+                    logging.info("Client %s must wait another %d seconds."
+                                 % (emailaddress, wait))
+                    if wasWarned:
+                        raise IgnoreEmail("Client was warned.", emailaddress)
+                    else:
+                        logging.info("Sending duplicate request warning.")
+                        db.setWarnedEmail(emailaddress, True, now)
+                        db.commit()
+                        raise TooSoonEmail("Must wait %d seconds" % wait,
+                                           emailaddress)
 
             # warning period is over
             elif wasWarned:
