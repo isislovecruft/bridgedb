@@ -13,15 +13,14 @@
 
 from __future__ import print_function
 
-import os
-import shutil
-
 import io
 import copy
+import os
+import shutil
+import types
 
 from bridgedb.Dist import EmailBasedDistributor
 from bridgedb.email import server
-from bridgedb.email.server import MailContext
 from bridgedb.Time import NoSchedule
 from bridgedb.parse.addr import BadEmail
 from bridgedb.persistent import Conf
@@ -57,20 +56,25 @@ EMAIL_BIND_IP = "127.0.0.1"
 EMAIL_PORT = 5225
 """))
 
-def _createMailContext(distributor=None):
+def _createConfig(configFile=TEST_CONFIG_FILE):
     configuration = {}
     TEST_CONFIG_FILE.seek(0)
-    compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
+    compiled = compile(configFile.read(), '<string>', 'exec')
     exec compiled in configuration
     config = Conf(**configuration)
+    return config
+
+def _createMailContext(config=None, distributor=None):
+    if not config:
+        config = _createConfig()
 
     if not distributor:
         distributor = DummyEmailDistributor(
             domainmap=config.EMAIL_DOMAIN_MAP,
             domainrules=config.EMAIL_DOMAIN_RULES)
 
-    ctx = MailContext(config, distributor, NoSchedule())
-    return ctx
+    context = server.MailContext(config, distributor, NoSchedule())
+    return context
 
 
 class DummyEmailDistributor(object):
@@ -92,85 +96,27 @@ class DummyEmailDistributor(object):
                            countryCode=None, bridgeFilterRules=None):
         return [DummyBridge() for _ in xrange(N)]
 
+    def cleanDatabase(self):
+        pass
 
-class EmailGnuPGTest(unittest.TestCase):
-    """Tests for :func:`bridgedb.EmailServer.getGPGContext`."""
 
-    timeout = 15
+class CreateResponseBodyTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.email.server.createResponseBody`."""
 
-    @fileCheckDecorator
-    def doCopyFile(self, src, dst, description=None):
-        shutil.copy(src, dst)
-
-    def removeRundir(self):
-        if os.path.isdir(self.runDir):
-            shutil.rmtree(self.runDir)
-
-    def makeBadKey(self):
-        keyfile = os.path.join(self.runDir, 'badkey.asc')
-        with open(keyfile, 'wb') as badkey:
-            badkey.write('NO PASARÁN, DEATH CAKES!')
-            badkey.flush()
-        self.setKey(keyfile)
-
-    def setKey(self, keyfile=''):
-        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY', keyfile)
-
-    def setUp(self):
+    def _moveGPGTestKeyfile(self):
         here          = os.getcwd()
         topDir        = here.rstrip('_trial_temp')
-        self.runDir   = os.path.join(here, 'rundir')
         self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
         self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
-
-        if not os.path.isdir(self.runDir):
-            os.makedirs(self.runDir)
-
-        configuration = {}
-        TEST_CONFIG_FILE.seek(0)
-        compiled = compile(TEST_CONFIG_FILE.read(), '<string>', 'exec')
-        exec compiled in configuration
-        self.config = Conf(**configuration)
-
-        self.addCleanup(self.removeRundir)
-
-    def test_getGPGContext_good_keyfile(self):
-        """Test EmailServer.getGPGContext() with a good key filename.
-
-        XXX: See #5463.
-        """
-        raise unittest.SkipTest(
-            "See #5463 for why this test fails when it should pass")
-
-        self.doCopyFile(self.gpgFile, self.gpgMoved, "GnuPG test keyfile")
-        ctx = EmailServer.getGPGContext(self.config)
-        self.assertIsInstance(ctx, EmailServer.gpgme.Context)
-
-    def test_getGPGContext_missing_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.setKey('missing-keyfile.asc')
-        ctx = EmailServer.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-    def test_getGPGContext_bad_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.makeBadKey()
-        ctx = EmailServer.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-
-class EmailResponseTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.EmailServer.getMailResponse`."""
+        shutil.copy(self.gpgFile, self.gpgMoved)
 
     def setUp(self):
         """Create fake email, distributor, and associated context data."""
-        # TODO: Add headers if we start validating them
-        self.lines = ["From: %s@%s.com",
-                      "To: bridges@localhost",
-                      "Subject: testing",
-                      "",
-                      "get bridges"]
-        self.ctx = _createMailContext()
+        self._moveGPGTestKeyfile()
+        self.toAddress = "user@example.com"
+        self.config = _createConfig()
+        self.ctx = _createMailContext(self.config)
+        self.distributor = self.ctx.distributor
 
     def _isTwoTupleOfNone(self, reply):
         """Check that a return value is ``(None, None)``."""
@@ -328,14 +274,12 @@ class EmailReplyTests(unittest.TestCase):
 
 class EmailServerServiceTests(unittest.TestCase):
     def setUp(self):
-        # TODO: Add headers if we start validating them
-        self.lines = ["From: %s@%s.com", "To: %s@example.net",
-                      "Subject: testing", "\n", "get bridges"]
-        self.distributor = DummyEmailDistributor('key', {}, {}, [])
-        self.ctx = _createMailContext(self.distributor)
+        self.config = _createConfig()
+        self.context = _createMailContext(self.config)
+        self.distributor = self.context.distributor
 
-    def test_receiveMail(self):
+    def test_addServer(self):
         self.skip = True
         raise unittest.SkipTest("Not finished yet")
         from twisted.internet import reactor
-        EmailServer.addSMTPServer(self.ctx.cfg, self.distributor, NoSchedule)
+        server.addServer(self.config, self.distributor, NoSchedule)
