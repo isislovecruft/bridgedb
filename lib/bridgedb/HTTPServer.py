@@ -50,7 +50,7 @@ from bridgedb.parse import headers
 from bridgedb.safelog import logSafely
 
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__),'templates')
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 GEOIP_DBFILE = '/usr/share/GeoIP/GeoIP.dat'
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
