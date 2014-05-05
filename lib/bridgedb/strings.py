@@ -76,7 +76,7 @@ and any messages which Tor gave out, etc."""),
 }
 
 BRIDGES = {
-    0: _("Bridges"),
+    0: _("Here are your bridge lines:"),
     1: _("Get Bridges!"),
 }
 
@@ -104,10 +104,9 @@ Does your Internet Service Provider (ISP) block or otherwise censor connections
 to the Tor network?"""),
     4: _("""\
 Select 'Yes' and then click 'Next'. To configure your new bridges, copy and
-paste the bridge lines (shown above) into the text input box. Finally, click
-'Connect', and you should be good to go! If you experience trouble, try
-clicking the 'Help' button in the 'Tor Network Settings' wizard for further
-assistance."""),
+paste the bridge lines into the text input box. Finally, click 'Connect', and
+you should be good to go! If you experience trouble, try clicking the 'Help'
+button in the 'Tor Network Settings' wizard for further assistance."""),
 }
 
 EMAIL_COMMANDS = {
