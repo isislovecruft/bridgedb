@@ -443,7 +443,7 @@ def startup(options):
 
     state = persistent.State(config=config)
 
-    from bridgedb import EmailServer
+    from bridgedb.email.server import addServer as addSMTPServer
     from bridgedb import HTTPServer
 
     # Load the master key, or create a new one.
@@ -596,7 +596,7 @@ def startup(options):
     if config.EMAIL_DIST and config.EMAIL_SHARE:
         #emailSchedule = Time.IntervalSchedule("day", 1)
         emailSchedule = Time.NoSchedule()
-        EmailServer.addSMTPServer(config, emailDistributor, emailSchedule)
+        addSMTPServer(config, emailDistributor, emailSchedule)
 
     # Actually run the servers.
     try:
@@ -623,7 +623,7 @@ def runSubcommand(options, config):
     """
     # Make sure that the runner module is only imported after logging is set
     # up, otherwise we run into the same logging configuration problem as
-    # mentioned above with the EmailServer and HTTPServer.
+    # mentioned above with the email.server and HTTPServer.
     from bridgedb import runner
 
     statuscode = 0

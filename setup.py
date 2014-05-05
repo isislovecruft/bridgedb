@@ -278,6 +278,7 @@ setuptools.setup(
     download_url='https://gitweb.torproject.org/bridgedb.git',
     package_dir={'': 'lib'},
     packages=['bridgedb',
+              'bridgedb.email',
               'bridgedb.parse',
               'bridgedb.test'],
     scripts=['scripts/bridgedb'],
