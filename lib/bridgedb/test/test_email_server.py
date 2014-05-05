@@ -118,127 +118,93 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.ctx = _createMailContext(self.config)
         self.distributor = self.ctx.distributor
 
-    def _isTwoTupleOfNone(self, reply):
-        """Check that a return value is ``(None, None)``."""
-        self.assertIsInstance(reply, tuple)
-        self.assertEqual(len(reply), 2)
-        self.assertEqual(reply[0], None)
-        self.assertEqual(reply[1], None)
+    def _getIncomingLines(self, clientAddress="user@example.com"):
+        """Generate the lines of an incoming email from **clientAddress**."""
+        self.toAddress = clientAddress
+        lines = [
+            "From: %s" % clientAddress,
+            "To: bridges@localhost",
+            "Subject: testing",
+            "",
+            "get bridges",
+        ]
+        return lines
 
-    def _isTwoTupleOfAddrAndClass(self, reply, address="testing@localhost",
-                                  klass=io.StringIO):
-        self.assertIsInstance(reply, tuple)
-        self.assertEqual(len(reply), 2)
-        self.assertEqual(reply[0], address)
-        self.assertIsInstance(reply[1], klass)
-
-    def test_getMailResponse_noFrom(self):
+    def test_createResponseBody_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
         receive a response.
         """
-        lines = self.lines
+        lines = self._getIncomingLines()
         lines[0] = ""
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_badAddress(self):
+    def test_createResponseBody_badAddress(self):
         """Don't respond to RFC2822 malformed source addresses."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing*.?\"", "example")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        lines = self._getIncomingLines("testing*.?\"@example.com")
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_anotherBadAddress(self):
+    def test_createResponseBody_anotherBadAddress(self):
         """Don't respond to RFC2822 malformed source addresses."""
-        lines = copy.copy(self.lines)
-        lines[0] = "From: Mallory %s@%s.com" % ("<>>", "example")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        lines = self._getIncomingLines("<>>@example.com")
+        lines[0] = "From: Mallory %s" % self.toAddress
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_invalidDomain(self):
+    def test_createResponseBody_invalidDomain(self):
         """Don't respond to RFC2822 malformed source addresses."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "exa#mple")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        lines = self._getIncomingLines("testing@exa#mple.com")
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_anotherInvalidDomain(self):
+    def test_createResponseBody_anotherInvalidDomain(self):
         """Don't respond to RFC2822 malformed source addresses."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "exam+ple")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        lines = self._getIncomingLines("testing@exam+ple.com")
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_DKIM_badDKIMheader(self):
+    def test_createResponseBody_DKIM_badDKIMheader(self):
         """An email with an 'X-DKIM-Authentication-Result:' header appended
         after the body should not receive a response.
         """
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "gmail")
+        lines = self._getIncomingLines("testing@gmail.com")
         lines.append("X-DKIM-Authentication-Result: ")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self._isTwoTupleOfNone(ret)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertIsNone(ret)
 
-    def test_getMailResponse_DKIM(self):
+    def test_createResponseBody_DKIM(self):
         """An email with a good DKIM header should be responded to."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines = self._getIncomingLines("testing@localhost")
         lines.insert(3, "X-DKIM-Authentication-Result: ")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.skip = True
-        raise unittest.SkipTest("Broken; not sure why. Manual testing says"\
-                                " the email distributor should pass these"\
-                                " tests.")
-        self._isTwoTupleOfAddrAndClass(ret)
-        mail = ret[1].getvalue()
-        self.assertEqual(mail.find("no bridges currently"), -1)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertEqual(ret.find("no bridges currently"), -1)
 
-    def test_getMailResponse_bridges_obfs3(self):
+    def test_createResponseBody_bridges_obfs3(self):
         """A request for 'transport obfs3' should receive a response."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines = self._getIncomingLines("testing@localhost")
         lines[4] = "transport obfs3"
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.skip = True
-        raise unittest.SkipTest("Broken; not sure why. Manual testing says"\
-                                " the email distributor should pass these"\
-                                " tests.")
-        self._isTwoTupleOfAddrAndClass(ret)
-        mail = ret[1].getvalue()
-        self.assertEqual(mail.find("no bridges currently"), -1)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertEqual(ret.find("no bridges currently"), -1)
 
-    def test_getMailResponse_bridges_obfsobfswebz(self):
+    def test_createResponseBody_bridges_obfsobfswebz(self):
         """We should only pay attention to the *last* in a crazy request."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines = self._getIncomingLines("testing@localhost")
         lines[4] = "unblocked webz"
         lines.append("transport obfs2")
         lines.append("transport obfs3")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.skip = True
-        raise unittest.SkipTest("Broken; not sure why. Manual testing says"\
-                                " the email distributor should pass these"\
-                                " tests.")
-        self._isTwoTupleOfAddrAndClass(ret)
-        mail = ret[1].getvalue()
-        self.assertNotEqual(mail.find("no bridges currently"), -1)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertNotEqual(ret.find("no bridges currently"), -1)
 
-    def test_getMailResponse_bridges_obfsobfswebzipv6(self):
+    def test_createResponseBody_bridges_obfsobfswebzipv6(self):
         """We should *still* only pay attention to the *last* request."""
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "localhost")
+        lines = self._getIncomingLines("testing@localhost")
         lines[4] = "transport obfs3"
         lines.append("unblocked webz")
         lines.append("ipv6")
         lines.append("transport obfs2")
-        ret = EmailServer.getMailResponse(lines, self.ctx)
-        self.skip = True
-        raise unittest.SkipTest("Broken; not sure why. Manual testing says"\
-                                " the email distributor should pass these"\
-                                " tests.")
-        self._isTwoTupleOfAddrAndClass(ret)
-        mail = ret[1].getvalue()
-        self.assertNotEqual(mail.find("no bridges currently"), -1)
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertNotEqual(ret.find("no bridges currently"), -1)
 
 
 class EmailReplyTests(unittest.TestCase):
