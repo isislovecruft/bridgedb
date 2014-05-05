@@ -7,7 +7,7 @@
      style="width: 98%; align: center; margin: auto;">
   <div class="container-fluid"
        style="padding: 2%">
-    <h2>${_("Bridges")}</h2>
+    <h2>${_(strings.BRIDGES[0])}</h2>
   </div>
 </div>
 
@@ -25,37 +25,28 @@ ${answer}
      style="width: 100%; align: center; margin: auto;">
   <div class="panel panel-primary">
     <div class="panel-heading">
-      <h3 class="panel-title">${_("""How to start using your bridges""")}</h3>
+      <h3 class="panel-title">${_(strings.HOWTO_TBB[0])}</h3>
     </div>
     <br />
 
     <div class="container-fluid" id="howto" style="align-content: left;">
       <p>
-${_("""To enter bridges into %s, follow the instructions on the""" \
-    """ %s %s download page %s to start %s.""") % \
-   ("""Tor Browser""",
-    """<a href="https://www.torproject.org/projects/torbrowser.html.en#downloads-beta" target="_blank">""",
-    """Tor Browser""", """</a>""", """Tor Browser""")}
-${_("""When the "Tor Network Settings" dialogue pops up,""" \
-    """ click "Configure" and follow the wizard until it asks:""")}
+        ${_(strings.HOWTO_TBB[1]) % \
+           ("""<a href="https://www.torproject.org/projects/torbrowser.html.en#downloads-beta"
+                  target="_blank">""",
+            """</a>""")}
+        ${_(strings.HOWTO_TBB[2])}
       </p>
       <br />
       <div class="bs-component">
         <blockquote>
           <p>
-${_(""" Does your Internet Service Provider (ISP) block or""" \
-    """ otherwise censor connections to the Tor Network?""")}
+            ${_(strings.HOWTO_TBB[3])}
           </p>
         </blockquote>
       </div>
       <p>
-${_(""" Select "Yes" and click "Next" in order to configure your""" \
-    """ new bridges. Select "Enter custom bridges", and copy and""" \
-    """ paste the bridges lines shown above into the text input""" \
-    """ box. Finally, click "Connect", and you should be good""" \
-    """ to go! If you experience trouble, try clicking""" \
-    """ the "Help" button in the "Tor Network Settings" wizard for""" \
-    """ further assistance.""")}
+        ${_(strings.HOWTO_TBB[4])}
       </p>
     </div>
   </div>
@@ -67,6 +58,10 @@ ${_(""" Select "Yes" and click "Next" in order to configure your""" \
     <p style="text-align: center; font-size: 115%;">
       <br />
       <strong>
+## TRANSLATORS: Please translate this into some silly way to say
+##              "There was a problem!" in your language. For example,
+##              for Italian, you might translate this into "Mama mia!",
+##              or for French: "Sacrebleu!". :)
         <em class="primary">${_("""Uh oh, spaghettios!""")}</em>
       </strong>
       <br />
