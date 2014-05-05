@@ -143,7 +143,7 @@ def createResponseBody(lines, context, toAddress, lang='en'):
                 request=toAddress) for b in bridges)
         return templates.buildMessage(t) % answer
 
-def generateResponse(fromAddress, clientAddress, subject, body,
+def generateResponse(fromAddress, clientAddress, body, subject=None,
                      messageID=None, gpgContext=None):
     """Create a :class:`MailResponse`, which acts like an in-memory
     ``io.StringIO`` file, by creating and writing all headers and the email
@@ -619,7 +619,7 @@ class MailMessage(object):
 
         clientAddr = '@'.join([client.local, client.domain])
         messageID = incoming.getheader("Message-ID", None)
-        subject = incoming.getheader("Subject", None) or "[no subject]"
+        subject = incoming.getheader("Subject", None)
 
         # Look up the locale part in the 'To:' address, if there is one and
         # get the appropriate Translation object:
@@ -629,8 +629,8 @@ class MailMessage(object):
         body = createResponseBody(self.lines, self.context, clientAddr, lang)
         if not body: return d  # The client was already warned.
 
-        response = generateResponse(self.context.fromAddr, clientAddr, subject,
-                                    body, messageID, self.context.gpgContext)
+        response = generateResponse(self.context.fromAddr, clientAddr, body,
+                                    subject, messageID, self.context.gpgContext)
         if not response: return d
 
         logging.info("Sending reply to %s" % client)
