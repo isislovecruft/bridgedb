@@ -1,6 +1,11 @@
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2013, The Tor Project, Inc.
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_HTTPServer -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: please see included AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2013-2014, Isis Lovecruft
+# :license: see LICENSE for licensing information
 
 """
 This module implements the web (http, https) interfaces to the bridge database.
