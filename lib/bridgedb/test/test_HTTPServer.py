@@ -596,7 +596,8 @@ class WebResourceBridgesTests(unittest.TestCase):
         page = self.bridgesResource.render(request)
         self.assertSubstring("direction: rtl", page)
         self.assertSubstring(
-            "إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي", page)
+            # "I need an alternative way to get bridges!"
+            "انا بحاجة إلى وسيلة بديلة للحصول على الجسور!", page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
