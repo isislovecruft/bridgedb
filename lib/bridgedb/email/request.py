@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8; test-case-name: bridgedb.test.test_email_request; -*-
 
 from __future__ import print_function
 from __future__ import unicode_literals
