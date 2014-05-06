@@ -100,6 +100,40 @@ class DummyEmailDistributor(object):
         pass
 
 
+class CheckDKIMTests(unittest.TestCase):
+    """Tests for :func:`email.server.checkDKIM`."""
+
+    def setUp(self):
+        """Create fake email, distributor, and associated context data."""
+        self.goodMessage = io.StringIO(unicode("""\
+From: user@gmail.com
+To: bridges@localhost
+X-DKIM-Authentication-Results: pass
+Subject: testing
+
+get bridges
+"""))
+        self.badMessage = io.StringIO(unicode("""\
+From: user@gmail.com
+To: bridges@localhost
+Subject: testing
+
+get bridges
+"""))
+        self.config = _createConfig()
+        self.domainRules = self.config.EMAIL_DOMAIN_RULES
+
+    def test_checkDKIM_good(self):
+        message = server.smtp.rfc822.Message(self.goodMessage)
+        self.assertTrue(server.checkDKIM(message,
+                                         self.domainRules.get("gmail.com")))
+
+    def test_checkDKIM_bad(self):
+        message = server.smtp.rfc822.Message(self.badMessage)
+        result = server.checkDKIM(message, self.domainRules.get("gmail.com"))
+        self.assertIs(result, False)
+
+
 class CreateResponseBodyTests(unittest.TestCase):
     """Tests for :func:`bridgedb.email.server.createResponseBody`."""
 
