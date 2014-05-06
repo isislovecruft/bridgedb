@@ -164,81 +164,48 @@ class CreateResponseBodyTests(unittest.TestCase):
         ]
         return lines
 
-    def test_createResponseBody_noFrom(self):
-        """A received email without a "From:" or "Sender:" header shouldn't
-        receive a response.
-        """
+    def test_createResponseBody_getKey(self):
+        """A request for 'get key' should receive our GPG key."""
         lines = self._getIncomingLines()
-        lines[0] = ""
+        lines[4] = "get key"
         ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
+        self.assertSubstring('-----BEGIN PGP PUBLIC KEY BLOCK-----', ret)
 
-    def test_createResponseBody_badAddress(self):
-        """Don't respond to RFC2822 malformed source addresses."""
-        lines = self._getIncomingLines("testing*.?\"@example.com")
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
-
-    def test_createResponseBody_anotherBadAddress(self):
-        """Don't respond to RFC2822 malformed source addresses."""
-        lines = self._getIncomingLines("<>>@example.com")
-        lines[0] = "From: Mallory %s" % self.toAddress
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
-
-    def test_createResponseBody_invalidDomain(self):
-        """Don't respond to RFC2822 malformed source addresses."""
-        lines = self._getIncomingLines("testing@exa#mple.com")
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
-
-    def test_createResponseBody_anotherInvalidDomain(self):
-        """Don't respond to RFC2822 malformed source addresses."""
-        lines = self._getIncomingLines("testing@exam+ple.com")
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
-
-    def test_createResponseBody_DKIM_badDKIMheader(self):
-        """An email with an 'X-DKIM-Authentication-Result:' header appended
-        after the body should not receive a response.
-        """
-        lines = self._getIncomingLines("testing@gmail.com")
-        lines.append("X-DKIM-Authentication-Result: ")
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertIsNone(ret)
-
-    def test_createResponseBody_DKIM(self):
-        """An email with a good DKIM header should be responded to."""
-        lines = self._getIncomingLines("testing@localhost")
-        lines.insert(3, "X-DKIM-Authentication-Result: ")
-        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertEqual(ret.find("no bridges currently"), -1)
-
-    def test_createResponseBody_bridges_obfs3(self):
-        """A request for 'transport obfs3' should receive a response."""
+    def test_createResponseBody_bridges_invalid(self):
+        """An invalid request for 'transport obfs3' should get help text."""
         lines = self._getIncomingLines("testing@localhost")
         lines[4] = "transport obfs3"
         ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertEqual(ret.find("no bridges currently"), -1)
+        self.assertSubstring("COMMANDs", ret)
+
+    def test_createResponseBody_bridges_obfs3(self):
+        """A request for 'get transport obfs3' should receive a response."""
+        lines = self._getIncomingLines("testing@localhost")
+        lines[4] = "get transport obfs3"
+        ret = server.createResponseBody(lines, self.ctx, self.toAddress)
+        self.assertSubstring("Here are your bridges", ret)
+        self.assertSubstring("obfs3", ret)
 
     def test_createResponseBody_bridges_obfsobfswebz(self):
         """We should only pay attention to the *last* in a crazy request."""
         lines = self._getIncomingLines("testing@localhost")
-        lines[4] = "unblocked webz"
-        lines.append("transport obfs2")
-        lines.append("transport obfs3")
+        lines[4] = "get unblocked webz"
+        lines.append("get transport obfs2")
+        lines.append("get transport obfs3")
         ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertNotEqual(ret.find("no bridges currently"), -1)
+        self.assertSubstring("Here are your bridges", ret)
+        self.assertSubstring("obfs3", ret)
 
     def test_createResponseBody_bridges_obfsobfswebzipv6(self):
         """We should *still* only pay attention to the *last* request."""
         lines = self._getIncomingLines("testing@localhost")
         lines[4] = "transport obfs3"
-        lines.append("unblocked webz")
-        lines.append("ipv6")
-        lines.append("transport obfs2")
+        lines.append("get unblocked webz")
+        lines.append("get ipv6")
+        lines.append("get transport obfs2")
         ret = server.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertNotEqual(ret.find("no bridges currently"), -1)
+        self.assertSubstring("Here are your bridges", ret)
+        self.assertSubstring("obfs2", ret)
 
 
 class EmailReplyTests(unittest.TestCase):
