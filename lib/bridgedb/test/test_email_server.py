@@ -261,22 +261,98 @@ a ball of timey-wimey, wibbly-warbly... stuff."""
         self.assertSubstring("X-been-there: They were so 2004", contents)
 
 
-    def test_replyToMail(self):
+class MailMessageTests(unittest.TestCase):
+    """Unittests for :class:`bridgedb.email.server.MailMessage`."""
+
+    def setUp(self):
+        self.config = _createConfig()
+        self.context = _createMailContext(self.config)
+        self.message = server.MailMessage(self.context)
+
+    def _getIncomingLines(self, clientAddress="user@example.com"):
+        """Generate the lines of an incoming email from **clientAddress**."""
+        lines = [
+            "From: %s" % clientAddress,
+            "To: bridges@localhost",
+            "Subject: testing",
+            "",
+            "get bridges",
+        ]
+        self.message.lines = lines
+
+    def test_MailMessage_reply_noFrom(self):
+        """A received email without a "From:" or "Sender:" header shouldn't
+        receive a response.
+        """
+        self._getIncomingLines()
+        self.message.lines[0] = ""
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_badAddress(self):
+        """Don't respond to RFC2822 malformed source addresses."""
+        self._getIncomingLines("testing*.?\"@example.com")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_anotherBadAddress(self):
+        """Don't respond to RFC2822 malformed source addresses."""
+        self._getIncomingLines("Mallory <>>@example.com")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_invalidDomain(self):
+        """Don't respond to RFC2822 malformed source addresses."""
+        self._getIncomingLines("testing@exa#mple.com")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_anotherInvalidDomain(self):
+        """Don't respond to RFC2822 malformed source addresses."""
+        self._getIncomingLines("testing@exam+ple.com")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_DKIM_badDKIMheader(self):
+        """An email with an 'X-DKIM-Authentication-Result:' header appended
+        after the body should not receive a response.
+        """
+        self._getIncomingLines("testing@gmail.com")
+        self.message.lines.append("X-DKIM-Authentication-Result: ")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_goodDKIMheader(self):
+        """An email with a good DKIM header should be responded to."""
+        self._getIncomingLines("testing@gmail.com")
+        self.message.lines.insert(3, "X-DKIM-Authentication-Result: pass")
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+
+    def test_MailMessage_reply_transport_invalid(self):
+        """An invalid request for 'transport obfs3' should get help text."""
         self.skip = True
-        raise unittest.SkipTest("We'll have to fake the EmailServer for this one,"\
-                                " it requires a TCP connection to localhost.")
+        raise unittest.SkipTest("We need to fake the reactor for this one")
 
-        def callback(reply):
-            self.assertSubstring("Here are your bridges", reply)
+        self._getIncomingLines("testing@example.com")
+        self.message.lines[4] = "transport obfs3"
+        ret = self.message.reply()
+        self.assertSubstring("COMMANDs", ret)
 
-        lines = copy.copy(self.lines)
-        lines[0] = self.lines[0] % ("testing", "example")
-        reply = EmailServer.replyToMail(lines, self.ctx)
+    def test_MailMessage_reply_transport_valid(self):
+        """An valid request for 'get transport obfs3' should get obfs3."""
+        self.skip = True
+        raise unittest.SkipTest("We need to fake the reactor for this one")
 
-        self.assertIsInstance(reply, defer.Deferred)
+        self._getIncomingLines("testing@example.com")
+        self.message.lines[4] = "transport obfs3"
+        ret = self.message.reply()
+        self.assertIsInstance(ret, defer.Deferred)
+        self.assertSubstring("obfs3", ret)
+        return ret
 
-        reply.addCallback(callback)
-        return reply
+
+
 
 
 class EmailServerServiceTests(unittest.TestCase):
