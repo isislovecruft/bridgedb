@@ -352,7 +352,68 @@ class MailMessageTests(unittest.TestCase):
         return ret
 
 
+class MailDeliveryTest(unittest.TestCase):
+    """Unittests for :class:`email.server.MailDelivery`."""
 
+    def setUp(self):
+        self.config = _createConfig()
+        self.context = _createMailContext(self.config)
+        self.delivery = server.MailDelivery()
+        self.helo = ('fubar.example.com', '127.0.0.1')
+        self.origin = server.smtp.Address('user@example.com')
+        self.users = [server.smtp.User('bridges', self.helo, None, self.origin),]
+
+    def tets_MailDelivery(self):
+        self.assertIsInstance(self.delivery, server.MailDelivery)
+
+    def test_MailDelivery_setBridgeDBContext(self):
+        self.delivery.setBridgeDBContext(self.context)
+
+    def test_MailDelivery_receivedHeader(self):
+        self.delivery.setBridgeDBContext(self.context)
+        hdr = self.delivery.receivedHeader(self.helo, self.origin, self.users)
+        self.assertTrue(hdr)
+        self.assertSubstring("Received: from fubar.example.com", hdr)
+
+    def test_MailDelivery_validateFrom(self):
+        """A valid origin should be stored as ``MailDelivery.fromCanonical``."""
+        self.delivery.setBridgeDBContext(self.context)
+        self.delivery.validateFrom(self.helo, self.origin)
+        self.assertEqual(self.delivery.fromCanonical, 'example.com')
+
+    def test_MailDelivery_validateFrom_unsupportedDomain(self):
+        """A domain not in our canon should raise a SMTPBadSender."""
+        self.delivery.setBridgeDBContext(self.context)
+        helo = ('yo.mama', '0.0.0.0')
+        origin = server.smtp.Address('throwing.pickles@yo.mama')
+        self.assertRaises(server.smtp.SMTPBadSender,
+                          self.delivery.validateFrom, helo, origin)
+
+    def test_MailDelivery_validateFrom_badOriginType(self):
+        """A non t.m.smtp.Address origin should raise cause an Exception."""
+        self.delivery.setBridgeDBContext(self.context)
+        helo = ('yo.mama', '0.0.0.0')
+        origin = 'throwing.pickles@yo.mama'
+        self.delivery.validateFrom(helo, origin)
+
+    def test_MailDelivery_validateTo(self):
+        """Should return a callable that results in a MailMessage."""
+        self.delivery.setBridgeDBContext(self.context)
+        ret = self.delivery.validateTo(self.users[0])
+        self.assertIsInstance(ret, types.FunctionType)
+
+    def test_MailDelivery_validateTo_plusAddress(self):
+        """Should return a callable that results in a MailMessage."""
+        self.delivery.setBridgeDBContext(self.context)
+        user = server.smtp.User('bridges+ar', self.helo, None, self.origin)
+        ret = self.delivery.validateTo(user)
+        self.assertIsInstance(ret, types.FunctionType)
+
+    def test_MailDelivery_validateTo_badUsername(self):
+        self.delivery.setBridgeDBContext(self.context)
+        user = server.smtp.User('yo.mama', self.helo, None, self.origin)
+        self.assertRaises(server.smtp.SMTPBadRcpt,
+                          self.delivery.validateTo, user)
 
 
 class EmailServerServiceTests(unittest.TestCase):
