@@ -208,18 +208,58 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.assertSubstring("obfs2", ret)
 
 
-class EmailReplyTests(unittest.TestCase):
-    """Tests for ``EmailServer.replyToMail()``."""
+class MailResponseTests(unittest.TestCase):
+    """Tests for ``generateResponse()`` and ``MailResponse``."""
 
     def setUp(self):
-        """Create fake email, distributor, and associated context data."""
-        # TODO: Add headers if we start validating them
-        self.lines = ["From: %s@%s.com",
-                      "To: bridges@example.net",
-                      "Subject: testing",
-                      "\n",
-                      "get bridges"]
-        self.ctx = _createMailContext()
+        self.fromAddr = "bridges@torproject.org"
+        self.clientAddr = "user@example.com"
+        self.body = """\
+People think that time is strictly linear, but, in reality, it's actually just
+a ball of timey-wimey, wibbly-warbly... stuff."""
+
+    def tearDown(self):
+        server.safelog.safe_logging = True
+
+    def test_generateResponse(self):
+        response = server.generateResponse(self.fromAddr, self.clientAddr,
+                                           self.body)
+        self.assertIsInstance(response, server.MailResponse)
+
+    def test_generateResponse_noSafelog(self):
+        server.safelog.safe_logging = False
+        response = server.generateResponse(self.fromAddr, self.clientAddr,
+                                           self.body)
+        self.assertIsInstance(response, server.MailResponse)
+
+    def test_generateResponse_mailfile(self):
+        response = server.generateResponse(self.fromAddr, self.clientAddr,
+                                           self.body)
+        self.assertIsInstance(response.mailfile, (io.BytesIO, io.StringIO))
+
+    def test_generateResponse_withInReplyTo(self):
+        response = server.generateResponse(self.fromAddr, self.clientAddr,
+                                           self.body, messageID="NSA")
+        contents = str(response.readContents()).replace('\x00', '')
+        self.assertIsInstance(response.mailfile, (io.BytesIO, io.StringIO))
+        self.assertSubstring("In-Reply-To: NSA", contents)
+
+    def test_generateResponse_readContents(self):
+        response = server.generateResponse(self.fromAddr, self.clientAddr,
+                                           self.body)
+        contents = str(response.readContents()).replace('\x00', '')
+        self.assertSubstring('timey-wimey, wibbly-warbly... stuff.', contents)
+
+    def test_MailResponse_additionalHeaders(self):
+        response = server.MailResponse()
+        response.writeHeaders(self.fromAddr, self.clientAddr,
+                              subject="Re: echelon", inReplyTo="NSA",
+                              X_been_there="They were so 2004")
+        contents = str(response.readContents()).replace('\x00', '')
+        self.assertIsInstance(response.mailfile, (io.BytesIO, io.StringIO))
+        self.assertSubstring("In-Reply-To: NSA", contents)
+        self.assertSubstring("X-been-there: They were so 2004", contents)
+
 
     def test_replyToMail(self):
         self.skip = True
