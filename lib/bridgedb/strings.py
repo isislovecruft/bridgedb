@@ -170,9 +170,10 @@ and so to replace the two ``%s`` format specifiers, you would use this mapping
 like so::
 
 >>> from bridgedb import strings
->>> welcome = strings.WELCOME.get(0)
->>> emailWelcome = welcome.format(strings.EMAIL_SPRINTF.get("WELCOME0"))
->>> emailWelcome
+>>> welcome = strings.WELCOME[0] % strings.EMAIL_SPRINTF["WELCOME0"]
+>>> print welcome.split('\n')[0]
+BridgeDB can provide bridges with several types of Pluggable Transports[0],
+
 """
 
 EMAIL_REFERENCE_LINKS = {
