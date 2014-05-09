@@ -501,7 +501,7 @@ class MailMessage(object):
         """Create and parse an :rfc:`2822` message object for all ``lines``
         received thus far.
 
-        :rtype: :api:`twisted.mail.smtp.rfc822.Message`.
+        :rtype: :api:`twisted.mail.smtp.rfc822.Message`
         :returns: A ``Message`` comprised of all lines received thus far.
         """
         rawMessage = io.StringIO()
@@ -510,6 +510,16 @@ class MailMessage(object):
         return smtp.rfc822.Message(rawMessage)
 
     def getClientAddress(self, incoming):
+        """Attempt to get the client's email address from an incoming email.
+
+        :type incoming: :api:`twisted.mail.smtp.rfc822.Message`
+        :param incoming: An incoming ``Message``, i.e. as returned from
+            :meth:`getIncomingMessage`.
+        :rtype: ``None`` or :api:`twisted.mail.smtp.Address`
+        :returns: The client's email ``Address``, if it originated from a
+            domain that we accept and the address was well-formed. Otherwise,
+            returns ``None``.
+        """
         addrHeader = None
         try: fromAddr = incoming.getaddr("From")[1]
         except (IndexError, TypeError, AttributeError): pass
