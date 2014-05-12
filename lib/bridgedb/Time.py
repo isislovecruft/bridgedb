@@ -12,17 +12,41 @@
 import calendar
 import time
 
+from zope import interface
+from zope.interface import implements
+
 KNOWN_INTERVALS = [ "hour", "day", "week", "month" ]
 
-class Schedule:
-    def intervalStart(self, when):
-        raise NotImplementedError
-    def getInterval(self, when):
-        raise NotImplementedError
-    def nextIntervalStarts(self, when):
-        raise NotImplementedError
 
-class IntervalSchedule(Schedule):
+class ISchedule(interface.Interface):
+    """A ``Interface`` specification for a Schedule."""
+
+    def intervalStart(when):
+        """Set the start time of the current interval to **when**."""
+
+    def getInterval(when=None):
+        """Get the interval which includes an arbitrary **when**."""
+
+    def nextIntervalStarts():
+        """Get the start time for the next interval."""
+
+
+class ScheduleBase(object):
+    """Base class for all ``Schedule`` classes."""
+
+    implements(ISchedule)
+
+    def intervalStart(self, when):
+        pass
+
+    def getInterval(self, when=None):
+        pass
+
+    def nextIntervalStarts(self):
+        pass
+
+
+class IntervalSchedule(ScheduleBase):
     """An IntervalSchedule splits time into somewhat natural periods,
        based on hours, days, weeks, or months.
     """
@@ -118,7 +142,7 @@ class IntervalSchedule(Schedule):
         elif self.itype == 'hour':
             return self.intervalStart(when) + 3600 * self.count
 
-class NoSchedule(Schedule):
+class NoSchedule(ScheduleBase):
     """A stub-implementation of Schedule that has only one period for
        all time."""
     def __init__(self):
