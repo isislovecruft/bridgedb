@@ -77,7 +77,7 @@ def checkDKIM(message, rules):
             return False
     return True
 
-def createResponseBody(lines, context, toAddress, lang='en'):
+def createResponseBody(lines, context, clientAddress, lang='en'):
     """Parse the **lines** from an incoming email request and determine how to
     respond.
 
@@ -85,7 +85,8 @@ def createResponseBody(lines, context, toAddress, lang='en'):
         client.
     :type context: class:`MailContext`
     :param context: The context which contains settings for the email server.
-    :param str toAddress: The rfc:`2821` email address which should be in the
+    :type clientAddress: :api:`twisted.mail.smtp.Address`
+    :param clientAddress: The client's email address which should be in the
         :header:`To:` header of the response email.
     :param str lang: The 2-5 character locale code to use for translating the
         email. This is obtained from a client sending a email to a valid plus
@@ -98,6 +99,7 @@ def createResponseBody(lines, context, toAddress, lang='en'):
         string containing the (optionally translated) body for the email
         response which we should send out.
     """
+    clientAddr = '@'.join([clientAddress.local, clientAddress.domain])
     t = translations.installTranslations(lang)
 
     bridges = None
@@ -108,25 +110,25 @@ def createResponseBody(lines, context, toAddress, lang='en'):
         # valid email commands:
         if not bridgeRequest.isValid():
             raise EmailRequestedHelp("Email request from %r was invalid."
-                                     % toAddress)
+                                     % clientAddr)
 
         # Otherwise they must have requested bridges:
         interval = context.schedule.getInterval(time.time())
         bridges = context.distributor.getBridgesForEmail(
-            toAddress,
+            clientAddr,
             interval,
             context.nBridges,
             countryCode=None,
             bridgeFilterRules=bridgeRequest.filters)
     except EmailRequestedHelp as error:
         logging.info(error)
-        return templates.buildWelcomeText(t)
+        return templates.buildWelcomeText(t, clientAddress)
     except EmailRequestedKey as error:
         logging.info(error)
-        return templates.buildKeyfile(t)
+        return templates.buildKeyMessage(t, clientAddress)
     except TooSoonEmail as error:
         logging.info("Got a mail too frequently: %s." % error)
-        return templates.buildSpamWarning(t)
+        return templates.buildSpamWarning(t, clientAddress)
     except (IgnoreEmail, BadEmail) as error:
         logging.info(error)
         # Don't generate a response if their email address is unparsable or
@@ -140,8 +142,8 @@ def createResponseBody(lines, context, toAddress, lang='en'):
                 includeFingerprint=context.includeFingerprints,
                 addressClass=bridgeRequest.addressClass,
                 transport=transport,
-                request=toAddress) for b in bridges)
-        return templates.buildMessage(t) % answer
+                request=clientAddr) for b in bridges)
+        return templates.buildAnswerMessage(t, clientAddress, answer)
 
 def generateResponse(fromAddress, clientAddress, body, subject=None,
                      messageID=None, gpgContext=None):
@@ -636,7 +638,7 @@ class MailMessage(object):
         lang = translations.getLocaleFromPlusAddr(recipient)
         logging.info("Client requested email translation: %s" % lang)
 
-        body = createResponseBody(self.lines, self.context, clientAddr, lang)
+        body = createResponseBody(self.lines, self.context, client, lang)
         if not body: return d  # The client was already warned.
 
         response = generateResponse(self.context.fromAddr, clientAddr, body,

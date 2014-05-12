@@ -18,12 +18,14 @@ from __future__ import unicode_literals
 import logging
 import os
 
+from datetime import datetime
+
 from bridgedb import strings
 from bridgedb.Dist import MAX_EMAIL_RATE
 from bridgedb.HTTPServer import TEMPLATE_DIR
 
 
-def buildCommands(template):
+def addCommands(template):
     # Tell them about the various email commands:
     cmdlist = []
     cmdlist.append(template.gettext(strings.EMAIL_MISC_TEXT.get(3)))
@@ -44,21 +46,23 @@ def buildCommands(template):
 
     return commands
 
-def buildHowto(template):
-    howToTBB  = template.gettext(strings.HOWTO_TBB[1]) % strings.EMAIL_SPRINTF["HOWTO_TBB1"]
-    howToTBB += u'\n\n'
-    howToTBB += template.gettext(strings.HOWTO_TBB[2])
-    howToTBB += u'\n\n'
-    howToTBB += u'\n'.join(["> {0}".format(ln) for ln in
-                            template.gettext(strings.HOWTO_TBB[3]).split('\n')])
-    howToTBB += u'\n\n'
-    howToTBB += template.gettext(strings.HOWTO_TBB[4])
-    howToTBB += u'\n\n'
-    howToTBB += strings.EMAIL_REFERENCE_LINKS.get("HOWTO_TBB1")
-    howToTBB += u'\n\n'
-    return howToTBB
+def addGreeting(template, clientName=None, welcome=False):
+    greeting = ""
 
-def buildKeyfile(template):
+    if not clientName:
+        greeting = template.gettext(strings.EMAIL_MISC_TEXT[7])
+    else:
+        greeting = template.gettext(strings.EMAIL_MISC_TEXT[6]) % clientName
+
+    if greeting:
+        if welcome:
+            greeting += u' '
+            greeting += template.gettext(strings.EMAIL_MISC_TEXT[4])
+        greeting += u'\n\n'
+
+    return greeting
+
+def addKeyfile(template):
     filename = os.path.join(TEMPLATE_DIR, 'bridgedb.asc')
 
     try:
@@ -72,11 +76,69 @@ def buildKeyfile(template):
 
     return keyFile
 
-def buildWelcomeText(template):
-    sections = []
-    sections.append(template.gettext(strings.EMAIL_MISC_TEXT[4]))
+def addBridgeAnswer(template, answer):
+    # Give the user their bridges, i.e. the `answer`:
+    bridgeLines  = template.gettext(strings.EMAIL_MISC_TEXT[0])
+    bridgeLines += u"\n\n"
+    bridgeLines += template.gettext(strings.EMAIL_MISC_TEXT[1])
+    bridgeLines += u"\n\n"
+    bridgeLines += u"%s\n\n" % answer
 
-    commands = buildCommands(template)
+    return bridgeLines
+
+def addHowto(template):
+    howToTBB  = template.gettext(strings.HOWTO_TBB[1]) % strings.EMAIL_SPRINTF["HOWTO_TBB1"]
+    howToTBB += u'\n\n'
+    howToTBB += template.gettext(strings.HOWTO_TBB[2])
+    howToTBB += u'\n\n'
+    howToTBB += u'\n'.join(["> {0}".format(ln) for ln in
+                            template.gettext(strings.HOWTO_TBB[3]).split('\n')])
+    howToTBB += u'\n\n'
+    howToTBB += template.gettext(strings.HOWTO_TBB[4])
+    howToTBB += u'\n\n'
+    howToTBB += strings.EMAIL_REFERENCE_LINKS.get("HOWTO_TBB1")
+    howToTBB += u'\n\n'
+    return howToTBB
+
+def addFooter(template, clientAddress=None):
+    """Add a footer.
+
+    --
+     <3 BridgeDB
+
+    -------------------------------------------------------------------------
+    Public Keys: https://bridges.torproject.org/keys
+
+    This email was generated with rainbows, unicorns, and sparkles
+    for alice@example.com on Friday, 09 May, 2014 at 18:59:39.
+    """
+    now = datetime.utcnow()
+    clientAddr = clientAddress.addrstr
+
+    footer  = u'--\n'
+    footer += u' <3 BridgeDB\n\n'
+    footer += u'-' * 70
+    footer += u'\n'
+    footer += template.gettext(strings.EMAIL_MISC_TEXT[8])
+    footer += u': https://bridges.torproject.org/keys\n'
+    footer += template.gettext(strings.EMAIL_MISC_TEXT[9]) \
+              % (clientAddr,
+                 now.strftime('%A, %d %B, %Y'),
+                 now.strftime('%H:%M:%S'))
+    footer += u'\n'
+
+    return footer
+
+def buildKeyMessage(template, clientAddress=None):
+    message  = addKeyfile(template)
+    message += addFooter(template, clientAddress)
+    return message
+
+def buildWelcomeText(template, clientAddress=None):
+    sections = []
+    sections.append(addGreeting(template, clientAddress.local, welcome=True))
+
+    commands = addCommands(template)
     sections.append(commands)
 
     # Include the same messages as the homepage of the HTTPS distributor:
@@ -88,36 +150,38 @@ def buildWelcomeText(template):
     message  = u"\n\n".join(sections)
     # Add the markdown links at the end:
     message += strings.EMAIL_REFERENCE_LINKS.get("WELCOME0")
-    message += u"\n"
+    message += u"\n\n"
+    message += addFooter(template, clientAddress)
 
     return message
 
-def buildBridgeAnswer(template):
-    # Give the user their bridges, i.e. the `answer`:
-    message = template.gettext(strings.EMAIL_MISC_TEXT[0]) + u"\n\n" \
-              + template.gettext(strings.EMAIL_MISC_TEXT[1]) + u"\n\n" \
-              + u"%s\n\n"
-    return message
-
-def buildMessage(template):
-    message = None
+def buildAnswerMessage(template, clientAddress=None, answer=None):
     try:
-        message  = buildBridgeAnswer(template)
-        message += buildHowto(template)
+        message  = addGreeting(template, clientAddress.local)
+        message += addBridgeAnswer(template, answer)
+        message += addHowto(template)
         message += u'\n\n'
-        message += buildCommands(template)
+        message += addCommands(template)
+        message += u'\n\n'
+        message += addFooter(template, clientAddress)
     except Exception as error:  # pragma: no cover
         logging.error("Error while formatting email message template:")
         logging.exception(error)
+
     return message
 
-def buildSpamWarning(template):
-    message = None
+def buildSpamWarning(template, clientAddress=None):
+    message = addGreeting(template, clientAddress.local)
+
     try:
-        message = template.gettext(strings.EMAIL_MISC_TEXT[0]) + u"\n\n" \
-                  + template.gettext(strings.EMAIL_MISC_TEXT[2]) + u"\n"
-        message = message % str(MAX_EMAIL_RATE / 3600)
+        message += template.gettext(strings.EMAIL_MISC_TEXT[0])
+        message += u"\n\n"
+        message += template.gettext(strings.EMAIL_MISC_TEXT[2]) \
+                   % str(MAX_EMAIL_RATE / 3600)
+        message += u"\n\n"
+        message += addFooter(template, clientAddress)
     except Exception as error:  # pragma: no cover
         logging.error("Error while formatting email spam template:")
         logging.exception(error)
+
     return message
