@@ -25,8 +25,8 @@ emails is %s hours. All further emails during this time period will be ignored."
     3: _("""\
 COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"""),
     4: _("Welcome to BridgeDB!"),
-    # TRANLATORS: Please DO NOT tranlate the words "transport" or "TYPE".
-    5: _("Currently supported tranport TYPEs:"),
+    # TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
+    5: _("Currently supported transport TYPEs:"),
     6: _("Hey, %s!"),
     7: _("Hello, friend!"),
     8: _("Public Keys"),
@@ -122,7 +122,7 @@ EMAIL_COMMANDS = {
     "get help":             _("Displays this message."),
     "get bridges":          _("Request vanilla bridges."),
     "get ipv6":             _("Request IPv6 bridges."),
-    # TRANLATORS: Please DO NOT tranlate the word the word "TYPE".
+    # TRANSLATORS: Please DO NOT translate the word the word "TYPE".
     "get transport [TYPE]": _("Request a Pluggable Transport by TYPE."),
     "get key":              _("Get a copy of BridgeDB's public GnuPG key."),
     #"subscribe":            _("Subscribe to receive new bridges once per week"),
