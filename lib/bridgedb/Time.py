@@ -47,17 +47,21 @@ class ScheduleBase(object):
 
 
 class IntervalSchedule(ScheduleBase):
-    """An IntervalSchedule splits time into somewhat natural periods,
-       based on hours, days, weeks, or months.
+    """An IntervalSchedule splits time into somewhat natural periods, based on
+    hours, days, weeks, or months.
+
+    :ivar str itype: One of "month", "day", "hour".
+    :ivar int count: How many of the units in :ivar:`itype` belong to each period.
     """
-    ## Fields:
-    ##  itype -- one of "month", "day", "hour".
-    ##  count -- how many of the units in itype belong to each period.
+
     def __init__(self, intervaltype, count):
-        """Create a new IntervalSchedule.
-            intervaltype -- one of month, week, day, hour.
-            count -- how many of the units in intervaltype belong to each
-                     period.
+        """Divide time into intervals of **count** number of **intervaltype**.
+
+        :param str intervaltype: One of ``'month'``, ``'week'``, ``'day'``,
+            or ``'hour'``.
+
+        :param int count: How many of the units in **intervaltype** belong to
+            each period.
         """
         it = intervaltype.lower()
         if it.endswith("s"): it = it[:-1]
@@ -71,8 +75,12 @@ class IntervalSchedule(ScheduleBase):
         self.count = count
 
     def intervalStart(self, when):
-        """Return the time (as an int) of the start of the interval containing
-           'when'."""
+        """Get the start time of the interval that contains **when**.
+
+        :rtype: int
+        :returns: The Unix epoch timestamp for the start time of the interval
+            that contains **when**.
+        """
         if self.itype == 'month':
             # For months, we always start at the beginning of the month.
             tm = time.gmtime(when)
@@ -92,8 +100,7 @@ class IntervalSchedule(ScheduleBase):
             assert False
 
     def getInterval(self, when):
-        """Return a string representing the interval that contains the time
-        **when**.
+        """Get the interval that contains the time **when**.
 
         >>> import calendar
         >>> from bridgedb.Time import IntervalSchedule
@@ -142,15 +149,18 @@ class IntervalSchedule(ScheduleBase):
         elif self.itype == 'hour':
             return self.intervalStart(when) + 3600 * self.count
 
+
 class NoSchedule(ScheduleBase):
-    """A stub-implementation of Schedule that has only one period for
-       all time."""
+    """A Schedule that has only one period for all time."""
+
     def __init__(self):
         pass
+
     def intervalStart(self, when):
         return 0
+
     def getInterval(self, when):
         return "1970"
+
     def nextIntervalStarts(self, when):
         return 2147483647L # INT32_MAX
-
