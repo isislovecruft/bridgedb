@@ -29,7 +29,7 @@ from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
 
 from bridgedb import HTTPServer
-from bridgedb.Time import IntervalSchedule
+from bridgedb.schedule import ScheduledInterval
 
 
 # For additional logger output for debugging, comment out the following:
@@ -518,7 +518,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.root = Resource()
 
         self.dist = DummyIPBasedDistributor()
-        self.sched = IntervalSchedule('hour', 1)
+        self.sched = ScheduledInterval('hour', 1)
         self.nBridgesPerRequest = 2
         self.bridgesResource = HTTPServer.WebResourceBridges(
             self.dist, self.sched, N=2,

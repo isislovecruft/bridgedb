@@ -212,7 +212,7 @@ class MailContext(object):
         :type config: :class:`bridgedb.persistent.Conf`
         :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`.
         :param distributor: DOCDOC
-        :type schedule: :class:`bridgedb.Time.IntervalSchedule`.
+        :type schedule: :class:`bridgedb.schedule.ScheduledInterval`.
         :param schedule: DOCDOC
         """
         self.config = config
@@ -740,7 +740,7 @@ def addServer(config, distributor, schedule):
     :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
-    :type schedule: :class:`bridgedb.Time.IntervalSchedule`
+    :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
     :param schedule: The schedule. XXX: Is this even used?
     """
     context = MailContext(config, distributor, schedule)

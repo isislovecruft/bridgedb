@@ -481,7 +481,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
         :rtupe: :api:`twisted.internet.defer.Deferred`
-        :returns: A deferred wich will callback with a tuple in the following
+        :returns: A deferred which will callback with a tuple in the following
             form:
                 (:type:`bool`, :api:`twisted.web.server.Request`)
             If the CAPTCHA solution was valid, a tuple will contain::
@@ -619,7 +619,7 @@ class WebResourceBridges(resource.Resource):
         :type distributor: :class:`IPBasedDistributor`
         :param distributor: The mechanism to retrieve bridges for this
             distributor.
-        :type schedule: :class:`IntervalSchedule`
+        :type schedule: :class:`~bridgedb.schedule.ScheduledInterval`
         :param schedule: The time period used to tweak the bridge selection
             procedure.
         :param int N: The number of bridges to hand out per query.
@@ -669,7 +669,7 @@ class WebResourceBridges(resource.Resource):
         :returns: A plaintext or HTML response to serve.
         """
         # XXX why are we getting the interval if our distributor might be
-        # using bridgedb.Time.NoSchedule?
+        # using bridgedb.schedule.Unscheduled?
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None

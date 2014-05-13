@@ -17,7 +17,7 @@ from datetime import datetime
 import bridgedb.Bridges
 import bridgedb.Main
 import bridgedb.Dist
-import bridgedb.Time
+import bridgedb.schedule
 import bridgedb.Storage
 import re
 import ipaddr
@@ -768,7 +768,7 @@ def testSuite():
     for module in [ bridgedb.Bridges,
                     bridgedb.Main,
                     bridgedb.Dist,
-                    bridgedb.Time ]:
+                    bridgedb.schedule ]:
         suite.addTest(doctest.DocTestSuite(module))
 
     return suite

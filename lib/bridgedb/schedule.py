@@ -1,11 +1,12 @@
-# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Time -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_schedule -*-
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Nick Mathewson
+#           Isis Lovecruft <isis@torproject.org> 0xa3adb67a2cdb8b35
 # :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2014, Isis Lovecruft
 # :license: see LICENSE for licensing information
-
 
 """This module implements functions for dividing time into chunks."""
 
@@ -212,7 +213,7 @@ class ScheduledInterval(Unscheduled):
         """Get the interval that contains the time **when**.
 
         >>> import calendar
-        >>> from bridgedb.Time import ScheduledInterval
+        >>> from bridgedb.schedule import ScheduledInterval
         >>> sched = ScheduledInterval('month', 1)
         >>> when = calendar.timegm((2007, 12, 12, 0, 0, 0))
         >>> sched.getInterval(when)
