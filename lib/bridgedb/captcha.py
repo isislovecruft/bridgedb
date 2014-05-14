@@ -124,22 +124,28 @@ class Captcha(object):
 
 
 class ReCaptcha(Captcha):
-    """A reCaptcha CAPTCHA.
+    """A CAPTCHA obtained from a remote reCaptcha_ API server.
 
     :ivar str image: The CAPTCHA image.
     :ivar str challenge: The ``'recaptcha_challenge_response'`` HTTP form
-        field to pass to the client along with the CAPTCHA image.
+        field to pass to the client, along with the CAPTCHA image. See
+        :doc:`BridgeDB's captcha.html <templates/captcha.html>` Mako_ template
+        for an example usage.
+    :ivar str publicKey: The public reCaptcha API key.
+    :ivar str secretKey: The private reCaptcha API key.
+
+    .. _reCaptcha: https://code.google.com/p/recaptcha/
+    .. _Mako: http://docs.makotemplates.org/en/latest/syntax.html#page
     """
 
-    def __init__(self, pubkey=None, privkey=None):
+    def __init__(self, publicKey=None, secretKey=None):
         """Create a new ReCaptcha CAPTCHA.
 
-        :param str pubkey: The public reCaptcha API key.
-        :param str privkey: The private reCaptcha API key.
+        :param str publicKey: The public reCaptcha API key.
+        :param str secretKey: The private reCaptcha API key.
         """
-        super(ReCaptcha, self).__init__()
-        self.pubkey = pubkey
-        self.privkey = privkey
+        super(ReCaptcha, self).__init__(publicKey=publicKey,
+                                        secretKey=secretKey)
 
     def get(self):
         """Retrieve a CAPTCHA from the reCaptcha API server.
@@ -154,11 +160,11 @@ class ReCaptcha(Captcha):
             :ivar:`secretKey` are missing.
         :raises HTTPError: If the server returned any HTTP error status code.
         """
-        if not self.pubkey or not self.privkey:
+        if not self.publicKey or not self.secretKey:
             raise CaptchaKeyError('You must supply recaptcha API keys')
 
         urlbase = API_SSL_SERVER
-        form = "/noscript?k=%s" % self.pubkey
+        form = "/noscript?k=%s" % self.publicKey
 
         # Extract and store image from recaptcha
         html = urllib2.urlopen(urlbase + form).read()
@@ -172,27 +178,45 @@ class ReCaptcha(Captcha):
 
 
 class GimpCaptcha(Captcha):
-    """A cached CAPTCHA image which was created with Gimp."""
+    """A locally cached CAPTCHA image which was created with gimp-captcha_.
 
-    def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
+    :ivar str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
+        verifying the client's solution to the CAPTCHA.
+    :ivar str publickey: A PKCS#1 OAEP-padded, public RSA key. This is used to
+        hide the correct CAPTCHA solution within the
+        ``captcha_challenge_field`` HTML form field. That form field is given
+        to the a client along with the :ivar:`image` during the initial
+        CAPTCHA request, and the client *should* give it back to us later
+        during the CAPTCHA solution verification step.
+    :ivar bytes hmacKey: A client-specific HMAC secret key.
+    :ivar str cacheDir: The local directory which pre-generated CAPTCHA images
+        have been stored in. This can be set via the ``GIMP_CAPTCHA_DIR``
+        setting in the config file.
+    :type sched: :class:`bridgedb.schedule.ScheduledInterval`
+    :ivar sched: An time interval. After this much time has passed, the
+        CAPTCHA is considered stale, and all solutions are considered invalid
+        regardless of their correctness.
+
+    .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
+    """
+
+    def __init__(self, publicKey=None, secretKey=None, hmacKey=None,
                  cacheDir=None):
         """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
 
-        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
-            verifying the client's solution to the CAPTCHA.
         :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
             creating the ``captcha_challenge_field`` string to give to a
             client.
+        :param str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
+            verifying the client's solution to the CAPTCHA.
         :param bytes hmacKey: A client-specific HMAC secret key.
         :param str cacheDir: The local directory which pre-generated CAPTCHA
             images have been stored in. This can be set via the
             ``GIMP_CAPTCHA_DIR`` setting in the config file.
-        :raises GimpCaptchaError: if **cacheDir** is not a directory.
-        :raises CaptchaKeyError: if any of **secretKey**, **publicKey**,
-            or **hmacKey** is invalid, or missing.
+        :raises GimpCaptchaError: if :ivar:`cacheDir` is not a directory.
+        :raises CaptchaKeyError: if any of :ivar:`secretKey`,
+            :ivar:`publicKey`, or :ivar:`hmacKey` are invalid or missing.
         """
-        super(GimpCaptcha, self).__init__()
-
         if not cacheDir or not os.path.isdir(cacheDir):
             raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
                                    % cacheDir)
@@ -201,10 +225,10 @@ class GimpCaptcha(Captcha):
                 "Invalid key supplied to GimpCaptcha: SK=%r PK=%r HMAC=%r"
                 % (secretKey, publicKey, hmacKey))
 
-        self.secretKey = secretKey
-        self.publicKey = publicKey
-        self.cacheDir = cacheDir
+        super(GimpCaptcha, self).__init__(publicKey=publicKey,
+                                          secretKey=secretKey)
         self.hmacKey = hmacKey
+        self.cacheDir = cacheDir
         self.answer = None
 
     @classmethod
@@ -215,7 +239,7 @@ class GimpCaptcha(Captcha):
             ``'captcha_challenge_field'`` HTTP form field.
         :param str solution: The client's proposed solution to the CAPTCHA
             that they were presented with.
-        :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
+        :param str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
             verifying the client's solution to the CAPTCHA.
         :param bytes hmacKey: A private key for generating HMACs.
         :rtype: bool
@@ -248,22 +272,51 @@ class GimpCaptcha(Captcha):
             return False
 
     def createChallenge(self, answer):
-        """Encrypt the CAPTCHA **answer** and HMAC the encrypted data.
+        """Encrypt-then-HMAC the CAPTCHA **answer**.
 
-        Take a string containing the answer to a CAPTCHA and encrypts it to
-        :attr:`publicKey`. The resulting encrypted blob is then HMACed with a
-        client-specific :attr:`hmacKey`. These two strings are then joined
-        together in the form:
+        A challenge string consists of a URL-safe, base64-encoded string which
+        contains an ``HMAC`` concatenated with an ``ENC_BLOB``, in the
+        following form::
 
-                HMAC ";" ENCRYPTED_ANSWER
+            CHALLENGE := B64( HMAC | ENC_BLOB )
+            ENC_BLOB := RSA_ENC( ANSWER_BLOB )
+            ANSWER_BLOB := ( TIMESTAMP | ANSWER )
 
-        where the HMAC MUST be the first 20 bytes. Lastly base64-encoded (in a
-        URL safe manner).
+        where
+          * ``B64`` is a URL-safe base64-encode function,
+          * ``RSA_ENC`` is the PKCS#1 RSA-OAEP encryption function,
+          * and the remaining feilds are specified as follows:
+
+        +-------------+--------------------------------------------+----------+
+        | Field       | Description                                | Length   |
+        +=============+============================================+==========+
+        | HMAC        | An HMAC of the ``ENC_BLOB``, created with  | 20 bytes |
+        |             | the client-specific :ivar:`hmacKey`, by    |          |
+        |             | applying :func:`~crypto.getHMAC` to the    |          |
+        |             | ``ENC_BLOB``.                              |          |
+        +-------------+--------------------------------------------+----------+
+        | ENC_BLOB    | An encrypted ``ANSWER``, created with      | varies   |
+        |             | a PKCS#1 OAEP-padded RSA :ivar:`publicKey`.|          |
+        +-------------+--------------------------------------------+----------+
+        | ANSWER      | A string containing answer to this         | 8 bytes  |
+        |             | CAPTCHA :ivar:`image`.                     |          |
+        +-------------+--------------------------------------------+----------+
+
+        The steps taken to produce a ``CHALLENGE`` are then:
+
+          1. Encrypt the ``ANSWER`` to :ivar:`publicKey` to create
+             the ``ENC_BLOB``.
+
+          2. Use the client-specific :ivar:`hmacKey` to apply the
+             :func:`~crypto.getHMAC` function to the ``ENC_BLOB``, obtaining
+             an ``HMAC``.
+
+          3. Create the final ``CHALLENGE`` string by concatenating the
+             ``HMAC`` and ``ENC_BLOB``, then base64-encoding the result.
 
         :param str answer: The answer to a CAPTCHA.
         :rtype: str
-        :returns: An HMAC of, as well as a string containing the URL-safe,
-            base64-encoded encrypted **answer**.
+        :returns: A challenge string.
         """
         encrypted = self.publicKey.encrypt(answer)
         hmac = crypto.getHMAC(self.hmacKey, encrypted)

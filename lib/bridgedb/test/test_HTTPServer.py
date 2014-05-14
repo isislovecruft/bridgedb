@@ -274,9 +274,9 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         # (None, None) is the (distributor, scheduleInterval):
         self.protectedResource = HTTPServer.WebResourceBridges(None, None)
         self.captchaResource = HTTPServer.ReCaptchaProtectedResource(
-            recaptchaPrivKey='42',
-            recaptchaPubKey='23',
-            remoteip='111.111.111.111',
+            publicKey='23',
+            secretKey='42',
+            remoteIP='111.111.111.111',
             useForwardedHeader=True,
             protectedResource=self.protectedResource)
 
@@ -365,7 +365,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
 
     def test_getRemoteIP_useRandomIP(self):
         """Check that removing our remoteip setting produces a random IP."""
-        self.captchaResource.recaptchaRemoteIP = None
+        self.captchaResource.remoteIP = None
         ip = self.captchaResource.getRemoteIP()
         realishIP = ipaddr.IPv4Address(ip).compressed
         self.assertTrue(realishIP)
