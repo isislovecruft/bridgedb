@@ -1,4 +1,20 @@
 # -*- coding: utf-8; test-case-name: bridgedb.test.test_email_request; -*-
+#_____________________________________________________________________________
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Nick Mathewson <nickm@torproject.org>
+#           Isis Lovecruft <isis@torproject.org> 0xA3ADB67A2CDB8B35
+#           Matthew Finkel <sysrqb@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2013-2014, Isis Lovecruft
+# :license: see LICENSE for licensing information
+#_____________________________________________________________________________
+
+"""Classes for parsing and storing information about requests for bridges
+which are sent to the email distributor.
+"""
 
 from __future__ import print_function
 from __future__ import unicode_literals
