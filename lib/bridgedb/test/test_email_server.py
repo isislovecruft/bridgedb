@@ -21,9 +21,9 @@ import types
 
 from bridgedb.Dist import EmailBasedDistributor
 from bridgedb.email import server
-from bridgedb.Time import NoSchedule
 from bridgedb.parse.addr import BadEmail
 from bridgedb.persistent import Conf
+from bridgedb.schedule import Unscheduled
 from bridgedb.test.test_HTTPServer import DummyBridge
 from bridgedb.test.util import fileCheckDecorator
 
@@ -73,7 +73,7 @@ def _createMailContext(config=None, distributor=None):
             domainmap=config.EMAIL_DOMAIN_MAP,
             domainrules=config.EMAIL_DOMAIN_RULES)
 
-    context = server.MailContext(config, distributor, NoSchedule())
+    context = server.MailContext(config, distributor, Unscheduled())
     return context
 
 
@@ -426,4 +426,4 @@ class EmailServerServiceTests(unittest.TestCase):
         self.skip = True
         raise unittest.SkipTest("Not finished yet")
         from twisted.internet import reactor
-        server.addServer(self.config, self.distributor, NoSchedule)
+        server.addServer(self.config, self.distributor, Unscheduled)

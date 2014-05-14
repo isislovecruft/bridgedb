@@ -39,6 +39,7 @@ import bridgedb.Main
 import bridgedb.persistent
 import bridgedb.runner
 import bridgedb.safelog
+import bridgedb.schedule
 import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.strings

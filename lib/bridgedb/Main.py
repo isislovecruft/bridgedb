@@ -20,12 +20,12 @@ from twisted.internet import reactor
 from bridgedb import crypto
 from bridgedb import persistent
 from bridgedb import safelog
+from bridgedb import schedule
 from bridgedb import util
 from bridgedb.parse import options
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
-import bridgedb.Time as Time
 import bridgedb.Storage
 
 
@@ -590,12 +590,12 @@ def startup(options):
 
     # Configure all servers:
     if config.HTTPS_DIST and config.HTTPS_SHARE:
-        #webSchedule = Time.IntervalSchedule("day", 2)
-        webSchedule = Time.NoSchedule()
+        #webSchedule = schedule.ScheduledInterval("day", 2)
+        webSchedule = schedule.Unscheduled()
         HTTPServer.addWebServer(config, ipDistributor, webSchedule)
     if config.EMAIL_DIST and config.EMAIL_SHARE:
-        #emailSchedule = Time.IntervalSchedule("day", 1)
-        emailSchedule = Time.NoSchedule()
+        #emailSchedule = schedule.ScheduledInterval("day", 1)
+        emailSchedule = schedule.Unscheduled()
         addSMTPServer(config, emailDistributor, emailSchedule)
 
     # Actually run the servers.

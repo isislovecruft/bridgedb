@@ -19,6 +19,7 @@ BridgeDB Package and Module Documentation
     bridgedb.persistent
     bridgedb.runner
     bridgedb.safelog
+    bridgedb.schedule
     bridgedb.Stability
     bridgedb.Storage
     bridgedb.strings
