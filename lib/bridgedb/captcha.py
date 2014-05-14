@@ -82,6 +82,11 @@ class ICaptcha(Interface):
         "A string containing the contents of a CAPTCHA image file.")
     challenge = Attribute(
         "A unique string associated with the dispursal of this CAPTCHA.")
+    publicKey = Attribute(
+        "A public key used for encrypting CAPTCHA challenge strings.")
+    secretKey = Attribute(
+        "A private key used for decrypting challenge strings during CAPTCHA"
+        "solution verification.")
 
     def get():
         """Retrieve a new CAPTCHA image."""
@@ -92,15 +97,21 @@ class Captcha(object):
 
     :ivar str image: The CAPTCHA image.
     :ivar str challenge: A challenge string which should permit checking of
-        the client's CAPTCHA solution in some manner. This should be passed
-        along to the client with the CAPTCHA image.
+        the client's CAPTCHA solution in some manner. In stateless protocols
+        such as HTTP, this should be passed along to the client with the
+        CAPTCHA image.
+    :ivar publicKey: A public key used for encrypting CAPTCHA challenge strings.
+    :ivar secretKey: A private key used for decrypting challenge strings during
+        CAPTCHA solution verification.
     """
     implements(ICaptcha)
 
-    def __init__(self):
+    def __init__(self, publicKey=None, secretKey=None):
         """Obtain a new CAPTCHA for a client."""
         self.image = None
         self.challenge = None
+        self.publicKey = publicKey
+        self.secretKey = secretKey
 
     def get(self):
         return self.image
