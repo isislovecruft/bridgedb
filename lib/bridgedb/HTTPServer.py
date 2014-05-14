@@ -906,6 +906,7 @@ def addWebServer(cfg, dist, sched):
         httpdist.putChild('bridges', bridges)
 
     site = server.Site(httpdist)
+    site.displayTracebacks = False
 
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
