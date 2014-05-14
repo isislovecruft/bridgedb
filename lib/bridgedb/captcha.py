@@ -114,7 +114,13 @@ class Captcha(object):
         self.secretKey = secretKey
 
     def get(self):
-        return self.image
+        """Retrieve a new CAPTCHA image and its associated challenge string.
+
+        The image and challenge will be stored as :ivar:`image` and
+        :ivar:`challenge, respectively.
+        """
+        self.image = None
+        self.challenge = None
 
 
 class ReCaptcha(Captcha):
