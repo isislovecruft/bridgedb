@@ -26,7 +26,7 @@ class IBridgeRequest(Interface):
     """Interface specification of client options for requested bridges."""
 
     addressClass = Attribute(
-        "The IP version of bridges addresses to distribute to the client.")
+        "The IP version of bridge addresses to distribute to the client.")
     filters = Attribute(
         "A list of callables used to filter bridges from a hashring.")
     transports = Attribute(
