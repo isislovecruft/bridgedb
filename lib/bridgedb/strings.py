@@ -27,6 +27,15 @@ COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"""),
     4: _("Welcome to BridgeDB!"),
     # TRANLATORS: Please DO NOT tranlate the words "transport" or "TYPE".
     5: _("Currently supported tranport TYPEs:"),
+    6: _("Hey, %s!"),
+    7: _("Hello, friend!"),
+    8: _("Public Keys"),
+    # TRANSLATORS: This string will end up saying something like:
+    # "This email was generated with rainbows, unicorns, and sparkles
+    #  for alice@example.com on Friday, 09 May, 2014 at 18:59:39."
+    9: _("""\
+This email was generated with rainbows, unicorns, and sparkles
+for %s on %s at %s."""),
 }
 
 WELCOME = {

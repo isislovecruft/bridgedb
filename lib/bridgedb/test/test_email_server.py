@@ -154,7 +154,7 @@ class CreateResponseBodyTests(unittest.TestCase):
 
     def _getIncomingLines(self, clientAddress="user@example.com"):
         """Generate the lines of an incoming email from **clientAddress**."""
-        self.toAddress = clientAddress
+        self.toAddress = server.smtp.Address(clientAddress)
         lines = [
             "From: %s" % clientAddress,
             "To: bridges@localhost",
