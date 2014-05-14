@@ -98,6 +98,7 @@ class Captcha(object):
     implements(ICaptcha)
 
     def __init__(self):
+        """Obtain a new CAPTCHA for a client."""
         self.image = None
         self.challenge = None
 
