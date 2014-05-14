@@ -88,7 +88,7 @@ class ReCaptchaTests(unittest.TestCase):
     def test_get_noKeys(self):
         """ReCaptcha.get() without API keys should fail."""
         c = captcha.ReCaptcha()
-        self.assertRaises(captcha.ReCaptchaKeyError, c.get)
+        self.assertRaises(captcha.CaptchaKeyError, c.get)
 
 
 class GimpCaptchaTests(unittest.TestCase):
@@ -106,23 +106,23 @@ class GimpCaptchaTests(unittest.TestCase):
 
     def test_init_noSecretKey(self):
         """Calling GimpCaptcha.__init__() without a secret key parameter should raise
-        a GimpCaptchaKeyError.
+        a CaptchaKeyError.
         """
-        self.assertRaises(captcha.GimpCaptchaKeyError, captcha.GimpCaptcha,
+        self.assertRaises(captcha.CaptchaKeyError, captcha.GimpCaptcha,
                           None, self.publik, self.hmacKey, self.cacheDir)
 
     def test_init_noPublicKey(self):
-        """__init__() without publicKey should raise a GimpCaptchaKeyError."""
-        self.assertRaises(captcha.GimpCaptchaKeyError, captcha.GimpCaptcha,
+        """__init__() without publicKey should raise a CaptchaKeyError."""
+        self.assertRaises(captcha.CaptchaKeyError, captcha.GimpCaptcha,
                           self.sekrit, None, self.hmacKey, self.cacheDir)
 
     def test_init_noHMACKey(self):
-        """__init__() without hmacKey should raise a GimpCaptchaKeyError."""
-        self.assertRaises(captcha.GimpCaptchaKeyError, captcha.GimpCaptcha,
+        """__init__() without hmacKey should raise a CaptchaKeyError."""
+        self.assertRaises(captcha.CaptchaKeyError, captcha.GimpCaptcha,
                           self.sekrit, self.publik, None, self.cacheDir)
 
     def test_init_noCacheDir(self):
-        """__init__() without cacheDir should raise a GimpCaptchaKeyError."""
+        """__init__() without cacheDir should raise a CaptchaKeyError."""
         self.assertRaises(captcha.GimpCaptchaError, captcha.GimpCaptcha,
                           self.sekrit, self.publik, self.hmacKey, None)
 

@@ -68,14 +68,11 @@ from bridgedb import crypto
 from bridgedb.txrecaptcha import API_SSL_SERVER
 
 
-class ReCaptchaKeyError(Exception):
-    """Exception raised when recaptcha API keys are not supplied."""
+class CaptchaKeyError(Exception):
+    """Raised if a CAPTCHA system's keys are invalid or missing."""
 
 class GimpCaptchaError(Exception):
     """General exception raised when a Gimp CAPTCHA cannot be retrieved."""
-
-class GimpCaptchaKeyError(ValueError):
-    """Raised when there is a problem with one of the Gimp CAPTCHA keys."""
 
 
 class ICaptcha(Interface):
@@ -135,12 +132,12 @@ class ReCaptcha(Captcha):
         stored at ``ReCaptcha.image`` and the challenge string at
         ``ReCaptcha.challenge``.
 
-        :raises ReCaptchaKeyError: If either the :ivar:`pubkey` or
-            :ivar:`privkey` are missing.
+        :raises CaptchaKeyError: If either the :ivar:`publicKey` or
+            :ivar:`secretKey` are missing.
         :raises HTTPError: If the server returned any HTTP error status code.
         """
         if not self.pubkey or not self.privkey:
-            raise ReCaptchaKeyError('You must supply recaptcha API keys')
+            raise CaptchaKeyError('You must supply recaptcha API keys')
 
         urlbase = API_SSL_SERVER
         form = "/noscript?k=%s" % self.pubkey
@@ -173,7 +170,7 @@ class GimpCaptcha(Captcha):
             images have been stored in. This can be set via the
             ``GIMP_CAPTCHA_DIR`` setting in the config file.
         :raises GimpCaptchaError: if **cacheDir** is not a directory.
-        :raises GimpCaptchaKeyError: if any of **secretKey**, **publicKey**,
+        :raises CaptchaKeyError: if any of **secretKey**, **publicKey**,
             or **hmacKey** is invalid, or missing.
         """
         super(GimpCaptcha, self).__init__()
@@ -182,7 +179,7 @@ class GimpCaptcha(Captcha):
             raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
                                    % cacheDir)
         if not (publicKey and secretKey and hmacKey):
-            raise GimpCaptchaKeyError(
+            raise CaptchaKeyError(
                 "Invalid key supplied to GimpCaptcha: SK=%r PK=%r HMAC=%r"
                 % (secretKey, publicKey, hmacKey))
 
