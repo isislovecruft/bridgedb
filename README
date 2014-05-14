@@ -166,7 +166,7 @@ bridgedb.conf:
 
     RECAPTCHA_ENABLED
     RECAPTCHA_PUB_KEY
-    RECAPTCHA_PRIV_KEY
+    RECAPTCHA_SEC_KEY
     
 A [recaptcha.net](https://www.google.com/recaptcha) account is required.
 

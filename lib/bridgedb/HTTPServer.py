@@ -837,7 +837,7 @@ def addWebServer(cfg, dist, sched):
              HTTPS_USE_IP_FROM_FORWARDED_HEADER
              RECAPTCHA_ENABLED
              RECAPTCHA_PUB_KEY
-             RECAPTCHA_PRIV_KEY
+             RECAPTCHA_SEC_KEY
              RECAPTCHA_REMOTEIP
              GIMP_CAPTCHA_ENABLED
              GIMP_CAPTCHA_DIR
@@ -864,7 +864,7 @@ def addWebServer(cfg, dist, sched):
 
     if cfg.RECAPTCHA_ENABLED:
         protected = ReCaptchaProtectedResource(
-                recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
+                recaptchaPrivKey=cfg.RECAPTCHA_SEC_KEY,
                 recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
                 remoteip=cfg.RECAPTCHA_REMOTEIP,
                 useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
