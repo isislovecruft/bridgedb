@@ -39,6 +39,7 @@
       \_ GimpCaptcha - Class for obtaining a CAPTCHA from a local cache.
           |- hmacKey - A client-specific key for HMAC generation.
           |- cacheDir - The path to the local CAPTCHA cache directory.
+          |- sched - A class for timing out CAPTCHAs after an interval.
           \_ get() - Get a CAPTCHA image from the cache and create a challenge.
 
 ..
@@ -58,6 +59,7 @@ from base64 import urlsafe_b64decode
 import logging
 import random
 import os
+import time
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
@@ -65,8 +67,12 @@ from BeautifulSoup import BeautifulSoup
 from zope.interface import Interface, Attribute, implements
 
 from bridgedb import crypto
+from bridgedb import schedule
 from bridgedb.txrecaptcha import API_SSL_SERVER
 
+
+class CaptchaExpired(ValueError):
+    """Raised when a client's CAPTCHA is too stale."""
 
 class CaptchaKeyError(Exception):
     """Raised if a CAPTCHA system's keys are invalid or missing."""
@@ -200,6 +206,8 @@ class GimpCaptcha(Captcha):
     .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
     """
 
+    sched = schedule.ScheduledInterval('minutes', 30)
+
     def __init__(self, publicKey=None, secretKey=None, hmacKey=None,
                  cacheDir=None):
         """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
@@ -242,37 +250,52 @@ class GimpCaptcha(Captcha):
         :param str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
             verifying the client's solution to the CAPTCHA.
         :param bytes hmacKey: A private key for generating HMACs.
+        :raises CaptchaExpired: if the **solution** was for a stale CAPTCHA.
         :rtype: bool
-        :returns: True if the CAPTCHA solution was correct.
+        :returns: ``True`` if the CAPTCHA solution was correct and not
+            stale. ``False`` otherwise.
         """
-        validHMAC = False
+        hmacIsValid = False
 
         if not solution:
-            return validHMAC
+            return hmacIsValid
 
         logging.debug("Checking CAPTCHA solution %r against challenge %r"
                       % (solution, challenge))
         try:
             decoded = urlsafe_b64decode(challenge)
-            hmac = decoded[:20]
-            original = decoded[20:]
-            verified = crypto.getHMAC(hmacKey, original)
-            validHMAC = verified == hmac
+            hmacFromBlob = decoded[:20]
+            encBlob = decoded[20:]
+            hmacNew = crypto.getHMAC(hmacKey, encBlob)
+            hmacIsValid = hmacNew == hmacFromBlob
         except Exception:
             return False
         finally:
-            if validHMAC:
+            if hmacIsValid:
                 try:
-                    decrypted = secretKey.decrypt(original)
+                    answerBlob = secretKey.decrypt(encBlob)
+
+                    timestamp = answerBlob[:12].lstrip('0')
+                    then = cls.sched.nextIntervalStarts(int(timestamp))
+                    now = int(time.time())
+                    answer = answerBlob[12:]
                 except Exception as error:
                     logging.warn(error.message)
                 else:
-                    if solution.lower() == decrypted.lower():
+                    # If the beginning of the 'next' interval (the interval
+                    # after the one when the CAPTCHA timestamp was created)
+                    # has already passed, then the CAPTCHA is stale.
+                    if now >= then:
+                        exp = schedule.fromUnixSeconds(then).isoformat(sep=' ')
+                        raise CaptchaExpired("Solution %r was for a CAPTCHA "
+                                             "which already expired at %s."
+                                             % (solution, exp))
+                    if solution.lower() == answer.lower():
                         return True
             return False
 
     def createChallenge(self, answer):
-        """Encrypt-then-HMAC the CAPTCHA **answer**.
+        """Encrypt-then-HMAC a timestamp plus the CAPTCHA **answer**.
 
         A challenge string consists of a URL-safe, base64-encoded string which
         contains an ``HMAC`` concatenated with an ``ENC_BLOB``, in the
@@ -295,8 +318,14 @@ class GimpCaptcha(Captcha):
         |             | applying :func:`~crypto.getHMAC` to the    |          |
         |             | ``ENC_BLOB``.                              |          |
         +-------------+--------------------------------------------+----------+
-        | ENC_BLOB    | An encrypted ``ANSWER``, created with      | varies   |
+        | ENC_BLOB    | An encrypted ``ANSWER_BLOB``, created with | varies   |
         |             | a PKCS#1 OAEP-padded RSA :ivar:`publicKey`.|          |
+        +-------------+--------------------------------------------+----------+
+        | ANSWER_BLOB | Contains the concatenated ``TIMESTAMP``    | varies   |
+        |             | and ``ANSWER``.                            |          |
+        +-------------+--------------------------------------------+----------+
+        | TIMESTAMP   | A Unix Epoch timestamp, in seconds,        | 12 bytes |
+        |             | left-padded with "0"s.                     |          |
         +-------------+--------------------------------------------+----------+
         | ANSWER      | A string containing answer to this         | 8 bytes  |
         |             | CAPTCHA :ivar:`image`.                     |          |
@@ -304,25 +333,33 @@ class GimpCaptcha(Captcha):
 
         The steps taken to produce a ``CHALLENGE`` are then:
 
-          1. Encrypt the ``ANSWER`` to :ivar:`publicKey` to create
-             the ``ENC_BLOB``.
+          1. Create a ``TIMESTAMP``, and pad it on the left with ``0``s to 12
+             bytes in length.
 
-          2. Use the client-specific :ivar:`hmacKey` to apply the
+          2. Next, take the **answer** to this CAPTCHA :ivar:`image: and
+             concatenate the padded ``TIMESTAMP`` and the ``ANSWER``, forming
+             an ``ANSWER_BLOB``.
+
+          3. Encrypt the resulting ``ANSWER_BLOB`` to :ivar:`publicKey` to
+             create the ``ENC_BLOB``.
+
+          4. Use the client-specific :ivar:`hmacKey` to apply the
              :func:`~crypto.getHMAC` function to the ``ENC_BLOB``, obtaining
              an ``HMAC``.
 
-          3. Create the final ``CHALLENGE`` string by concatenating the
+          5. Create the final ``CHALLENGE`` string by concatenating the
              ``HMAC`` and ``ENC_BLOB``, then base64-encoding the result.
 
         :param str answer: The answer to a CAPTCHA.
         :rtype: str
         :returns: A challenge string.
         """
-        encrypted = self.publicKey.encrypt(answer)
-        hmac = crypto.getHMAC(self.hmacKey, encrypted)
-        challenge = hmac + encrypted
-        encoded = urlsafe_b64encode(challenge)
-        return encoded
+        timestamp = str(int(time.time())).zfill(12)
+        blob = timestamp + answer
+        encBlob = self.publicKey.encrypt(blob)
+        hmac = crypto.getHMAC(self.hmacKey, encBlob)
+        challenge = urlsafe_b64encode(hmac + encBlob)
+        return challenge
 
     def get(self):
         """Get a random CAPTCHA from the cache directory.

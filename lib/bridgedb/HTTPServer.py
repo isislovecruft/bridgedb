@@ -313,14 +313,20 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         :rtupe: bool
         :returns: True, if the CAPTCHA solution was valid; False otherwise.
         """
+        valid = False
         challenge, solution = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
         clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
-        valid = captcha.GimpCaptcha.check(challenge, solution,
-                                          self.secretKey, clientHMACKey)
+
+        try:
+            valid = captcha.GimpCaptcha.check(challenge, solution,
+                                              self.secretKey, clientHMACKey)
+        except captcha.CaptchaExpired as error:
+            logging.warn(error)
+            valid = False
+
         logging.debug("%sorrect captcha from %r: %r."
                       % ("C" if valid else "Inc", clientIP, solution))
-
         return valid
 
     def getCaptchaImage(self, request):
