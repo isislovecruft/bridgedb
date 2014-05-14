@@ -829,14 +829,18 @@ class WebRoot(resource.Resource):
 
 
 def addWebServer(cfg, dist, sched):
-    """Set up a web server.
+    """Set up a web server for HTTP(S)-based bridge distribution.
 
-    :param cfg: A configuration object from :mod:`bridgedb.Main`. Currently,
-         we use these options::
-             HTTPS_N_BRIDGES_PER_ANSWER
+    :type cfg: :class:`bridgedb.persistent.Conf`
+    :param cfg: A configuration object from
+         :mod:`bridgedb.Main`. Currently, we use these options::
              HTTP_UNENCRYPTED_PORT
              HTTP_UNENCRYPTED_BIND_IP
              HTTP_USE_IP_FROM_FORWARDED_HEADER
+             HTTPS_N_BRIDGES_PER_ANSWER
+             HTTPS_INCLUDE_FINGERPRINTS
+             HTTPS_KEY_FILE
+             HTTPS_CERT_FILE
              HTTPS_PORT
              HTTPS_BIND_IP
              HTTPS_USE_IP_FROM_FORWARDED_HEADER
@@ -846,10 +850,17 @@ def addWebServer(cfg, dist, sched):
              RECAPTCHA_REMOTEIP
              GIMP_CAPTCHA_ENABLED
              GIMP_CAPTCHA_DIR
+             GIMP_CAPTCHA_HMAC_KEYFILE
+             GIMP_CAPTCHA_RSA_KEYFILE
     :type dist: :class:`bridgedb.Dist.IPBasedDistributor`
     :param dist: A bridge distributor.
-    :type sched: :class:`bridgedb.Time.IntervalSchedule`
-    :param sched: DOCDOC
+    :type sched: :class:`bridgedb.schedule.ScheduledInterval`
+    :param sched: The scheduled interval at which bridge selection, which
+        are ultimately displayed on the :class:`WebResourceBridges` page, will
+        be shifted.
+    :raises SystemExit: if the servers cannot be started.
+    :rtype: :api:`twisted.web.server.Site`
+    :returns: A webserver.
     """
     httpdist = resource.Resource()
     httpdist.putChild('', WebRoot())
