@@ -14,7 +14,10 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import gpgme
+import io
 import logging
+import math
 import os
 import shutil
 
@@ -81,6 +84,143 @@ class GetKeyTests(unittest.TestCase):
                          key (in hex): %s
                          SEKRIT_KEY (in hex): %s"""
                          % (key.encode('hex'), SEKRIT_KEY.encode('hex')))
+
+
+class LessCrypticGPGMEErrorTests(unittest.TestCase):
+    """Unittests for :class:`bridgedb.crypto.LessCrypticGPGMEError`."""
+
+    def test_error1(self):
+        """libgpgme will raise an error when given an io.StringIO for the
+        message or sigfile.
+        """
+        message = io.StringIO(unicode(self.id()))
+        sigfile = io.StringIO()
+
+        lessCryptic = None
+        ctx = gpgme.Context()
+
+        try:
+            ctx.sign(message, sigfile)
+        except gpgme.GpgmeError as error:
+            lessCryptic = crypto.LessCrypticGPGMEError(error)
+
+        self.assertTrue('Invalid argument' in lessCryptic.message)
+
+    def test_noGpgmeErrorArgs(self):
+        """A gpgme.GpgmeError() without error code args should result in a
+        'Could not get error code from gpgme.GpgmeError!' message.
+        """
+        error = gpgme.GpgmeError()
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertEqual(lessCryptic.message,
+                         'Could not get error code from gpgme.GpgmeError!')
+
+    def test_unknownErrorSource(self):
+        """A gpgme.GpgmeError() without a recognisable error source should say
+        that the error source is 'UNKNOWN'.
+        """
+        msg = "These numbers make more sense than libgpgme's error codes."
+        error = gpgme.GpgmeError(math.pi, math.e, msg)
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertSubstring('UNKNOWN', lessCryptic.message)
+        self.assertSubstring(msg, lessCryptic.message)
+
+    def test_unknownErrorCode(self):
+        """A gpgme.GpgmeError() without a recognisable error code should say
+        that the error code is 'UNKNOWN'.
+        """
+        msg = "These numbers make more sense than libgpgme's error codes."
+        error = gpgme.GpgmeError(math.pi, math.e, msg)
+        lessCryptic = crypto.LessCrypticGPGMEError(error)
+        self.assertSubstring('UNKNOWN', lessCryptic.message)
+        self.assertSubstring(msg, lessCryptic.message)
+
+
+class GPGContextTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.crypto.getGPGContext`."""
+
+    timeout = 15
+
+    @fileCheckDecorator
+    def doCopyFile(self, src, dst, description=None):
+        shutil.copy(src, dst)
+
+    def removeRundir(self):
+        """Remove the rundir from the _trial_tmp directory."""
+        if os.path.isdir(self.runDir):
+            shutil.rmtree(self.runDir)
+
+    def makeBadKey(self):
+        """Make a bad keyfile and set its path in our config."""
+        keyfile = os.path.join(self.runDir, 'badkey.asc')
+        with open(keyfile, 'w') as badkey:
+            badkey.write(str('NO PASARAN, DEATH CAKES!'))
+            badkey.flush()
+        self.setKey(keyfile)
+
+    def enableSigning(self, enable=True):
+        """Enable or disable the config setting for email signing."""
+        setattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED', enable)
+
+    def setKey(self, keyfile=''):
+        """Set the config keyfile path to **keyfile**."""
+        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY', keyfile)
+
+    def setUp(self):
+        here          = os.getcwd()
+        topDir        = here.rstrip('_trial_temp')
+        self.runDir   = os.path.join(here, 'rundir')
+        self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
+        self.gpgExpr  = os.path.join(topDir, 'gnupghome',
+                                     'TESTING.subkeys.sec.EXPIRED-2013-09-11')
+
+        if not os.path.isdir(self.runDir):
+            os.makedirs(self.runDir)
+
+        self.config = Conf()
+        self.enableSigning()
+        self.addCleanup(self.enableSigning)
+        self.addCleanup(self.removeRundir)
+
+    def test_getGPGContext_good_keyfile(self):
+        """Test EmailServer.getGPGContext() with a good key filename."""
+        self.setKey(self.gpgFile)
+        ctx = crypto.getGPGContext(self.config)
+        self.assertIsInstance(ctx, gpgme.Context)
+
+    def test_getGPGContext_missing_keyfile(self):
+        """Test EmailServer.getGPGContext() with a missing key filename."""
+        self.setKey('missing-keyfile.asc')
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)
+
+    def test_getGPGContext_bad_keyfile(self):
+        """Test EmailServer.getGPGContext() with a missing key filename."""
+        self.makeBadKey()
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)
+
+    def test_getGPGContext_expired_keyfile(self):
+        """getGPGContext() with an expired key should return None."""
+        self.setKey(self.gpgExpr)
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)
+
+    def test_getGPGContext_signing_disabled(self):
+        """getGPGContext() with signing disabled should return None."""
+        self.setKey(self.gpgFile)
+        self.enableSigning(False)
+        ctx = crypto.getGPGContext(self.config)
+        self.assertIsNone(ctx)
+
+    def test_getGPGContext_config_signing_missing(self):
+        """getGPGContext() with a missing/unset 'EMAIL_GPG_SIGNING_ENABLED'
+        config line should return None.
+        """
+        self.setKey(self.gpgFile)
+        delattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED')
+        ctx = crypto.getGPGContext(self.config)
+        self.assertIsNone(ctx)
 
 
 class SSLVerifyingContextFactoryTests(unittest.TestCase,
@@ -188,7 +328,7 @@ class GetGPGContextTest(unittest.TestCase):
         here          = os.getcwd()
         topDir        = here.rstrip('_trial_temp')
         self.runDir   = os.path.join(here, 'rundir')
-        self.gpgMoved = os.path.join(self.runDir, 'TESTING.subkeys.sec')
+        self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
         self.gpgFile  = os.path.join(topDir, 'gnupghome',
                                      'TESTING.subkeys.sec')
 
@@ -211,9 +351,7 @@ class GetGPGContextTest(unittest.TestCase):
 
     def test_getGPGContext_good_keyfile(self):
         """Test EmailServer.getGPGContext() with a good key filename."""
-        self.skip = True
-        raise unittest.SkipTest("see ticket #5264")
-
+        self.setKey(self.gpgMoved)
         ctx = crypto.getGPGContext(self.config)
         self.assertIsInstance(ctx, crypto.gpgme.Context)
 

@@ -56,6 +56,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 
 from twisted.internet import ssl
+from twisted.python.procutils import which
 
 
 #: The hash digest to use for HMACs.
@@ -78,6 +79,12 @@ except TypeError:
         "https://mail.python.org/pipermail/python-dev/2010-October/104917.html")
 else:
     NEW_BUFFER_INTERFACE = True
+
+#: Settings for the GPGME Context and `Crypto Engine`_.
+#: .. _`Crypto Engine`:
+#:      http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
+GPGME_CONTEXT_HOMEDIR = '.gnupg'
+GPGME_CONTEXT_BINARY = which('gpg2') or which('gpg')  # These will be lists
 
 
 class RSAKeyGenerationError(Exception):
@@ -334,6 +341,22 @@ def getGPGContext(cfg):
     ctx = gpgme.Context()
 
     try:
+        binary = GPGME_CONTEXT_BINARY[0]
+    except Exception:
+        # Setting this to ``None`` will cause libgpgme to "use the default
+        # binary", according their docs:
+        binary = None
+
+    try:
+        homedir = os.path.abspath(GPGME_CONTEXT_HOMEDIR)
+        logging.debug("Setting GPG homedir to %r" % homedir)
+        if not os.path.isdir(homedir):
+            os.makedirs(homedir)
+        # This is done to ensure that we don't ever use keys in the process
+        # owner's $GNUPGHOME directory, see:
+        # http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
+        ctx.set_engine_info(gpgme.PROTOCOL_OpenPGP, binary, homedir)
+
         logging.debug("Opening GPG keyfile %s..." % cfg.EMAIL_GPG_SIGNING_KEY)
         keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
         key = ctx.import_(keyfile)
