@@ -458,8 +458,8 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         """Mask the client's real IP address with a faked one.
 
         The fake client IP address is sent to the reCaptcha server, and it is
-        either the public IP address of bridges.torproject.org (if
-        ``RECAPTCHA_REMOTE_IP`` is configured), or a random IP.
+        either the public IP address of bridges.torproject.org (if the config
+        option ``RECAPTCHA_REMOTE_IP`` is configured), or a random IP.
 
         :rtype: str
         :returns: A fake IP address to report to the reCaptcha API server.
@@ -485,10 +485,13 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
         :rtupe: :api:`twisted.internet.defer.Deferred`
-        :returns: the returned deferred will callback with a tuple of
-                (``bool``, :api:`twisted.web.server.Request`). If the CAPTCHA
-            solution was valid, a tuple will contain ``(True, request)``;
-            otherwise, it will contain ``(False, request)``.
+        :returns: A deferred wich will callback with a tuple in the following
+            form:
+                (:type:`bool`, :api:`twisted.web.server.Request`)
+            If the CAPTCHA solution was valid, a tuple will contain::
+                (True, Request)
+            Otherwise, it will contain::
+                (False, Request)
         """
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
