@@ -144,6 +144,12 @@ class CaptchaProtectedResource(resource.Resource):
         self.resource = protectedResource
 
     def getClientIP(self, request):
+        """Get the client's IP address from the :header:`X-Forwarded-For`
+        header, or from the :api:`request <twisted.web.server.Request>`.
+
+        :rtype: None or str
+        :returns: The client's IP address, if it was obtainable.
+        """
         ip = None
         if self.useForwardedHeader:
             h = request.getHeader("X-Forwarded-For")
