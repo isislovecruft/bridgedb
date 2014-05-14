@@ -302,11 +302,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         self.captchaDir = captchaDir
 
     def checkSolution(self, request):
-        """Process a solved CAPTCHA by sending rehashing the solution together with
-        the client's IP address, and checking that the result matches the challenge.
-
-        The client's IP address is not sent to the ReCaptcha server; instead,
-        a completely random IP is generated and sent instead.
+        """Process a solved CAPTCHA via :meth:`bridgedb.captcha.GimpCaptcha.check`.
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object, including POST arguments which
