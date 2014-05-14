@@ -17,10 +17,30 @@
 
 **Module Overview:**
 
-..
+::
+
   captcha
-   |_ReCaptchaKeyError
-   \_ReCaptcha - Class for obtaining reCaptcha images and challenge strings
+   |- CaptchaExpired - Raised if a solution is given for a stale CAPTCHA.
+   |- CaptchaKeyError - Raised if a CAPTCHA system's keys are invalid/missing.
+   |- GimpCaptchaError - Raised when a Gimp CAPTCHA can't be retrieved.
+   |
+   \_ ICaptcha - Zope Interface specification for a generic CAPTCHA.
+        |
+      Captcha - Generic base class implementation for obtaining a CAPTCHA.
+      |  |- image - The CAPTCHA image.
+      |  |- challenge - A unique string associated with this CAPTCHA image.
+      |  |- publicKey - The public key for this CAPTCHA system.
+      |  |- secretKey - The secret key for this CAPTCHA system.
+      |   \_ get() - Get a new pair of CAPTCHA image and challenge strings.
+      |
+      |- ReCaptcha - Obtain reCaptcha images and challenge strings.
+      |   \_ get() - Request an image and challenge from a reCaptcha API server.
+      |
+      \_ GimpCaptcha - Class for obtaining a CAPTCHA from a local cache.
+          |- hmacKey - A client-specific key for HMAC generation.
+          |- cacheDir - The path to the local CAPTCHA cache directory.
+          \_ get() - Get a CAPTCHA image from the cache and create a challenge.
+
 ..
 
 There are two types of CAPTCHAs which BridgeDB knows how to serve: those
