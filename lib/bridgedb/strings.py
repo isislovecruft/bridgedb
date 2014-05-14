@@ -76,7 +76,7 @@ and any messages which Tor gave out, etc."""),
 }
 
 BRIDGES = {
-    0: _("Bridges"),
+    0: _("Here are your bridge lines:"),
     1: _("Get Bridges!"),
 }
 
@@ -104,10 +104,9 @@ Does your Internet Service Provider (ISP) block or otherwise censor connections
 to the Tor network?"""),
     4: _("""\
 Select 'Yes' and then click 'Next'. To configure your new bridges, copy and
-paste the bridge lines (shown above) into the text input box. Finally, click
-'Connect', and you should be good to go! If you experience trouble, try
-clicking the 'Help' button in the 'Tor Network Settings' wizard for further
-assistance."""),
+paste the bridge lines into the text input box. Finally, click 'Connect', and
+you should be good to go! If you experience trouble, try clicking the 'Help'
+button in the 'Tor Network Settings' wizard for further assistance."""),
 }
 
 EMAIL_COMMANDS = {
@@ -116,8 +115,9 @@ EMAIL_COMMANDS = {
     "get ipv6":             _("Request IPv6 bridges."),
     # TRANLATORS: Please DO NOT tranlate the word the word "TYPE".
     "get transport [TYPE]": _("Request a Pluggable Transport by TYPE."),
-    #"subscribe":            _("Subscribe to receive new bridges once per week")
-    #"unsubscribe":          _("Cancel a subscription to new bridges")
+    "get key":              _("Get a copy of BridgeDB's public GnuPG key."),
+    #"subscribe":            _("Subscribe to receive new bridges once per week"),
+    #"unsubscribe":          _("Cancel a subscription to new bridges"),
 }
 
 #-----------------------------------------------------------------------------
@@ -171,9 +171,10 @@ and so to replace the two ``%s`` format specifiers, you would use this mapping
 like so::
 
 >>> from bridgedb import strings
->>> welcome = strings.WELCOME.get(0)
->>> emailWelcome = welcome.format(strings.EMAIL_SPRINTF.get("WELCOME0"))
->>> emailWelcome
+>>> welcome = strings.WELCOME[0] % strings.EMAIL_SPRINTF["WELCOME0"]
+>>> print welcome.split('\n')[0]
+BridgeDB can provide bridges with several types of Pluggable Transports[0],
+
 """
 
 EMAIL_REFERENCE_LINKS = {

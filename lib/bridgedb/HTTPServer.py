@@ -103,6 +103,22 @@ def replaceErrorPage(error, template_name=None):
                   % (template_name or 'template',
                      mako.exceptions.text_error_template().render()))
 
+    # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+    # any string (regardless of capitalization and/or punctuation):
+    #
+    # "bridge"
+    # "bridges"
+    # "BridgeDB"
+    # "pluggable transport"
+    # "pluggable transports"
+    # "obfs2"
+    # "obfs3"
+    # "scramblesuit"
+    # "fte"
+    # "Tor"
+    # "Tor Browser"
+    # "TBB"
+    #
     errmsg = _("Sorry! Something went wrong with your request.")
     rendered = """<html>
                     <head>
@@ -190,17 +206,24 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        rtl = False
         image, challenge = self.getCaptchaImage(request)
 
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
+            rtl = translations.usingRTLLang(langs)
             # TODO: this does not work for versions of IE < 8.0
             imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(image)
             template = lookup.get_template('captcha.html')
-            rendered = template.render(imgstr=imgstr,
+            rendered = template.render(strings,
+                                       rtl=rtl,
+                                       lang=langs[0],
+                                       imgstr=imgstr,
                                        challenge_field=challenge)
         except Exception as err:
             rendered = replaceErrorPage(err, 'captcha.html')
 
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
 
     def render_POST(self, request):
@@ -220,6 +243,8 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+
         if self.checkSolution(request) is True:
             try:
                 rendered = self.resource.render(request)
@@ -543,15 +568,15 @@ class WebResourceOptions(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('options.html')
+            rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            logging.exception(err)
-
+            rendered = replaceErrorPage(err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return lookup.get_template('options.html').render(rtl=rtl)
+        return rendered
 
     render_POST = render_GET
 
@@ -568,15 +593,15 @@ class WebResourceHowto(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('howto.html')
+            rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            logging.exception(err)
-
+            rendered = replaceErrorPage(err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return lookup.get_template('howto.html').render(rtl=rtl)
+        return rendered
 
     render_POST = render_GET
 
@@ -667,11 +692,6 @@ class WebResourceBridges(resource.Resource):
             if countryCode:
                 logging.debug("Client request from GeoIP CC: %s" % countryCode)
 
-        langs = translations.getLocaleFromHTTPRequest(request)
-        rtl = translations.usingRTLLang(langs)
-        if rtl:
-            logging.debug("Rendering RTL response.")
-
         # XXX separate function again
         format = request.args.get("format", None)
         if format and len(format): format = format[0] # choose the first arg
@@ -733,10 +753,10 @@ class WebResourceBridges(resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges)
 
-        answer = self.renderAnswer(request, bridgeLines, rtl, format)
+        answer = self.renderAnswer(request, bridgeLines, format)
         return answer
 
-    def renderAnswer(self, request, bridgeLines=None, rtl=False, format=None):
+    def renderAnswer(self, request, bridgeLines=None, format=None):
         """Generate a response for a client which includes **bridges**.
 
         The generated response can be plaintext or HTML.
@@ -747,8 +767,6 @@ class WebResourceBridges(resource.Resource):
         :type bridgeLines: list or None
         :param bridgeLines: A list of strings used to configure a Tor client
             to use a bridge.
-        :param bool rtl: If ``True``, the language used for the response to
-            the client should be rendered right-to-left.
         :type format: str or None
         :param format: If ``'plain'``, return a plaintext response. Otherwise,
             use the :file:`bridgedb/templates/bridges.html` template to render
@@ -756,17 +774,21 @@ class WebResourceBridges(resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
+        rtl = False
+
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             rendered = bridgeLines
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
             try:
-                # XXX FIXME the returned page from
-                # ``WebResourceBridgesTests.test_render_GET_RTLlang``
-                # is in Arabic and has `<html lang="en">`! Doh.
+                langs = translations.getLocaleFromHTTPRequest(request)
+                rtl = translations.usingRTLLang(langs)
                 template = lookup.get_template('bridges.html')
-                rendered = template.render(answer=bridgeLines, rtl=rtl)
+                rendered = template.render(strings,
+                                           rtl=rtl,
+                                           lang=langs[0],
+                                           answer=bridgeLines)
             except Exception as err:
                 rendered = replaceErrorPage(err)
 
@@ -788,17 +810,17 @@ class WebRoot(resource.Resource):
         :param request: An incoming request.
         """
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('index.html')
+            rendered = template.render(strings,
+                                       rtl=rtl,
+                                       lang=langs[0])
         except Exception as err:
-            logging.exception(err)
-            logging.error("The gettext files were not properly installed.")
-            logging.info("To install translations, try doing `python " \
-                         "setup.py compile_catalog`.")
+            rendered = replaceErrorPage(err)
 
-        return lookup.get_template('index.html').render(rtl=rtl)
+        return rendered
 
 
 def addWebServer(cfg, dist, sched):
@@ -828,6 +850,8 @@ def addWebServer(cfg, dist, sched):
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
                       static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
+    httpdist.putChild('keys',
+                      static.File(os.path.join(TEMPLATE_DIR, 'bridgedb.asc')))
     httpdist.putChild('assets',
                       static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())

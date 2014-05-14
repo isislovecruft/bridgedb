@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import shutil
 
 import OpenSSL
 
@@ -26,6 +27,8 @@ from twisted.web.test import test_agent as txtagent
 
 from bridgedb import crypto
 from bridgedb import txrecaptcha
+from bridgedb.persistent import Conf
+from bridgedb.test.util import fileCheckDecorator
 
 
 logging.disable(50)
@@ -160,3 +163,68 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
         contextFactory = crypto.SSLVerifyingContextFactory(self.url)
         self.assertIsInstance(contextFactory.getContext(),
                               OpenSSL.SSL.Context)
+
+
+class GetGPGContextTest(unittest.TestCase):
+    """Unittests for :func:`bridgedb.crypto.getGPGContext`."""
+
+    timeout = 15
+
+    @fileCheckDecorator
+    def doCopyFile(self, src, dst, description=None):
+        shutil.copy(src, dst)
+
+    def removeRundir(self):
+        if os.path.isdir(self.runDir):
+            shutil.rmtree(self.runDir)
+
+    def makeBadKey(self):
+        self.setKey(self.badKeyfile)
+
+    def setKey(self, keyfile=''):
+        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY', keyfile)
+
+    def setUp(self):
+        here          = os.getcwd()
+        topDir        = here.rstrip('_trial_temp')
+        self.runDir   = os.path.join(here, 'rundir')
+        self.gpgMoved = os.path.join(self.runDir, 'TESTING.subkeys.sec')
+        self.gpgFile  = os.path.join(topDir, 'gnupghome',
+                                     'TESTING.subkeys.sec')
+
+        if not os.path.isdir(self.runDir):
+            os.makedirs(self.runDir)
+
+        self.badKeyfile = os.path.join(here, 'badkey.asc')
+        with open(self.badKeyfile, 'w') as badkey:
+            badkey.write('NO PASARAN, DEATH CAKES!')
+            badkey.flush()
+
+        self.doCopyFile(self.gpgFile, self.gpgMoved, "GnuPG test keyfile")
+
+        self.config = Conf()
+        setattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED', True)
+        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY',
+                'gnupghome/TESTING.subkeys.sec')
+
+        self.addCleanup(self.removeRundir)
+
+    def test_getGPGContext_good_keyfile(self):
+        """Test EmailServer.getGPGContext() with a good key filename."""
+        self.skip = True
+        raise unittest.SkipTest("see ticket #5264")
+
+        ctx = crypto.getGPGContext(self.config)
+        self.assertIsInstance(ctx, crypto.gpgme.Context)
+
+    def test_getGPGContext_missing_keyfile(self):
+        """Test EmailServer.getGPGContext() with a missing key filename."""
+        self.setKey('missing-keyfile.asc')
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)
+
+    def test_getGPGContext_bad_keyfile(self):
+        """Test EmailServer.getGPGContext() with a missing key filename."""
+        self.makeBadKey()
+        ctx = crypto.getGPGContext(self.config)
+        self.assertTrue(ctx is None)

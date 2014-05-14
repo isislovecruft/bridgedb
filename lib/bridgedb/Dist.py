@@ -41,6 +41,12 @@ class IgnoreEmail(addr.BadEmail):
 class TooSoonEmail(addr.BadEmail):
     """Raised when we got a request from this address too recently."""
 
+class EmailRequestedHelp(Exception):
+    """Raised when a client has emailed requesting help."""
+
+class EmailRequestedKey(Exception):
+    """Raised when an incoming email requested a copy of our GnuPG keys."""
+
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
@@ -393,15 +399,18 @@ class EmailBasedDistributor(Distributor):
         if not bridgeFilterRules:
             bridgeFilterRules=[]
         now = time.time()
-        try:
-            emailaddress = addr.normalizeEmail(emailaddress, self.domainmap,
-                                               self.domainrules)
-        except addr.BadEmail as err:
-            logging.warn(err)
-            return []
 
-        if not emailaddress:
-            return [] #XXXX raise an exception.
+        emailaddr = None
+        try:
+            emailaddr = addr.normalizeEmail(emailaddress,
+                                            self.domainmap,
+                                            self.domainrules)
+            if not emailaddr:
+                raise addr.BadEmail("Couldn't normalize email address: %r"
+                                    % emailaddress)
+        except addr.BadEmail as error:
+            logging.warn(error)
+            return []
 
         with bridgedb.Storage.getDB() as db:
             wasWarned = db.getWarnedEmail(emailaddress)
@@ -410,19 +419,19 @@ class EmailBasedDistributor(Distributor):
             logging.info("Attempting to return for %d bridges for %s..."
                          % (N, emailaddress))
 
-            if lastSaw is not None and lastSaw + MAX_EMAIL_RATE >= now:
-                logging.info("Client %s sent duplicate request within %d seconds."
-                             % (emailaddress, MAX_EMAIL_RATE))
-                if wasWarned:
-                    logging.info(
-                        "Client was already warned about duplicate requests.")
-                    raise IgnoreEmail("Client was warned", emailaddress)
-                else:
-                    logging.info("Sending duplicate request warning.")
-                    db.setWarnedEmail(emailaddress, True, now)
-                    db.commit()
-
-                raise TooSoonEmail("Too many emails; wait till later", emailaddress)
+            if lastSaw is not None:
+                if (lastSaw + MAX_EMAIL_RATE) >= now:
+                    wait = (lastSaw + MAX_EMAIL_RATE) - now
+                    logging.info("Client %s must wait another %d seconds."
+                                 % (emailaddress, wait))
+                    if wasWarned:
+                        raise IgnoreEmail("Client was warned.", emailaddress)
+                    else:
+                        logging.info("Sending duplicate request warning.")
+                        db.setWarnedEmail(emailaddress, True, now)
+                        db.commit()
+                        raise TooSoonEmail("Must wait %d seconds" % wait,
+                                           emailaddress)
 
             # warning period is over
             elif wasWarned:
