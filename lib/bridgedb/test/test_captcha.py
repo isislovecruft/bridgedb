@@ -10,8 +10,9 @@
 """Unittests for the :mod:`bridgedb.captcha` module."""
 
 
-import shutil
 import os
+import shutil
+import time
 
 from base64 import urlsafe_b64decode
 
@@ -170,15 +171,18 @@ class GimpCaptchaTests(unittest.TestCase):
         """The HMAC in createChallenge() return value should be valid."""
         c = captcha.GimpCaptcha(self.publik, self.sekrit, self.hmacKey,
                                 self.cacheDir)
-        answer = 'ThisAnswerShouldDecryptToThis'
-        challenge = c.createChallenge(answer)
+        challenge = c.createChallenge('ThisAnswerShouldDecryptToThis')
         decoded = urlsafe_b64decode(challenge)
         hmac = decoded[:20]
         orig = decoded[20:]
         correctHMAC = crypto.getHMAC(self.hmacKey, orig)
         self.assertEqual(hmac, correctHMAC)
+
         decrypted = self.sekrit.decrypt(orig)
-        self.assertEqual(answer, decrypted)
+        timestamp = int(decrypted[:12].lstrip('0'))
+        # The timestamp should be within 30 seconds of right now.
+        self.assertApproximates(timestamp, int(time.time()), 30)
+        self.assertEqual('ThisAnswerShouldDecryptToThis', decrypted[12:])
 
     def test_get(self):
         """GimpCaptcha.get() should return image and challenge strings."""
