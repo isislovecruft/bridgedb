@@ -551,16 +551,14 @@ class MailMessage(object):
                 return client
 
     def getRecipient(self, incoming):
-        """Find our **address** in a list of ``('NAME', '<ADDRESS>')`` pairs.
+        """Find our address in the recipients list of the **incoming** message.
 
-        If our address isn't found (which can't happen), return the default
-        context :header:`From` address so we can keep on working.
-
-        :param str address: Our email address, as set in the
-            ``EMAIL_SMTP_FROM`` config option.
-        :param list addressList: A list of 2-tuples of strings, the first
-            string is a full name, username, common name, etc., and the second
-            is the entity's email address.
+        :type incoming: :api:`twisted.mail.smtp.rfc822.Message`
+        :param incoming: An incoming ``Message``, i.e. as returned from
+            :meth:`getIncomingMessage`.
+        :rtype: str
+        :return: Our address from the recipients list. If we can't find it
+            return our default ``SMTP_FROM_ADDRESS`` from the config file.
         """
         address = self.context.fromAddr
         addressList = incoming.getaddrlist("To")
