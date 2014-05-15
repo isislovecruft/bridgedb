@@ -457,13 +457,18 @@ class MailResponse(object):
 
 
 class MailMessage(object):
-    """Plugs into the Twisted Mail and receives an incoming message."""
+    """Plugs into the Twisted Mail and receives an incoming message.
+
+    :ivar list lines: A list of lines from an incoming email message.
+    :ivar int nBytes: The number of bytes received thus far.
+    :ivar bool ignoring: If ``True``, we're ignoring the rest of this message
+        because it exceeded :ivar:`MailContext.maximumSize`.
+    """
     implements(smtp.IMessage)
 
     def __init__(self, context, fromCanonical=None):
         """Create a new MailMessage from a MailContext.
 
-        :param list lines: A list of lines from an incoming email message.
         :type context: :class:`MailContext`
         :param context: The configured context for the email server.
         :type canonicalFrom: str or None
