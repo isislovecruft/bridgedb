@@ -1,34 +1,28 @@
 ## -*- coding: utf-8 -*-
+
 <%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
 
 <div class="container-fluid"
      style="width: 96%; align: center; margin: 2%">
   <div class="container-fluid" style="padding: 2%">
   <p>
-    <h2>${_("""Get Bridges!""")}</h2>
+    <h2>${_(strings.BRIDGES[1])}</h2>
   </p>
   </div>
   <div class="container-fluid"
        style="width: 100%; align: center; padding: 2%;">
     <p>
-      ${_(" BridgeDB can provide bridges with several %s types of %s, which can"
-          " help obfuscate your connections to the Tor Network, making it more"
-          " difficult for anyone watching your internet traffic to determine"
-          " that you are using Tor.") % \
+      ${_(strings.WELCOME[0]) % \
          ("""<a href="https://www.torproject.org/docs/pluggable-transports.html">""",
-          """Pluggable Transports</a>""")}
+          """</a>""")}
     </p>
     <p>
-      ${_("Some bridges with IPv6 addresses are also available, though some"
-          " %s aren't IPv6 compatible.") % \
-         ("""Pluggable Transports""")}
+      ${_(strings.WELCOME[1])}
     </p>
+## The '&#8212' char is a literal emdash ('―'), but it's also XML parseable.
     <p>
-      ${_(" Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s"
-          " without any %s %s which maybe doesn't sound as cool, but they can"
-          " still help to circumvent internet censorship in many cases.") % \
-         ("""&#8212""", """Pluggable Transports""", """&#8212""")}
-<!-- The '&#8212' char is a literal emdash ('―'), but it's also XML parseable. -->
+      ${_(strings.WELCOME[2]) % ("&#8212", "&#8212")}
     </p>
     <div class="container-fluid" style="align: center: margin: 2%;">
       <div style="align: center; padding: 5%;">
@@ -37,10 +31,11 @@
             <button class="btn btn-success btn-lg btn-block"
                     type="button"
                     accesskey="j">
-            <!-- TRANSLATORS: Please ignore the '%s' surrounding single
-                  letters at the beginning of words. These are used for
-                  underlining HTML5 accesskeys, for assisting users in
-                  selecting elements. -->
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+##              (These are used to insert HTML5 underlining tags, to mark accesskeys
+##              for disabled users.)
+## TRANSLATORS: Please do NOT translate the word "bridges"!
             ${_("""%sJ%sust give me bridges!""") % ("""<u>""", """</u>""")}
             </button>
           </a>
@@ -64,7 +59,7 @@
         <div class="container-fluid" id="instructions" style="align-content: left;">
           <legend style="font-size: 112%">
             <br />
-            <p>${_("""Please select options for bridge type:""")}</p>
+            <p>${_(strings.OPTIONS[0])}</p>
           </legend>
         </div>
 
@@ -80,7 +75,7 @@
                   <label class="control-label"
                          for="transport"
                           style="text-align: inherit;">
-                    ${_("""Do you need a %s?""") % ("""Pluggable <u>T</u>ransport""")}
+                    ${_(strings.OPTIONS[2]) % ("Pluggable <u>T</u>ransport")}
                   </label>
                   <div class="container-fluid col-lg-4">
                     <div class="btn-group" style="float: left; padding: 2%;">
@@ -93,8 +88,6 @@
                               accesskey="t">
                         ${_("""No""")}
 <option label="none"  value="0"        >${_("none")}</option>
-<!-- TRANSLATORS: Please do not translate the pluggable transport names --
-  --              (obfs2, obfs3, etc)                                   -->
 <option label="obfs2" value="obfs2"              >obfs2</option>
 <option label="obfs3" value="obfs3"   selected   >obfs3</option>
 <option label="scramblesuit" value="scramblesuit">scramblesuit</option>
@@ -103,7 +96,6 @@
   -- "fteproxy" likely has more "brandname recognition" due to              --
   -- https://fteproxy.org/                                                  -->
 <option label="fte"   value="fte"     disabled   >fteproxy</option>
-<option label="meek"  value="meek"    disabled   >meek</option>
                       </select>
                     </div>
                   </div>
@@ -120,7 +112,7 @@
                   <label class="control-label"
                          for="ipv6"
                          style="text-align: inherit;">
-                    ${_("""Do you need IPv6 addresses?""")}
+                    ${_(strings.OPTIONS[1])}
                   </label>
                   <div class="container-fluid col-lg-4">
                     <div class="checkbox"
@@ -133,9 +125,10 @@
                                type="checkbox"
                                value="yes"
                                accesskey="y" />
-                          <!-- TRANSLATORS: Translate "Yes!" as in "Yes! I do
-                               need IPv6 addresses". -->
-                          ${_("""%sY%ses!""") % ("""<u>""", """</u>""")}
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+## TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+                          ${_("""%sY%ses!""") % ("<u>", "</u>")}
                       </div>
                     </div>
                   </div>
@@ -156,7 +149,10 @@
           <p>
             <button class="btn btn-primary btn-lg btn-block"
                     accesskey="g">
-              ${_("""%sG%set Bridges""") % ("""<u>""", """</u>""")}
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+## TRANSLATORS: Please do NOT translate the word "bridge"!
+              ${_("""%sG%set Bridges""") % ("<u>", "</u>")}
             </button>
           </p>
         </div>

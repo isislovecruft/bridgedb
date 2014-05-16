@@ -29,7 +29,7 @@ from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
 
 from bridgedb import HTTPServer
-from bridgedb.Time import IntervalSchedule
+from bridgedb.schedule import ScheduledInterval
 
 
 # For additional logger output for debugging, comment out the following:
@@ -274,9 +274,9 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         # (None, None) is the (distributor, scheduleInterval):
         self.protectedResource = HTTPServer.WebResourceBridges(None, None)
         self.captchaResource = HTTPServer.ReCaptchaProtectedResource(
-            recaptchaPrivKey='42',
-            recaptchaPubKey='23',
-            remoteip='111.111.111.111',
+            publicKey='23',
+            secretKey='42',
+            remoteIP='111.111.111.111',
             useForwardedHeader=True,
             protectedResource=self.protectedResource)
 
@@ -365,7 +365,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
 
     def test_getRemoteIP_useRandomIP(self):
         """Check that removing our remoteip setting produces a random IP."""
-        self.captchaResource.recaptchaRemoteIP = None
+        self.captchaResource.remoteIP = None
         ip = self.captchaResource.getRemoteIP()
         realishIP = ipaddr.IPv4Address(ip).compressed
         self.assertTrue(realishIP)
@@ -518,7 +518,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.root = Resource()
 
         self.dist = DummyIPBasedDistributor()
-        self.sched = IntervalSchedule('hour', 1)
+        self.sched = ScheduledInterval('hour', 1)
         self.nBridgesPerRequest = 2
         self.bridgesResource = HTTPServer.WebResourceBridges(
             self.dist, self.sched, N=2,
@@ -596,7 +596,8 @@ class WebResourceBridgesTests(unittest.TestCase):
         page = self.bridgesResource.render(request)
         self.assertSubstring("direction: rtl", page)
         self.assertSubstring(
-            "إذا لم يعمل تور بنجاح معك، يجب عليك ارسال بريد إلكتروني إلي", page)
+            # "I need an alternative way to get bridges!"
+            "انا بحاجة إلى وسيلة بديلة للحصول على الجسور!", page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:

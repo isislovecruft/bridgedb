@@ -1,6 +1,10 @@
 ## -*- coding: utf-8 -*-
+
+<%namespace name="base" file="base.html" inheritable="True"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <title>BridgeDB</title>
@@ -50,34 +54,33 @@ span {
     </div>
 
 
-${self.body()}
+${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
 
 
 <div class="faq">
   <div class="row-fluid marketing">
 
-    <h4>${_("What are bridges?")}</h4>
-    <p>${_("%s Bridge relays %s are Tor relays that help you circumvent "
-           "censorship.") % \
-           ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
+    <h4>${_(strings.FAQ[0])}</h4>
+    <p>
+    ${_(strings.FAQ[1]) % \
+       ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
     </p>
 
-    <h4>${_("I need an alternative way of getting bridges!")}</h4>
-    <p>${_("Another way to find public bridge addresses is to send an email "
-           "(from a %s or a %s address) to %s with the line 'get bridges' by "
-           "itself in the body of the mail.""") % \
-            ("""<a href="https://mail.google.com/">gmail</a>""",
-             """<a href="https://mail.yahoo.com/">yahoo</a>""",
-             """<a href="mailto:bridges@bridges.torproject.org">
-             bridges@bridges.torproject.org</a>""")}</p>
+    <h4>${_(strings.OTHER_DISTRIBUTORS[0])}</h4>
+    <p>
+    ${_(strings.OTHER_DISTRIBUTORS[1]) % \
+       ("""<a href="mailto:bridges@torproject.org">bridges@torproject.org</a>""",
+        """<a href="https://mail.google.com/">Gmail</a>""",
+        """<a href="https://mail.yahoo.com/">Yahoo</a>""")}
+    </p>
 
-    <h4>${_("My bridges don't work! I need help!")}</h4>
-    <p>${_("If your Tor doesn't work, you should email %s. Try including as "
-           "much info about your case as you can, including the list of "
-           "bridges you used, the bundle filename/version you used, the "
-           "messages that Tor gave out, etc.") \
-                % ("""<a href="mailto:help@rt.torproject.org">
-                   help@rt.torproject.org</a>""")}</p>
+    <h4>${_(strings.HELP[0])}</h4>
+    <p>
+      ${_(strings.HELP[1]) % \
+         ("""<a href="mailto:help@rt.torproject.org">help@rt.torproject.org</a>""")}
+      ${_(strings.HELP[2])}
+    </p>
+
   </div>
 </div>
 <hr>
@@ -87,12 +90,14 @@ ${self.body()}
   <p>
     <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">${_("Report a Bug")}</a>
     &middot
-    <a href="https://gitweb.torproject.org/bridgedb.git/blob_plain/HEAD:/CHANGELOG">
-        ${_("Change Log")}</a>
-    &middot
     <a href="https://gitweb.torproject.org/bridgedb.git">${_("Source Code")}</a>
     &middot
+    <a href="https://gitweb.torproject.org/bridgedb.git/blob/HEAD:/CHANGELOG">
+        ${_("Changelog")}</a>
+    &middot
     <a href="mailto:help@rt.torproject.org">${_("Contact")}</a>
+    &middot
+    <a href="../keys">${_("Public Keys")}</a>
   </p>
 </div>
 

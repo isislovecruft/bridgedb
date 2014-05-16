@@ -1,16 +1,48 @@
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_parse_versions ; -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
+#           please also see AUTHORS file
+# :copyright: (c) 2014 Isis Lovecruft
+#             (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2007-2014, all entities within the AUTHORS file
+# :license: see included LICENSE for information
 
+"""Parsers for Tor version number strings.
+
+.. py:module:: bridgedb.parse.versions
+    :synopsis: Parsers for Tor version number strings.
+
+bridgedb.parse.versions
+=======================
+::
+
+  Version - Holds, parses, and does comparison operations for package
+            version numbers.
+..
+"""
 
 from twisted.python import util as txutil
+
+
+class InvalidVersionStringFormat(ValueError):
+    """Raised when a version string is not in a parseable format."""
 
 
 class Version(txutil.Version):
     """Holds, parses, and does comparison operations for version numbers.
 
-    :attr string major: The major version number.
-    :attr string minor: The minor version number.
-    :attr string micro: The micro version number.
-    :attr string prerelease: Sometime, another number, though often suffixed
-        with a `-`, `+`, or `#`.
+    :attr str package: The package name, if available.
+    :attr int major: The major version number.
+    :attr int minor: The minor version number.
+    :attr int micro: The micro version number.
+    :attr str prerelease: The **prerelease** specifier isn't always present,
+        though when it is, it's usually separated from the main
+        ``major.minor.micro`` part of the version string with a ``-``, ``+``,
+        or ``#`` character. Sometimes the **prerelease** is another number,
+        although often it can be a word specifying the release state,
+        i.e. ``+alpha``, ``-rc2``, etc.
     """
 
     def __init__(self, version, package=None):
@@ -18,28 +50,44 @@ class Version(txutil.Version):
 
         Comparisons may be computed between instances of :class:`Version`s.
 
-        :param string version: One of ``SERVER_VERSIONS``.
-        :param string package: The package or program which we are creating a
-            version number for, i.e. for "tor-0.2.5.1-alpha" the ``package``
-            would be "tor".
+        >>> from bridgedb.parse.versions import Version
+        >>> v1 = Version("0.2.3.25", package="tor")
+        >>> v1.base()
+        '0.2.3.25'
+        >>> v1.package
+        'tor'
+        >>> v2 = Version("0.2.5.1-alpha", package="tor")
+        >>> v2
+        Version(package=tor, major=0, minor=2, micro=5, prerelease=1-alpha)
+        >>> v1 == v2
+        False
+        >>> v2 > v1
+        True
+
+        :param str version: A Tor version string specifier, i.e. one taken
+            from either the ``client-versions`` or ``server-versions`` lines
+            within a Tor ``cached-consensus`` file.
+        :param str package: The package or program which we are creating a
+            version number for.
         """
         if version.find('.') == -1:
-            print("Version.__init__(): %r doesn't look like a version string!"
-                  % version.__repr__())
+            raise InvalidVersionStringFormat(
+                "Invalid delimiters in version string: %r" % version)
 
-        major, minor, micro, prerelease = ['' for x in xrange(4)]
-
+        package = package if package is not None else str()
+        major, minor, micro = [int() for _ in range(3)]
+        prerelease = str()
         components = version.split('.')
         if len(components) > 0:
             try:
-                prerelease = components.pop()
-                micro      = components.pop()
-                minor      = components.pop()
-                major      = components.pop()
+                prerelease = str(components.pop())
+                micro      = int(components.pop())
+                minor      = int(components.pop())
+                major      = int(components.pop())
             except IndexError:
                 pass
         super(Version, self).__init__(package, major, minor, micro, prerelease)
-        
+
     def base(self):
         """Get the base version number (with prerelease).
 
@@ -47,8 +95,8 @@ class Version(txutil.Version):
         :returns: A version number, without the package/program name, and with
             the prefix (if available). For example: '0.2.5.1-alpha'.
         """
-        prerelease = getPrefixedPrerelease()
-        return '%d.%d.%d%s' % (self.major, self.minor, self.micro, prerelease)
+        pre = self.getPrefixedPrerelease()
+        return '%s.%s.%s%s' % (self.major, self.minor, self.micro, pre)
 
     def getPrefixedPrerelease(self, separator='.'):
         """Get the prerelease string, prefixed by the separator ``prefix``.
@@ -60,11 +108,15 @@ class Version(txutil.Version):
         """
         pre = ''
         if self.prerelease is not None:
-            pre = prefix + self.prerelease
+            pre = separator + self.prerelease
         return pre
 
     def __repr__(self):
-        prerelease = getPrefixedPrerelease('')
-        return '%s(package=%r, major=%d, minor=%d, micro=%d, prerelease=%s)' \
-            % (self.__class__.__name__, str(self.package),
-               self.major, self.minor, self.micro, self.prerelease)
+        prerelease = self.getPrefixedPrerelease('')
+        return '%s(package=%s, major=%s, minor=%s, micro=%s, prerelease=%s)' \
+            % (str(self.__class__.__name__),
+               str(self.package),
+               str(self.major),
+               str(self.minor),
+               str(self.micro),
+               str(prerelease))

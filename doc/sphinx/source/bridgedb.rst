@@ -1,5 +1,6 @@
-bridgedb
-========
+
+BridgeDB Package and Module Documentation
+=========================================
 
 .. .. currentmodule:: bridgedb
 .. autosummary::
@@ -13,14 +14,15 @@ bridgedb
     bridgedb.EmailServer
     bridgedb.Filters
     bridgedb.HTTPServer
-    bridgedb.I18n
     bridgedb.Main
     bridgedb.parse
     bridgedb.persistent
     bridgedb.runner
     bridgedb.safelog
+    bridgedb.schedule
     bridgedb.Stability
     bridgedb.Storage
+    bridgedb.strings
     bridgedb.Tests
     bridgedb.txrecaptcha
     bridgedb.util

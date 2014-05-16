@@ -9,136 +9,164 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Utilities for parsing IP addresses.
+"""Utilities for parsing IP and email addresses.
 
-** Module Overview: **
+.. py:module:: bridgedb.parse.addr
+    :synopsis: Parsers for finding and validating IP addresses, email
+        addresses, and port ranges.
+
+
+bridgedb.parse.addr
+===================
 
 ::
-  parse
-   ||_ parse.addr
-   |    | |_ extractEmailAddress - Validate a :rfc:2822 email address.
-   |    | |_ isIPAddress - Check if an arbitrary string is an IP address.
-   |    | |_ isIPv4 - Check if an arbitrary string is an IPv4 address.
-   |    | |_ isIPv6 - Check if an arbitrary string is an IPv6 address.
-   |    | \_ isValidIP - Check that an IP address is valid.
-   |    |
-   |    |_ :class:`PortList` - A container class for validated port ranges.
+
+  parse.addr
+   | |_ extractEmailAddress() - Validate a :rfc:2822 email address.
+   | |_ isIPAddress() - Check if an arbitrary string is an IP address.
+   | |_ isIPv4() - Check if an arbitrary string is an IPv4 address.
+   | |_ isIPv6() - Check if an arbitrary string is an IPv6 address.
+   | \_ isValidIP() - Check that an IP address is valid.
    |
-   |__ :mod:`bridgedb.parse.headers`
-   |__ :mod:`bridgedb.parse.options`
-   \__ :mod:`bridgedb.parse.versions`
+   |_ PortList - A container class for validated port ranges.
 
-::
+..
 
-Private IP Address Ranges:
-''''''''''''''''''''''''''
+
+How address validity is determined
+----------------------------------
+
+The following terms define addresses which are **not** valid. All other
+addresses are taken to be valid.
+
+
+Private IP Address Ranges
+^^^^^^^^^^^^^^^^^^^^^^^^^
 .. glossary::
 
-   10.0.0.0    - 10.255.255.255  (10.0.0.0/8 prefix)
-   172.16.0.0  - 172.31.255.255  (172.16.0.0/12 prefix)
-   192.168.0.0 - 192.168.255.255 (192.168.0.0/16 prefix)
-      These Address ranges are reserved by IANA for private intranets, and not
-      routable to the Internet.  For additional information, see :rfc:`1918`.
+   Private Address
+     These address ranges are reserved by IANA for private intranets, and not
+     routable to the Internet::
+         10.0.0.0    - 10.255.255.255  (10.0.0.0/8)
+         172.16.0.0  - 172.31.255.255  (172.16.0.0/12)
+         192.168.0.0 - 192.168.255.255 (192.168.0.0/16)
+     For additional information, see :rfc:`1918`.
 
-Reserved and Special Use Addresses:
-'''''''''''''''''''''''''''''''''''
+
+Reserved and Special Use Addresses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. glossary::
 
    Unspecified Address
    Default Route
-      ex. ``0.0.0.0/8``
-      ex. ``::/128``
-      Current network (only valid as source address). See :rfc:`1122`. An
-      **Unspecified Address** in the context of firewalls means "all addresses
-      of the local machine". In a routing context, it is usually termed the
-      **Default Route**, and it means the default route (to "the rest of" the
-      internet). See :rfc:`1700`.
+     Current network (only valid as source address). See :rfc:`1122`. An
+     **Unspecified Address** in the context of firewalls means "all addresses
+     of the local machine". In a routing context, it is usually termed the
+     **Default Route**, and it means the default route (to "the rest of" the
+     internet). See :rfc:`1700`.
+     For example::
+         0.0.0.0/8
+         ::/128
 
    Loopback Address
-      ex. ``127.0.0.0``
-      Reserved for loopback and IPC on the localhost. See :rfc:`1122`.
+     Reserved for loopback and IPC on the localhost. See :rfc:`1122`.
+     Example::
+         127.0.0.0
 
    Localhost Address
-      ex. ``127.0.0.1 - 127.255.255.254`` (``127.0.0.0/8``)
-      ex. ``::1``
-      Loopback IP addresses (refers to self). See :rfc:`5735`.
+     Loopback IP addresses (refers to self). See :rfc:`5735`.
+     Examples include::
+         127.0.0.1 - 127.255.255.254   (127.0.0.0/8)
+         ::1
 
    Link-Local Address
-      ex. ``169.254.0.0/16``
-      ex. ``fe80::/64``
-      These are the link-local blocks, used for communication between hosts on
-      a single link. See :rfc:`3927`.
+     These are the link-local blocks, used for communication between hosts on
+     a single link. See :rfc:`3927`.
+     Examples::
+         169.254.0.0/16
+         fe80::/64
 
    Multicast Address
-      ex. ``224.0.0.0 - 239.255.255.255`` (``224.0.0.0/4``)
-      Reserved for multicast addresses. See :rfc:`3171`.
+     Reserved for multicast addresses. See :rfc:`3171`.
+     For example::
+         224.0.0.0 - 239.255.255.255 (224.0.0.0/4)
 
    Private Address
-      ex. ``10.0.0.0/8``
-      ex. ``172.16.0.0/12``
-      ex. ``192.168.0.0/16``
-      Reserved for private networks. See :rfc:`1918`.
+     Reserved for private networks. See :rfc:`1918`.
+     Some examples include::
+         10.0.0.0/8
+         172.16.0.0/12
+         192.168.0.0/16
 
    Reserved Address
-      ex. ``240.0.0.0 - 255.255.255.255`` (``240.0.0.0/4``)
-      Reserved (former Class E network). See :rfc:`1700`, :rfc:`3232`, and
-      :rfc:`5735`. The one exception to this rule is the :term:`Limited
-      Broadcast Address`, ``255.255.255.255`` for which packets at the IP
-      layer are not forwarded to the public internet.
+     Reserved (former Class E network). See :rfc:`1700`, :rfc:`3232`, and
+     :rfc:`5735`. The one exception to this rule is the :term:`Limited
+     Broadcast Address`, ``255.255.255.255`` for which packets at the IP
+     layer are not forwarded to the public internet. For example::
+         240.0.0.0 - 255.255.255.255 (240.0.0.0/4)
 
    Limited Broadcast Address
-      ex. ``255.255.255.255``
-      Limited broadcast address (limited to all other nodes on the LAN). See
-      :rfc:`919`. For IPv4, ``255`` in any part of the IP is reserved for
-      broadcast addressing to the local LAN.
+     Limited broadcast address (limited to all other nodes on the LAN). See
+     :rfc:`919`. For IPv4, ``255`` in any part of the IP is reserved for
+     broadcast addressing to the local LAN, e.g.::
+         255.255.255.255
 
 
 .. warning:: The :mod:`ipaddr` module (as of version 2.1.10) does not
              understand the following reserved_ addresses:
-
 .. _reserved: https://tools.ietf.org/html/rfc5735#page-4
 
 .. glossary::
 
    Reserved Address (Protocol Assignments)
-      ex. ``192.0.0.0/24``
-      Reserved for IETF protocol assignments. See :rfc:`5735`.
+     Reserved for IETF protocol assignments. See :rfc:`5735`.
+     Example::
+         192.0.0.0/24
 
    Reserved Address (6to4 Relay Anycast)
-      ex. ``192.88.99.0/24``
-      IPv6 to IPv4 relay. See :rfc:`3068`.
+     IPv6 to IPv4 relay. See :rfc:`3068`.
+     Example::
+         192.88.99.0/24
 
    Reserved Address (Network Benchmark)
-      ex. ``198.18.0.0/15``
-      Network benchmark tests. See :rfc:`2544`.
+     Network benchmark tests. See :rfc:`2544`.
+     Example::
+         198.18.0.0/15
 
    Reserved Address (TEST-NET-1)
-      ex. ``192.0.2.0/24``
-      Reserved for use in documentation and example code. It is often used in
-      conjunction with domain names ``example.com`` or ``example.net`` in
-      vendor and protocol documentation. See :rfc:`1166`.
+     Reserved for use in documentation and example code. It is often used in
+     conjunction with domain names ``example.com`` or ``example.net`` in
+     vendor and protocol documentation. See :rfc:`1166`.
+     For example::
+         192.0.2.0/24
 
    Reserved Address (TEST-NET-2)
-      ex. ``198.51.100.0/24``
-      TEST-NET-2. See :rfc:`5737`.
+     TEST-NET-2. See :rfc:`5737`.
+     Example::
+         198.51.100.0/24
 
    Reserved Address (TEST-NET-3)
-      ex. ``203.0.113.0/24``
-      TEST-NET-3. See :rfc:`5737`.
+     TEST-NET-3. See :rfc:`5737`.
+     Example::
+         203.0.113.0/24
 
    Shared Address Space
-      ex. ``100.64.0.0/10``
-      See :rfc:`6598`.
+     See :rfc:`6598`.
+     Example::
+         100.64.0.0/10
 
    Site-Local Address
    Unique Local Address
-      ex. ``ff00::0/8``
-      ex. ``fec0::/10`` (:rfc:`3513` §2.5.6)
-      Similar uses to :term:`Limited Broadcast Address`. For IPv6, everything
-      becomes convoluted_ and complicated_, and then redefined_. See
-      :rfc:`4193`, :rfc:`3879`, and :rfc:`3513`. The
-      :meth:`ipaddr.IPAddress.is_site_local` method *only* checks to see if
-      the address is a **Unique Local Address** vis-á-vis :rfc:`3513` §2.5.6.
+     Similar uses to :term:`Limited Broadcast Address`. For IPv6, everything
+     becomes convoluted_ and complicated_, and then redefined_. See
+     :rfc:`4193`, :rfc:`3879`, and :rfc:`3513`. The
+     :meth:`ipaddr.IPAddress.is_site_local` method *only* checks to see if
+     the address is a **Unique Local Address** vis-á-vis :rfc:`3513` §2.5.6,
+     e.g.::
+         ff00::0/8
+         fec0::/10
+
+..
 
 .. _convoluted: https://en.wikipedia.org/wiki/IPv6_address#Multicast_addresses
 .. _complicated: https://en.wikipedia.org/wiki/IPv6_address#IPv6_address_scopes
@@ -156,15 +184,17 @@ import ipaddr
 
 
 #: These are the special characters which RFC2822 allows within email addresses:
-#ASPECIAL = '!#$%&*+-/=?^_`{|}~' + "\\\'"
-#: These are the ones we're pretty sure we can handle right:
+#:     ASPECIAL = '!#$%&*+-/=?^_`{|}~' + "\\\'"
+#: …But these are the only ones we're confident that we can handle correctly:
+#:     ASPECIAL = '-_+/=_~'
 ASPECIAL = '-_+/=_~'
 ACHAR = r'[\w%s]' % "".join("\\%s" % c for c in ASPECIAL)
 DOTATOM = r'%s+(?:\.%s+)*' % (ACHAR, ACHAR)
 DOMAIN = r'\w+(?:\.\w+)*'
 ADDRSPEC = r'(%s)\@(%s)' % (DOTATOM, DOMAIN)
+# A compiled regexp which matches on any type and ammount of whitespace:
 SPACE_PAT = re.compile(r'\s+')
-#: A compiled regex with matches RFC2822 email address strings:
+# A compiled regexp which matches RFC2822 email address strings:
 ADDRSPEC_PAT = re.compile(ADDRSPEC)
 
 
@@ -212,15 +242,15 @@ def canonicalizeEmailDomain(domain, domainmap):
     return permitted
 
 def extractEmailAddress(emailaddr):
-    """Given an email address, obtained, for example, via a ``From:`` or
+    """Given an email address, obtained for example, via a ``From:`` or
     ``Sender:`` email header, try to extract and parse (according to
-    :rfc:2822) the username and domain portions. Returns ``(username,
-    domain)`` on success; raises BadEmail on failure.
+    :rfc:`2822`) the local and domain portions.
 
     We only allow the following form::
-        ADDRSPEC := LOCAL_PART "@" DOMAIN
+
         LOCAL_PART := DOTATOM
         DOMAIN := DOTATOM
+        ADDRSPEC := LOCAL_PART "@" DOMAIN
 
     In particular, we are disallowing: obs-local-part, obs-domain, comment,
     and obs-FWS. Other forms exist, but none of the incoming services we
@@ -228,10 +258,9 @@ def extractEmailAddress(emailaddr):
 
     :param emailaddr: An email address to validate.
     :raises BadEmail: if the **emailaddr** couldn't be validated or parsed.
-    :rtype: tuple
     :returns: A tuple of the validated email address, containing the mail
-        username and the domain::
-            (LOCALPART, DOMAIN)
+        local part and the domain::
+            (LOCAL_PART, DOMAIN)
     """
     orig = emailaddr
 

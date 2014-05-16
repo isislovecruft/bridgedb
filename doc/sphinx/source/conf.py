@@ -35,13 +35,14 @@ import bridgedb.Dist
 import bridgedb.EmailServer
 import bridgedb.Filters
 import bridgedb.HTTPServer
-import bridgedb.I18n
 import bridgedb.Main
 import bridgedb.persistent
 import bridgedb.runner
 import bridgedb.safelog
+import bridgedb.schedule
 import bridgedb.Stability
 import bridgedb.Storage
+import bridgedb.strings
 import bridgedb.test
 import bridgedb.Tests
 import bridgedb.txrecaptcha
@@ -115,7 +116,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BridgeDB'
-copyright = u'2013, The Tor Project, Inc'
+copyright = u'2014, The Tor Project, Inc'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -147,7 +148,7 @@ add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.

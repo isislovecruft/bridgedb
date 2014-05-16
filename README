@@ -124,7 +124,7 @@ all the updated files in their correct locations.
 **Requesting Translations for Altered/Added Source Code**: This should be done
   whenever any of the strings requiring translation -- _("they are formatted
   like this") -- are changed, or new ones are added.
-  See ```lib/bridgedb/I18n.py```.
+  See ```lib/bridgedb/strings.py```.
 
 Translations for Tor Project repos are kept
 [in a separate repo](https://gitweb.torproject.org/translation.git).  You'll
@@ -166,7 +166,7 @@ bridgedb.conf:
 
     RECAPTCHA_ENABLED
     RECAPTCHA_PUB_KEY
-    RECAPTCHA_PRIV_KEY
+    RECAPTCHA_SEC_KEY
     
 A [recaptcha.net](https://www.google.com/recaptcha) account is required.
 

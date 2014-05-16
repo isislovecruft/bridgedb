@@ -1,12 +1,24 @@
--*- mode: markdown ; coding: utf-8 -*-
+.. -*- mode: rst ; coding: utf-8 -*-
 
-# DESCRIPTORS
+.. contents::
+    :depth: 4
+    :backlinks: entry
+    :local:
 
-## Bridge router descriptors
+********************************
+Tor Bridge Descriptor Formats
+********************************
 
+================================
+Bridge router descriptors
+================================
+
+--------------------------------
+With 0.2.4.15 > tor >= 0.2.3.35
+--------------------------------
 As of tor-0.2.3.35, bridge router descriptors (found in the
-`bridge-descriptors` file), contain the 'opt ' prefix before certain
-fields. They look like this:
+``bridge-descriptors`` file), contain the ``'opt '`` prefix before certain
+fields. They look like this::
 
     @purpose bridge
     router Unnamed 10.0.1.113 9001 0 0
@@ -38,8 +50,11 @@ fields. They look like this:
     VXAN4HoclQiNWdgZF3kAdCXW+8YR/rqyYtSOaLFOxgs=
     -----END SIGNATURE-----
 
-As of tor-0.2.4.15, bridge router descriptors may be missing the 'opt ' prefix,
-and thus appear like this:
+--------------------------------
+With tor >= 0.2.4.15
+--------------------------------
+As of tor-0.2.4.15, bridge router descriptors may be missing the ``'opt '`` prefix,
+and thus appear like this::
 
     @purpose bridge
     router Unnamed 10.0.1.171 9001 0 0
@@ -73,11 +88,17 @@ and thus appear like this:
     B3RnIjfPs6q+m8gGz0ZDk7x7f3oDwyz/TKCgpZubp/w=
     -----END SIGNATURE-----
 
-# Extra-info descriptors
+====================================
+Bridge extra-info descriptors
+====================================
 
 Bridge extra-info descriptors (from the `cached-extrainfo` and
-`cached-extrainfo.new` files) contain extra data pertaining to a bridge. A
-minimal bridge extra-info descriptor looks like this:
+`cached-extrainfo.new` files) contain extra data pertaining to a bridge.
+
+--------------------------------------
+A minimal bridge extra-info descriptor
+--------------------------------------
+Might look like so::
 
     extra-info Unnamed BFB9D952B9965847C42A0E214077C7DACA69275F
     published 2013-10-22 02:30:12
@@ -92,7 +113,15 @@ minimal bridge extra-info descriptor looks like this:
     L6IYwgtDs3BXEx3p7bTtfFTg2resiyU+T3XT6FBDHvU=
     -----END SIGNATURE-----
 
-Whereas a more dense bridge extra-info descriptor looks like this:
+..
+
+
+Whereas…
+
+-----------------------------------------
+A more dense bridge extra-info descriptor
+-----------------------------------------
+…might look like this::
 
     extra-info Unnamed 48C9D4F2440997ACB32C88479A97B3ABF9820AF3
     published 2013-10-22 03:19:50
@@ -107,14 +136,16 @@ Whereas a more dense bridge extra-info descriptor looks like this:
     dirreq-read-history 2013-10-21 18:36:36 (900 s)
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,199680,2048
 
+..
+
 If a bridge extra-info descriptor has the `dirreq-read-history` or the
 `dirreq-write-history` lines shown above, then either of the following lines
-will come after it (but not both):
+will come after it (but *not* both)::
 
     dirreq-stats-end 2013-10-21 17:27:06 (86400 s)
     bridge-stats-end 2013-10-21 17:27:06 (86400 s)
 
-Optionally followed by:
+Optionally followed by::
 
     dirreq-v3-ips
     dirreq-v2-ips
@@ -130,12 +161,16 @@ Optionally followed by:
     bridge-stats-end 2013-10-21 17:28:15 (86400 s)
     bridge-ips de=8,nl=8,us=8
 
-And, if it includes the `bridge-ips` line, it MAY include the following right
-afterwards:
+..
+
+And, if it includes the ``bridge-ips`` line, it **MAY** include the following right
+afterwards::
 
     bridge-ip-versions v4=16,v6=8
 
-An extra-info descriptor will always end with a signature, like this:
+An extra-info descriptor **MUST** end with the ``router-signature`` line,
+immediately followed by a signature of the entire document (all the way up
+until the newline in the preceeding ``router-signature`` line), like this::
 
     router-signature
     -----BEGIN SIGNATURE-----
@@ -144,10 +179,21 @@ An extra-info descriptor will always end with a signature, like this:
     40f0vr+zuKQfUiI0piSR4txrEdAY58dDY0Hl1yEcsfo=
     -----END SIGNATURE-----
 
-## An bridge extra-info descriptor for a bridge with pluggable transports
+.. note:: Whereas when we say **extra-info document**, we're referring to the
+    *entire* extra-info descriptor, up unto the final newline of the
+    ``router-signature`` line, but *not* including:
 
-The following is an example of a bridge which supports the `obfs2` and `obfs3`
-obproxy pluggable transport types:
+      * ``-----BEGIN SIGNATURE-----``,
+      * the actual signature, or
+      * ``-----END SIGNATURE-----``.
+
+
+--------------------------------------------------------
+A bridge extra-info descriptor with pluggable transports
+--------------------------------------------------------
+
+The following is an example of an extra-info descriptor for a bridge which
+supports the ``obfs2`` and ``obfs3`` Pluggable Transport types::
 
     extra-info Unnamed DD91800E06C195B0AF804E30DB07830AC991AFD4
     published 2013-10-22 02:14:04
@@ -182,10 +228,19 @@ obproxy pluggable transport types:
     D9FLbPlXw4NWy9B32IT/luOHsENaAJNvOv7ociMPnsM=
     -----END SIGNATURE-----
 
-## Bridge router microdescriptors / bridge networkstatus documents
+..
+
+==========================================
+Bridge networkstatus documents
+==========================================
+
+These are shortened versions of bridge router descriptors. The look like
+this::
 
     r Unnamed /wywABJee98ZPOiCGYM1dpgQc70 NpK1tsi97A+SH8s0evowXkRcyr8 2013-10-22 01:49:45 88.200.197.4 9001 0
     a [6212:b13d:252e:479d:32b8:d713:3718:2fac]:9001
     s Fast Guard Running Stable Valid
     w Bandwidth=53
     p reject 1-65535
+
+..

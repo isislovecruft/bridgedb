@@ -5,23 +5,27 @@
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
 # :copyright: (c) 2013 Isis Lovecruft
-#             (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+#             (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2007-2014, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Parsers for ``@type bridge-network-status 1.0`` descriptors.
+"""Parsers for bridge networkstatus descriptors.
 
+.. py:module:: bridgedb.parse.networkstatus
+   :synopsis: Parsers for ``@type bridge-network-status`` descriptors_.
 .. _descriptors: https://metrics.torproject.org/formats.html#descriptortypes
 
-**Module Overview:**
 
+bridgedb.parse.networkstatus
+============================
+::
+
+  networkstatus
+   |_ isValidRouterNickname - Determine if a nickname is according to spec
+   |_ parseRLine - Parse an 'r'-line from a networkstatus document
+   |_ parseALine - Parse an 'a'-line from a networkstatus document
+    \_ parseSLine - Parse an 's'-line from a networkstatus document
 ..
-  parse
-   \_networkstatus
-      |_ isValidRouterNickname - Determine if a nickname is according to spec
-      |_ parseRLine - Parse an 'r'-line from a networkstatus document
-      |_ parseALine - Parse an 'a'-line from a networkstatus document
-      \_ parseSLine - Parse an 's'-line from a networkstatus document
 """
 
 import binascii
@@ -67,25 +71,28 @@ def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
 
     From torspec.git/dir-spec.txt, commit 36761c7d553d L1499-1512:
+      | "r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
+      |     SP DirPort NL
       |
-      |"r" SP nickname SP identity SP digest SP publication SP IP SP ORPort
-      |    SP DirPort NL
+      |     [At start, exactly once.]
       |
-      |    [At start, exactly once.]
-      |
-      |    "Nickname" is the OR's nickname.  "Identity" is a hash of its
-      |    identity key, encoded in base64, with trailing equals sign(s)
-      |    removed.  "Digest" is a hash of its most recent descriptor as
-      |    signed (that is, not including the signature), encoded in base64.
-      |    "Publication" is the
-      |    publication time of its most recent descriptor, in the form
-      |    YYYY-MM-DD HH:MM:SS, in UTC.  "IP" is its current IP address;
-      |    ORPort is its current OR port, "DirPort" is its current directory
-      |    port, or "0" for "none".
-      |
+      |     "Nickname" is the OR's nickname.  "Identity" is a hash of its
+      |     identity key, encoded in base64, with trailing equals sign(s)
+      |     removed.  "Digest" is a hash of its most recent descriptor as
+      |     signed (that is, not including the signature), encoded in base64.
+      |     "Publication" is the
+      |     publication time of its most recent descriptor, in the form
+      |     YYYY-MM-DD HH:MM:SS, in UTC.  "IP" is its current IP address;
+      |     ORPort is its current OR port, "DirPort" is its current directory
+      |     port, or "0" for "none".
 
     :param string line: An 'r'-line from an bridge-network-status descriptor.
-
+    :returns:
+        A 7-tuple of::
+            (nickname, identityDigest, descriptorDigest, timestamp,
+             orAddress, orPort, dirport)
+        where each value is set according to the data parsed from the
+        **line**, or ``None`` if nothing suitable could be parsed.
     """
     (nickname, ID, descDigest, timestamp,
      ORaddr, ORport, dirport) = (None for x in xrange(7))

@@ -9,22 +9,11 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Modules for parsing data.
+'''Package containing modules for parsing data.
 
-** Package Overview: **
-
-..
-  parse
-   ||_ parse.addr
-   |   |_ isIPAddress - Check if an arbitrary string is an IP address.
-   |   |_ isIPv4 - Check if an arbitrary string is an IPv4 address.
-   |   |_ isIPv6 - Check if an arbitrary string is an IPv6 address.
-   |   \_ isValidIP - Check that an IP address is valid.
-   |
-   |__ :mod:`bridgedbparse.headers`
-   |__ :mod:`bridgedb.parse.options`
-   \__ :mod:`bridgedb.parse.versions`
-"""
+.. py:module:: bridgedb.parse
+    :synopsis: Package containing modules for parsing data.
+'''
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -34,17 +23,17 @@ import binascii
 
 
 class InvalidBase64(ValueError):
-    """Cannot decode base64 value."""
+    """Raised if parsing or decoding cannot continue due to invalid base64."""
 
 
 def padBase64(b64string):
     """Re-add any stripped equals sign character padding to a b64 string.
 
     :param string b64string: A base64-encoded string which might have had its
-        trailing equals sign padding removed.
-    :raises: :exc:`ValueError` if there was any error while manipulating the
+        trailing equals sign (``=``) padding removed.
+    :raises ValueError: if there was any error while manipulating the string.
+    :returns: A properly-padded (according to the base64 spec: :rfc:`4648`)
         string.
-    :returns: A properly-padded (according to base64) string.
     """
     addchars  = 0
     try:
@@ -67,9 +56,9 @@ def parseUnpaddedBase64(field):
     The **field** will be re-padded, if need be, and then base64 decoded.
 
     :param str field: Should be some base64-encoded thing, with any trailing
-                      '=' characters removed.
-    :raises: :exc:`InvalidBase64`, if there is an error in either unpadding or
-             decoding **field**.
+        ``=``-characters removed.
+    :raises InvalidBase64: if there is an error in either unpadding or decoding
+        **field**.
     :rtype: str
     :returns: The base64-decoded **field**.
     """

@@ -8,10 +8,37 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Classes for commandline options parsing.
+"""Parsers for BridgeDB commandline options.
 
-** Module Overview: **
+.. py:module:: bridgedb.parse.options
+   :synopsis: Parsers for BridgeDB commandline options.
 
+
+bridgedb.parse.options
+======================
+::
+
+  bridgedb.parse.options
+   |__ setConfig()
+   |__ getConfig() - Set/Get the config file path.
+   |__ setRundir()
+   |__ getRundir() - Set/Get the runtime directory.
+   |__ parseOptions() - Create the main options parser for BridgeDB.
+   |
+   \_ BaseOptions - Base options, included in all other options menus.
+       ||
+       |\__ findRundirAndConfigFile() - Find the absolute path of the config
+       |                                file and runtime directory, or find
+       |                                suitable defaults.
+       |
+       |__ SIGHUPOptions - Menu to explain SIGHUP signal handling and usage.
+       |__ SIGUSR1Options - Menu to explain SIGUSR1 handling and usage.
+       |
+       |__ MockOptions - Suboptions for creating fake bridge descriptors for
+       |                 testing purposes.
+       |__ TestOptions - Suboptions for running twisted.trial based unittests.
+       \__ MainOptions - Main commandline options parser for BridgeDB.
+..
 """
 
 from __future__ import print_function
@@ -147,8 +174,8 @@ class BaseOptions(usage.Options):
 
     @staticmethod
     def findRundirAndConfigFile(rundir=None, config=None):
-        """Find the abspath of the config file and runtime directory, or find
-        suitable defaults.
+        """Find the absolute path of the config file and runtime directory, or
+        find suitable defaults.
 
         Attempts to set the absolute path of the runtime directory. If the
         config path is relative, its absolute path is set relative to the

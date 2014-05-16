@@ -20,12 +20,12 @@ from twisted.internet import reactor
 from bridgedb import crypto
 from bridgedb import persistent
 from bridgedb import safelog
+from bridgedb import schedule
 from bridgedb import util
 from bridgedb.parse import options
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
-import bridgedb.Time as Time
 import bridgedb.Storage
 
 
@@ -443,7 +443,7 @@ def startup(options):
 
     state = persistent.State(config=config)
 
-    from bridgedb import EmailServer
+    from bridgedb.email.server import addServer as addSMTPServer
     from bridgedb import HTTPServer
 
     # Load the master key, or create a new one.
@@ -590,13 +590,13 @@ def startup(options):
 
     # Configure all servers:
     if config.HTTPS_DIST and config.HTTPS_SHARE:
-        #webSchedule = Time.IntervalSchedule("day", 2)
-        webSchedule = Time.NoSchedule()
+        #webSchedule = schedule.ScheduledInterval("day", 2)
+        webSchedule = schedule.Unscheduled()
         HTTPServer.addWebServer(config, ipDistributor, webSchedule)
     if config.EMAIL_DIST and config.EMAIL_SHARE:
-        #emailSchedule = Time.IntervalSchedule("day", 1)
-        emailSchedule = Time.NoSchedule()
-        EmailServer.addSMTPServer(config, emailDistributor, emailSchedule)
+        #emailSchedule = schedule.ScheduledInterval("day", 1)
+        emailSchedule = schedule.Unscheduled()
+        addSMTPServer(config, emailDistributor, emailSchedule)
 
     # Actually run the servers.
     try:
@@ -623,7 +623,7 @@ def runSubcommand(options, config):
     """
     # Make sure that the runner module is only imported after logging is set
     # up, otherwise we run into the same logging configuration problem as
-    # mentioned above with the EmailServer and HTTPServer.
+    # mentioned above with the email.server and HTTPServer.
     from bridgedb import runner
 
     statuscode = 0

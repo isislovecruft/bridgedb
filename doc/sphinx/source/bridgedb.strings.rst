@@ -1,7 +1,7 @@
-bridgedb.I18n
--------------
+bridgedb.strings
+----------------
 
-.. automodule:: bridgedb.I18n
+.. automodule:: bridgedb.strings
     :members:
     :undoc-members:
     :private-members:

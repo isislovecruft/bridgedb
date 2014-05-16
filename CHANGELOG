@@ -1,3 +1,103 @@
+Changes in version 0.2.1 - 2014-05-16
+        * FIXES #5463 https://trac.torproject.org/projects/tor/ticket/5463
+        Emails sent from BridgeDB's email distributor should now be signed.
+          - BridgeDB's emails will be signed with its online GnuPG keypair. The
+            public key has the following fingerprint:
+                DF81 1109 E17C 8BF1 34B5  EEB6 8DC4 3A28 4882 1E32
+            The online keypair rotates (a new one is placed on the server once
+            per year), and it will ALWAYS be signed with BridgeDB's offline
+            keypair.
+          - The online keypair above contains two subkeys. The signing subkey
+            has the fingerprint:
+                9FE3 9D1A 7438 9223 3B3F  66F2 21B5 54E9 5938 F4D0
+          - BridgeDB's offline keypair has the following fingerprint:
+                7B78 4370 15E6 3DF4 7BB1  270A CBD9 7AA2 4E8E 472E
+        All of BridgeDB's keys may be found on the public keyservers, as
+        well as at https://bridges.torproject.org/keys
+
+        * FIXES #7547 https://trac.torproject.org/projects/tor/ticket/7547
+        BridgeDB's email distributor will now send you a message
+        explaining how to use it, including valid commands and the list of
+        Pluggable Transport TYPES currently supported. To receive help
+        with the email distributor, simply send an email to
+        mailto:bridges@torproject.org.
+          - Any emails which do not contain a valid command will receive
+        the help text in response.
+          - Otherwise, to specifically request the help text, just say
+                "get help"
+        in the body of your email.
+
+        * FIXES #7550 https://trac.torproject.org/projects/tor/ticket/7550
+        BridgeDB's email responder is now interactive, as described in the
+        above entry for ticket #7547.
+
+        * FIXES #8241 https://trac.torproject.org/projects/tor/ticket/8241
+        BridgeDB's HTTP distributor won't tell you how to get obfs3
+        bridges through email, although a blank email, or an email
+        containing "get help" will.
+
+        * CLOSES #9678 https://trac.torproject.org/projects/tor/ticket/9678
+        A "Select Language" button was requested for the HTTP distributor
+        on https://bridges.torproject.org. Instead, translated pages are
+        distributed automatically (via detecting the "Accept-Language"
+        header which can be set in the Settings panel of all modern
+        browers).
+          - To request a specific translation, the "lang=LOCALE" argument
+        can be added to the URL of any page. For example:
+        https://bridges.torproject.org/options?lang=ar
+        will provide the bridge options selection page in Arabic.
+
+        * FIXES #11215 https://trac.torproject.org/projects/tor/ticket/11215
+        BridgeDB's usage of gimp-captcha, which creates a local cache of
+        CAPTCHA for use on the HTTP distributor, now supports timeouts. If
+        a CAPTCHA is not solved within 30 minutes of being served to a
+        client, the solution is invalid regardless of its correctness.
+
+        * FIXES #11475 https://trac.torproject.org/projects/tor/ticket/11475
+        BridgeDB's email responder, up until this point, explained how to
+        use bridges with Vidalia. It now uses the same help text as found
+        at https://bridges.torproject.org/howto which explains how to
+        enter bridges into TorLauncher (used by Tor Browser and Tails).
+
+        * FIXES #11522 https://trac.torproject.org/projects/tor/ticket/11522
+        There were several errors and bugs in BridgeDB's email
+        distributor. The entire system of server supporting BridgeDB's
+        email distribution system was rewritten.
+
+        * FIXES #11664 https://trac.torproject.org/projects/tor/ticket/11664
+        Due to changes in the Python language builtin `buffer` in Python3,
+        which were backported to Python 2.7.6, but neither backported to
+        Python 2.6.x nor to Python <= 2.7.5, BridgeDB's use of
+        `io.StringIO` and `io.BytesIO` combined with buffers had to be
+        revised to support both the new and old Python `buffer` APIs.
+
+        * FIXES #11753 https://trac.torproject.org/projects/tor/ticket/11753
+        BridgeDB's emails should now be translated.
+          - The translations system for BridgeDB, as well as the template
+        system for emails, was completely rewritten.  By default, email
+        responses are in English. To receive an alternate translation,
+        send an email to bridges+LOCALE@torproject.org, where "LOCALE" is
+        a locale specifier.
+          - For example, to receive BridgeDB emails translated into
+        Chinese, use mailto:bridges+zh_CN@torproject.org.
+          - Or for Farsi translations, use mailto:bridges+fa@torproject.org.
+          - For the full list of currently supported LOCALE codes, see
+        https://gitweb.torproject.org/user/isis/bridgedb.git/tree/HEAD:/lib/bridgedb/i18n/
+
+And includes the following general changes:
+        * UPDATES the Italian (it) gettext file.
+          Thanks to Francesca Ciceri.
+        * ADD Welsh (cy) translations.
+          Thanks to huwwaters and littlegreykida.
+        * ADD Slovak (sk) translations.
+          Thanks to Michelozzo and Svistwarrior273.
+        * UPDATES the bridgedb.pot translation template file. All the new
+        strings in the email and HTTP user interfaces will now need
+        translation! To help out with translations, please see:
+        https://www.transifex.com/projects/p/torproject/resource/2-bridgedb-bridgedb-pot/
+        * FIXES several typos in the BridgeDB's code documentation.
+        * ADDS code documentation for several previously undocumented modules.
+
 Changes in version 0.2.0 - 2014-04-19
         * FIXES #5232 Perform long running and blocking transactions in
                 background threads. Primarily this moves bridge descriptor

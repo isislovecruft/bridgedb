@@ -45,6 +45,140 @@ IP6UniqueLocal = "fc00::"
 IP6SiteLocal = "fec0::"
 
 
+class CanonicalizeEmailDomainTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.canonicalizeEmailDomain`."""
+
+    def test_nonDict(self):
+        """Using a non-dict domainmap as a parameter to
+        canonicalizeEmailDomain() should log an AttributeError and then raise
+        an UnsupportedDomain error.
+        """
+        domainmap = 'example.com'
+        domain = 'fubar.com'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.canonicalizeEmailDomain,
+                          domain, domainmap)
+
+    def test_notPermitted(self):
+        """A domain not in the domainmap of allowed domains should raise an
+        UnsupportedDomain error.
+        """
+        domainmap = {'foo.example.com': 'example.com'}
+        domain = 'bar.example.com'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.canonicalizeEmailDomain,
+                          domain, domainmap)
+
+    def test_permitted(self):
+        """A domain in the domainmap of allowed domains should return the
+        canonical domain.
+        """
+        domainmap = {'foo.example.com': 'example.com'}
+        domain = 'foo.example.com'
+        canonical = addr.canonicalizeEmailDomain(domain, domainmap)
+        self.assertEquals(canonical, 'example.com')
+
+
+class ExtractEmailAddressTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.extractEmailAddress`."""
+
+    def test_23(self):
+        """The email address int(23) should raise a BadEmail error."""
+        self.assertRaises(addr.BadEmail,
+                          addr.extractEmailAddress,
+                          int(23))
+
+    def test_lessThanChars(self):
+        """The email address 'Alice <alice@riseup.net>' should return
+        ('alice', 'riseup.net').
+        """
+        local, domain = addr.extractEmailAddress('Alice <alice@riseup.net>')
+        self.assertEqual(local, 'alice')
+        self.assertEqual(domain, 'riseup.net')
+
+    def test_extraLessThanChars(self):
+        """The email address 'Mallory <mal<lory@riseup.net>' should return
+        ('lory', 'riseup.net')
+        """
+        local, domain = addr.extractEmailAddress('Mallory <mal<lory@riseup.net>')
+        self.assertEqual(local, 'lory')
+        self.assertEqual(domain, 'riseup.net')
+
+    def test_extraLessAndGreaterThanChars(self):
+        """The email address 'Mallory <mal><>>lory@riseup.net>' should raise a
+        BadEmail error.
+        """
+        self.assertRaises(addr.BadEmail,
+                          addr.extractEmailAddress,
+                          'Mallory <mal><>>lory@riseup.net>')
+
+    def test_extraAppendedEmailAddress(self):
+        """The email address 'Mallory <mallory@riseup.net><mallory@gmail.com>'
+        should use the last address.
+        """
+        local, domain = addr.extractEmailAddress(
+            'Mallory <mallory@riseup.net><mallory@gmail.com>')
+        self.assertEqual(local, 'mallory')
+        self.assertEqual(domain, 'gmail.com')
+
+
+class NormalizeEmailTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.parse.addr.normalizeEmail`."""
+
+    def test_permitted(self):
+        """A valid email address from a permitted domain should return
+        unchanged.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual(emailaddr, normalized)
+
+    def test_notPermitted(self):
+        """A valid email address from a non-permitted domain should raise an
+        UnsupportedDomain error.
+        """
+        domainrules = {}
+        domainmap = {'bar.example.com': 'example.com'}
+        emailaddr = 'Alice <alice@foo.example.com>'
+        self.assertRaises(addr.UnsupportedDomain,
+                          addr.normalizeEmail,
+                          emailaddr, domainmap, domainrules)
+
+    def test_ignoreDots(self):
+        """A valid email address with a '.' should remove the '.' if
+        'ignore_dots' is in domainrules.
+        """
+        domainrules = {'example.com': 'ignore_dots'}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice.bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual('alicebridges@foo.example.com', normalized)
+
+    def test_ignorePlus(self):
+        """A valid email address with a '+' and some extra stuff, from a
+        permitted domain, should remove the '+' stuff if 'ignore_plus' is
+        enabled.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice+bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules)
+        self.assertEqual('alice@foo.example.com', normalized)
+
+    def test_dontIgnorePlus(self):
+        """A valid email address with a '+' and some extra stuff, from a
+        permitted domain, should return unchanged if 'ignore_plus' is disabled.
+        """
+        domainrules = {}
+        domainmap = {'foo.example.com': 'example.com'}
+        emailaddr = 'alice+bridges@foo.example.com'
+        normalized = addr.normalizeEmail(emailaddr, domainmap, domainrules,
+                                         ignorePlus=False)
+        self.assertEqual(emailaddr, normalized)
+
+
 class ParseAddrIsIPAddressTests(unittest.TestCase):
     """Unittests for :func:`bridgedb.parse.addr.isIPAddress`.
 

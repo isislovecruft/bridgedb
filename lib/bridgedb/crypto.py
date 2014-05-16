@@ -8,22 +8,34 @@
 #             (c) 2007-2014, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""crypto - BridgeDB general cryptographic utilities.
+"""BridgeDB general cryptographic utilities.
 
-**Module Overview:**
+.. py:module:: bridgedb.crypto
+   :synopsis: This module contains general utilities for working with external
+       cryptographic tools and libraries, including OpenSSL and GnuPG. It also
+       includes utilities for creating callable HMAC functions, generating
+       HMACs for data, and generating and/or storing key material.
 
-..
-  crypto
-   |_getKey() - Load the master key from a file, or create a new one.
-   |
-   \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
-      |                           certificate chains and matches hostnames.
-      |_getContext() - Retrieve an SSL context configured for certificate
-      |                verification.
-      |_getHostnameFromURL() - Parses the hostname from the request URL.
-      \_verifyHostname() - Check that the cert CN matches the request
-                           hostname.
-
+Module Overview
+~~~~~~~~~~~~~~~
+::
+    crypto
+     |_getGPGContext() - Get a pre-configured GPGME context.
+     |_getHMAC() - Compute an HMAC with some key for some data.
+     |_getHMACFunc() - Get a callable for producing HMACs with the given key.
+     |_getKey() - Load the master HMAC key from a file, or create a new one.
+     |_getRSAKey() - Load an RSA key from a file, or create a new one.
+     |_gpgSignMessage() - Sign a message string according to a GPGME context.
+     |_writeKeyToFile() - Write to a file readable only by the process owner.
+     |
+     \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
+        |                           certificate chains and matches hostnames.
+        |_getContext() - Retrieve an SSL context configured for certificate
+        |                verification.
+        |_getHostnameFromURL() - Parses the hostname from the request URL.
+        \_verifyHostname() - Check that the cert CN matches the request
+                             hostname.
+::
 """
 
 from __future__ import absolute_import
@@ -44,6 +56,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 
 from twisted.internet import ssl
+from twisted.python.procutils import which
 
 
 #: The hash digest to use for HMACs.
@@ -66,6 +79,12 @@ except TypeError:
         "https://mail.python.org/pipermail/python-dev/2010-October/104917.html")
 else:
     NEW_BUFFER_INTERFACE = True
+
+#: Settings for the GPGME Context and `Crypto Engine`_.
+#: .. _`Crypto Engine`:
+#:      http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
+GPGME_CONTEXT_HOMEDIR = '.gnupg'
+GPGME_CONTEXT_BINARY = which('gpg2') or which('gpg')  # These will be lists
 
 
 class RSAKeyGenerationError(Exception):
@@ -255,6 +274,20 @@ def getHMACFunc(key, hex=True):
     return hmac_fn
 
 def _createGPGMEErrorInterpreters():
+    """Create a mapping of GPGME ERRNOs ←→ human-readable error names/causes.
+
+    This function is called automatically when :mod:`this module
+    <bridgedb.crypto>` is loaded. The resulting dictionary mapping is stored
+    as :attr:`~bridgedb.crypto.gpgmeErrorTranslations`, and is used by
+    :exc:`~bridgedb.crypto.LessCrypticGPGMEError`.
+
+    :returns: A dict of::
+          {str(ERRNO): [ERRORNAME, ANOTHER_ERRORNAME, …],
+           …,
+           str(ERRORNAME): str(ERRNO),
+           …}
+        for all known error numbers and error names/causes.
+    """
     errorDict = {}
     errorAttrs = []
 
@@ -277,6 +310,11 @@ def _createGPGMEErrorInterpreters():
 
     return errorDict
 
+#: This is a dictionary which holds a translation of GPGME ERRNOs ←→ all known
+#: names/causes for that ERRNO, and vice versa. It is created automatically,
+#: via the :func:`_createGPGMEErrorInterpreters` function, when this module is
+#: loaded so that :exc:`LessCrypticGPGMEError` can use it to display
+#: human-readable information about why GPGME borked itself on something.
 gpgmeErrorTranslations = _createGPGMEErrorInterpreters()
 
 def getGPGContext(cfg):
@@ -303,6 +341,22 @@ def getGPGContext(cfg):
     ctx = gpgme.Context()
 
     try:
+        binary = GPGME_CONTEXT_BINARY[0]
+    except Exception:
+        # Setting this to ``None`` will cause libgpgme to "use the default
+        # binary", according their docs:
+        binary = None
+
+    try:
+        homedir = os.path.abspath(GPGME_CONTEXT_HOMEDIR)
+        logging.debug("Setting GPG homedir to %r" % homedir)
+        if not os.path.isdir(homedir):
+            os.makedirs(homedir)
+        # This is done to ensure that we don't ever use keys in the process
+        # owner's $GNUPGHOME directory, see:
+        # http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
+        ctx.set_engine_info(gpgme.PROTOCOL_OpenPGP, binary, homedir)
+
         logging.debug("Opening GPG keyfile %s..." % cfg.EMAIL_GPG_SIGNING_KEY)
         keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
         key = ctx.import_(keyfile)
@@ -330,8 +384,7 @@ def getGPGContext(cfg):
         ctx.signers = (bridgedbKey,)
 
         logging.debug("Testing signature created with GnuPG key...")
-        testMessage = "Testing 1 2 3"
-        signatureText, sigs = gpgSignMessage(ctx, testMessage)
+        signatureText, sigs = gpgSignMessage(ctx, "Testing 1 2 3")
 
         if not len(sigs) == 1:
             raise PythonicGpgmeError("Testing couldn't produce a signature "\

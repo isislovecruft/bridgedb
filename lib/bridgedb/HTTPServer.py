@@ -1,6 +1,11 @@
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2013, The Tor Project, Inc.
-# See LICENSE for licensing information
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_HTTPServer -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: please see included AUTHORS file
+# :copyright: (c) 2007-2014, The Tor Project, Inc.
+#             (c) 2013-2014, Isis Lovecruft
+# :license: see LICENSE for licensing information
 
 """
 This module implements the web (http, https) interfaces to the bridge database.
@@ -14,6 +19,8 @@ import re
 import textwrap
 import time
 import os
+
+from functools import partial
 
 from ipaddr import IPv4Address
 from ipaddr import IPv6Address
@@ -31,10 +38,10 @@ from twisted.web import static
 from twisted.web.util import redirectTo
 
 import bridgedb.Dist
-import bridgedb.I18n as I18n
 
 from bridgedb import captcha
 from bridgedb import crypto
+from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4
@@ -45,7 +52,7 @@ from bridgedb.parse import headers
 from bridgedb.safelog import logSafely
 
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__),'templates')
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 GEOIP_DBFILE = '/usr/share/GeoIP/GeoIP.dat'
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
@@ -98,6 +105,22 @@ def replaceErrorPage(error, template_name=None):
                   % (template_name or 'template',
                      mako.exceptions.text_error_template().render()))
 
+    # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+    # any string (regardless of capitalization and/or punctuation):
+    #
+    # "bridge"
+    # "bridges"
+    # "BridgeDB"
+    # "pluggable transport"
+    # "pluggable transports"
+    # "obfs2"
+    # "obfs3"
+    # "scramblesuit"
+    # "fte"
+    # "Tor"
+    # "Tor Browser"
+    # "TBB"
+    #
     errmsg = _("Sorry! Something went wrong with your request.")
     rendered = """<html>
                     <head>
@@ -117,12 +140,21 @@ class CaptchaProtectedResource(resource.Resource):
 
     isLeaf = True
 
-    def __init__(self, useForwardedHeader=False, protectedResource=None):
+    def __init__(self, publicKey=None, secretKey=None,
+                 useForwardedHeader=False, protectedResource=None):
         resource.Resource.__init__(self)
+        self.publicKey = publicKey
+        self.secretKey = secretKey
         self.useForwardedHeader = useForwardedHeader
         self.resource = protectedResource
 
     def getClientIP(self, request):
+        """Get the client's IP address from the :header:`X-Forwarded-For`
+        header, or from the :api:`request <twisted.web.server.Request>`.
+
+        :rtype: None or str
+        :returns: The client's IP address, if it was obtainable.
+        """
         ip = None
         if self.useForwardedHeader:
             h = request.getHeader("X-Forwarded-For")
@@ -185,17 +217,24 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        rtl = False
         image, challenge = self.getCaptchaImage(request)
 
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
+            rtl = translations.usingRTLLang(langs)
             # TODO: this does not work for versions of IE < 8.0
             imgstr = 'data:image/jpeg;base64,%s' % base64.b64encode(image)
             template = lookup.get_template('captcha.html')
-            rendered = template.render(imgstr=imgstr,
+            rendered = template.render(strings,
+                                       rtl=rtl,
+                                       lang=langs[0],
+                                       imgstr=imgstr,
                                        challenge_field=challenge)
         except Exception as err:
             rendered = replaceErrorPage(err, 'captcha.html')
 
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
 
     def render_POST(self, request):
@@ -215,6 +254,8 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+
         if self.checkSolution(request) is True:
             try:
                 rendered = self.resource.render(request)
@@ -234,9 +275,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
     """
 
-    def __init__(self, secretKey=None, publicKey=None, hmacKey=None,
-                 captchaDir='', useForwardedHeader=False,
-                 protectedResource=None):
+    def __init__(self, hmacKey=None, captchaDir='', **kwargs):
         """Protect a resource via this one, using a local CAPTCHA cache.
 
         :param str secretkey: A PKCS#1 OAEP-padded, private RSA key, used for
@@ -258,19 +297,12 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         :param protectedResource: The resource to serve if the client
             successfully passes the CAPTCHA challenge.
         """
-        CaptchaProtectedResource.__init__(self, useForwardedHeader,
-                                          protectedResource)
-        self.secretKey = secretKey
-        self.publicKey = publicKey
+        CaptchaProtectedResource.__init__(self, **kwargs)
         self.hmacKey = hmacKey
         self.captchaDir = captchaDir
 
     def checkSolution(self, request):
-        """Process a solved CAPTCHA by sending rehashing the solution together with
-        the client's IP address, and checking that the result matches the challenge.
-
-        The client's IP address is not sent to the ReCaptcha server; instead,
-        a completely random IP is generated and sent instead.
+        """Process a solved CAPTCHA via :meth:`bridgedb.captcha.GimpCaptcha.check`.
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object, including POST arguments which
@@ -281,14 +313,20 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         :rtupe: bool
         :returns: True, if the CAPTCHA solution was valid; False otherwise.
         """
+        valid = False
         challenge, solution = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
         clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
-        valid = captcha.GimpCaptcha.check(challenge, solution,
-                                          self.secretKey, clientHMACKey)
+
+        try:
+            valid = captcha.GimpCaptcha.check(challenge, solution,
+                                              self.secretKey, clientHMACKey)
+        except captcha.CaptchaExpired as error:
+            logging.warn(error)
+            valid = False
+
         logging.debug("%sorrect captcha from %r: %r."
                       % ("C" if valid else "Inc", clientIP, solution))
-
         return valid
 
     def getCaptchaImage(self, request):
@@ -308,7 +346,7 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         # Create a new HMAC key, specific to requests from this client:
         clientIP = self.getClientIP(request)
         clientHMACKey = crypto.getHMAC(self.hmacKey, clientIP)
-        capt = captcha.GimpCaptcha(self.secretKey, self.publicKey,
+        capt = captcha.GimpCaptcha(self.publicKey, self.secretKey,
                                    clientHMACKey, self.captchaDir)
         try:
             capt.get()
@@ -359,13 +397,9 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
     .. _reCaptcha: http://www.google.com/recaptcha
     """
 
-    def __init__(self, recaptchaPrivKey='', recaptchaPubKey='', remoteip='',
-                 useForwardedHeader=False, protectedResource=None):
-        CaptchaProtectedResource.__init__(self, useForwardedHeader,
-                                          protectedResource)
-        self.recaptchaPrivKey = recaptchaPrivKey
-        self.recaptchaPubKey = recaptchaPubKey
-        self.recaptchaRemoteIP = remoteip
+    def __init__(self, remoteIP=None, **kwargs):
+        CaptchaProtectedResource.__init__(self, **kwargs)
+        self.remoteIP = remoteIP
 
     def _renderDeferred(self, checkedRequest):
         """Render this resource asynchronously.
@@ -410,7 +444,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             - ``image`` is a string holding a binary, JPEG-encoded image.
             - ``challenge`` is a unique string associated with the request.
         """
-        capt = captcha.ReCaptcha(self.recaptchaPubKey, self.recaptchaPrivKey)
+        capt = captcha.ReCaptcha(self.publicKey, self.secretKey)
 
         try:
             capt.get()
@@ -426,14 +460,14 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         """Mask the client's real IP address with a faked one.
 
         The fake client IP address is sent to the reCaptcha server, and it is
-        either the public IP address of bridges.torproject.org (if
-        ``RECAPTCHA_REMOTE_IP`` is configured), or a random IP.
+        either the public IP address of bridges.torproject.org (if the config
+        option ``RECAPTCHA_REMOTE_IP`` is configured), or a random IP.
 
         :rtype: str
         :returns: A fake IP address to report to the reCaptcha API server.
         """
-        if self.recaptchaRemoteIP:
-            remoteIP = self.recaptchaRemoteIP
+        if self.remoteIP:
+            remoteIP = self.remoteIP
         else:
             # generate a random IP for the captcha submission
             remoteIP = IPv4Address(random.randint(0, 2**32-1)).compressed
@@ -453,10 +487,13 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             ``'captcha_response_field'``. These POST arguments should be
             obtained from :meth:`render_GET`.
         :rtupe: :api:`twisted.internet.defer.Deferred`
-        :returns: the returned deferred will callback with a tuple of
-                (``bool``, :api:`twisted.web.server.Request`). If the CAPTCHA
-            solution was valid, a tuple will contain ``(True, request)``;
-            otherwise, it will contain ``(False, request)``.
+        :returns: A deferred which will callback with a tuple in the following
+            form:
+                (:type:`bool`, :api:`twisted.web.server.Request`)
+            If the CAPTCHA solution was valid, a tuple will contain::
+                (True, Request)
+            Otherwise, it will contain::
+                (False, Request)
         """
         challenge, response = self.extractClientSolution(request)
         clientIP = self.getClientIP(request)
@@ -485,7 +522,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
                              % (clientIP, solution.error_code))
                 return (False, request)
 
-        d = txrecaptcha.submit(challenge, response, self.recaptchaPrivKey,
+        d = txrecaptcha.submit(challenge, response, self.secretKey,
                                remoteIP).addCallback(checkResponse, request)
         return d
 
@@ -538,15 +575,15 @@ class WebResourceOptions(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('options.html')
+            rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            logging.exception(err)
-
+            rendered = replaceErrorPage(err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return lookup.get_template('options.html').render(rtl=rtl)
+        return rendered
 
     render_POST = render_GET
 
@@ -563,15 +600,15 @@ class WebResourceHowto(resource.Resource):
 
     def render_GET(self, request):
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('howto.html')
+            rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            logging.exception(err)
-
+            rendered = replaceErrorPage(err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return lookup.get_template('howto.html').render(rtl=rtl)
+        return rendered
 
     render_POST = render_GET
 
@@ -588,7 +625,7 @@ class WebResourceBridges(resource.Resource):
         :type distributor: :class:`IPBasedDistributor`
         :param distributor: The mechanism to retrieve bridges for this
             distributor.
-        :type schedule: :class:`IntervalSchedule`
+        :type schedule: :class:`~bridgedb.schedule.ScheduledInterval`
         :param schedule: The time period used to tweak the bridge selection
             procedure.
         :param int N: The number of bridges to hand out per query.
@@ -638,7 +675,7 @@ class WebResourceBridges(resource.Resource):
         :returns: A plaintext or HTML response to serve.
         """
         # XXX why are we getting the interval if our distributor might be
-        # using bridgedb.Time.NoSchedule?
+        # using bridgedb.schedule.Unscheduled?
         interval = self.schedule.getInterval(time.time())
         bridges = ( )
         ip = None
@@ -661,11 +698,6 @@ class WebResourceBridges(resource.Resource):
             countryCode = geoip.country_code_by_addr(ip)
             if countryCode:
                 logging.debug("Client request from GeoIP CC: %s" % countryCode)
-
-        langs = translations.getLocaleFromHTTPRequest(request)
-        rtl = translations.usingRTLLang(langs)
-        if rtl:
-            logging.debug("Rendering RTL response.")
 
         # XXX separate function again
         format = request.args.get("format", None)
@@ -728,10 +760,10 @@ class WebResourceBridges(resource.Resource):
                 request=bridgedb.Dist.uniformMap(ip)
                 ) for b in bridges)
 
-        answer = self.renderAnswer(request, bridgeLines, rtl, format)
+        answer = self.renderAnswer(request, bridgeLines, format)
         return answer
 
-    def renderAnswer(self, request, bridgeLines=None, rtl=False, format=None):
+    def renderAnswer(self, request, bridgeLines=None, format=None):
         """Generate a response for a client which includes **bridges**.
 
         The generated response can be plaintext or HTML.
@@ -742,8 +774,6 @@ class WebResourceBridges(resource.Resource):
         :type bridgeLines: list or None
         :param bridgeLines: A list of strings used to configure a Tor client
             to use a bridge.
-        :param bool rtl: If ``True``, the language used for the response to
-            the client should be rendered right-to-left.
         :type format: str or None
         :param format: If ``'plain'``, return a plaintext response. Otherwise,
             use the :file:`bridgedb/templates/bridges.html` template to render
@@ -751,17 +781,21 @@ class WebResourceBridges(resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
+        rtl = False
+
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             rendered = bridgeLines
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
             try:
-                # XXX FIXME the returned page from
-                # ``WebResourceBridgesTests.test_render_GET_RTLlang``
-                # is in Arabic and has `<html lang="en">`! Doh.
+                langs = translations.getLocaleFromHTTPRequest(request)
+                rtl = translations.usingRTLLang(langs)
                 template = lookup.get_template('bridges.html')
-                rendered = template.render(answer=bridgeLines, rtl=rtl)
+                rendered = template.render(strings,
+                                           rtl=rtl,
+                                           lang=langs[0],
+                                           answer=bridgeLines)
             except Exception as err:
                 rendered = replaceErrorPage(err)
 
@@ -783,103 +817,122 @@ class WebRoot(resource.Resource):
         :param request: An incoming request.
         """
         rtl = False
-        langs = translations.getLocaleFromHTTPRequest(request)
-
         try:
+            langs = translations.getLocaleFromHTTPRequest(request)
             rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template('index.html')
+            rendered = template.render(strings,
+                                       rtl=rtl,
+                                       lang=langs[0])
         except Exception as err:
-            logging.exception(err)
-            logging.error("The gettext files were not properly installed.")
-            logging.info("To install translations, try doing `python " \
-                         "setup.py compile_catalog`.")
+            rendered = replaceErrorPage(err)
 
-        return lookup.get_template('index.html').render(rtl=rtl)
+        return rendered
 
 
 def addWebServer(cfg, dist, sched):
-    """Set up a web server.
+    """Set up a web server for HTTP(S)-based bridge distribution.
 
-    :param cfg: A configuration object from :mod:`bridgedb.Main`. Currently,
-         we use these options::
-             HTTPS_N_BRIDGES_PER_ANSWER
+    :type cfg: :class:`bridgedb.persistent.Conf`
+    :param cfg: A configuration object from
+         :mod:`bridgedb.Main`. Currently, we use these options::
              HTTP_UNENCRYPTED_PORT
              HTTP_UNENCRYPTED_BIND_IP
              HTTP_USE_IP_FROM_FORWARDED_HEADER
+             HTTPS_N_BRIDGES_PER_ANSWER
+             HTTPS_INCLUDE_FINGERPRINTS
+             HTTPS_KEY_FILE
+             HTTPS_CERT_FILE
              HTTPS_PORT
              HTTPS_BIND_IP
              HTTPS_USE_IP_FROM_FORWARDED_HEADER
              RECAPTCHA_ENABLED
              RECAPTCHA_PUB_KEY
-             RECAPTCHA_PRIV_KEY
+             RECAPTCHA_SEC_KEY
              RECAPTCHA_REMOTEIP
              GIMP_CAPTCHA_ENABLED
              GIMP_CAPTCHA_DIR
+             GIMP_CAPTCHA_HMAC_KEYFILE
+             GIMP_CAPTCHA_RSA_KEYFILE
     :type dist: :class:`bridgedb.Dist.IPBasedDistributor`
     :param dist: A bridge distributor.
-    :type sched: :class:`bridgedb.Time.IntervalSchedule`
-    :param sched: DOCDOC
+    :type sched: :class:`bridgedb.schedule.ScheduledInterval`
+    :param sched: The scheduled interval at which bridge selection, which
+        are ultimately displayed on the :class:`WebResourceBridges` page, will
+        be shifted.
+    :raises SystemExit: if the servers cannot be started.
+    :rtype: :api:`twisted.web.server.Site`
+    :returns: A webserver.
     """
+    captcha = None
+    fwdHeaders = cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER
+    numBridges = cfg.HTTPS_N_BRIDGES_PER_ANSWER
+    fprInclude = cfg.HTTPS_INCLUDE_FINGERPRINTS
+
+    logging.info("Starting web servers...")
+
     httpdist = resource.Resource()
     httpdist.putChild('', WebRoot())
     httpdist.putChild('robots.txt',
                       static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
+    httpdist.putChild('keys',
+                      static.File(os.path.join(TEMPLATE_DIR, 'bridgedb.asc')))
     httpdist.putChild('assets',
                       static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
     httpdist.putChild('options', WebResourceOptions())
     httpdist.putChild('howto', WebResourceHowto())
 
-    bridgesResource = WebResourceBridges(
-        dist, sched, cfg.HTTPS_N_BRIDGES_PER_ANSWER,
-        cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-        includeFingerprints=cfg.HTTPS_INCLUDE_FINGERPRINTS)
-
     if cfg.RECAPTCHA_ENABLED:
-        protected = ReCaptchaProtectedResource(
-                recaptchaPrivKey=cfg.RECAPTCHA_PRIV_KEY,
-                recaptchaPubKey=cfg.RECAPTCHA_PUB_KEY,
-                remoteip=cfg.RECAPTCHA_REMOTEIP,
-                useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-                protectedResource=bridgesResource)
-        httpdist.putChild('bridges', protected)
-
+        publicKey = cfg.RECAPTCHA_PUB_KEY
+        secretKey = cfg.RECAPTCHA_SEC_KEY
+        captcha = partial(ReCaptchaProtectedResource,
+                          remoteIP=cfg.RECAPTCHA_REMOTEIP)
     elif cfg.GIMP_CAPTCHA_ENABLED:
-        # Get the HMAC secret key for CAPTCHA challenges and create a new key
-        # from it for use on the server:
+        # Get the master HMAC secret key for CAPTCHA challenges, and then
+        # create a new HMAC key from it for use on the server.
         captchaKey = crypto.getKey(cfg.GIMP_CAPTCHA_HMAC_KEYFILE)
         hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key")
-
         # Load or create our encryption keys:
         secretKey, publicKey = crypto.getRSAKey(cfg.GIMP_CAPTCHA_RSA_KEYFILE)
+        captcha = partial(GimpCaptchaProtectedResource,
+                          hmacKey=hmacKey,
+                          captchaDir=cfg.GIMP_CAPTCHA_DIR)
 
-        protected = GimpCaptchaProtectedResource(
-            secretKey=secretKey,
-            publicKey=publicKey,
-            hmacKey=hmacKey,
-            captchaDir=cfg.GIMP_CAPTCHA_DIR,
-            useForwardedHeader=cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER,
-            protectedResource=bridgesResource)
+    bridges = WebResourceBridges(dist, sched, numBridges,
+                                 fwdHeaders, includeFingerprints=fprInclude)
+    if captcha:
+        # Protect the 'bridges' page with a CAPTCHA, if configured to do so:
+        protected = captcha(publicKey=publicKey,
+                            secretKey=secretKey,
+                            useForwardedHeader=fwdHeaders,
+                            protectedResource=bridges)
         httpdist.putChild('bridges', protected)
+        logging.info("Protecting resources with %s." % captcha.func.__name__)
     else:
-        httpdist.putChild('bridges', bridgesResource)
+        httpdist.putChild('bridges', bridges)
 
     site = server.Site(httpdist)
+    site.displayTracebacks = False
 
     if cfg.HTTP_UNENCRYPTED_PORT:
         ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
+        port = cfg.HTTP_UNENCRYPTED_PORT or 80
         try:
-            reactor.listenTCP(cfg.HTTP_UNENCRYPTED_PORT, site, interface=ip)
+            reactor.listenTCP(port, site, interface=ip)
         except CannotListenError as error:
             raise SystemExit(error)
+        logging.info("Started HTTP server on %s:%d" % (str(ip), int(port)))
 
     if cfg.HTTPS_PORT:
-        from twisted.internet.ssl import DefaultOpenSSLContextFactory
-        #from OpenSSL.SSL import SSLv3_METHOD
         ip = cfg.HTTPS_BIND_IP or ""
-        factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
-                                               cfg.HTTPS_CERT_FILE)
+        port = cfg.HTTPS_PORT or 443
         try:
-            reactor.listenSSL(cfg.HTTPS_PORT, site, factory, interface=ip)
+            from twisted.internet.ssl import DefaultOpenSSLContextFactory
+            factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
+                                                   cfg.HTTPS_CERT_FILE)
+            reactor.listenSSL(port, site, factory, interface=ip)
         except CannotListenError as error:
             raise SystemExit(error)
+        logging.info("Started HTTPS server on %s:%d" % (str(ip), int(port)))
 
     return site

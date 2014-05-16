@@ -156,14 +156,15 @@ def get_supported_langs():
         lang_dirs.append(os.path.join(install_i18n, lang))
         lang_files.append(os.path.join(repo_i18n, lang,
                                        'LC_MESSAGES', 'bridgedb.mo'))
+    supported.sort()
 
     # Write our list of supported languages to 'lib/bridgedb/_langs.py':
     new_langs_lines = []
     with open(repo_langs, 'r') as langsfile:
         for line in langsfile.readlines():
             if line.startswith('supported'):
-                line = "supported = %s\n" % supported
-                #print("REWROTE supported langs: %s" % line)
+                # Change the 'supported' list() into a set():
+                line = "supported = set(%s)\n" % supported
             new_langs_lines.append(line)
     with open(repo_langs, 'w') as newlangsfile:
         for line in new_langs_lines:
@@ -278,6 +279,7 @@ setuptools.setup(
     download_url='https://gitweb.torproject.org/bridgedb.git',
     package_dir={'': 'lib'},
     packages=['bridgedb',
+              'bridgedb.email',
               'bridgedb.parse',
               'bridgedb.test'],
     scripts=['scripts/bridgedb'],

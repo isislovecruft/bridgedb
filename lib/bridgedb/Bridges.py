@@ -89,44 +89,40 @@ def is_valid_fingerprint(fp):
 toHex = binascii.b2a_hex
 fromHex = binascii.a2b_hex
 
-def chopString(s, size):
-    """Generator. Given a string and a length, divide the string into pieces
-       of no more than that length.
-    """
-    for pos in xrange(0, len(s), size):
-        yield s[pos:pos+size]
 
 class Bridge(object):
-    """Holds information for a single bridge
+    """Holds information for a single bridge, along with any Pluggable
+    Transports it is also running.
 
     :attr str nickname: The bridge's nickname.  Not currently used.
-    :type ip: :class:`ipaddr.IPAddress`
-    :attr ip: The bridge's IPv4 address, specified on 'r'-line in NS
+    :attr ip: (:class:`ipaddr.IPAddress`) The bridge's IPv4 address, specified
+        on the 'r'-line in a networkstatus document.
     :attr int orport: The bridge's OR port.
-    :attr dict or_addresses: The bridges alternate IP addresses, keys
-                             the address, values are the port(s) on
-                             which it listens.
-    :attr list transports: List of PluggableTransport instances for
-                           each PT the bridge supports.
-    :attr str fingerprint: The bridge's identity digest, in lowercase
-                           hex, with no spaces.
-    :attr bool running: Is this bridge running?
-    :attr bool stable: Is this bridge stable?
-    :attr dict blockingCountries: list of country codes blocking this
-                                  bridge
-    :attr str desc_digest: SHA-1 hexdigest of the bridge's descriptor
-                           as defined in the networkstatus document
-    :attr str ei_digest: SHA-1 hexdigest of the bridge's extra-info
-                         document as defined in the bridge's
-                         descriptor, corresponding to desc_digest
-    :attr bool verified: Did we receive the descriptor for this
-                         bridge that was specified in the
-                         networkstatus?
+    :attr dict or_addresses: The bridges alternate IP addresses. The keys
+        should be instances of ``ipaddr.IPAddress``, and the value should be a
+        :class:`bridgedb.parse.addr.PortList` for the port(s) on which that
+        address is listening.
+    :attr list transports: List of :class:`PluggableTransport` instances for
+        each PT which the bridge supports.
+    :attr str fingerprint: The bridge's identity digest, in lowercase hex,
+        without whitespace.
+    :attr bool running: ``True``, if this bridge was given the ``Running`` flag.
+    :attr bool stable: ``True``, if this bridge was given the ``Stable`` flag.
+    :attr dict blockingCountries: A dictionary whose keys are strings of
+        ``"IP:port"`` pairs, and the keys are lists of two letter country
+        codes which block that IP:port. For example::
+            {"1.2.3.4:9001": ['sk', 'us', 'ir', 'cn']}
+    :attr str desc_digest: SHA1 hexdigest of the bridge's descriptor as
+        defined in the networkstatus document.
+    :attr str ei_digest: SHA1 hexdigest of the bridge's extra-info document as
+        given in the bridge's descriptor, corresponding to desc_digest.
+    :attr bool verified: Did we receive the descriptor for this bridge that
+        was specified in the networkstatus?
     """
     def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
                  or_addresses=None, transports=None):
-        """Create a new Bridge.  One of fingerprint and id_digest must be
-           set."""
+        """Create a new Bridge. One of fingerprint and id_digest must be set.
+        """
         self.nickname = nickname
         self.ip = ip
         self.orport = orport
