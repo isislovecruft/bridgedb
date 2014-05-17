@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 
 import logging
 import io
+import socket
 import time
 
 from twisted.internet import defer
@@ -224,6 +225,8 @@ class MailContext(object):
         self.nBridges = config.EMAIL_N_BRIDGES_PER_ANSWER
 
         self.username = (config.EMAIL_USERNAME or "bridges")
+        self.hostname = socket.gethostname()
+        self.hostaddr = socket.gethostbyname(self.hostname)
         self.fromAddr = (config.EMAIL_FROM_ADDR or "bridges@torproject.org")
         self.smtpFromAddr = (config.EMAIL_SMTP_FROM_ADDR or self.fromAddr)
         self.smtpServerPort = (config.EMAIL_SMTP_PORT or 25)
@@ -682,18 +685,39 @@ class MailDelivery(object):
         return hdr
 
     def validateFrom(self, helo, origin):
+        """Validate the ``"From:"`` address on the incoming email.
+
+        This is done at the SMTP layer. Meaning that if a Postfix or other
+        email server is proxying emails from the outside world to BridgeDB,
+        the ``origin.domain`` will be set to the local hostname.
+
+        :type helo: tuple
+        :param helo: The lines received during SMTP client HELO.
+        :type origin: :api:`twisted.mail.smtp.Address`
+        :param origin: The email address we received this message from.
+        :raises: :api:`twisted.mail.smtp.SMTPBadSender` if the
+            ``origin.domain`` was neither our local hostname, nor one of the
+            canonical domains listed in :ivar:`context.canon`.
+        :rtype: :api:`twisted.mail.smtp.Address`
+        :returns: The ``origin``. We *must* return some non-``None`` data from
+            this method, or else Twisted will reply to the sender with a 503
+            error.
+        """
         try:
-            logging.debug("ORIGIN: %r" % repr(origin.addrstr))
-            canonical = canonicalizeEmailDomain(origin.domain,
-                                                self.context.canon)
+            if ((origin.domain == self.context.hostname) or
+                (origin.domain == self.context.hostaddr)):
+                return origin
+            else:
+                logging.debug("ORIGIN DOMAIN: %r" % origin.domain)
+                canonical = canonicalizeEmailDomain(origin.domain,
+                                                    self.context.canon)
+                logging.debug("Got canonical domain: %r" % canonical)
+                self.fromCanonical = canonical
         except UnsupportedDomain as error:
             logging.info(error)
             raise smtp.SMTPBadSender(origin.domain)
         except Exception as error:
             logging.exception(error)
-        else:
-            logging.debug("Got canonical domain: %r" % canonical)
-            self.fromCanonical = canonical
         return origin  # This method *cannot* return None, or it'll cause a 503.
 
     def validateTo(self, user):
