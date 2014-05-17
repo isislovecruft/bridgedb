@@ -515,7 +515,8 @@ class MailMessage(object):
         :returns: A ``Message`` comprised of all lines received thus far.
         """
         rawMessage = io.StringIO()
-        rawMessage.writelines([unicode('{0}\n'.format(ln)) for ln in self.lines])
+        for ln in self.lines:
+            rawMessage.writelines(unicode(ln) + unicode('\n'))
         rawMessage.seek(0)
         return smtp.rfc822.Message(rawMessage)
 
