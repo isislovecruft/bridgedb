@@ -103,9 +103,8 @@ def addHowto(template):
 def addFooter(template, clientAddress=None):
     """Add a footer.
 
-    --
+     --
      <3 BridgeDB
-
     ________________________________________________________________________
     Public Keys: https://bridges.torproject.org/keys
 
@@ -115,8 +114,8 @@ def addFooter(template, clientAddress=None):
     now = datetime.utcnow()
     clientAddr = clientAddress.addrstr
 
-    footer  = u'--\n'
-    footer += u' <3 BridgeDB\n\n'
+    footer  = u' --\n'
+    footer += u' <3 BridgeDB\n'
     footer += u'_' * 70
     footer += u'\n'
     footer += template.gettext(strings.EMAIL_MISC_TEXT[8])
