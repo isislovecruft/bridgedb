@@ -106,7 +106,7 @@ def addFooter(template, clientAddress=None):
     --
      <3 BridgeDB
 
-    -------------------------------------------------------------------------
+    ________________________________________________________________________
     Public Keys: https://bridges.torproject.org/keys
 
     This email was generated with rainbows, unicorns, and sparkles
@@ -117,7 +117,7 @@ def addFooter(template, clientAddress=None):
 
     footer  = u'--\n'
     footer += u' <3 BridgeDB\n\n'
-    footer += u'-' * 70
+    footer += u'_' * 70
     footer += u'\n'
     footer += template.gettext(strings.EMAIL_MISC_TEXT[8])
     footer += u': https://bridges.torproject.org/keys\n'
