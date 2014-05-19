@@ -318,7 +318,7 @@ class MailResponse(object):
     def read(self, *args, **kwargs):
         self.mailfile.read(*args, **kwargs)
     read.__doc__ = mailfile.read.__doc__
-     
+
     def readline(self, *args, **kwargs):
         self.mailfile.readline(*args, **kwargs)
     readline.__doc__ = mailfile.readline.__doc__
@@ -330,11 +330,11 @@ class MailResponse(object):
     def seek(self, *args, **kwargs):
         self.mailfile.seek(*args, **kwargs)
     seek.__doc__ = mailfile.seek.__doc__
-    
+
     def tell(self, *args, **kwargs):
         self.mailfile.tell(*args, **kwargs)
     tell.__doc__ = mailfile.tell.__doc__
-    
+
     def truncate(self, *args, **kwargs):
         self.mailfile.truncate(*args, **kwargs)
     truncate.__doc__ = mailfile.truncate.__doc__
