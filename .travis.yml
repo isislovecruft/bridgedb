@@ -16,6 +16,10 @@ notifications:
     on_success: never
     on_failure: change
 
+addons:
+  hosts:
+    - bridges.torproject.org
+
 before_install:
   - sudo apt-get update
   # Distro development header/library/resource/buildtime dependencies
