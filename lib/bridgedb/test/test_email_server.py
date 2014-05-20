@@ -683,8 +683,9 @@ class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
         self.transport.protocol = self.proto
         self.proto.makeConnection(self.transport)
 
-        self._test(['HELO localhost',
-                    'MAIL FROM: testing@localhost',
+        serverHost = socket.gethostname()
+        self._test(['HELO %s' % serverHost,
+                    'MAIL FROM: testing@%s' % serverHost,
                     'RCPT TO: %s' % self.smtpFromAddr,
                     "DATA", self._buildEmail(body="get transport obfs3")],
                    "250 Delivery in progress",
