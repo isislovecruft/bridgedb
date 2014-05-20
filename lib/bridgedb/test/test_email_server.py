@@ -529,14 +529,43 @@ class SMTPTestCaseMixin(TestCaseMixin):
         self.assertSubstring(expected, recv)
 
 
-class EmailServerServiceTests(unittest.TestCase):
+class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
+    """Unittests for :func:`bridgedb.email.server.addServer`."""
+
     def setUp(self):
+        """Create a server.MailContext and EmailBasedDistributor."""
         self.config = _createConfig()
         self.context = _createMailContext(self.config)
-        self.distributor = self.context.distributor
+        self.smtpFromAddr = self.context.smtpFromAddr  # 'bridges@localhost'
+        self.sched = Unscheduled()
+        self.dist = self.context.distributor
+
+    def tearDown(self):
+        """Kill all connections with fire."""
+        if self.transport:
+            self.transport.loseConnection()
+        super(EmailServerServiceTests, self).tearDown()
+        # FIXME: this is definitely not how we're supposed to do this, but it
+        # kills the DirtyReactorAggregateErrors.
+        reactor.disconnectAll()
+        reactor.runUntilCurrent()
 
     def test_addServer(self):
-        self.skip = True
-        raise unittest.SkipTest("Not finished yet")
-        from twisted.internet import reactor
-        server.addServer(self.config, self.distributor, Unscheduled)
+        """Call :func:`bridgedb.email.server.addServer` to test startup."""
+        factory = server.addServer(self.config, self.dist, self.sched)
+        factory.timeout = None
+        factory.protocol.timeout = None  # Or else the reactor gets dirty
+
+        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.proto.setTimeout(None)
+        # Set the transport's protocol, because
+        # StringTransportWithDisconnection is a bit janky:
+        self.transport.protocol = self.proto
+        self.proto.makeConnection(self.transport)
+
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr,
+                    "DATA", self._buildEmail(body="get transport obfs3")],
+                   "250 Delivery in progress",
+                   noisy=True)
