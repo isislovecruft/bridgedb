@@ -27,7 +27,7 @@ while [ -h "$THIS_FILE" ]; do
     THIS_FILE="$(readlink "$THIS_FILE")"
     # if $THIS_FILE was a relative symlink, we need to resolve it relative to
     # the path where the symlink file was located:
-    [[ $THIS_FILE != /* ]] && THIS_FILE="$THIS_PATH/$THIS_FILE" 
+    [[ $THIS_FILE != /* ]] && THIS_FILE="$THIS_PATH/$THIS_FILE"
 done
 
 THIS_PATH="$( cd -P "$( dirname "$THIS_FILE" )" && pwd )"
