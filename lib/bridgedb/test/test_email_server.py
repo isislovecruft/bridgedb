@@ -26,9 +26,12 @@ from bridgedb.persistent import Conf
 from bridgedb.schedule import Unscheduled
 from bridgedb.test.test_HTTPServer import DummyBridge
 from bridgedb.test.util import fileCheckDecorator
+from bridgedb.test.util import TestCaseMixin
 
 from twisted.python import log
 from twisted.internet import defer
+from twisted.internet import reactor
+from twisted.test import proto_helpers
 from twisted.trial import unittest
 
 
@@ -414,6 +417,116 @@ class MailDeliveryTest(unittest.TestCase):
         user = server.smtp.User('yo.mama', self.helo, None, self.origin)
         self.assertRaises(server.smtp.SMTPBadRcpt,
                           self.delivery.validateTo, user)
+
+
+class SMTPTestCaseMixin(TestCaseMixin):
+    """Utility methods for use within any subclasses of
+    :api:`twisted.trial.unittest.TestCase` which test SMTP.
+
+    To use me, subclass :api:`twisted.trial.unittest.TestCase` and mix me into
+    the middle of your class inheritance declarations, like so::
+
+        class ExampleSMTPTests(SMTPTestCaseMixin, unittest.TestCase):
+            pass
+
+    and then make certain that your ``TestCase`` subclass has its ``proto``
+    and attribute assigned properly::
+
+        class ExampleSMTPTests(SMTPTestCaseMixin, unittest.TestCase):
+            def setUp(self):
+                factory = twisted.mail.smtp.SMTPFactory()
+                self.proto = self.factory.buildProtocol(('127.0.0.1', 0))
+
+
+    :ivar proto: A :api:`Protocol <twisted.internet.protocol.Protocol>`
+        associated with a
+        :api:`ServerFactory <twisted.internet.protocol.ServerFactory>`.
+    :ivar transport: Anything that implements
+        :api:`ITransport <twisted.internet.interfaces.ITransport>`. The default
+        is a :api:`twisted.test.proto_helpers.StringTransportWithDisconection`.
+    :ivar str smtpFromAddr: The default email address for the server.
+    """
+
+    proto = None
+    transport = proto_helpers.StringTransportWithDisconnection()
+    smtpFromAddr = None
+
+    def tearDown(self):
+        """Cleanup method after each ``test_*`` method runs; removes timed out
+        connections on the reactor and clears the :ivar:`transport`.
+        """
+        self.transport.clear()  # Clear bytes from the transport.
+
+        for delay in reactor.getDelayedCalls():
+            try:
+                delay.cancel()
+            except (AlreadyCalled, AlreadyCancelled):
+                pass
+
+    def _buildEmail(self, fromAddr=None, toAddr=None, subject=None, body=None):
+        """Creates email text (including headers) for use in an SMTP DATA
+         segment. Includes the SMTP DATA EOM command ('.') at the end. If no
+         keyword arguments are given, the defaults are fairly sane.
+
+        Suitable for testing a :class:`bridgedb.email.server.MailFactory`.
+
+        :param str fromAddr: An email address for the 'From:' header.
+        :param str toAddr: An email address for the 'To:' header.
+        :param str subject: The contents of the 'Subject:' header.
+        :param str body: The contents of the email body.
+        :rtype: str
+        :returns: The email text.
+        """
+        fromAddr = fromAddr if fromAddr else 'testing@localhost'
+        toAddr = toAddr if toAddr else self.smtpFromAddr
+        subject = subject if subject else 'testing testing one two three'
+        body = body if body else 'get bridges'
+
+        contents = ['From: %s' % fromAddr,
+                    'To: %s' % toAddr,
+                    'Subject: %s' % subject,
+                    '\r\n %s' % body,
+                    '.']  # SMTP DATA EOM command
+        emailText = self.proto.delimiter.join(contents)
+        return emailText
+
+    def _buildSMTP(self, commands):
+        """Format a list of SMTP protocol commands into a string, using the proper
+         protocol delimiter.
+
+        :param list commands: A list of raw SMTP-protocol command lines.
+        :rtype: str
+        :returns: The string for sending those **commands**, suitable for
+            giving to a :api:`twisted.internet.Protocol.dataReceived` method.
+        """
+        data = self.proto.delimiter.join(commands) + self.proto.delimiter
+        return data
+
+    def _test(self, commands, expected, noisy=False):
+        """Send the SMTP **commands** to the ``dataReceived`` method of your
+         TestCase's protocol (this must be the `proto` attribute of your
+         `TestCase`, i.e. this uses ``TestCase.proto.dataReceived``). Next,
+         check that the substring which is **expected** to be within the
+         server's output matches what was received from :ivar`transport`.
+
+        :param list commands: A sequence of raw SMTP command lines. This will
+            automatically be passed to :meth:`_buildSMTP`.
+        :param str expected: A substring which should occur in the "server"
+            output (taken from the :ivar:`transport`).
+        :param bool noisy: If ``True``, print the conversation between the
+            "client" and the "server" in a nicely formatted manner.
+        """
+        data = self._buildSMTP(commands)
+        self.proto.dataReceived(data)
+        recv = self.transport.value()
+
+        if noisy:
+            client = data.replace('\r\n', '\r\n ')
+            server = recv.replace('\r\n', '\r\n\t\t ')
+            print('\n CLIENT --------->', '\n %s' % client)
+            print('\t\t', '<--------- SERVER', '\n\t\t %s' % server)
+
+        self.assertSubstring(expected, recv)
 
 
 class EmailServerServiceTests(unittest.TestCase):
