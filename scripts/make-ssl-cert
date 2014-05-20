@@ -40,7 +40,8 @@ function usage () {
     printf "for automation and CI tests."
     printf "\n"
 }
-if test "$#" -gt "1" ; then usage ; fi
+
+if test "$#" -ge 1 ; then usage ; exit 1 ; fi
 
 # Go to the toplevel directory of the BridgeDB repo:
 cd $REPO_PATH
