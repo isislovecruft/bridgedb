@@ -17,6 +17,7 @@ import io
 import copy
 import os
 import shutil
+import socket
 import types
 
 from bridgedb.Dist import EmailBasedDistributor
@@ -47,8 +48,9 @@ EMAIL_DOMAIN_MAP = {
 EMAIL_DOMAIN_RULES = {
    'gmail.com': ["ignore_dots", "dkim"],
    'example.com': [],
+   'localhost': [],
 }
-EMAIL_DOMAINS = ["gmail.com", "example.com"]
+EMAIL_DOMAINS = ["gmail.com", "example.com", "localhost"]
 EMAIL_USERNAME = "bridges"
 EMAIL_SMTP_HOST = "127.0.0.1"
 EMAIL_SMTP_PORT = 25
@@ -58,6 +60,7 @@ EMAIL_FROM_ADDR = "bridges@localhost"
 EMAIL_BIND_IP = "127.0.0.1"
 EMAIL_PORT = 5225
 """))
+
 
 def _createConfig(configFile=TEST_CONFIG_FILE):
     configuration = {}
@@ -527,6 +530,123 @@ class SMTPTestCaseMixin(TestCaseMixin):
             print('\t\t', '<--------- SERVER', '\n\t\t %s' % server)
 
         self.assertSubstring(expected, recv)
+
+
+class MailFactoryTests(SMTPTestCaseMixin, unittest.TestCase):
+    """Unittests for :class:`bridgedb.email.server.MailFactory`."""
+
+    def setUp(self):
+        """Set up a localhost MailFactory handler incoming SMTP connections."""
+        config = _createConfig()
+        context = _createMailContext(config)
+        factory = server.MailFactory(context)
+        factory.protocol.timeout = None  # Otherwise the reactor gets dirty
+
+        self.smtpFromAddr = context.smtpFromAddr  # 'bridges@localhost'
+        self.proto = factory.buildProtocol(('127.0.0.1', 0))
+        self.transport = proto_helpers.StringTransportWithDisconnection()
+        self.proto.setTimeout(None)
+        # Set the protocol; StringTransportWithDisconnection is a bit janky:
+        self.transport.protocol = self.proto
+        self.proto.makeConnection(self.transport)
+
+    def test_MailFactory_HELO_localhost(self):
+        """Send 'HELO localhost' to the server's transport."""
+        ip = self.transport.getPeer().host
+        self._test(['HELO localhost'],
+                   "Hello %s, nice to meet you" % ip)
+
+    def test_MailFactory_MAIL_FROM_testing_at_localhost(self):
+        """Send 'MAIL FROM: human@localhost'."""
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost'],
+                   "250 Sender address accepted")
+
+    def test_MailFactory_MAIL_FROM_testing_at_gethostname(self):
+        """Send 'MAIL FROM: human@hostname' for the local hostname."""
+        hostname = socket.gethostname() or "computer"
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@%s' % hostname],
+                   "250 Sender address accepted")
+
+    def test_MailFactory_MAIL_FROM_testing_at_ipaddress(self):
+        """Send 'MAIL FROM: human@ipaddr' for the loopback IP address."""
+        hostname = socket.gethostbyname(socket.gethostname()) or "127.0.0.1"
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@%s' % hostname],
+                   "250 Sender address accepted")
+
+    def test_MailFactory_RCPT_TO_config_EMAIL_SMTP_FROM_ADDR(self):
+        """Send 'RCPT TO:' with the context.smtpFromAddr."""
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr],
+                   "250 Recipient address accepted")
+
+    def test_MailFactory_DATA_blank(self):
+        """A DATA command with nothing after it should receive::
+            '354 Continue'
+        in response.
+        """
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr,
+                    "DATA"],
+                   "354 Continue")
+
+    def test_MailFactory_DATA_get_help(self):
+        """A DATA command with ``'get help'`` in the email body should
+        receive::
+            '250 Delivery in progress'
+        in response.
+        """
+        emailText = self._buildEmail(body="get help")
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr,
+                    "DATA", emailText],
+                   "250 Delivery in progress",
+                   noisy=True)
+
+    def test_MailFactory_DATA_get_transport_obfs3(self):
+        """A DATA command with ``'get transport obfs3'`` in the email body
+        should receive::
+            '250 Delivery in progress'
+        in response.
+        """
+        emailText = self._buildEmail(body="get transport obfs3")
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr,
+                    "DATA", emailText],
+                   "250 Delivery in progress",
+                   noisy=True)
+
+    def test_MailFactory_DATA_To_bridges_plus_zh_CN(self):
+        """Test sending to 'bridges+zh_CN' address for Chinese translations."""
+        # TODO: Add tests which use '+' syntax in mailTo in order to test
+        # email translations. Do this when some strings have been translated.
+        emailTo = list(self.smtpFromAddr.partition('@'))
+        emailTo.insert(1, '+zh_CN')
+        emailTo = ''.join(emailTo)
+        emailText = self._buildEmail(toAddr=emailTo)
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % emailTo,
+                    "DATA", emailText],
+                   "250 Delivery in progress",
+                   noisy=True)
+
+    def test_MailFactory_DATA_get_bridges_QUIT(self):
+        """Test sending 'DATA' with 'get bridges', then sending 'QUIT'."""
+        emailText = self._buildEmail()
+        self._test(['HELO localhost',
+                    'MAIL FROM: testing@localhost',
+                    'RCPT TO: %s' % self.smtpFromAddr,
+                    "DATA", emailText,
+                    "QUIT"],
+                   "221 See you later",
+                   noisy=True)
 
 
 class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
