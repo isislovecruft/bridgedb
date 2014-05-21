@@ -286,9 +286,6 @@ class MailResponse(object):
     :cvar mailfile: An in-memory file for storing the formatted headers and
         body of the response email.
     """
-
-    implements(smtp.IMessage)
-
     _buff = buffer if NEW_BUFFER_INTERFACE else unicode
     mailfile = io.BytesIO if NEW_BUFFER_INTERFACE else io.StringIO
 
@@ -436,33 +433,6 @@ class MailResponse(object):
         if self.gpgContext:
             body, _ = gpgSignMessage(self.gpgContext, body)
         self.writelines(body)
-
-    # The following methods implement the IMessage interface.
-
-    def lineReceived(self, line):
-        """Called when we receive a line from an underlying transport."""
-        self.write(line)
-
-    def eomRecieved(self):
-        """Called when we receive an EOM.
-
-        :rtype: :api:`twisted.internet.defer.Deferred`
-        :returns: A ``Deferred`` which has already been callbacked with the
-            entire response email contents retrieved from
-            :meth:`readContents`.
-        """
-        contents = self.readContents()
-        if not self.closed:
-            self.connectionLost()
-        return defer.succeed(contents)
-
-    def connectionLost(self):
-        """Called if we die partway through reading a message.
-
-        Truncate the :cvar:`mailfile` to null length, then close it.
-        """
-        self.mailfile.truncate(0)
-        self.mailfile.close()
 
 
 class MailMessage(object):
