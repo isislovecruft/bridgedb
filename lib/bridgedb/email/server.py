@@ -338,8 +338,13 @@ class MailResponse(object):
 
     def write(self, line):
         """Any **line** written to me will have ``'\r\n'`` appended to it."""
-        self.mailfile.write(self._buff(line + '\r\n'))
-        self.mailfile.flush()
+        if line.find('\n') != -1:
+            # If **line** contains newlines, send it to :meth:`writelines` to
+            # break it up so that we can replace them with '\r\n':
+            self.writelines(line)
+        else:
+            self.mailfile.write(self._buff(line + '\r\n'))
+            self.mailfile.flush()
 
     def writelines(self, lines):
         """Calls :meth:`write` for each line in **lines**."""
