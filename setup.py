@@ -284,7 +284,7 @@ setuptools.setup(
               'bridgedb.test'],
     scripts=['scripts/bridgedb'],
     extras_require={'test': ["sure==1.2.2",
-                             "coverage==3.7",
+                             "coverage==3.7.1",
                              "leekspin==0.1.3"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
