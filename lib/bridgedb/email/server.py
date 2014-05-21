@@ -545,12 +545,12 @@ class MailMessage(object):
     def reply(self):
         """Reply to an incoming email. Maybe.
 
-        If no `response` is returned from :func:`createMailResponse`, then the
-        incoming email will not be responded to at all. This can happen for
-        several reasons, for example: if the DKIM signature was invalid or
-        missing, or if the incoming email came from an unacceptable domain, or
-        if there have been too many emails from this client in the allotted
-        time period.
+        If nothing is returned from either :func:`createResponseBody` or
+        :func:`generateResponse`, then the incoming email will not be
+        responded to at all. This can happen for several reasons, for example:
+        if the DKIM signature was invalid or missing, or if the incoming email
+        came from an unacceptable domain, or if there have been too many
+        emails from this client in the allotted time period.
 
         :rtype: :api:`twisted.internet.defer.Deferred`
         :returns: A ``Deferred`` which will callback when the response has
