@@ -559,7 +559,7 @@ class MailMessage(object):
         """
         logging.info("Got an email; deciding whether to reply.")
 
-        def _replyEB(fail):
+        def _replyEB(fail):  # pragma: no cover
             """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
 
             :param fail: A :api:`twisted.python.failure.Failure` which occurred during
