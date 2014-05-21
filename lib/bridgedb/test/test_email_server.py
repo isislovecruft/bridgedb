@@ -323,6 +323,17 @@ class MailMessageTests(unittest.TestCase):
         recipient = self.message.getRecipient(incoming)
         self.assertEqual(recipient, self.context.fromAddr)
 
+    def test_MailMessage_getRecipient_givemebridges_at_seriously(self):
+        """MailMessage.getRecipient() for an incoming email sent to any email
+        address other than the one we're listening for should return our
+        configured address, not the one in the incoming email.
+        """
+        self._getIncomingLines()
+        self.message.lines[1] = 'To: givemebridges@serious.ly'
+        incoming = self.message.getIncomingMessage()
+        recipient = self.message.getRecipient(incoming)
+        self.assertEqual(recipient, self.context.fromAddr)
+
     def test_MailMessage_getRecipient_bad_address(self):
         """MailMessage.getRecipient() for an incoming email sent to a malformed
         email address should log an smtp.AddressError and then return our
