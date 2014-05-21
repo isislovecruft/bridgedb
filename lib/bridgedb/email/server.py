@@ -315,33 +315,6 @@ class MailResponse(object):
         self.closed = True
     close.__doc__ = mailfile.close.__doc__
 
-    def flush(self, *args, **kwargs): self.mailfile.flush(*args, **kwargs)
-    flush.__doc__ = mailfile.flush.__doc__
-
-    def read(self, *args, **kwargs):
-        self.mailfile.read(*args, **kwargs)
-    read.__doc__ = mailfile.read.__doc__
-
-    def readline(self, *args, **kwargs):
-        self.mailfile.readline(*args, **kwargs)
-    readline.__doc__ = mailfile.readline.__doc__
-
-    def readlines(self, *args, **kwargs):
-        self.mailfile.readlines(*args, **kwargs)
-    readlines.__doc__ = mailfile.readlines.__doc__
-
-    def seek(self, *args, **kwargs):
-        self.mailfile.seek(*args, **kwargs)
-    seek.__doc__ = mailfile.seek.__doc__
-
-    def tell(self, *args, **kwargs):
-        self.mailfile.tell(*args, **kwargs)
-    tell.__doc__ = mailfile.tell.__doc__
-
-    def truncate(self, *args, **kwargs):
-        self.mailfile.truncate(*args, **kwargs)
-    truncate.__doc__ = mailfile.truncate.__doc__
-
     # The following are custom methods to control reading and writing to the
     # underlying ``mailfile``.
 
@@ -361,7 +334,7 @@ class MailResponse(object):
 
     def rewind(self):
         """Rewind to the very beginning of the :cvar:`mailfile`."""
-        self.seek(0)
+        self.mailfile.seek(0)
 
     def write(self, line):
         """Any **line** written to me will have ``'\r\n'`` appended to it."""
