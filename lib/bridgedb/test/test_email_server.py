@@ -266,6 +266,32 @@ a ball of timey-wimey, wibbly-warbly... stuff."""
         self.assertSubstring("In-Reply-To: NSA", contents)
         self.assertSubstring("X-been-there: They were so 2004", contents)
 
+    def test_MailResponse_close(self):
+        """Calling MailResponse.close() should close the ``mailfile`` and set
+        ``closed=True``.
+        """
+        response = server.MailResponse()
+        self.assertEqual(response.closed, False)
+        response.close()
+        self.assertEqual(response.closed, True)
+        self.assertRaises(ValueError, response.write, self.body)
+
+    def test_MailResponse_write(self):
+        """Calling MailResponse.write() should write to the mailfile."""
+        response = server.MailResponse()
+        response.write(self.body)
+        contents = str(response.readContents()).replace('\x00', '')
+        self.assertEqual(self.body.replace('\n', '\r\n') + '\r\n', contents)
+
+    def test_MailResponse_writelines(self):
+        """Calling MailResponse.writelines() with a list should write the
+        concatenated contents of the list into the mailfile.
+        """
+        response = server.MailResponse()
+        response.writelines(self.body.split('\n'))
+        contents = str(response.readContents()).replace('\x00', '')
+        self.assertEqual(self.body.replace('\n', '\r\n') + '\r\n', contents)
+
 
 class MailMessageTests(unittest.TestCase):
     """Unittests for :class:`bridgedb.email.server.MailMessage`."""
