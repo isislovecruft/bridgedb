@@ -323,6 +323,17 @@ class MailMessageTests(unittest.TestCase):
         recipient = self.message.getRecipient(incoming)
         self.assertEqual(recipient, self.context.fromAddr)
 
+    def test_MailMessage_getRecipient_bad_address(self):
+        """MailMessage.getRecipient() for an incoming email sent to a malformed
+        email address should log an smtp.AddressError and then return our
+        configured email address.
+        """
+        self._getIncomingLines()
+        self.message.lines[1] = 'To: ><@><<<>>.foo'
+        incoming = self.message.getIncomingMessage()
+        recipient = self.message.getRecipient(incoming)
+        self.assertEqual(recipient, self.context.fromAddr)
+
     def test_MailMessage_reply_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
         receive a response.
