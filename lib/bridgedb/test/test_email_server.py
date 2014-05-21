@@ -227,30 +227,30 @@ a ball of timey-wimey, wibbly-warbly... stuff."""
     def tearDown(self):
         server.safelog.safe_logging = True
 
-    def test_generateResponse(self):
+    def test_MailResponse_generateResponse(self):
         response = server.generateResponse(self.fromAddr, self.clientAddr,
                                            self.body)
         self.assertIsInstance(response, server.MailResponse)
 
-    def test_generateResponse_noSafelog(self):
+    def test_MailResponse_generateResponse_noSafelog(self):
         server.safelog.safe_logging = False
         response = server.generateResponse(self.fromAddr, self.clientAddr,
                                            self.body)
         self.assertIsInstance(response, server.MailResponse)
 
-    def test_generateResponse_mailfile(self):
+    def test_MailResponse_generateResponse_mailfile(self):
         response = server.generateResponse(self.fromAddr, self.clientAddr,
                                            self.body)
         self.assertIsInstance(response.mailfile, (io.BytesIO, io.StringIO))
 
-    def test_generateResponse_withInReplyTo(self):
+    def test_MailResponse_generateResponse_withInReplyTo(self):
         response = server.generateResponse(self.fromAddr, self.clientAddr,
                                            self.body, messageID="NSA")
         contents = str(response.readContents()).replace('\x00', '')
         self.assertIsInstance(response.mailfile, (io.BytesIO, io.StringIO))
         self.assertSubstring("In-Reply-To: NSA", contents)
 
-    def test_generateResponse_readContents(self):
+    def test_MailResponse_generateResponse_readContents(self):
         response = server.generateResponse(self.fromAddr, self.clientAddr,
                                            self.body)
         contents = str(response.readContents()).replace('\x00', '')
