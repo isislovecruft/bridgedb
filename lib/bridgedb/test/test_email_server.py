@@ -312,6 +312,17 @@ class MailMessageTests(unittest.TestCase):
         ]
         self.message.lines = lines
 
+    def test_MailMessage_getRecipient_notbridgedb_at_yikezors_dot_net(self):
+        """MailMessage.getRecipient() for an incoming email sent to any email
+        address other than the one we're listening for should return our
+        configured address, not the one in the incoming email.
+        """
+        self._getIncomingLines()
+        self.message.lines[1] = 'To: notbridgedb@yikezors.net'
+        incoming = self.message.getIncomingMessage()
+        recipient = self.message.getRecipient(incoming)
+        self.assertEqual(recipient, self.context.fromAddr)
+
     def test_MailMessage_reply_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
         receive a response.
