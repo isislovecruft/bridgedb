@@ -570,26 +570,21 @@ class MailMessage(object):
         :return: Our address from the recipients list. If we can't find it
             return our default ``SMTP_FROM_ADDRESS`` from the config file.
         """
-        address = self.context.fromAddr
-        addressList = incoming.getaddrlist("To")
+        ourAddress = self.context.fromAddr
 
         try:
-            ours = smtp.Address(address)
+            ourAddress = smtp.Address(ourAddress)
+            allRecipients = incoming.getaddrlist("To")
+            for _, addr in allRecipients:
+                recipient = smtp.Address(addr)
+                # See if the user looks familiar. We do a 'find' instead of
+                # compare because we might have a '+' address here.
+                if recipient.local.find(ourAddress.local) != -1:
+                    return '@'.join([recipient.local, recipient.domain])
         except smtp.AddressError as error:
-            logging.warn("Our address seems invalid: %r" % address)
             logging.warn(error)
-        else:
-            for _, addr in addressList:
-                try:
-                    maybeOurs = smtp.Address(addr)
-                except smtp.AddressError:
-                    pass
-                else:
-                    # See if the user looks familiar. We do a 'find' instead of
-                    # compare because we might have a '+' address here.
-                    if maybeOurs.local.find(ours.local) != -1:
-                        return '@'.join([maybeOurs.local, maybeOurs.domain])
-        return address
+
+        return ourAddress
 
     def getCanonicalDomain(self, domain):
         try:
