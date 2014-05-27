@@ -189,32 +189,35 @@ def generateResponse(fromAddress, clientAddress, body, subject=None,
 
 
 class MailContext(object):
-    """Helper object that holds information used by email subsystem."""
+    """Helper object that holds information used by email subsystem.
+
+    :ivar str username: Reject any RCPT TO lines that aren't to this
+        user. See the ``EMAIL_USERNAME`` option in the config file.
+        (default: ``'bridges'``)
+    :ivar int maximumSize: Reject any incoming emails longer than
+        this size (in bytes). (default: 3084 bytes).
+    :ivar int smtpPort: The port to use for outgoing SMTP.
+    :ivar str smtpServer: The IP address to use for outgoing SMTP.
+    :ivar str smtpFromAddr: Use this address in the raw SMTP ``MAIL FROM``
+        line for outgoing mail. (default: ``bridges@torproject.org``)
+    :ivar str fromAddr: Use this address in the email :header:`From:`
+        line for outgoing mail. (default: ``bridges@torproject.org``)
+    :ivar int nBridges: The number of bridges to send for each email.
+    :ivar gpgContext: A ``gpgme.GpgmeContext`` (as created by
+        :func:`bridgedb.crypto.getGPGContext`), or None if we couldn't create
+        a proper GPGME context for some reason.
+    """
 
     def __init__(self, config, distributor, schedule):
-        """DOCDOC
-
-        :ivar str username: Reject any RCPT TO lines that aren't to this
-            user. See the ``EMAIL_USERNAME`` option in the config file.
-            (default: ``'bridges'``)
-        :ivar int maximumSize: Reject any incoming emails longer than
-            this size (in bytes). (default: 3084 bytes).
-        :ivar int smtpPort: The port to use for outgoing SMTP.
-        :ivar str smtpServer: The IP address to use for outgoing SMTP.
-        :ivar str smtpFromAddr: Use this address in the raw SMTP ``MAIL FROM``
-            line for outgoing mail. (default: ``bridges@torproject.org``)
-        :ivar str fromAddr: Use this address in the email :header:`From:`
-            line for outgoing mail. (default: ``bridges@torproject.org``)
-        :ivar int nBridges: The number of bridges to send for each email.
-        :ivar gpgContext: A ``gpgme.GpgmeContext`` (as created by
-            :func:`bridgedb.crypto.getGPGContext`), or None if we couldn't
-            create a proper GPGME context for some reason.
+        """Create a context for storing configs for email bridge distribution.
 
         :type config: :class:`bridgedb.persistent.Conf`
         :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`.
-        :param distributor: DOCDOC
+        :param distributor: The distributor will handle getting the correct
+            bridges (or none) for a client for us.
         :type schedule: :class:`bridgedb.schedule.ScheduledInterval`.
-        :param schedule: DOCDOC
+        :param schedule: An interval-based scheduler, used to help the
+            :ivar:`distributor` know if we should give bridges to a client.
         """
         self.config = config
         self.distributor = distributor
