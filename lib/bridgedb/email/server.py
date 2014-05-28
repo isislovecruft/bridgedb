@@ -736,9 +736,21 @@ class MailDelivery(object):
         return origin  # This method *cannot* return None, or it'll cause a 503.
 
     def validateTo(self, user):
-        """If the local user that was addressed isn't our configured local user
-        or doesn't contain a '+' with a prefix matching the local configured
-        user: Yell.
+        """Validate the SMTP ``RCPT TO:`` address for the incoming connection.
+
+        The local username and domain name to which this SMTP message is
+        addressed, after being stripped of any ``'+'`` aliases, **must** be
+        identical to those in the email address set our
+        ``EMAIL_SMTP_FROM_ADDR`` configuration file option.
+
+        :type user: :api:`twisted.mail.smtp.User`
+        :param user: Information about the user this SMTP message was
+            addressed to.
+        :raises: A :api:`twisted.mail.smtp.SMTPBadRcpt` if any of the above
+            conditions weren't met.
+        :rtype: callable
+        :returns: A parameterless function which returns an instance of
+            :class:`SMTPMessage`.
         """
         u = user.dest.local
         # Hasplus? If yes, strip '+foo'
