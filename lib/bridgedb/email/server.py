@@ -785,12 +785,8 @@ class MailFactory(smtp.SMTPFactory):
 def addServer(config, distributor, schedule):
     """Set up a SMTP server for responding to requests for bridges.
 
-    :param config: A configuration object from Main. We use these
-        options::
-            EMAIL_BIND_IP
-            EMAIL_PORT
-            EMAIL_N_BRIDGES_PER_ANSWER
-            EMAIL_DOMAIN_RULES
+    :type config: :class:`bridgedb.persistent.Conf`
+    :param config: A configuration object.
     :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
