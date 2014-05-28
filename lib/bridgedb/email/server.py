@@ -65,6 +65,9 @@ def checkDKIM(message, rules):
         2. Those headers were *not* okay.
         Otherwise, returns ``True``.
     """
+    logging.info("Checking DKIM verification results...")
+    logging.debug("Domain has rules: %s" % ', '.join(rules))
+
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
         # to get the first, so we use getheaders() instead.
@@ -170,7 +173,7 @@ def generateResponse(fromAddress, clientAddress, body, subject=None,
     :rtype: :class:`MailResponse`
     :returns: A ``MailResponse`` which contains the entire email. To obtain
         the contents of the email, including all headers, simply use
-        :meth:`MailResponse.read`.
+        :meth:`MailResponse.readContents`.
     """
     response = MailResponse(gpgContext)
     response.writeHeaders(fromAddress, clientAddress, subject,
@@ -189,32 +192,35 @@ def generateResponse(fromAddress, clientAddress, body, subject=None,
 
 
 class MailContext(object):
-    """Helper object that holds information used by email subsystem."""
+    """Helper object that holds information used by email subsystem.
+
+    :ivar str username: Reject any RCPT TO lines that aren't to this
+        user. See the ``EMAIL_USERNAME`` option in the config file.
+        (default: ``'bridges'``)
+    :ivar int maximumSize: Reject any incoming emails longer than
+        this size (in bytes). (default: 3084 bytes).
+    :ivar int smtpPort: The port to use for outgoing SMTP.
+    :ivar str smtpServer: The IP address to use for outgoing SMTP.
+    :ivar str smtpFromAddr: Use this address in the raw SMTP ``MAIL FROM``
+        line for outgoing mail. (default: ``bridges@torproject.org``)
+    :ivar str fromAddr: Use this address in the email :header:`From:`
+        line for outgoing mail. (default: ``bridges@torproject.org``)
+    :ivar int nBridges: The number of bridges to send for each email.
+    :ivar gpgContext: A ``gpgme.GpgmeContext`` (as created by
+        :func:`bridgedb.crypto.getGPGContext`), or None if we couldn't create
+        a proper GPGME context for some reason.
+    """
 
     def __init__(self, config, distributor, schedule):
-        """DOCDOC
-
-        :ivar str username: Reject any RCPT TO lines that aren't to this
-            user. See the ``EMAIL_USERNAME`` option in the config file.
-            (default: ``'bridges'``)
-        :ivar int maximumSize: Reject any incoming emails longer than
-            this size (in bytes). (default: 3084 bytes).
-        :ivar int smtpPort: The port to use for outgoing SMTP.
-        :ivar str smtpServer: The IP address to use for outgoing SMTP.
-        :ivar str smtpFromAddr: Use this address in the raw SMTP ``MAIL FROM``
-            line for outgoing mail. (default: ``bridges@torproject.org``)
-        :ivar str fromAddr: Use this address in the email :header:`From:`
-            line for outgoing mail. (default: ``bridges@torproject.org``)
-        :ivar int nBridges: The number of bridges to send for each email.
-        :ivar gpgContext: A ``gpgme.GpgmeContext`` (as created by
-            :func:`bridgedb.crypto.getGPGContext`), or None if we couldn't
-            create a proper GPGME context for some reason.
+        """Create a context for storing configs for email bridge distribution.
 
         :type config: :class:`bridgedb.persistent.Conf`
         :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`.
-        :param distributor: DOCDOC
+        :param distributor: The distributor will handle getting the correct
+            bridges (or none) for a client for us.
         :type schedule: :class:`bridgedb.schedule.ScheduledInterval`.
-        :param schedule: DOCDOC
+        :param schedule: An interval-based scheduler, used to help the
+            :ivar:`distributor` know if we should give bridges to a client.
         """
         self.config = config
         self.distributor = distributor
@@ -686,11 +692,19 @@ class MailDelivery(object):
         return hdr
 
     def validateFrom(self, helo, origin):
-        """Validate the ``"From:"`` address on the incoming email.
+        """Validate the ``MAIL FROM:`` address on the incoming SMTP connection.
 
         This is done at the SMTP layer. Meaning that if a Postfix or other
         email server is proxying emails from the outside world to BridgeDB,
-        the ``origin.domain`` will be set to the local hostname.
+        the :api:`origin.domain <twisted.email.smtp.Address.domain` will be
+        set to the local hostname. Therefore, if the SMTP ``MAIL FROM:``
+        domain name is our own hostname (as returned from
+        :func:`socket.gethostname`) or our own FQDN, allow the connection.
+
+        Otherwise, if the ``MAIL FROM:`` domain has a canonical domain in our
+        mapping (taken from :ivar:`context.canon <MailContext.canon>`, which
+        is taken in turn from the ``EMAIL_DOMAIN_MAP``), then our
+        :ivar:`fromCanonicalSMTP` is set to that domain.
 
         :type helo: tuple
         :param helo: The lines received during SMTP client HELO.
@@ -722,9 +736,21 @@ class MailDelivery(object):
         return origin  # This method *cannot* return None, or it'll cause a 503.
 
     def validateTo(self, user):
-        """If the local user that was addressed isn't our configured local user
-        or doesn't contain a '+' with a prefix matching the local configured
-        user: Yell.
+        """Validate the SMTP ``RCPT TO:`` address for the incoming connection.
+
+        The local username and domain name to which this SMTP message is
+        addressed, after being stripped of any ``'+'`` aliases, **must** be
+        identical to those in the email address set our
+        ``EMAIL_SMTP_FROM_ADDR`` configuration file option.
+
+        :type user: :api:`twisted.mail.smtp.User`
+        :param user: Information about the user this SMTP message was
+            addressed to.
+        :raises: A :api:`twisted.mail.smtp.SMTPBadRcpt` if any of the above
+            conditions weren't met.
+        :rtype: callable
+        :returns: A parameterless function which returns an instance of
+            :class:`SMTPMessage`.
         """
         u = user.dest.local
         # Hasplus? If yes, strip '+foo'
@@ -759,12 +785,8 @@ class MailFactory(smtp.SMTPFactory):
 def addServer(config, distributor, schedule):
     """Set up a SMTP server for responding to requests for bridges.
 
-    :param config: A configuration object from Main. We use these
-        options::
-            EMAIL_BIND_IP
-            EMAIL_PORT
-            EMAIL_N_BRIDGES_PER_ANSWER
-            EMAIL_DOMAIN_RULES
+    :type config: :class:`bridgedb.persistent.Conf`
+    :param config: A configuration object.
     :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
