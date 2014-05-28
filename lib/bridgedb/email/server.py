@@ -65,6 +65,9 @@ def checkDKIM(message, rules):
         2. Those headers were *not* okay.
         Otherwise, returns ``True``.
     """
+    logging.info("Checking DKIM verification results...")
+    logging.debug("Domain has rules: %s" % ', '.join(rules))
+
     if 'dkim' in rules:
         # getheader() returns the last of a given kind of header; we want
         # to get the first, so we use getheaders() instead.
