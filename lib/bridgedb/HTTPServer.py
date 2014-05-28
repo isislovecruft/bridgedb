@@ -676,7 +676,7 @@ class WebResourceBridges(resource.Resource):
         """
         # XXX why are we getting the interval if our distributor might be
         # using bridgedb.schedule.Unscheduled?
-        interval = self.schedule.getInterval(time.time())
+        interval = self.schedule.intervalStart(time.time())
         bridges = ( )
         ip = None
         countryCode = None
