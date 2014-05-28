@@ -692,11 +692,19 @@ class MailDelivery(object):
         return hdr
 
     def validateFrom(self, helo, origin):
-        """Validate the ``"From:"`` address on the incoming email.
+        """Validate the ``MAIL FROM:`` address on the incoming SMTP connection.
 
         This is done at the SMTP layer. Meaning that if a Postfix or other
         email server is proxying emails from the outside world to BridgeDB,
-        the ``origin.domain`` will be set to the local hostname.
+        the :api:`origin.domain <twisted.email.smtp.Address.domain` will be
+        set to the local hostname. Therefore, if the SMTP ``MAIL FROM:``
+        domain name is our own hostname (as returned from
+        :func:`socket.gethostname`) or our own FQDN, allow the connection.
+
+        Otherwise, if the ``MAIL FROM:`` domain has a canonical domain in our
+        mapping (taken from :ivar:`context.canon <MailContext.canon>`, which
+        is taken in turn from the ``EMAIL_DOMAIN_MAP``), then our
+        :ivar:`fromCanonicalSMTP` is set to that domain.
 
         :type helo: tuple
         :param helo: The lines received during SMTP client HELO.
