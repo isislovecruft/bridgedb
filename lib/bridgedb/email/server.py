@@ -173,7 +173,7 @@ def generateResponse(fromAddress, clientAddress, body, subject=None,
     :rtype: :class:`MailResponse`
     :returns: A ``MailResponse`` which contains the entire email. To obtain
         the contents of the email, including all headers, simply use
-        :meth:`MailResponse.read`.
+        :meth:`MailResponse.readContents`.
     """
     response = MailResponse(gpgContext)
     response.writeHeaders(fromAddress, clientAddress, subject,
