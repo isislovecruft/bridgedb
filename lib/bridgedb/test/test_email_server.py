@@ -32,6 +32,10 @@ from bridgedb.test.util import TestCaseMixin
 from twisted.python import log
 from twisted.internet import defer
 from twisted.internet import reactor
+from twisted.mail.smtp import SMTPBadRcpt
+from twisted.mail.smtp import SMTPBadSender
+from twisted.mail.smtp import User
+from twisted.mail.smtp import Address
 from twisted.test import proto_helpers
 from twisted.trial import unittest
 
@@ -417,68 +421,152 @@ class MailMessageTests(unittest.TestCase):
         return ret
 
 
-class MailDeliveryTest(unittest.TestCase):
+class MailDeliveryTests(unittest.TestCase):
     """Unittests for :class:`email.server.MailDelivery`."""
 
     def setUp(self):
+        """Set up our :class:`server.MailDelivery` instance, and reset the
+        following ``TestCase`` attributes to ``None``:
+            - ``helo``
+            - ``proto``
+            - ``origin``
+            - ``user``
+        """
         self.config = _createConfig()
         self.context = _createMailContext(self.config)
         self.delivery = server.MailDelivery()
-        self.helo = ('fubar.example.com', '127.0.0.1')
-        self.origin = server.smtp.Address('user@example.com')
-        self.users = [server.smtp.User('bridges', self.helo, None, self.origin),]
 
-    def tets_MailDelivery(self):
+        self.helo = None
+        self.proto = None
+        self.origin = None
+        self.user = None
+
+    def tearDown(self):
+        """Reset all TestCase instance attributes between each test run."""
+        self.helo = None
+        self.proto = None
+        self.origin = None
+        self.user = None
+
+    def _createProtocolWithHost(self, host):
+        """Mock a Protocol which has a ``host`` attribute.
+
+        We don't currently use any of the ``IProtocol`` methods of the
+        returned ``twisted.test.proto_helpers.AccumulatingProtocol``, and so
+        this could be any class, although a mocked ``IProtocol`` implementer
+        was chosen for completeness and realism's sakes.
+
+        :param str host: A domain name or IP address.
+        :rtype: :api:`twisted.test.proto_helpers.AccumulatingProtocol`
+        :returns: A Protocol instance which has its ``host`` attribute set to
+            the given **host**, so that an :api:`twisted.mail.smtp.User` can
+            be constructed with it.
+        """
+        self.proto = proto_helpers.AccumulatingProtocol()
+        self.proto.host = host
+
+    def _createUser(self, username, domain, ipaddress):
+        """Create a ``twisted.mail.smtp.User`` for testing.
+
+        :param str username: The local part of the client's email address.
+        :param str domain: The host part of the client's email address.
+        :param str ipaddress: The IP address of the client's mail server.
+        """
+        self.helo = (domain, ipaddress)
+        self._createProtocolWithHost(domain)
+        self.origin = Address('@'.join((username, domain,)))
+        self.user = User(username, self.helo, self.proto, self.origin)
+
+    def _setUpMAILFROM(self):
+        """Set up the parameters for emulating a connected client sending a
+        SMTP 'MAIL FROM:' command to us.
+
+        The default is to emulate sending: ``MAIL FROM: client@example.com``.
+        """
+        self.helo = ('localhost', '127.0.0.1')
+        self.origin = server.smtp.Address('client@example.com')
+        self.delivery.setBridgeDBContext(self.context)
+
+    def _setUpRCPTTO(self, username=None):
+        """Set up the parameters for emulating a connected client sending a
+        SMTP 'RCPT TO:' command to us.
+
+        The default is to emulate sending: ``RCPT TO: bridges@localhost``.
+        """
+        name = username if username is not None else self.config.EMAIL_USERNAME
+        self._createUser(name, 'localhost', '127.0.0.1')
+        self.delivery.setBridgeDBContext(self.context)
+
+    def test_MailDelivery_init(self):
+        """After calling :meth:`server.MailDelivery.__init__`, we should have a
+        :class:`server.MailDelivery` object instance.
+        """
         self.assertIsInstance(self.delivery, server.MailDelivery)
 
     def test_MailDelivery_setBridgeDBContext(self):
+        """Calling :meth:`server.MailDelivery.setBridgeDBContext` should set
+        the :ivar:`MailDelivery.context` attribute.
+
+        The ``MailDelivery.context`` should be a :class:`server.MailContext`,
+        and it should have relevant settings from the config file stored
+        within it.
+        """
         self.delivery.setBridgeDBContext(self.context)
+        self.assertIsInstance(self.delivery.context, server.MailContext)
+        self.assertEqual(self.delivery.context.smtpFromAddr,
+                         self.config.EMAIL_SMTP_FROM_ADDR)
 
     def test_MailDelivery_receivedHeader(self):
-        self.delivery.setBridgeDBContext(self.context)
-        hdr = self.delivery.receivedHeader(self.helo, self.origin, self.users)
-        self.assertTrue(hdr)
-        self.assertSubstring("Received: from fubar.example.com", hdr)
+        """The email resulting from a MailDelivery, the latter received from
+        ``'client@example.com'`` should contain a header stating:
+        ``'Received: from example.com'``.
+        """
+        self._createUser('client', 'example.com', '127.0.0.1')
+        hdr = self.delivery.receivedHeader(self.helo, self.origin, [self.user,])
+        self.assertSubstring("Received: from example.com", hdr)
 
     def test_MailDelivery_validateFrom(self):
         """A valid origin should be stored as ``MailDelivery.fromCanonical``."""
-        self.delivery.setBridgeDBContext(self.context)
+        self._setUpMAILFROM()
         self.delivery.validateFrom(self.helo, self.origin)
         self.assertEqual(self.delivery.fromCanonical, 'example.com')
 
     def test_MailDelivery_validateFrom_unsupportedDomain(self):
         """A domain not in our canon should raise a SMTPBadSender."""
-        self.delivery.setBridgeDBContext(self.context)
-        helo = ('yo.mama', '0.0.0.0')
+        self._setUpMAILFROM()
         origin = server.smtp.Address('throwing.pickles@yo.mama')
-        self.assertRaises(server.smtp.SMTPBadSender,
-                          self.delivery.validateFrom, helo, origin)
+        self.assertRaises(SMTPBadSender,
+                          self.delivery.validateFrom, self.helo, origin)
 
-    def test_MailDelivery_validateFrom_badOriginType(self):
-        """A non t.m.smtp.Address origin should raise cause an Exception."""
-        self.delivery.setBridgeDBContext(self.context)
-        helo = ('yo.mama', '0.0.0.0')
+    def test_MailDelivery_validateFrom_origin_notAdressType(self):
+        """A non ``twisted.mail.smtp.Address`` origin should raise an
+        AttributeError exception.
+        """
+        self._setUpMAILFROM()
         origin = 'throwing.pickles@yo.mama'
-        self.delivery.validateFrom(helo, origin)
+        self.delivery.validateFrom(self.helo, origin)
 
     def test_MailDelivery_validateTo(self):
         """Should return a callable that results in a MailMessage."""
-        self.delivery.setBridgeDBContext(self.context)
-        ret = self.delivery.validateTo(self.users[0])
-        self.assertIsInstance(ret, types.FunctionType)
+        self._setUpRCPTTO()
+        validated = self.delivery.validateTo(self.user)
+        self.assertIsInstance(validated, types.FunctionType)
+        self.assertIsInstance(validated(), server.MailMessage)
 
     def test_MailDelivery_validateTo_plusAddress(self):
         """Should return a callable that results in a MailMessage."""
-        self.delivery.setBridgeDBContext(self.context)
-        user = server.smtp.User('bridges+ar', self.helo, None, self.origin)
-        ret = self.delivery.validateTo(user)
-        self.assertIsInstance(ret, types.FunctionType)
+        self._setUpRCPTTO('bridges+ar')
+        validated = self.delivery.validateTo(self.user)
+        self.assertIsInstance(validated, types.FunctionType)
+        self.assertIsInstance(validated(), server.MailMessage)
 
     def test_MailDelivery_validateTo_badUsername(self):
-        self.delivery.setBridgeDBContext(self.context)
-        user = server.smtp.User('yo.mama', self.helo, None, self.origin)
-        self.assertRaises(server.smtp.SMTPBadRcpt,
-                          self.delivery.validateTo, user)
+        """A :class:`server.MailDelivery` which sends a SMTP
+        ``RCPT TO: yo.mama@localhost`` should raise a
+        ``twisted.mail.smtp.SMTPBadRcpt`` exception.
+        """
+        self._setUpRCPTTO('yo.mama')
+        self.assertRaises(SMTPBadRcpt, self.delivery.validateTo, self.user)
 
 
 class SMTPTestCaseMixin(TestCaseMixin):
