@@ -332,13 +332,15 @@ class MailResponse(object):
 
     def rewind(self):
         """Rewind to the very beginning of the :cvar:`mailfile`."""
+        logging.debug("Rewinding %s.mailfile..." % self.__class__.__name__)
         self.mailfile.seek(0)
 
     def write(self, line):
         """Any **line** written to me will have ``'\r\n'`` appended to it."""
         if line.find('\n') != -1:
             # If **line** contains newlines, send it to :meth:`writelines` to
-            # break it up so that we can replace them with '\r\n':
+            # break it up so that we can replace them:
+            logging.debug("Found newlines in %r. Calling writelines()." % line)
             self.writelines(line)
         else:
             self.mailfile.write(self._buff(line + '\r\n'))
@@ -406,7 +408,9 @@ class MailResponse(object):
 
         :param str body: The body of the response email.
         """
+        logging.info("Writing email body...")
         if self.gpgContext:
+            logging.info("Attempting to sign email...")
             body, _ = gpgSignMessage(self.gpgContext, body)
         self.writelines(body)
 
