@@ -224,7 +224,7 @@ class MailContext(object):
         self.distributor = distributor
         self.schedule = schedule
 
-        self.maximumSize = 32*1024
+        self.maximumSize = smtp.SMTP.MAX_LENGTH
         self.includeFingerprints = config.EMAIL_INCLUDE_FINGERPRINTS
         self.nBridges = config.EMAIL_N_BRIDGES_PER_ANSWER
 
