@@ -316,37 +316,37 @@ class MailMessageTests(unittest.TestCase):
         ]
         self.message.lines = lines
 
-    def test_MailMessage_getRecipient_notbridgedb_at_yikezors_dot_net(self):
-        """MailMessage.getRecipient() for an incoming email sent to any email
+    def test_MailMessage_getMailFrom_notbridgedb_at_yikezors_dot_net(self):
+        """MailMessage.getMailFrom() for an incoming email sent to any email
         address other than the one we're listening for should return our
         configured address, not the one in the incoming email.
         """
         self._getIncomingLines()
         self.message.lines[1] = 'To: notbridgedb@yikezors.net'
         incoming = self.message.getIncomingMessage()
-        recipient = self.message.getRecipient(incoming)
+        recipient = str(self.message.getMailFrom(incoming))
         self.assertEqual(recipient, self.context.fromAddr)
 
-    def test_MailMessage_getRecipient_givemebridges_at_seriously(self):
-        """MailMessage.getRecipient() for an incoming email sent to any email
+    def test_MailMessage_getMailFrom_givemebridges_at_seriously(self):
+        """MailMessage.getMailFrom() for an incoming email sent to any email
         address other than the one we're listening for should return our
         configured address, not the one in the incoming email.
         """
         self._getIncomingLines()
         self.message.lines[1] = 'To: givemebridges@serious.ly'
         incoming = self.message.getIncomingMessage()
-        recipient = self.message.getRecipient(incoming)
+        recipient = str(self.message.getMailFrom(incoming))
         self.assertEqual(recipient, self.context.fromAddr)
 
-    def test_MailMessage_getRecipient_bad_address(self):
-        """MailMessage.getRecipient() for an incoming email sent to a malformed
+    def test_MailMessage_getMailFrom_bad_address(self):
+        """MailMessage.getMailFrom() for an incoming email sent to a malformed
         email address should log an smtp.AddressError and then return our
         configured email address.
         """
         self._getIncomingLines()
         self.message.lines[1] = 'To: ><@><<<>>.foo'
         incoming = self.message.getIncomingMessage()
-        recipient = self.message.getRecipient(incoming)
+        recipient = str(self.message.getMailFrom(incoming))
         self.assertEqual(recipient, self.context.fromAddr)
 
     def test_MailMessage_reply_noFrom(self):

@@ -506,7 +506,7 @@ class MailMessage(object):
             else:
                 return client
 
-    def getRecipient(self, incoming):
+    def getMailFrom(self, incoming):
         """Find our address in the recipients list of the **incoming** message.
 
         :type incoming: :api:`twisted.mail.smtp.rfc822.Message`
@@ -516,21 +516,42 @@ class MailMessage(object):
         :return: Our address from the recipients list. If we can't find it
             return our default ``SMTP_FROM_ADDRESS`` from the config file.
         """
-        ourAddress = self.context.fromAddr
+        logging.debug("Searching for our email address in 'To:' header...")
+
+        ours = None
 
         try:
-            ourAddress = smtp.Address(ourAddress)
+            ourAddress = smtp.Address(self.context.fromAddr)
             allRecipients = incoming.getaddrlist("To")
+
             for _, addr in allRecipients:
                 recipient = smtp.Address(addr)
-                # See if the user looks familiar. We do a 'find' instead of
-                # compare because we might have a '+' address here.
-                if recipient.local.find(ourAddress.local) != -1:
-                    return '@'.join([recipient.local, recipient.domain])
-        except smtp.AddressError as error:
-            logging.warn(error)
+                if not (ourAddress.domain in recipient.domain):
+                    logging.debug(("Not our domain (%s) or subdomain, skipping"
+                                   " email address: %s")
+                                  % (ourAddress.domain, str(recipient)))
+                    continue
+                # The recipient's username should at least start with ours,
+                # but it still might be a '+' address.
+                if not recipient.local.startswith(ourAddress.local):
+                    logging.debug(("Username doesn't begin with ours, skipping"
+                                   " email address: %s") % str(recipient))
+                    continue
+                # Ignore everything after the first '+', if there is one.
+                beforePlus = recipient.local.split('+', 1)[0]
+                if beforePlus == ourAddress.local:
+                    ours = str(recipient)
+            if not ours:
+                raise BadEmail(allRecipients)
 
-        return ourAddress
+        except Exception as error:
+            logging.error(("Couldn't find our email address in incoming email "
+                           "headers: %r" % error))
+            # Just return the email address that we're configured to use:
+            ours = self.context.fromAddr
+
+        logging.debug("Found our email address: %s." % ours)
+        return ours
 
     def getCanonicalDomain(self, domain):
         try:
@@ -571,7 +592,7 @@ class MailMessage(object):
         d.addErrback(_replyEB)
 
         incoming = self.getIncomingMessage()
-        recipient = self.getRecipient(incoming)
+        recipient = self.getMailFrom(incoming)
         client = self.getClientAddress(incoming)
 
         if not client:
@@ -693,13 +714,27 @@ class MailDelivery(object):
         :returns: A parameterless function which returns an instance of
             :class:`SMTPMessage`.
         """
-        u = user.dest.local
-        # Hasplus? If yes, strip '+foo'
-        idx = u.find('+')
-        if idx != -1:
-            u = u[:idx]
-        if u != self.context.username:
-            raise smtp.SMTPBadRcpt(user)
+        logging.debug("Validating SMTP 'RCPT TO:' email address...")
+
+        recipient = user.dest
+        ourAddress = smtp.Address(self.context.smtpFromAddr)
+
+        if not (ourAddress.domain in recipient.domain):
+            logging.debug(("Not our domain (%s) or subdomain, skipping"
+                           " SMTP 'RCPT TO' address: %s")
+                          % (ourAddress.domain, str(recipient)))
+            raise smtp.SMTPBadRcpt(str(recipient))
+        # The recipient's username should at least start with ours,
+        # but it still might be a '+' address.
+        if not recipient.local.startswith(ourAddress.local):
+            logging.debug(("Username doesn't begin with ours, skipping"
+                           " SMTP 'RCPT TO' address: %s") % str(recipient))
+            raise smtp.SMTPBadRcpt(str(recipient))
+        # Ignore everything after the first '+', if there is one.
+        beforePlus = recipient.local.split('+', 1)[0]
+        if beforePlus != ourAddress.local:
+            raise smtp.SMTPBadRcpt(str(recipient))
+
         return lambda: MailMessage(self.context, self.fromCanonical)
 
 
