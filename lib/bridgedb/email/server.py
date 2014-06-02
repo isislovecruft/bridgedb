@@ -122,33 +122,53 @@ class MailServerContext(object):
         return canon
 
 
-class MailMessage(object):
+class SMTPMessage(object):
     """Plugs into the Twisted Mail and receives an incoming message.
 
     :ivar list lines: A list of lines from an incoming email message.
     :ivar int nBytes: The number of bytes received thus far.
     :ivar bool ignoring: If ``True``, we're ignoring the rest of this message
-        because it exceeded :ivar:`MailContext.maximumSize`.
+        because it exceeded :ivar:`MailServerContext.maximumSize`.
+    :ivar canonicalFromSMTP: See :meth:`SMTPAutoresponder.runChecks`.
+    :ivar canonicalFromEmail: See :meth:`SMTPAutoresponder.runChecks`.
+    :ivar canonicalDomainRules: See :meth:`SMTPAutoresponder.runChecks`.
+    :type message: :api:`twisted.mail.smtp.rfc822.Message` or ``None``
+    :ivar message: The incoming email message.
+    :type responder: :class:`autoresponder.SMTPAutoresponder`
+    :ivar responder: A parser and checker for the incoming :ivar:`message`. If
+        it decides to do so, it will build a
+        :meth:`~autoresponder.SMTPAutoresponder.reply` email and
+        :meth:`~autoresponder.SMTPAutoresponder.send` it.
     """
     implements(smtp.IMessage)
 
-    def __init__(self, context, fromCanonical=None):
-        """Create a new MailMessage from a MailContext.
+    def __init__(self, context, canonicalFromSMTP=None):
+        """Create a new SMTPMessage.
 
-        :type context: :class:`MailContext`
-        :param context: The configured context for the email server.
-        :type canonicalFrom: str or None
-        :param canonicalFrom: The canonical domain which this message was
+        These are created automatically via
+        :class:`SMTPIncomingDelivery`.
+
+        :param context: The configured :class:`MailServerContext`.
+        :type canonicalFromSMTP: str or None
+        :param canonicalFromSMTP: The canonical domain which this message was
             received from. For example, if ``'gmail.com'`` is the configured
             canonical domain for ``'googlemail.com'`` and a message is
             received from the latter domain, then this would be set to the
             former.
         """
         self.context = context
-        self.fromCanonical = fromCanonical
+        self.canon = context.canon
+        self.canonicalFromSMTP = canonicalFromSMTP
+        self.canonicalFromEmail = None
+        self.canonicalDomainRules = None
+
         self.lines = []
         self.nBytes = 0
         self.ignoring = False
+
+        self.message = None
+        self.responder = autoresponder.SMTPAutoresponder()
+        self.responder.incoming = self
 
     def lineReceived(self, line):
         """Called when we get another line of an incoming message."""
@@ -161,9 +181,10 @@ class MailMessage(object):
             logging.debug("> %s", line.rstrip("\r\n"))
 
     def eomReceived(self):
-        """Called when we receive the end of a message."""
+        """Tell the :ivar:`responder` to reply when we receive an EOM."""
         if not self.ignoring:
-            self.reply()
+            self.message = self.getIncomingMessage()
+            self.responder.reply()
         return defer.succeed(None)
 
     def connectionLost(self):
@@ -171,15 +192,15 @@ class MailMessage(object):
         pass
 
     def getIncomingMessage(self):
-        """Create and parse an :rfc:`2822` message object for all ``lines``
+        """Create and parse an :rfc:`2822` message object for all :ivar:`lines`
         received thus far.
 
         :rtype: :api:`twisted.mail.smtp.rfc822.Message`
         :returns: A ``Message`` comprised of all lines received thus far.
         """
         rawMessage = io.StringIO()
-        for ln in self.lines:
-            rawMessage.writelines(unicode(ln) + unicode('\n'))
+        for line in self.lines:
+            rawMessage.writelines(unicode(line) + unicode('\n'))
         rawMessage.seek(0)
         return smtp.rfc822.Message(rawMessage)
 
