@@ -46,41 +46,6 @@ from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
 
 
-def checkDKIM(message, rules):
-    """Check the DKIM verification results header.
-
-    This check is only run if the incoming email, **message**, originated from
-    a domain for which we're configured (in the ``EMAIL_DOMAIN_RULES``
-    dictionary in the config file) to check DKIM verification results for.
-
-    :type message: :api:`twisted.mail.smtp.rfc822.Message`
-    :param message: The incoming client request email, including headers.
-    :param dict rules: The list of configured ``EMAIL_DOMAIN_RULES`` for the
-        canonical domain which the client's email request originated from.
-
-    :rtype: bool
-    :returns: ``False`` if:
-        1. We're supposed to expect and check the DKIM headers for the
-           client's email provider domain.
-        2. Those headers were *not* okay.
-        Otherwise, returns ``True``.
-    """
-    logging.info("Checking DKIM verification results...")
-    logging.debug("Domain has rules: %s" % ', '.join(rules))
-
-    if 'dkim' in rules:
-        # getheader() returns the last of a given kind of header; we want
-        # to get the first, so we use getheaders() instead.
-        dkimHeaders = message.getheaders("X-DKIM-Authentication-Results")
-        dkimHeader = "<no header>"
-        if dkimHeaders:
-            dkimHeader = dkimHeaders[0]
-        if not dkimHeader.startswith("pass"):
-            logging.info("Rejecting bad DKIM header on incoming email: %r "
-                         % dkimHeader)
-            return False
-    return True
-
 def createResponseBody(lines, context, client, lang='en'):
     """Parse the **lines** from an incoming email request and determine how to
     respond.
