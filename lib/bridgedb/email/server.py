@@ -20,28 +20,23 @@ from __future__ import unicode_literals
 import logging
 import io
 import socket
-import time
 
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
 from twisted.mail import smtp
+from twisted.mail.smtp import rfc822date
+from twisted.python import failure
 
 from zope.interface import implements
 
+from bridgedb import __version__
 from bridgedb import safelog
-from bridgedb import translations
 from bridgedb.crypto import getGPGContext
-from bridgedb.crypto import gpgSignMessage
-from bridgedb.crypto import NEW_BUFFER_INTERFACE
-from bridgedb.Dist import EmailRequestedHelp
-from bridgedb.Dist import EmailRequestedKey
-from bridgedb.Dist import TooSoonEmail
-from bridgedb.Dist import IgnoreEmail
+from bridgedb.email import autoresponder
 from bridgedb.email import templates
 from bridgedb.email import request
 from bridgedb.parse import addr
-from bridgedb.parse.addr import BadEmail
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
 
