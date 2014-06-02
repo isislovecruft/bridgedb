@@ -46,7 +46,7 @@ from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
 
 
-class MailContext(object):
+class MailServerContext(object):
     """Helper object that holds information used by email subsystem.
 
     :ivar str username: Reject any RCPT TO lines that aren't to this
@@ -103,12 +103,12 @@ class MailContext(object):
         """Build a map for all email provider domains from which we will accept
         emails to their canonical domain name.
 
-        .. note:: Be sure that ``MailContext.domainRules`` and
-            ``MailContext.domainMap`` are set appropriately before calling
+        .. note:: Be sure that ``MailServerContext.domainRules`` and
+            ``MailServerContext.domainMap`` are set appropriately before calling
             this method.
 
         This method is automatically called during initialisation, and the
-        resulting domain map is stored as ``MailContext.canon``.
+        resulting domain map is stored as ``MailServerContext.canon``.
 
         :rtype: dict
         :returns: A dictionary which maps all domains and subdomains which we
