@@ -11,7 +11,11 @@ BridgeDB Package and Module Documentation
     bridgedb.captcha
     bridgedb.crypto
     bridgedb.Dist
-    bridgedb.EmailServer
+    bridgedb.email
+    bridgedb.email.dkim
+    bridgedb.email.request
+    bridgedb.email.server
+    bridgedb.email.templates
     bridgedb.Filters
     bridgedb.HTTPServer
     bridgedb.Main
