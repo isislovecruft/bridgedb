@@ -333,23 +333,75 @@ class SMTPIncomingDelivery(smtp.SMTP):
         return lambda: SMTPMessage(self.context, self.fromCanonicalSMTP)
 
 
-class MailFactory(smtp.SMTPFactory):
-    """Plugs into Twisted Mail; creates a new MailDelivery whenever we get
-       a connection on the SMTP port."""
+class SMTPIncomingDeliveryFactory(object):
+    """Factory for :class:`SMTPIncomingDelivery`s.
 
-    def __init__(self, context=None, **kw):
-        smtp.SMTPFactory.__init__(self, **kw)
-        self.delivery = MailDelivery()
-        if context:
-            self.setBridgeDBContext(context)
+    This class is used to distinguish between different messages delivered
+    over the same connection. This can be used to optimize delivery of a
+    single message to multiple recipients, something which cannot be done by
+    :api:`IMessageDelivery <twisted.mail.smtp.IMessageDelivery>` implementors
+    due to their lack of information.
 
-    def setBridgeDBContext(self, context):
-        self.context = context
-        self.delivery.setBridgeDBContext(context)
+    :ivar context: A :class:`MailServerContext` for storing configuration settings.
+    :ivar delivery: A :class:`SMTPIncomingDelivery` to deliver incoming
+        SMTP messages to.
+    """
+    implements(smtp.IMessageDeliveryFactory)
+
+    context = None
+    delivery = SMTPIncomingDelivery
+
+    def __init__(self):
+        logging.debug("%s created." % self.__class__.__name__)
+
+    @classmethod
+    def setContext(cls, context):
+        """Set our :ivar:`context` and the context for our :ivar:`delivery`."""
+        cls.context = context
+        cls.delivery.setContext(cls.context)
+
+    def getMessageDelivery(self):
+        """Get a new :class:`SMTPIncomingDelivery` instance."""
+        return self.delivery()
+
+
+class SMTPIncomingServerFactory(smtp.SMTPFactory):
+    """Plugs into :api:`twisted.mail.smtp.SMTPFactory`; creates a new
+    :class:`SMTPMessageDelivery`, which handles response email automation,
+    whenever we get a incoming connection on the SMTP port.
+
+    .. warning:: My :ivar:`context` isn't an OpenSSL context, as is used for
+        the :api:`twisted.mail.smtp.ESMTPSender`
+
+    :ivar context: A :class:`MailServerContext` for storing configuration settings.
+    :ivar deliveryFactory: A :class:`SMTPIncomingDeliveryFactory` for
+        producing :class:`SMTPIncomingDelivery`s.
+    :ivar domain: :api:`Our FQDN <twisted.mail.smtp.DNSNAME>`.
+    :ivar int timeout: The number of seconds to wait, after the last chunk of
+        data was received, before raising a
+        :api:`SMTPTimeoutError <twisted.mail.smtp.SMTPTimeoutError>` for an
+        incoming connection.
+    :ivar protocol: :api:`SMTP <twisted.mail.smtp.SMTP>`
+    """
+
+    context = None
+    deliveryFactory = SMTPIncomingDeliveryFactory
+
+    def __init__(self, **kwargs):
+        smtp.SMTPFactory.__init__(self, **kwargs)
+        self.deliveryFactory = self.deliveryFactory()
+
+    @classmethod
+    def setContext(cls, context):
+        """Set :ivar:`context` and :ivar:`deliveryFactory`.context."""
+        cls.context = context
+        cls.deliveryFactory.setContext(cls.context)
 
     def buildProtocol(self, addr):
         p = smtp.SMTPFactory.buildProtocol(self, addr)
-        p.delivery = self.delivery
+        self.deliveryFactory.transport = p.transport # XXX is this set yet?
+        p.factory = self
+        p.deliveryFactory = self.deliveryFactory
         return p
 
 
@@ -364,8 +416,9 @@ def addServer(config, distributor, schedule):
     :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
     :param schedule: The schedule. XXX: Is this even used?
     """
-    context = MailContext(config, distributor, schedule)
-    factory = MailFactory(context)
+    context = MailServerContext(config, distributor, schedule)
+    factory = SMTPIncomingServerFactory()
+    factory.setContext(context)
 
     addr = config.EMAIL_BIND_IP or ""
     port = config.EMAIL_PORT
