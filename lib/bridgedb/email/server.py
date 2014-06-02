@@ -205,17 +205,30 @@ class SMTPMessage(object):
         return smtp.rfc822.Message(rawMessage)
 
 
+class SMTPIncomingDelivery(smtp.SMTP):
+    """Plugs into :class:`SMTPIncomingServerFactory` and handles SMTP commands
+    for incoming connections.
 
-
-
-
-class MailDelivery(object):
-    """Plugs into Twisted Mail and handles SMTP commands."""
+    :type context: :class:`MailServerContext`
+    :ivar context: A context containing SMTP/Email configuration settings.
+    :ivar deferred: A :api:`deferred <twisted.internet.defer.Deferred>` which
+        will be returned when :meth:`reply` is called. Additional callbacks
+        may be set on this deferred in order to schedule additional actions
+        when the response is being sent.
+    :type fromCanonicalSMTP: str or ``None``
+    :ivar fromCanonicalSMTP: If set, this is the canonicalized domain name of
+       the address we received from incoming connection's ``MAIL FROM:``.
+    """
     implements(smtp.IMessageDelivery)
 
-    def setBridgeDBContext(self, context):
-        self.context = context
-        self.fromCanonical = None
+    context = None
+    deferred = defer.Deferred()
+    fromCanonicalSMTP = None
+
+    @classmethod
+    def setContext(cls, context):
+        """Set our :ivar:`context` to a new :class:`MailServerContext."""
+        cls.context = context
 
     def receivedHeader(self, helo, origin, recipients):
         """Create the ``Received:`` header for an incoming email.
@@ -244,7 +257,7 @@ class MailDelivery(object):
         :func:`socket.gethostname`) or our own FQDN, allow the connection.
 
         Otherwise, if the ``MAIL FROM:`` domain has a canonical domain in our
-        mapping (taken from :ivar:`context.canon <MailContext.canon>`, which
+        mapping (taken from :ivar:`context.canon <MailServerContext.canon>`, which
         is taken in turn from the ``EMAIL_DOMAIN_MAP``), then our
         :ivar:`fromCanonicalSMTP` is set to that domain.
 
@@ -317,7 +330,7 @@ class MailDelivery(object):
         if beforePlus != ourAddress.local:
             raise smtp.SMTPBadRcpt(str(recipient))
 
-        return lambda: MailMessage(self.context, self.fromCanonical)
+        return lambda: SMTPMessage(self.context, self.fromCanonicalSMTP)
 
 
 class MailFactory(smtp.SMTPFactory):
