@@ -87,7 +87,6 @@ class MailServerContext(object):
 
         self.username = (config.EMAIL_USERNAME or "bridges")
         self.hostname = socket.gethostname()
-        self.hostaddr = socket.gethostbyname(self.hostname)
         self.fromAddr = (config.EMAIL_FROM_ADDR or "bridges@torproject.org")
         self.smtpFromAddr = (config.EMAIL_SMTP_FROM_ADDR or self.fromAddr)
         self.smtpServerPort = (config.EMAIL_SMTP_PORT or 25)
@@ -242,20 +241,22 @@ class MailDelivery(object):
         """
         try:
             if ((origin.domain == self.context.hostname) or
-                (origin.domain == self.context.hostaddr)):
-                return origin
+                (origin.domain == smtp.DNSNAME)):
+                self.fromCanonicalSMTP = origin.domain
             else:
-                logging.debug("ORIGIN DOMAIN: %r" % origin.domain)
+                logging.debug("Canonicalizing client SMTP domain...")
                 canonical = canonicalizeEmailDomain(origin.domain,
                                                     self.context.canon)
-                logging.debug("Got canonical domain: %r" % canonical)
-                self.fromCanonical = canonical
+                logging.debug("Canonical SMTP domain: %r" % canonical)
+                self.fromCanonicalSMTP = canonical
         except UnsupportedDomain as error:
             logging.info(error)
             raise smtp.SMTPBadSender(origin.domain)
         except Exception as error:
             logging.exception(error)
-        return origin  # This method *cannot* return None, or it'll cause a 503.
+
+        # This method **cannot** return None, or it'll cause a 503 error.
+        return origin
 
     def validateTo(self, user):
         """Validate the SMTP ``RCPT TO:`` address for the incoming connection.
