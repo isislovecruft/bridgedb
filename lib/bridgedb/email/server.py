@@ -23,6 +23,7 @@ import socket
 
 from twisted.internet import defer
 from twisted.internet import reactor
+from twisted.internet.error import CannotListenError
 from twisted.internet.task import LoopingCall
 from twisted.mail import smtp
 from twisted.mail.smtp import rfc822date
@@ -418,7 +419,11 @@ def addServer(config, distributor, schedule):
     addr = config.EMAIL_BIND_IP or ""
     port = config.EMAIL_PORT
 
-    reactor.listenTCP(port, factory, interface=addr)
+    try:
+        reactor.listenTCP(port, factory, interface=addr)
+    except CannotListenError as error:
+        logging.fatal(error)
+        raise SystemExit(error.message)
 
     # Set up a LoopingCall to run every 30 minutes and forget old email times.
     lc = LoopingCall(distributor.cleanDatabase)
