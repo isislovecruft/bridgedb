@@ -531,8 +531,14 @@ class SMTPAutoresponder(smtp.SMTPClient):
             error = fail
         logging.error(error)
 
-        # This handles QUIT commands, disconnecting, and closing the transport:
-        smtp.SMTPClient.sendError(self, fail)
+        try:
+            # This handles QUIT commands, disconnecting, and closing the
+            # transport:
+            smtp.SMTPClient.sendError(self, fail)
+        # We might not have `transport` and `protocol` attributes, depending
+        # on when and where the error occurred, so just catch and log it:
+        except Exception as error:
+            logging.error(error)
 
     def reply(self):
         """Reply to an incoming email. Maybe.
