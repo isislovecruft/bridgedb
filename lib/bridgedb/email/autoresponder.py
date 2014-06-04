@@ -639,6 +639,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
                                          self.deferred,
                                          retries=retries,
                                          timeout=timeout)
+        factory.domain = smtp.DNSNAME
         reaktor.connectTCP(self.incoming.context.smtpServerIP,
                            self.incoming.context.smtpServerPort,
                            factory)
