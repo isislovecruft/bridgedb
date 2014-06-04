@@ -417,7 +417,7 @@ def addServer(config, distributor, schedule):
     factory.setContext(context)
 
     addr = config.EMAIL_BIND_IP or ""
-    port = config.EMAIL_PORT
+    port = config.EMAIL_PORT or 6725
 
     try:
         reactor.listenTCP(port, factory, interface=addr)
