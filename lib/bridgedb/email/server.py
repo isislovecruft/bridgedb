@@ -421,7 +421,7 @@ def addServer(config, distributor, schedule):
 
     try:
         reactor.listenTCP(port, factory, interface=addr)
-    except CannotListenError as error:
+    except CannotListenError as error:  # pragma: no cover
         logging.fatal(error)
         raise SystemExit(error.message)
 
