@@ -290,6 +290,8 @@ a ball of timey-wimey, wibbly-warbly... stuff."""
 class SMTPAutoresponderTests(unittest.TestCase):
     """Unittests for :class:`bridgedb.email.autoresponder.SMTPAutoresponder`."""
 
+    timeout = 10
+
     def setUp(self):
         self.config = _createConfig()
         self.context = _createMailServerContext(self.config)
