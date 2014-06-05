@@ -24,36 +24,41 @@ class CheckDKIMTests(unittest.TestCase):
 
     def setUp(self):
         """Create fake email, distributor, and associated context data."""
-        self.goodMessage = io.StringIO(unicode("""\
+        self.goodMessage = """\
 From: user@gmail.com
 To: bridges@localhost
 X-DKIM-Authentication-Results: pass
 Subject: testing
 
 get bridges
-"""))
-        self.badMessage = io.StringIO(unicode("""\
+"""
+        self.badMessage = """\
 From: user@gmail.com
 To: bridges@localhost
 Subject: testing
 
 get bridges
-"""))
+"""
         self.domainRules = {
             'gmail.com': ["ignore_dots", "dkim"],
             'example.com': [],
             'localhost': [],
         }
 
+    def _createMessage(self, messageString):
+        """Create an ``rfc822.Message`` from a string."""
+        messageIO = io.StringIO(unicode(messageString))
+        return rfc822.Message(messageIO)
+
     def test_checkDKIM_good(self):
-        message = rfc822.Message(self.goodMessage)
+        message = self._createMessage(self.goodMessage)
         result = dkim.checkDKIM(message,
                                 self.domainRules.get("gmail.com"))
         self.assertTrue(result)
                                          
 
     def test_checkDKIM_bad(self):
-        message = rfc822.Message(self.badMessage)
+        message = self._createMessage(self.badMessage)
         result = dkim.checkDKIM(message,
                                 self.domainRules.get("gmail.com"))
         self.assertIs(result, False)
