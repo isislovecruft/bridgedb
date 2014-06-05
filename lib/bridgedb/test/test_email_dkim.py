@@ -73,3 +73,14 @@ get bridges
         result = dkim.checkDKIM(message,
                                 self.domainRules.get("gmail.com"))
         self.assertIs(result, False)
+
+    def test_checkDKIM_good_dunno(self):
+        """A good DKIM verification header, *plus* an
+        ``X-DKIM-Authentication-Results: dunno`` header should return False.
+        """
+        messageList = self.badMessage.split('\n')
+        messageList.insert(2, "X-DKIM-Authentication-Results: dunno")
+        message = self._createMessage('\n'.join(messageList))
+        result = dkim.checkDKIM(message,
+                                self.domainRules.get("gmail.com"))
+        self.assertIs(result, False)
