@@ -535,12 +535,25 @@ class SMTPAutoresponderTests(unittest.TestCase):
         self.responder.incoming.canonicalFromSMTP = smtpFrom
         self.assertFalse(self.responder.runChecks(emailFrom))
 
-    def test_SMTPAutoresponder_runChecks_badDKIM(self):
-        """runChecks() should catch emails with bad DKIM headers for canonical
-        domains which we've configured to check DKIM verification results for.
+    def test_SMTPAutoresponder_runChecks_DKIM_dunno(self):
+        """runChecks() should catch emails with bad DKIM headers
+        (``"X-DKIM-Authentication-Results: dunno"``) for canonical domains
+        which we're configured to check DKIM verification results for.
+        """
+        emailFrom = Address('dkimlikedunno@gmail.com')
+        header = "X-DKIM-Authentication-Results: dunno"
+        self._getIncomingLines(str(emailFrom))
+        self.message.lines.insert(3, header)
+        self._setUpResponder()
+        self.assertFalse(self.responder.runChecks(emailFrom))
+
+    def test_SMTPAutoresponder_runChecks_DKIM_bad(self):
+        """runChecks() should catch emails with bad DKIM headers
+        (``"X-DKIM-Authentication-Results: dunno"``) for canonical domains
+        which we're configured to check DKIM verification results for.
         """
         emailFrom = Address('dkimlikewat@gmail.com')
-        header = "X-DKIM-Authentication-Results: dunno"
+        header = "X-DKIM-Authentication-Results: wowie zowie there's a sig here"
         self._getIncomingLines(str(emailFrom))
         self.message.lines.insert(3, header)
         self._setUpResponder()
