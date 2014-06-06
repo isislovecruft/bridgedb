@@ -1,16 +1,18 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2013 ORGANIZATION
+# Copyright (C) 2014 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
 # brt <87@itokei.info>, 2013
 # plazmism <gomidori@live.jp>, 2013
+# plazmism <gomidori@live.jp>, 2014
+# Masaki Saito <rezoolab@gmail.com>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
-"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2013-03-27 21:41+0000\n"
-"PO-Revision-Date: 2013-05-31 02:50+0000\n"
+"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
+"POT-Creation-Date: 2014-05-16 18:39+0000\n"
+"PO-Revision-Date: 2014-06-03 15:41+0000\n"
 "Last-Translator: plazmism <gomidori@live.jp>\n"
 "Language-Team: Japanese (http://www.transifex.com/projects/p/torproject/language/ja/)\n"
 "MIME-Version: 1.0\n"
@@ -20,82 +22,315 @@ msgstr ""
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/bridgedb/templates/base.html:33
-msgid "What are bridges?"
-msgstr "ブリッジとはなんですか？"
+#. TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+#. any string (regardless of capitalization and/or punctuation):
+#. "bridge"
+#. "bridges"
+#. "BridgeDB"
+#. "pluggable transport"
+#. "pluggable transports"
+#. "obfs2"
+#. "obfs3"
+#. "scramblesuit"
+#. "fte"
+#. "Tor"
+#. "Tor Browser"
+#. "TBB"
+#: lib/bridgedb/HTTPServer.py:124
+msgid "Sorry! Something went wrong with your request."
+msgstr "申し訳ありませんが、リクエストに問題がありました。"
 
-#: lib/bridgedb/templates/base.html:34
+#: lib/bridgedb/strings.py:18
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[このメールは自動送信されたメッセージです。返信しないでください。]"
+
+#: lib/bridgedb/strings.py:20
+msgid "Here are your bridges:"
+msgstr "あなたのブリッジはこちら:"
+
+#: lib/bridgedb/strings.py:22
 #, python-format
 msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s ブリッジリレー %sは検閲を回避することを助けるTorリレーです。"
+"You have exceeded the rate limit. Please slow down! The minimum time between\n"
+"emails is %s hours. All further emails during this time period will be ignored."
+msgstr "レート制限を超過しました。メール間の最小時間は %s 時間です。この期間中にさらに送信したメールは全て無視されます。"
 
-#: lib/bridgedb/templates/base.html:39
+#: lib/bridgedb/strings.py:25
+msgid ""
+"COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"
+msgstr "コマンド: (コマンドを組み合わせて、同時に複数のオプションを指定する)"
+
+#: lib/bridgedb/strings.py:27
+msgid "Welcome to BridgeDB!"
+msgstr "BridgeDB へようこそ！"
+
+#. TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
+#: lib/bridgedb/strings.py:29
+msgid "Currently supported transport TYPEs:"
+msgstr "現在サポートされているトランスポートタイプ:"
+
+#: lib/bridgedb/strings.py:30
+#, python-format
+msgid "Hey, %s!"
+msgstr "どうも %s さん！"
+
+#: lib/bridgedb/strings.py:31
+msgid "Hello, friend!"
+msgstr "どうもこんにちは！"
+
+#: lib/bridgedb/strings.py:32 lib/bridgedb/templates/base.html:100
+msgid "Public Keys"
+msgstr "公開鍵"
+
+#. TRANSLATORS: This string will end up saying something like:
+#. "This email was generated with rainbows, unicorns, and sparkles
+#. for alice@example.com on Friday, 09 May, 2014 at 18:59:39."
+#: lib/bridgedb/strings.py:36
+#, python-format
+msgid ""
+"This email was generated with rainbows, unicorns, and sparkles\n"
+"for %s on %s at %s."
+msgstr "このメールは %s に %s %s に rainbow 及び unicorn 、 sparkle で生成されました。"
+
+#: lib/bridgedb/strings.py:42
+#, python-format
+msgid ""
+"BridgeDB can provide bridges with several %stypes of Pluggable Transports%s,\n"
+"which can help obfuscate your connections to the Tor Network, making it more\n"
+"difficult for anyone watching your internet traffic to determine that you are\n"
+"using Tor.\n"
+"\n"
+msgstr "BridgeDB は、%sタイプの Pluggable Transports%s でブリッジを提供します。\nTor ネットワークへの接続を悟られづらくすることに役立ち、あなたの\nインターネットトラフィックを監視している誰かがあなたが Tor を使用していることを判別することがさらに難しくなります。\n\n"
+
+#: lib/bridgedb/strings.py:48
+msgid ""
+"Some bridges with IPv6 addresses are also available, though some Pluggable\n"
+"Transports aren't IPv6 compatible.\n"
+"\n"
+msgstr "IPv6 のアドレスのブリッジも利用できるものがありますが、 Pluggable Transports には IPv6 に互換性がないものもあります。\n\n"
+
+#: lib/bridgedb/strings.py:52
+#, python-format
+msgid ""
+"Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any\n"
+"Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
+"help to circumvent internet censorship in many cases.\n"
+"\n"
+msgstr "加えて、  BridgeDB は、 %s Pluggable Transport %s のない多くの何の変哲もない\n通常のブリッジを持ち、それはクールには思えないかもしれません。しかし、多くの場合、インターネット検閲を回避するのになお有効です。\n"
+
+#: lib/bridgedb/strings.py:65
+msgid "What are bridges?"
+msgstr "ブリッジとは？"
+
+#: lib/bridgedb/strings.py:66
+#, python-format
+msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
+msgstr "%s ブリッジ %s は、 インターネット検閲を回避する助けとなる Tor リレーです。"
+
+#: lib/bridgedb/strings.py:71
 msgid "I need an alternative way of getting bridges!"
 msgstr "ブリッジを得る他の方法が必要です!"
 
-#: lib/bridgedb/templates/base.html:40
+#: lib/bridgedb/strings.py:72
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "パブリックブリッジのアドレスを探す他の方法は、(%sか%sのアドレスから) メールの文面に「get bridges」の行をつけて%sにメールを送ることです。"
+"Another way to get bridges is to send an email to %s. Please note that you must\n"
+"send the email using an address from one of the following email providers:\n"
+"%s or %s."
+msgstr "ブリッジを入手する別のやり方は %s までメールを送ることです。以下のメールプロバイダのうちの1つのアドレスを使用してメールを送信しなければならないことにご注意ください: %s または %s"
 
-#: lib/bridgedb/templates/base.html:48
+#: lib/bridgedb/strings.py:79
 msgid "My bridges don't work! I need help!"
 msgstr "私のブリッジが動きません! 助けてください!"
 
-#: lib/bridgedb/templates/base.html:49
+#: lib/bridgedb/strings.py:80
+#, python-format
+msgid "If your Tor doesn't work, you should email %s."
+msgstr "Tor がうまく動作しない場合、 %s までメールを下さい。"
+
+#: lib/bridgedb/strings.py:81
+msgid ""
+"Try including as much info about your case as you can, including the list of\n"
+"bridges and Pluggable Transports you tried to use, your Tor Browser version,\n"
+"and any messages which Tor gave out, etc."
+msgstr "あなたが使おうとしたブリッジや Pluggable Transports 、 ご利用の Tor Browser バージョン、そして Tor が出力したメッセージ等などを含み、出来る限りあなたのケースに関する多くの情報を含めてみてください。"
+
+#: lib/bridgedb/strings.py:88
+msgid "Here are your bridge lines:"
+msgstr "あなたのブリッジラインはこちらです:"
+
+#: lib/bridgedb/strings.py:89
+msgid "Get Bridges!"
+msgstr "ブリッジを入手！"
+
+#: lib/bridgedb/strings.py:93
+msgid "Please select options for bridge type:"
+msgstr "ブリッジタイプのオプションを選択してください:"
+
+#: lib/bridgedb/strings.py:94
+msgid "Do you need IPv6 addresses?"
+msgstr "IPv6 アドレスが必要ですか？"
+
+#: lib/bridgedb/strings.py:95
+#, python-format
+msgid "Do you need a %s?"
+msgstr "%s が必要ですか？"
+
+#: lib/bridgedb/strings.py:99
+msgid "Your browser is not displaying images properly."
+msgstr "ご利用のブラウザは適切に画像を表示していません。"
+
+#: lib/bridgedb/strings.py:100
+msgid "Enter the characters from the image above..."
+msgstr "上記の画像から文字を入力してください..."
+
+#: lib/bridgedb/strings.py:104
+msgid "How to start using your bridges"
+msgstr "ブリッジ使用の始め方"
+
+#: lib/bridgedb/strings.py:105
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
-"bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "あなたのTorが動作しないなら、%sにメールするべきです。 使っていたブリッジのリスト、使っていたバンドルのファイル名/バージョン、Torが出したメッセージなど、できるだけ問題についての情報を多く含めるようにしてください。"
+"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
+"Browser download page %s to start Tor Browser."
+msgstr "Tor Browser にブリッジ情報を入力するには、 %s Tor Browser のダウンロードページ %s の指示に従って Tor Browser を起動してください。"
 
-#: lib/bridgedb/templates/bridges.html:10
+#: lib/bridgedb/strings.py:108
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click "
-"\"My ISP blocks connections to the Tor network\". Then add each bridge "
-"address one at a time."
-msgstr "以上の記述を使用するには、Vidaliaのネットワーク設定ページに行き、「私のISPはTorネットワークへの接続をブロックしています」をクリックしてください。その後、各ブリッジアドレスが1つずつ追加されます。"
+"When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
+"the wizard until it asks:"
+msgstr "「Tor ネットワーク設定」ダイアログがポップアップした際、設定をクリックして\n聞かれるまでウィザードに従ってください。"
 
-#: lib/bridgedb/templates/bridges.html:13
-msgid "No bridges currently available"
-msgstr "現在利用できるブリッジがありません"
+#: lib/bridgedb/strings.py:111
+msgid ""
+"Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
+"to the Tor network?"
+msgstr "ご利用のインターネットサービスプロバイダー (ISP) は Tor ネットワークへの接続をブロックないし\n別のやり方で検閲していますか？"
 
-#: lib/bridgedb/templates/captcha.html:6
-msgid "Upgrade your browser to Firefox"
-msgstr "ブラウザをFirefoxにアップグレード"
+#: lib/bridgedb/strings.py:114
+msgid ""
+"Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
+"paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
+"you should be good to go! If you experience trouble, try clicking the 'Help'\n"
+"button in the 'Tor Network Settings' wizard for further assistance."
+msgstr "「はい」を選択して、「次」をクリックしてください。新しいブリッジを構成するために、テキスト\n入力ボックスにブリッジラインをコピーペーストしてください。最後に、「接続」をクリックして、\nさあ準備が出来たはずです！何か問題があったら、さらなる助けを得るために「Tor\nネットワーク設定」ウィザード内「ヘルプ」ボタンをクリックしてください。"
 
-#: lib/bridgedb/templates/captcha.html:8
-msgid "Type the two words"
-msgstr "2つの単語をタイプしてください"
+#: lib/bridgedb/strings.py:122
+msgid "Displays this message."
+msgstr "この画像を表示"
 
-#: lib/bridgedb/templates/index.html:6
-msgid "Step 1"
-msgstr "ステップ 1"
+#: lib/bridgedb/strings.py:123
+msgid "Request vanilla bridges."
+msgstr "vanilla ブリッジをリクエスト"
 
-#: lib/bridgedb/templates/index.html:8
+#: lib/bridgedb/strings.py:124
+msgid "Request IPv6 bridges."
+msgstr "IPv6 ブリッジをリクエスト"
+
+#. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
+#: lib/bridgedb/strings.py:126
+msgid "Request a Pluggable Transport by TYPE."
+msgstr "タイプごとに Pluggable Transport をリクエスト"
+
+#: lib/bridgedb/strings.py:127
+msgid "Get a copy of BridgeDB's public GnuPG key."
+msgstr "BridgeDB の GnuPG 公開鍵のコピーを手に入れましょう。"
+
+#: lib/bridgedb/templates/base.html:91
+msgid "Report a Bug"
+msgstr "バグを報告する"
+
+#: lib/bridgedb/templates/base.html:93
+msgid "Source Code"
+msgstr "ソースコード"
+
+#: lib/bridgedb/templates/base.html:96
+msgid "Changelog"
+msgstr "変更履歴"
+
+#: lib/bridgedb/templates/base.html:98
+msgid "Contact"
+msgstr "お問い合わせ"
+
+#: lib/bridgedb/templates/bridges.html:65
+msgid "Uh oh, spaghettios!"
+msgstr "おっとスパゲッティ！"
+
+#: lib/bridgedb/templates/bridges.html:70
+msgid "There currently aren't any bridges available..."
+msgstr "今の時点では利用できるブリッジがありません..."
+
+#: lib/bridgedb/templates/bridges.html:71
 #, python-format
-msgid "Get %s Tor Browser Bundle %s"
-msgstr "Tor %s Browser Bundle %sを手に入れる"
+msgid ""
+" Perhaps you should try %s going back %s and choosing a different bridge "
+"type!"
+msgstr "おそらく 、 %s 戻って %s 異なるブリッジタイプを選択してみるべきでしょう。"
+
+#: lib/bridgedb/templates/index.html:11
+#, python-format
+msgid "Step %s1%s"
+msgstr "ステップ %s1%s"
 
 #: lib/bridgedb/templates/index.html:13
-msgid "Step 2"
-msgstr "ステップ 2"
+#, python-format
+msgid "Download %s Tor Browser %s"
+msgstr "%s Tor Browser %s をダウンロード"
 
-#: lib/bridgedb/templates/index.html:15
+#: lib/bridgedb/templates/index.html:25
+#, python-format
+msgid "Step %s2%s"
+msgstr "ステップ %s2%s"
+
+#: lib/bridgedb/templates/index.html:27
 #, python-format
 msgid "Get %s bridges %s"
 msgstr "%s ブリッジ %s を手に入れる"
 
-#: lib/bridgedb/templates/index.html:19
-msgid "Step 3"
-msgstr "ステップ 3"
-
-#: lib/bridgedb/templates/index.html:21
+#: lib/bridgedb/templates/index.html:36
 #, python-format
-msgid "Now %s add the bridges to Tor %s"
-msgstr "すぐに%s Torにブリッジを追加 %s"
+msgid "Step %s3%s"
+msgstr "ステップ %s3%s"
+
+#: lib/bridgedb/templates/index.html:38
+#, python-format
+msgid "Now %s add the bridges to Tor Browser %s"
+msgstr "%s Tor Browser にブリッジを追加します %s"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. (These are used to insert HTML5 underlining tags, to mark accesskeys
+#. for disabled users.)
+#. TRANSLATORS: Please do NOT translate the word "bridges"!
+#: lib/bridgedb/templates/options.html:39
+#, python-format
+msgid "%sJ%sust give me bridges!"
+msgstr "%sあ%sの、ください、 bridges!"
+
+#: lib/bridgedb/templates/options.html:53
+msgid "Advanced Options"
+msgstr "高度な設定"
+
+#: lib/bridgedb/templates/options.html:89
+msgid "No"
+msgstr "いいえ"
+
+#: lib/bridgedb/templates/options.html:90
+msgid "none"
+msgstr "なし"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+#: lib/bridgedb/templates/options.html:131
+#, python-format
+msgid "%sY%ses!"
+msgstr "%sは%sい！"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Please do NOT translate the word "bridge"!
+#: lib/bridgedb/templates/options.html:155
+#, python-format
+msgid "%sG%set Bridges"
+msgstr "%sG%set Bridges"
