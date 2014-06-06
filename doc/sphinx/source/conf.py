@@ -32,7 +32,12 @@ import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
 import bridgedb.Dist
-import bridgedb.EmailServer
+import bridgedb.email
+import bridgedb.email.autoresponder
+import bridgedb.email.dkim
+import bridgedb.email.request
+import bridgedb.email.server
+import bridgedb.email.templates
 import bridgedb.Filters
 import bridgedb.HTTPServer
 import bridgedb.Main
