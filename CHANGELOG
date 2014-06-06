@@ -71,10 +71,65 @@ Changes in version 0.2.2 - 2014-06-XXX
             afterwards redirect back to the CAPTCHA page.
         THANKS TO francisco on IRC and arma for reporting the bug.
 
+        * FIXES #12212 https://trac.torproject.org/projects/tor/ticket/12122
+        TRANSLATOR comments are now properly extracted into the gettext PO
+        template file.
+
 And include the following general changes:
         * FIXES an issue where, when verifying GnuPG signatures made by
         BridgeDB's email distributor, GnuPG would error, saying, "invalid
         armor header".
+
+        * ADD Korean (ko) translations.
+          Thanks to ilbe123, cwt96, Dr.what, and pCsOrI.
+
+        * UPDATE Ukranian (uk) translations.
+          Thanks to LinuxChata and ghostishev.
+
+        * UPDATE Turkish (tr) translations.
+          Thanks to volkangezer.
+
+        * UPDATE Brazilian Portuguese (pt_BR) translations.
+          Thanks to Communia, Humberto Sartini, Anastasia01, and recognitium.
+
+        * UPDATE Polish (pl) translations.
+          Thanks to hoek, yodaa, maxxx, and sebx.
+
+        * UPDATE Dutch (nl) translations.
+          Thanks to Ann Boen, erwindelaat, guryman, and BBLN.
+          You guys are extra awesome for translating the phrase:
+              "Uh oh, spaghettios!"
+          into the Dutch:
+              "Helaas pindakaas!"
+          which, in English, literally means:
+              "Unfortunately, peanut butter!"
+          You guys totally just made my day. Thanks.
+
+        * UPDATE Japanese (ja) translations.
+          Thanks to plazmism, who is extra awesome for translating the phrase:
+              "Uh oh, spaghettios!"
+          into the Japanese:
+              "おっとスパゲッティ！"
+          which apparently the literal English translation is:
+              "Husband spaghetti!"
+
+        * UPDATE Italian (it) translations.
+          Thanks to Random_R.
+
+        * UPDATE Canadian French (fr_CA) translations.
+          Thanks to Lunar.
+
+        * UPDATE Spanish (es) translations.
+          Thanks to dark_yoshi and strel.
+
+        * UPDATE Greek (el) translations.
+          Thanks to pappasadrian.
+
+        * UPDATE German (de) translations.
+          Thanks to trantor and unknwon_anonymous.
+
+        * UPDATE Danish (da) translations.
+          Thanks to autofunk78 and DavidNielsen.
 
 
 Changes in version 0.2.1 - 2014-05-16
