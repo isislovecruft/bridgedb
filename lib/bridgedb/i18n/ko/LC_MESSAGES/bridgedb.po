@@ -1,0 +1,104 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2013 ORGANIZATION
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Translators:
+# ilbe123 <a3057016@drdrb.net>, 2014
+# cwt96 <cwt967@naver.com>, 2012
+# Dr.what <javrick6@naver.com>, 2014
+# pCsOrI <pcsori@gmail.com>, 2012
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
+"POT-Creation-Date: 2013-03-27 21:41+0000\n"
+"PO-Revision-Date: 2014-05-06 06:40+0000\n"
+"Last-Translator: ilbe123 <a3057016@drdrb.net>\n"
+"Language-Team: Korean (http://www.transifex.com/projects/p/torproject/language/ko/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: ko\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: lib/bridgedb/templates/base.html:33
+msgid "What are bridges?"
+msgstr "'브릿지'란?"
+
+#: lib/bridgedb/templates/base.html:34
+#, python-format
+msgid ""
+"%s Bridge relays %s are Tor relays that help you circumvent censorship."
+msgstr "중계 서버 브릿지 %s 중에서, %s 가 여러분의 검열 우회를 도와줄 수 있는 Tor 중계 서버 입니다."
+
+#: lib/bridgedb/templates/base.html:39
+msgid "I need an alternative way of getting bridges!"
+msgstr "브릿지를 얻는 다른 방법이 없을까요?"
+
+#: lib/bridgedb/templates/base.html:40
+#, python-format
+msgid ""
+"Another way to find public bridge addresses is to send an email (from a %s "
+"or a %s address) to %s with the line 'get bridges' by itself in the body of "
+"the mail."
+msgstr "공개된 브릿지 주소를 찾을 때, 통신선에 'get brides'라고 이메일을 적어서 보내는 방법도 있습니다.(메일을 보내는 사람의 주소 표기는 from %s 또는 %s 주소)"
+
+#: lib/bridgedb/templates/base.html:48
+msgid "My bridges don't work! I need help!"
+msgstr "브릿지가 맛이 갔어요! 도와줘요!"
+
+#: lib/bridgedb/templates/base.html:49
+#, python-format
+msgid ""
+"If your Tor doesn't work, you should email %s. Try including as much info "
+"about your case as you can, including the list of bridges you used, the "
+"bundle filename/version you used, the messages that Tor gave out, etc."
+msgstr "귀하의 토르가 작동하지 않는다면, %s의 이메일을 보내셔야 합니다. 가능한 한 많은 정보를 포함해서 보내주세요. 예를 들면 귀하가 사용한 브릿지의 목록, 귀하가 사용하는 번들의 파일 이름과 버전, 귀하의 토르가 맛 갔을 때 나온 메세지. 이 외에도 적을 수 있는 여러 가지."
+
+#: lib/bridgedb/templates/bridges.html:10
+msgid ""
+"To use the above lines, go to Vidalia's Network settings page, and click "
+"\"My ISP blocks connections to the Tor network\". Then add each bridge "
+"address one at a time."
+msgstr "위 통신선을 사용하시려면 'Vidalia's Network settings'-비달리아 네트워크 설정-페이지에 들어간 후, 'My ISP blocks connections to the Tor network'-Tor 네트워크에 내 ISP 연결을 차단-을 클릭합니다. 그러면 한번에 각각의 브릿지 주소를 추가 할 수 있습니다."
+
+#: lib/bridgedb/templates/bridges.html:13
+msgid "No bridges currently available"
+msgstr "현재 이용 가능한 브릿지 없음"
+
+#: lib/bridgedb/templates/captcha.html:6
+msgid "Upgrade your browser to Firefox"
+msgstr "당신의 브라우저를 파이어폭스로 업그레이드 하세요!"
+
+#: lib/bridgedb/templates/captcha.html:8
+msgid "Type the two words"
+msgstr "두개의 단어를 입력하십시오"
+
+#: lib/bridgedb/templates/index.html:6
+msgid "Step 1"
+msgstr "1단계"
+
+#: lib/bridgedb/templates/index.html:8
+#, python-format
+msgid "Get %s Tor Browser Bundle %s"
+msgstr "Tor %s Browser Bundle %s를 입수"
+
+#: lib/bridgedb/templates/index.html:13
+msgid "Step 2"
+msgstr "2단계"
+
+#: lib/bridgedb/templates/index.html:15
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "%s 브릿지 %s를 입수"
+
+#: lib/bridgedb/templates/index.html:19
+msgid "Step 3"
+msgstr "3단계"
+
+#: lib/bridgedb/templates/index.html:21
+#, python-format
+msgid "Now %s add the bridges to Tor %s"
+msgstr "곧 바로 %s Tor 브리지를 추가 %s"
