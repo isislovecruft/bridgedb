@@ -1,3 +1,82 @@
+Changes in version 0.2.2 - 2014-06-XXX
+
+        * FIXES #9874 https://trac.torproject.org/projects/tor/ticket/9874
+        BridgeDB's email and HTTPS distributors were written in a manner
+        that makes them largely impossible to write unittests for. Since
+        the recent rewrite of BridgeDB's email distributor server backends
+        for version 0.2.1, BridgeDB email distributor is now testable and
+        has near 100% code coverage, see
+        https://coveralls.io/r/isislovecruft/bridgedb
+
+        * FIXES #12086 https://trac.torproject.org/projects/tor/ticket/12086
+        BridgeDB was found to accept incoming emails sent to any email
+        address whose local part included the word bridges, e.g. emails
+        sent to 'givemebridges@serious.ly' would be responded to as if
+        they were destined for BridgeDB's real email address.
+          - BridgeDB now strictly checks that the local part of the email
+            address that an incoming email was sent to (after removing plus
+            aliases, i.e. '+es_ES', '+fa', etc.) exactly matches BridgeDB
+            configured email address username.
+          - BridgeDB now checks that the domain name portion of the email
+            address that an incoming email was sent to either matches the
+            domain name portion of BridgeDB's configured email address, or
+            is a subdomain of that domain.
+
+        * FIXES #12089 https://trac.torproject.org/projects/tor/ticket/12089
+        There has been a bug for quite some time now where BridgeDB could
+        be used to email arbitrary email addresses (as long as these
+        addresses were ones which BridgeDB allows, i.e. Gmail or Yahoo
+        email addresses). This was due to BridgeDB not checking that the
+        email address used in the SMTP 'MAIL FROM:' command on an incoming
+        message matched the one used in that email's 'From:'
+        header.
+          - BridgeDB now checks that the email addresses in the SMTP 'MAIL
+            FROM:' and the 'From:' header on that incoming email match, in
+            addition to the previous checks that the email address' domain
+            is in the set of allowed domains.
+
+        * FIXES #12090 https://trac.torproject.org/projects/tor/ticket/12090
+        BridgeDB has been replying with an empty email. I don't actually
+        know for sure if this one is fixed. Before deploying version
+        0.2.1, the continuous integration tests showed email responses
+        being correctly generated, and I was also able to receive
+        correctly formed email responses from BridgeDB on a local testing
+        instance on my laptop. It appears that this bug occurs only on the
+        deployment server at ponticum.torproject.org, possibly due to the
+        outdated Python version in Debian Wheezy. I have not been able to
+        reproduce this bug on any other machine.
+
+        * FIXES #12091 https://trac.torproject.org/projects/tor/ticket/12091
+        BridgeDB wasn't properly ignoring emails whose DKIM signature
+        verification header read "X-DKIM-Authentication-Results: dunno".
+          - Bridgedb now marks incoming emails which have a
+            "X-DKIM-Authentication-Results: dunno" header as invalid and
+            ignores them.
+
+        * FIXES #12147 https://trac.torproject.org/projects/tor/ticket/12147
+        If a user refreshed https://bridges.torproject.org/bridges after
+        successfully solving a CAPTCHA, BridgeDB would reply with a new
+        set of bridges for each page refresh. This was due to the use of
+        `getIterval()` in `IPBasedDistributor.getBridgesForIP()`.The
+        correct function to use is `getIntervalStart()`.  This had been
+        noted in a "XXX FIXME" comment above the call for quite some time,
+        however, when the `bridgedb.schedule` (previously called
+        `bridgedb.Time`) module was revised to support CAPTCHA timeouts
+        (#11215), the call to `getInterval()` was mistakenly not replaced
+        with the correct function.
+          - BridgeDB CAPTCHAs must be solved within 10 minutes.
+          - Hashring rotation for bridges in BridgeDB HTTPS distributor
+            occurs every 3 hours. Refreshing the page with bridges on it
+            will return these same bridges for that time period, and
+            afterwards redirect back to the CAPTCHA page.
+        THANKS TO francisco on IRC and arma for reporting the bug.
+
+And include the following general changes:
+        * FIXES an issue where, when verifying GnuPG signatures made by
+        BridgeDB's email distributor, GnuPG would error, saying, "invalid
+        armor header".
+
+
 Changes in version 0.2.1 - 2014-05-16
         * FIXES #5463 https://trac.torproject.org/projects/tor/ticket/5463
         Emails sent from BridgeDB's email distributor should now be signed.
