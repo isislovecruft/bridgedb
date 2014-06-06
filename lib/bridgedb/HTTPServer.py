@@ -108,8 +108,6 @@ def replaceErrorPage(error, template_name=None):
     # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
     # any string (regardless of capitalization and/or punctuation):
     #
-    # "bridge"
-    # "bridges"
     # "BridgeDB"
     # "pluggable transport"
     # "pluggable transports"
