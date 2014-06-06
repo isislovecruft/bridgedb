@@ -114,10 +114,9 @@ def replaceErrorPage(error, template_name=None):
     # "obfs2"
     # "obfs3"
     # "scramblesuit"
-    # "fte"
+    # "fteproxy"
     # "Tor"
     # "Tor Browser"
-    # "TBB"
     #
     errmsg = _("Sorry! Something went wrong with your request.")
     rendered = """<html>
