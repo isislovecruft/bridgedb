@@ -108,18 +108,15 @@ def replaceErrorPage(error, template_name=None):
     # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
     # any string (regardless of capitalization and/or punctuation):
     #
-    # "bridge"
-    # "bridges"
     # "BridgeDB"
     # "pluggable transport"
     # "pluggable transports"
     # "obfs2"
     # "obfs3"
     # "scramblesuit"
-    # "fte"
+    # "fteproxy"
     # "Tor"
     # "Tor Browser"
-    # "TBB"
     #
     errmsg = _("Sorry! Something went wrong with your request.")
     rendered = """<html>

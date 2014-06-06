@@ -14,10 +14,13 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import abc
 import doctest
 import os
 
 from functools import wraps
+
+from twisted.trial import unittest
 
 
 def fileCheckDecorator(func):
@@ -61,6 +64,13 @@ def fileCheckDecorator(func):
                         "Couldn't find new %s file: %r. Original: %r"
                         % (str(description), dst, src))
     return wrapper
+
+
+class TestCaseMixin:
+    """Subclasses of me can be used as mix-in classes with ``TestCase``s."""
+    __metaclass__ = abc.ABCMeta
+TestCaseMixin.register(unittest.TestCase)
+
 
 if __name__ == "__main__":
     doctest.run_docstring_examples(fileCheckDecorator, None)

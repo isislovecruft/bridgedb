@@ -24,6 +24,7 @@ You have exceeded the rate limit. Please slow down! The minimum time between
 emails is %s hours. All further emails during this time period will be ignored."""),
     3: _("""\
 COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"""),
+    # TRANSLATORS: Please DO NOT translate the word "BridgeDB".
     4: _("Welcome to BridgeDB!"),
     # TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
     5: _("Currently supported transport TYPEs:"),
@@ -39,16 +40,26 @@ for %s on %s at %s."""),
 }
 
 WELCOME = {
+    # TRANSLATORS: Please DO NOT translate "BridgeDB".
+    # TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+    # TRANSLATORS: Please DO NOT translate "Tor".
+    # TRANSLATORS: Please DO NOT translate "Tor Network".
     0: _("""\
 BridgeDB can provide bridges with several %stypes of Pluggable Transports%s,
 which can help obfuscate your connections to the Tor Network, making it more
 difficult for anyone watching your internet traffic to determine that you are
 using Tor.\n\n"""),
 
+    # TRANSLATORS: Please DO NOT translate "Pluggable Transports".
     1: _("""\
 Some bridges with IPv6 addresses are also available, though some Pluggable
 Transports aren't IPv6 compatible.\n\n"""),
 
+    # TRANSLATORS: Please DO NOT translate "BridgeDB".
+    # TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring,
+    # regular, or unexciting". Like vanilla ice cream. It refers to bridges
+    # which do not have Pluggable Transports, and only speak the regular,
+    # boring Tor protocol. Translate it as you see fit. Have fun with it.
     2: _("""\
 Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any
 Pluggable Transports %s which maybe doesn't sound as cool, but they can still
@@ -77,7 +88,11 @@ send the email using an address from one of the following email providers:
 
 HELP = {
     0: _("My bridges don't work! I need help!"),
+    # TRANSLATORS: Please DO NOT translate "Tor".
     1: _("""If your Tor doesn't work, you should email %s."""),
+    # TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+    # TRANSLATORS: Please DO NOT translate "Tor Browser".
+    # TRANSLATORS: Please DO NOT translate "Tor".
     2: _("""\
 Try including as much info about your case as you can, including the list of
 bridges and Pluggable Transports you tried to use, your Tor Browser version,
@@ -102,15 +117,19 @@ CAPTCHA = {
 
 HOWTO_TBB = {
     0: _("""How to start using your bridges"""),
+    # TRANSLATORS: Please DO NOT translate "Tor Browser".
     1: _("""\
 To enter bridges into Tor Browser, follow the instructions on the %s Tor
 Browser download page %s to start Tor Browser."""),
+    # TRANSLATORS: Please DO NOT translate "Tor".
     2: _("""\
 When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow
 the wizard until it asks:"""),
+    # TRANSLATORS: Please DO NOT translate "Tor".
     3: _("""\
 Does your Internet Service Provider (ISP) block or otherwise censor connections
 to the Tor network?"""),
+    # TRANSLATORS: Please DO NOT translate "Tor".
     4: _("""\
 Select 'Yes' and then click 'Next'. To configure your new bridges, copy and
 paste the bridge lines into the text input box. Finally, click 'Connect', and
@@ -120,10 +139,15 @@ button in the 'Tor Network Settings' wizard for further assistance."""),
 
 EMAIL_COMMANDS = {
     "get help":             _("Displays this message."),
+# TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
+# same non-Pluggable Transport bridges described above as being
+# "plain-ol'-vanilla" bridges.
     "get bridges":          _("Request vanilla bridges."),
     "get ipv6":             _("Request IPv6 bridges."),
     # TRANSLATORS: Please DO NOT translate the word the word "TYPE".
     "get transport [TYPE]": _("Request a Pluggable Transport by TYPE."),
+    # TRANSLATORS: Please DO NOT translate "BridgeDB".
+    # TRANSLATORS: Please DO NOT translate "GnuPG".
     "get key":              _("Get a copy of BridgeDB's public GnuPG key."),
     #"subscribe":            _("Subscribe to receive new bridges once per week"),
     #"unsubscribe":          _("Cancel a subscription to new bridges"),
