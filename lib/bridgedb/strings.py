@@ -49,6 +49,10 @@ using Tor.\n\n"""),
 Some bridges with IPv6 addresses are also available, though some Pluggable
 Transports aren't IPv6 compatible.\n\n"""),
 
+# TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring, regular,
+# or unexciting". Like vanilla ice cream. It refers to bridges which do not
+# have Pluggable Transports, and only speak the regular, boring Tor
+# protocol. Translate it as you see fit. Have fun with it.
     2: _("""\
 Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any
 Pluggable Transports %s which maybe doesn't sound as cool, but they can still
@@ -120,6 +124,9 @@ button in the 'Tor Network Settings' wizard for further assistance."""),
 
 EMAIL_COMMANDS = {
     "get help":             _("Displays this message."),
+# TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
+# same non-Pluggable Transport bridges described above as being
+# "plain-ol'-vanilla" bridges.
     "get bridges":          _("Request vanilla bridges."),
     "get ipv6":             _("Request IPv6 bridges."),
     # TRANSLATORS: Please DO NOT translate the word the word "TYPE".
