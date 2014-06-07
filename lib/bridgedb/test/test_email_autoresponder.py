@@ -397,9 +397,11 @@ class SMTPAutoresponderTests(unittest.TestCase):
         self.assertIsInstance(clients, list, (
             "Returned value of SMTPAutoresponder.getMailTo() isn't a list! "
             "Type: %s" % type(clients)))
+        self.assertTrue(emailFrom not in clients)
         # The client was from an unsupported domain; they shouldn't be in the
         # clients list:
-        self.assertEqual(len(clients), 0)
+        self.assertEqual(len(clients), 0,
+                         "clients = %s" % repr(clients))
 
     def test_SMTPAutoresponder_reply_noFrom(self):
         """A received email without a "From:" or "Sender:" header shouldn't
