@@ -316,7 +316,8 @@ class SMTPIncomingDelivery(smtp.SMTP):
         recipient = user.dest
         ourAddress = smtp.Address(self.context.smtpFromAddr)
 
-        if not (ourAddress.domain in recipient.domain):
+        if not ((ourAddress.domain in recipient.domain) or
+                (recipient.domain == "bridgedb")):
             logging.debug(("Not our domain (%s) or subdomain, skipping"
                            " SMTP 'RCPT TO' address: %s")
                           % (ourAddress.domain, str(recipient)))
