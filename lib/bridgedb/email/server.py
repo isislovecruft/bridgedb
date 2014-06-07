@@ -91,6 +91,7 @@ class MailServerContext(object):
         self.domainRules = config.EMAIL_DOMAIN_RULES or {}
         self.domainMap = config.EMAIL_DOMAIN_MAP or {}
         self.canon = self.buildCanonicalDomainMap()
+        self.whitelist = config.EMAIL_WHITELIST or {}
 
         self.gpgContext = getGPGContext(config)
 
@@ -276,6 +277,14 @@ class SMTPIncomingDelivery(smtp.SMTP):
             error.
         """
         try:
+            if str(origin) in self.context.whitelist.keys():
+                logging.warn("Got SMTP 'MAIL FROM:' whitelisted address: %s."
+                             % str(origin))
+                # We need to be certain later that when the fromCanonicalSMTP
+                # domain is checked again the email 'From:' canonical domain,
+                # that we allow whitelisted addresses through the check.
+                self.fromCanonicalSMTP = origin.domain
+                return origin
             if ((origin.domain == self.context.hostname) or
                 (origin.domain == smtp.DNSNAME)):
                 self.fromCanonicalSMTP = origin.domain

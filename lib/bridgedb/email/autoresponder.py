@@ -433,15 +433,27 @@ class SMTPAutoresponder(smtp.SMTPClient):
         if not addrHeader:
             logging.warn("No Sender header on incoming mail.")
         else:
+            client = None
             try:
-                client = smtp.Address(addr.normalizeEmail(
+                normalized = addr.normalizeEmail(
                     addrHeader,
                     self.incoming.context.domainMap,
-                    self.incoming.context.domainRules))
-            except (addr.UnsupportedDomain, addr.BadEmail,
-                    smtp.AddressError) as error:
+                    self.incoming.context.domainRules)
+                client = smtp.Address(normalized)
+            except (addr.UnsupportedDomain, addr.BadEmail) as error:
                 logging.warn(error)
-            else:
+                # Check if it was one of the whitelisted addresses, because
+                # then it would make sense that it couldn't be canonicalized:
+                try: client = smtp.Address(addrHeader)
+                except smtp.AddressError as error: pass
+                else:
+                    if str(client) in self.incoming.context.whitelist.keys():
+                        logging.debug("Email address was whitelisted: %s."
+                                      % str(client))
+            except smtp.AddressError as error:
+                logging.warn(error)
+
+            if client:
                 clients.append(client)
         return clients
 
@@ -594,6 +606,9 @@ class SMTPAutoresponder(smtp.SMTPClient):
             return False
 
         logging.debug("Canonicalizing client email domain...")
+        # Allow whitelisted addresses through the canonicalization check:
+        if str(client) in self.incoming.context.whitelist.keys():
+            canonicalFromEmail = client.domain
         # The client's address was already checked to see if it came from a
         # supported domain and is a valid email address in :meth:`getMailTo`,
         # so we should just be able to re-extract the canonical domain safely
@@ -606,6 +621,9 @@ class SMTPAutoresponder(smtp.SMTPClient):
         # ``From:`` header should match:
         if self.incoming.canonicalFromSMTP != canonicalFromEmail:
             logging.error("SMTP/Email canonical domain mismatch!")
+            logging.debug("Canonical domain mismatch: %s != %s"
+                          % (self.incoming.canonicalFromSMTP,
+                             canonicalFromEmail))
             return False
 
         domainRules = self.incoming.context.domainRules.get(
