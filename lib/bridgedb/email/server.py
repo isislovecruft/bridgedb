@@ -174,7 +174,13 @@ class SMTPMessage(object):
         else:
             self.lines.append(line)
         if not safelog.safe_logging:
-            logging.debug("> %s", line.rstrip("\r\n"))
+            try:
+                logging.debug("> %s", line.rstrip("\r\n"))
+            except UnicodeError:  # pragma: no cover
+                pass
+            except Exception as error:  # pragma: no cover
+                logging.error("Error while trying to log incoming email")
+                logging.exception(error)
 
     def eomReceived(self):
         """Tell the :ivar:`responder` to reply when we receive an EOM."""
