@@ -296,7 +296,7 @@ class SMTPIncomingDelivery(smtp.SMTP):
                 self.fromCanonicalSMTP = canonical
         except UnsupportedDomain as error:
             logging.info(error)
-            raise smtp.SMTPBadSender(origin.domain)
+            raise smtp.SMTPBadSender(origin)
         except Exception as error:
             logging.exception(error)
 
