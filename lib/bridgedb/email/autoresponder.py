@@ -37,6 +37,7 @@ from bridgedb.email import dkim
 from bridgedb.email import request
 from bridgedb.email import templates
 from bridgedb.parse import addr
+from bridgedb.parse.addr import canonicalizeEmailDomain
 from bridgedb import translations
 
 
@@ -432,29 +433,28 @@ class SMTPAutoresponder(smtp.SMTPClient):
             else: addrHeader = senderHeader
         if not addrHeader:
             logging.warn("No Sender header on incoming mail.")
-        else:
-            client = None
-            try:
+            return clients
+
+        client = None
+        try:
+            if addrHeader in self.incoming.context.whitelist.keys():
+                logging.debug("Email address was whitelisted: %s."
+                              % addrHeader)
+                client = smtp.Address(addrHeader)
+            else:
                 normalized = addr.normalizeEmail(
                     addrHeader,
                     self.incoming.context.domainMap,
                     self.incoming.context.domainRules)
                 client = smtp.Address(normalized)
-            except (addr.UnsupportedDomain, addr.BadEmail) as error:
-                logging.warn(error)
-                # Check if it was one of the whitelisted addresses, because
-                # then it would make sense that it couldn't be canonicalized:
-                try: client = smtp.Address(addrHeader)
-                except smtp.AddressError as error: pass
-                else:
-                    if str(client) in self.incoming.context.whitelist.keys():
-                        logging.debug("Email address was whitelisted: %s."
-                                      % str(client))
-            except smtp.AddressError as error:
-                logging.warn(error)
+        except (addr.UnsupportedDomain) as error:
+            logging.warn(error)
+        except (addr.BadEmail, smtp.AddressError) as error:
+            logging.warn(error)
 
-            if client:
-                clients.append(client)
+        if client:
+            clients.append(client)
+
         return clients
 
     def getMailFrom(self):
@@ -578,13 +578,15 @@ class SMTPAutoresponder(smtp.SMTPClient):
     def runChecks(self, client):
         """Run checks on the incoming message, and only reply if they pass.
 
-          1. Check that the domain names, taken from the SMTP ``MAIL FROM:``
-        command and the email ``'From:'`` header, can be
-        :func:`canonicalized <addr.canonicalizeEmailDomain>`.
+          1. Check if the client's address is whitelisted.
 
-          2. Check that those canonical domains match,
+          2. If it's not whitelisted, check that the domain names, taken from
+        the SMTP ``MAIL FROM:`` command and the email ``'From:'`` header, can
+        be :func:`canonicalized <addr.canonicalizeEmailDomain>`.
 
-          3. If the incoming message is from a domain which supports DKIM
+          3. Check that those canonical domains match.
+
+          4. If the incoming message is from a domain which supports DKIM
         signing, then run :func:`bridgedb.email.dkim.checkDKIM` as well.
 
         .. note:: Calling this method sets the ``canonicalFromEmail`` and
@@ -605,37 +607,44 @@ class SMTPAutoresponder(smtp.SMTPClient):
                           "for email from %s") % str(client))
             return False
 
-        logging.debug("Canonicalizing client email domain...")
         # Allow whitelisted addresses through the canonicalization check:
         if str(client) in self.incoming.context.whitelist.keys():
-            canonicalFromEmail = client.domain
-        # The client's address was already checked to see if it came from a
-        # supported domain and is a valid email address in :meth:`getMailTo`,
-        # so we should just be able to re-extract the canonical domain safely
-        # here:
-        canonicalFromEmail = addr.canonicalizeEmailDomain(
-            client.domain, self.incoming.canon)
-        logging.debug("Canonical email domain: %s" % canonicalFromEmail)
+            self.incoming.canonicalFromEmail = client.domain
+            logging.info("'From:' header contained whitelisted address: %s"
+                         % str(client))
+        else:
+            logging.debug("Canonicalizing client email domain...")
+            try:
+                # The client's address was already checked to see if it came
+                # from a supported domain and is a valid email address in
+                # :meth:`getMailTo`, so we should just be able to re-extract
+                # the canonical domain safely here:
+                self.incoming.canonicalFromEmail = canonicalizeEmailDomain(
+                    client.domain, self.incoming.canon)
+                logging.debug("Canonical email domain: %s"
+                              % self.incoming.canonicalFromEmail)
+            except addr.UnsupportedDomain as error:
+                logging.info("Domain couldn't be canonicalized: %s"
+                             % safelog.logSafely(client.domain))
+                return False
 
         # The canonical domains from the SMTP ``MAIL FROM:`` and the email
         # ``From:`` header should match:
-        if self.incoming.canonicalFromSMTP != canonicalFromEmail:
+        if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
             logging.error("SMTP/Email canonical domain mismatch!")
             logging.debug("Canonical domain mismatch: %s != %s"
                           % (self.incoming.canonicalFromSMTP,
-                             canonicalFromEmail))
+                             self.incoming.canonicalFromEmail))
             return False
 
-        domainRules = self.incoming.context.domainRules.get(
-            canonicalFromEmail, list())
+        self.incoming.domainRules = self.incoming.context.domainRules.get(
+            self.incoming.canonicalFromEmail, list())
 
         # If the domain's ``domainRules`` say to check DKIM verification
         # results, and those results look bad, reject this email:
-        if not dkim.checkDKIM(self.incoming.message, domainRules):
+        if not dkim.checkDKIM(self.incoming.message, self.incoming.domainRules):
             return False
 
-        self.incoming.canonicalDomainRules = domainRules
-        self.incoming.canonicalFromEmail = canonicalFromEmail
         return True
 
     def send(self, response, retries=0, timeout=30, reaktor=reactor):
