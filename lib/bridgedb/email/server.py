@@ -418,7 +418,8 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
 
 
 def addServer(config, distributor, schedule):
-    """Set up a SMTP server for responding to requests for bridges.
+    """Set up a SMTP server which listens on the configured ``EMAIL_PORT`` for
+    incoming connections, and responds as necessary to requests for bridges.
 
     :type config: :class:`bridgedb.persistent.Conf`
     :param config: A configuration object.
