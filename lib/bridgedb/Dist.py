@@ -404,16 +404,13 @@ class EmailBasedDistributor(Distributor):
             bridgeFilterRules=[]
         now = time.time()
 
-        emailaddr = None
-        try:
-            emailaddr = addr.normalizeEmail(emailaddress,
-                                            self.domainmap,
-                                            self.domainrules)
-            if not emailaddr:
-                raise addr.BadEmail("Couldn't normalize email address: %r"
-                                    % emailaddress)
-        except addr.BadEmail as error:
-            logging.warn(error)
+        # All checks on the email address, such as checks for whitelisting and
+        # canonicalization of domain name, are done in
+        # :meth:`bridgedb.email.autoresponder.getMailTo` and
+        # :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+        if not emailaddress:
+            logging.error(("%s distributor can't get bridges for blank email "
+                           "address!") % (self.name, emailaddress))
             return []
 
         with bridgedb.Storage.getDB() as db:
@@ -424,7 +421,11 @@ class EmailBasedDistributor(Distributor):
                          % (N, emailaddress))
 
             if lastSaw is not None:
-                if (lastSaw + MAX_EMAIL_RATE) >= now:
+                if emailaddress in self.whitelist.keys():
+                    logging.info(("Whitelisted email address %s was last seen "
+                                  "%d seconds ago.")
+                                 % (emailaddress, now - lastSaw))
+                elif (lastSaw + MAX_EMAIL_RATE) >= now:
                     wait = (lastSaw + MAX_EMAIL_RATE) - now
                     logging.info("Client %s must wait another %d seconds."
                                  % (emailaddress, wait))
