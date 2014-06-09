@@ -383,7 +383,8 @@ def createBridgeRings(cfg, proxyList, key):
             crypto.getHMAC(key, "Email-Dist-Key"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
-            answerParameters=ringParams)
+            answerParameters=ringParams,
+            whitelist=cfg.EMAIL_WHITELIST.copy())
         splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
 
     # As appropriate, tell the splitter to leave some bridges unallocated.

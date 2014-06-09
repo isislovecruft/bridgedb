@@ -37,6 +37,7 @@ EMAIL_DOMAIN_RULES = {
    'localhost': [],
 }
 EMAIL_DOMAINS = ["gmail.com", "example.com", "localhost"]
+EMAIL_WHITELIST = {'white@list.ed': 'ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234'}
 EMAIL_USERNAME = "bridges"
 EMAIL_SMTP_HOST = "127.0.0.1"
 EMAIL_SMTP_PORT = 25
@@ -54,6 +55,7 @@ EMAIL_GPG_SIGNING_KEY = %s
 EMAIL_DOMAIN_MAP = %s
 EMAIL_DOMAIN_RULES = %s
 EMAIL_DOMAINS = %s
+EMAIL_WHITELIST = %s
 EMAIL_USERNAME = %s
 EMAIL_SMTP_HOST = %s
 EMAIL_SMTP_PORT = %s
@@ -69,6 +71,7 @@ EMAIL_PORT = %s
        repr(EMAIL_DOMAIN_MAP),
        repr(EMAIL_DOMAIN_RULES),
        repr(EMAIL_DOMAINS),
+       repr(EMAIL_WHITELIST),
        repr(EMAIL_USERNAME),
        repr(EMAIL_SMTP_HOST),
        repr(EMAIL_SMTP_PORT),

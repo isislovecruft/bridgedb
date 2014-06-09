@@ -91,6 +91,7 @@ class MailServerContext(object):
         self.domainRules = config.EMAIL_DOMAIN_RULES or {}
         self.domainMap = config.EMAIL_DOMAIN_MAP or {}
         self.canon = self.buildCanonicalDomainMap()
+        self.whitelist = config.EMAIL_WHITELIST or {}
 
         self.gpgContext = getGPGContext(config)
 
@@ -174,7 +175,13 @@ class SMTPMessage(object):
         else:
             self.lines.append(line)
         if not safelog.safe_logging:
-            logging.debug("> %s", line.rstrip("\r\n"))
+            try:
+                logging.debug("> %s", line.rstrip("\r\n"))
+            except UnicodeError:  # pragma: no cover
+                pass
+            except Exception as error:  # pragma: no cover
+                logging.error("Error while trying to log incoming email")
+                logging.exception(error)
 
     def eomReceived(self):
         """Tell the :ivar:`responder` to reply when we receive an EOM."""
@@ -270,6 +277,14 @@ class SMTPIncomingDelivery(smtp.SMTP):
             error.
         """
         try:
+            if str(origin) in self.context.whitelist.keys():
+                logging.warn("Got SMTP 'MAIL FROM:' whitelisted address: %s."
+                             % str(origin))
+                # We need to be certain later that when the fromCanonicalSMTP
+                # domain is checked again the email 'From:' canonical domain,
+                # that we allow whitelisted addresses through the check.
+                self.fromCanonicalSMTP = origin.domain
+                return origin
             if ((origin.domain == self.context.hostname) or
                 (origin.domain == smtp.DNSNAME)):
                 self.fromCanonicalSMTP = origin.domain
@@ -281,7 +296,7 @@ class SMTPIncomingDelivery(smtp.SMTP):
                 self.fromCanonicalSMTP = canonical
         except UnsupportedDomain as error:
             logging.info(error)
-            raise smtp.SMTPBadSender(origin.domain)
+            raise smtp.SMTPBadSender(origin)
         except Exception as error:
             logging.exception(error)
 
@@ -310,7 +325,8 @@ class SMTPIncomingDelivery(smtp.SMTP):
         recipient = user.dest
         ourAddress = smtp.Address(self.context.smtpFromAddr)
 
-        if not (ourAddress.domain in recipient.domain):
+        if not ((ourAddress.domain in recipient.domain) or
+                (recipient.domain == "bridgedb")):
             logging.debug(("Not our domain (%s) or subdomain, skipping"
                            " SMTP 'RCPT TO' address: %s")
                           % (ourAddress.domain, str(recipient)))
@@ -402,7 +418,8 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
 
 
 def addServer(config, distributor, schedule):
-    """Set up a SMTP server for responding to requests for bridges.
+    """Set up a SMTP server which listens on the configured ``EMAIL_PORT`` for
+    incoming connections, and responds as necessary to requests for bridges.
 
     :type config: :class:`bridgedb.persistent.Conf`
     :param config: A configuration object.

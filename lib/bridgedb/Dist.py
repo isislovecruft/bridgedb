@@ -348,7 +348,7 @@ class EmailBasedDistributor(Distributor):
     """
 
     def __init__(self, key, domainmap, domainrules,
-                 answerParameters=None):
+                 answerParameters=None, whitelist=None):
         """Create a bridge distributor which uses email.
 
         :type emailHmac: callable
@@ -359,6 +359,9 @@ class EmailBasedDistributor(Distributor):
             in `bridgedb.conf`.
         :param domainrules: DOCDOC
         :param answerParameters: DOCDOC
+        :type whitelist: dict or ``None``
+        :param whitelist: A dictionary that maps whitelisted email addresses
+            to GnuPG fingerprints.
         """
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
@@ -367,6 +370,7 @@ class EmailBasedDistributor(Distributor):
         # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
+        self.whitelist = whitelist or dict()
         self.answerParameters = answerParameters
 
         #XXX cache options not implemented
@@ -400,16 +404,13 @@ class EmailBasedDistributor(Distributor):
             bridgeFilterRules=[]
         now = time.time()
 
-        emailaddr = None
-        try:
-            emailaddr = addr.normalizeEmail(emailaddress,
-                                            self.domainmap,
-                                            self.domainrules)
-            if not emailaddr:
-                raise addr.BadEmail("Couldn't normalize email address: %r"
-                                    % emailaddress)
-        except addr.BadEmail as error:
-            logging.warn(error)
+        # All checks on the email address, such as checks for whitelisting and
+        # canonicalization of domain name, are done in
+        # :meth:`bridgedb.email.autoresponder.getMailTo` and
+        # :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+        if not emailaddress:
+            logging.error(("%s distributor can't get bridges for blank email "
+                           "address!") % (self.name, emailaddress))
             return []
 
         with bridgedb.Storage.getDB() as db:
@@ -420,7 +421,11 @@ class EmailBasedDistributor(Distributor):
                          % (N, emailaddress))
 
             if lastSaw is not None:
-                if (lastSaw + MAX_EMAIL_RATE) >= now:
+                if emailaddress in self.whitelist.keys():
+                    logging.info(("Whitelisted email address %s was last seen "
+                                  "%d seconds ago.")
+                                 % (emailaddress, now - lastSaw))
+                elif (lastSaw + MAX_EMAIL_RATE) >= now:
                     wait = (lastSaw + MAX_EMAIL_RATE) - now
                     logging.info("Client %s must wait another %d seconds."
                                  % (emailaddress, wait))
