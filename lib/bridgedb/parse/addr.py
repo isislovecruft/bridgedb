@@ -382,9 +382,24 @@ def isValidIP(ip):
 
       * A :term:`Site-Local Address` or an :term:`Unique Local Address`.
 
+
+    >>> from bridgedb.parse.addr import isValidIP
+    >>> isValidIP('1.2.3.4')
+    True
+    >>> isValidIP('1.2.3.255')
+    True
+    >>> isValidIP('1.2.3.256')
+    False
+    >>> isValidIP('1')
+    False
+    >>> isValidIP('1.2.3')
+    False
+    >>> isValidIP('xyzzy')
+    False
+
+
     :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`, or
               :class:`ipaddr.IPv6Address`.
-
     :param ip: An ``ipaddr.IPAddress`` class.
     :rtype: boolean
     :returns: ``True``, if **ip** passes the checks; False otherwise.
