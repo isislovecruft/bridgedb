@@ -440,6 +440,8 @@ def normalizeEmail(emailaddr, domainmap, domainrules, ignorePlus=True):
         ``blackhole+kerr@torproject.org`` is an alias for
         ``blackhole@torproject.org``, and remove everything after the first
         ``'+'`` character.
+    :raises UnsupportedDomain: if the email address originated from a domain
+        that we do not explicitly support.
     :raises BadEmail: if the email address could not be parsed or validated.
     :rtype: str
     :returns: The validated, normalised email address, if it was from a
