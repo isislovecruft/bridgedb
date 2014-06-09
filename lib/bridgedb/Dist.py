@@ -348,7 +348,7 @@ class EmailBasedDistributor(Distributor):
     """
 
     def __init__(self, key, domainmap, domainrules,
-                 answerParameters=None):
+                 answerParameters=None, whitelist=None):
         """Create a bridge distributor which uses email.
 
         :type emailHmac: callable
@@ -359,6 +359,9 @@ class EmailBasedDistributor(Distributor):
             in `bridgedb.conf`.
         :param domainrules: DOCDOC
         :param answerParameters: DOCDOC
+        :type whitelist: dict or ``None``
+        :param whitelist: A dictionary that maps whitelisted email addresses
+            to GnuPG fingerprints.
         """
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
@@ -367,6 +370,7 @@ class EmailBasedDistributor(Distributor):
         # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
+        self.whitelist = whitelist or dict()
         self.answerParameters = answerParameters
 
         #XXX cache options not implemented
