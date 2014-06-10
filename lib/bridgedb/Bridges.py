@@ -37,7 +37,6 @@ except ImportError:
 
 
 ID_LEN = 20
-HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
