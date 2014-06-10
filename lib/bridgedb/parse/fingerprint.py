@@ -34,7 +34,7 @@ def isValidFingerprint(fingerprint):
     """
     if len(fingerprint) == HEX_FINGERPRINT_LEN:
         try:
-            fromHex(fp)
+            fromHex(fingerprint)
         except TypeError:
             logging.debug("Invalid hex fingerprint: %r" % repr(fingerprint))
         else:
