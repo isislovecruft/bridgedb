@@ -10,7 +10,6 @@
 them into hashrings for distributors.
 """
 
-import binascii
 import bisect
 import logging
 import re
@@ -26,6 +25,9 @@ import bridgedb.Bucket
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+from bridgedb.parse.fingerprint import toHex
+from bridgedb.parse.fingerprint import fromHex
+from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.safelog import logSafely
 
 try:
@@ -34,7 +36,6 @@ except ImportError:
     from io import StringIO
 
 
-HEX_FP_LEN = 40
 ID_LEN = 20
 HEX_DIGEST_LEN = 40
 DIGEST_LEN = 20
@@ -72,22 +73,6 @@ def is_valid_ip(ip):
         # not a valid IPv4 or IPv6 address
         return False
     return True
-
-def is_valid_fingerprint(fp):
-    """Return true iff fp in the right format to be a hex fingerprint
-       of a Tor server.
-    """
-    if len(fp) != HEX_FP_LEN:
-        return False
-    try:
-        fromHex(fp)
-    except TypeError:
-        return False
-    else:
-        return True
-
-toHex = binascii.b2a_hex
-fromHex = binascii.a2b_hex
 
 
 class Bridge(object):
@@ -142,7 +127,7 @@ class Bridge(object):
                 raise TypeError("Bridge with invalid ID")
             self.fingerprint = toHex(id_digest)
         elif fingerprint is not None:
-            if not is_valid_fingerprint(fingerprint):
+            if not isValidFingerprint(fingerprint):
                 raise TypeError("Bridge with invalid fingerprint (%r)"%
                                 fingerprint)
             self.fingerprint = fingerprint.lower()
@@ -248,7 +233,7 @@ class Bridge(object):
 
     def assertOK(self):
         assert is_valid_ip(self.ip)
-        assert is_valid_fingerprint(self.fingerprint)
+        assert isValidFingerprint(self.fingerprint)
         assert 1 <= self.orport <= 65535
         if self.or_addresses:
             for address, portlist in self.or_addresses.items():
@@ -603,7 +588,7 @@ def parseExtraInfoFile(f):
             line = line[11:]
             (nickname, ID) = line.split()
             logging.debug("  Parsed Nickname: %s", nickname)
-            if is_valid_fingerprint(ID):
+            if isValidFingerprint(ID):
                 logging.debug("  Parsed fingerprint: %s", ID)
                 ID = fromHex(ID)
             else:
@@ -720,7 +705,7 @@ def parseCountryBlockFile(f):
         line = line.strip()
         try:
             ID, addrspec, countries = line.split()
-            if is_valid_fingerprint(ID):
+            if isValidFingerprint(ID):
                 ID = fromHex(ID)
                 logging.debug("Parsed ID: %s", ID)
             else:

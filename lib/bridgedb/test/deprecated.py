@@ -48,6 +48,24 @@ deprecate.deprecatedModuleAttribute(
     "bridgedb.Bridges",
     "re_ipv6")
 
+deprecate.deprecatedModuleAttribute(
+    Version('bridgedb', 0, 2, 3),
+    ("Removed due to 'bridgedb.Bridges.HEX_FP_LEN' being moved to "
+     "'bridgedb.parse.fingerprint.HEX_FINGERPRINT_LEN."),
+    "bridgedb.Bridges", "HEX_FP_LEN")
+
+deprecate.deprecatedModuleAttribute(
+    Version('bridgedb', 0, 2, 3),
+    ("Removed due to 'bridgedb.Bridges.toHex' being moved to "
+     "'bridgedb.parse.fingerprint.toHex."),
+    "bridgedb.Bridges", "toHex")
+
+deprecate.deprecatedModuleAttribute(
+    Version('bridgedb', 0, 2, 3),
+    ("Removed due to 'bridgedb.Bridges.fromHex' being moved to "
+     "'bridgedb.parse.fingerprint.fromHex."),
+    "bridgedb.Bridges", "fromHex")
+
 
 @deprecate.deprecated(
     Version('bridgedb', 0, 0, 1),
@@ -76,6 +94,21 @@ def parseORAddressLine(line):
     # return a valid address, portlist or raise ParseORAddressError
     if address and portlist and len(portlist): return address,portlist
     raise ParseORAddressError(line)
+
+@deprecate.deprecated(Version('bridgedb', 0, 2, 3),
+                      replacement='bridgedb.parse.fingerprint.isValidFingerprint')
+def is_valid_fingerprint(fp):
+    """Return true iff fp in the right format to be a hex fingerprint
+       of a Tor server.
+    """
+    if len(fp) != HEX_FP_LEN:
+        return False
+    try:
+        fromHex(fp)
+    except TypeError:
+        return False
+    else:
+        return True
 
 
 @deprecate.deprecated(
