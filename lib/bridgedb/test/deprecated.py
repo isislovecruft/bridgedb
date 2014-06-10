@@ -96,7 +96,7 @@ def parseORAddressLine(line):
     raise ParseORAddressError(line)
 
 @deprecate.deprecated(Version('bridgedb', 0, 2, 3),
-                      replacement=bridgedb.parse.fingerprint.isValidFingerprint)
+                      replacement='bridgedb.parse.fingerprint.isValidFingerprint')
 def is_valid_fingerprint(fp):
     """Return true iff fp in the right format to be a hex fingerprint
        of a Tor server.
