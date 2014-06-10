@@ -36,7 +36,7 @@ except ImportError:
     from io import StringIO
 
 
-ID_LEN = 20
+ID_LEN = 20  # XXX Only used in commented out line in Storage.py
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
