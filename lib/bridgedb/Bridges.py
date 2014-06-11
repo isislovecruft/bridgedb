@@ -734,11 +734,9 @@ class BridgeHolder(object):
     def clear(self):
         pass
 
-    def assignmentsArePersistent(self):
-        return True
-
     def dumpAssignments(self, f, description=""):
         pass
+
 
 class BridgeRingParameters(object):
     """Store validated settings on minimum number of Bridges with certain
@@ -1097,9 +1095,6 @@ class UnallocatedHolder(BridgeHolder):
         if not bridge.fingerprint in self.fingerprints:
             self.fingerprints.append(bridge.fingerprint)
 
-    def assignmentsArePersistent(self):
-        return False
-
     def __len__(self):
         return len(self.fingerprints)
 
@@ -1403,10 +1398,6 @@ class FilteredBridgeSplitter(BridgeHolder):
                     " ".join([v for k,v in grouped.items()]).strip())
             f.write("%s %s\n"%( toHex(b.getID()), desc))
 
-    def assignmentsArePersistent(self):
-        return False
- 
-
 class BridgeBlock(object):
     """Base class that abstracts bridge blocking.
 
@@ -1420,9 +1411,6 @@ class BridgeBlock(object):
 
     def clear(self):
         pass
-
-    def assignmentsArePersistent(self):
-        return True
 
 class CountryBlock(BridgeBlock):
     """Countrywide bridge blocking"""
