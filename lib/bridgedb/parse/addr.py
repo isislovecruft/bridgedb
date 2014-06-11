@@ -396,34 +396,41 @@ def isValidIP(ip):
     >>> isValidIP('xyzzy')
     False
 
-    :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`, or
-        :class:`ipaddr.IPv6Address`.
-    :param ip: An ``ipaddr.IPAddress`` class.
+    :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`,
+        :class:`ipaddr.IPv6Address`, or str
+    :param ip: An IP address. If it is a string, it will be converted to a
+        :class:`ipaddr.IPAddress`.
     :rtype: boolean
     :returns: ``True``, if **ip** passes the checks; False otherwise.
     """
     reasons  = []
 
-    if ip.is_link_local:
-        reasons.append('link local')
-    if ip.is_loopback:
-        reasons.append('loopback')
-    if ip.is_multicast:
-        reasons.append('multicast')
-    if ip.is_private:
-        reasons.append('private')
-    if ip.is_unspecified:
-        reasons.append('unspecified')
+    try:
+        if isinstance(ip, basestring):
+            ip = ipaddr.IPAddress(ip)
 
-    if (ip.version == 6) and ip.is_site_local:
-        reasons.append('site local')
-    elif (ip.version == 4) and ip.is_reserved:
-        reasons.append('reserved')
+        if ip.is_link_local:
+            reasons.append('link local')
+        if ip.is_loopback:
+            reasons.append('loopback')
+        if ip.is_multicast:
+            reasons.append('multicast')
+        if ip.is_private:
+            reasons.append('private')
+        if ip.is_unspecified:
+            reasons.append('unspecified')
+
+        if (ip.version == 6) and ip.is_site_local:
+            reasons.append('site local')
+        elif (ip.version == 4) and ip.is_reserved:
+            reasons.append('reserved')
+    except ValueError:
+        reasons.append('cannot convert to ip')
 
     if reasons:
         explain = ', '.join([r for r in reasons]).strip(', ')
-        logging.debug("IPv%d address %s is invalid! Reason(s): %s"
-                      % (ip.version, ip, explain))
+        logging.debug("IP address %r is invalid! Reason(s): %s"
+                      % (ip, explain))
         return False
     return True
 
