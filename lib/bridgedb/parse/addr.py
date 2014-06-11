@@ -404,6 +404,11 @@ def isValidIP(ip):
     """
     reasons  = []
 
+    if isinstance(ip, basestring):
+        try: _ip = ipaddr.IPAddress(ip)
+        except Exception: return False
+        else: ip = _ip
+
     if ip.is_link_local:
         reasons.append('link local')
     if ip.is_loopback:
