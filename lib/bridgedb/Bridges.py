@@ -755,10 +755,6 @@ class BridgeRingParameters(object):
         """Control the creation of subrings by including a minimum number of
         bridges which possess certain attributes.
 
-        XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which
-            reads: "Only 'stable' is now supported." Is this still the case?
-            Why?
-
         :type needPorts: iterable
         :param needPorts: An iterable of two-tuples. Each two tuple should
             contain ``(port, minimum)``, where ``port`` is an integer
@@ -782,7 +778,7 @@ class BridgeRingParameters(object):
                 raise TypeError("Count %s out of range." % count)
         for flag, count in needFlags:
             flag = flag.lower()
-            if flag not in ["stable",]:
+            if flag not in ["stable", "running",]:
                 raise TypeError("Unsupported flag %s" % flag)
             if count <= 0:
                 raise TypeError("Count %s out of range." % count)
