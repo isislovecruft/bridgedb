@@ -737,6 +737,7 @@ class BridgeHolder(object):
     def dumpAssignments(self, f, description=""):
         pass
 
+
 class BridgeRingParameters(object):
     """Store validated settings on minimum number of Bridges with certain
     attributes which should be included in any generated subring of a
