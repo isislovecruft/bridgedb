@@ -12,6 +12,8 @@
 
 
 import binascii
+import logging
+
 
 #: The required length for hexidecimal representations of hash digest of a
 #: Tor relay's public identity key (a.k.a. its fingerprint).
