@@ -320,21 +320,6 @@ def isIPAddress(ip, compressed=True):
 def _isIPv(version, ip):
     """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
-    >>> from bridgedb.parse.addr import isValidIP
-    >>> isValidIP('1.2.3.4')
-    True
-    >>> isValidIP('1.2.3.255')
-    True
-    >>> isValidIP('1.2.3.256')
-    False
-    >>> isValidIP('1')
-    False
-    >>> isValidIP('1.2.3')
-    False
-    >>> isValidIP('xyzzy')
-    False
-
-
     .. warning: Do *not* put any calls to the logging module in this function,
         or else an infinite recursion will occur when the call is made, due
         the the log :class:`~logging.Filter`s in :mod:`~bridgedb.safelog`
@@ -396,6 +381,20 @@ def isValidIP(ip):
     If it is an IPv6 address, it also must not be:
 
       * A :term:`Site-Local Address` or an :term:`Unique Local Address`.
+
+    >>> from bridgedb.parse.addr import isValidIP
+    >>> isValidIP('1.2.3.4')
+    True
+    >>> isValidIP('1.2.3.255')
+    True
+    >>> isValidIP('1.2.3.256')
+    False
+    >>> isValidIP('1')
+    False
+    >>> isValidIP('1.2.3')
+    False
+    >>> isValidIP('xyzzy')
+    False
 
     :type ip: An :class:`ipaddr.IPAddress`, :class:`ipaddr.IPv4Address`, or
         :class:`ipaddr.IPv6Address`.
