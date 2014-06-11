@@ -429,8 +429,8 @@ def isValidIP(ip):
 
     if reasons:
         explain = ', '.join([r for r in reasons]).strip(', ')
-        logging.debug("IP address %r is invalid! Reason(s): %s"
-                      % (ip, explain))
+        logging.debug("IPv%d address %s is invalid! Reason(s): %s"
+                      % (ip.version, ip, explain))
         return False
     return True
 
