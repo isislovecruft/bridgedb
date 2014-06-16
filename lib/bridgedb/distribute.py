@@ -17,6 +17,8 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
+from bridgedb import bridgerequest
+
 
 class IDistribute(interface.Interface):
     """An interface specification for a system which distributes bridges."""
@@ -31,6 +33,12 @@ class IDistribute(interface.Interface):
          "bridges that this Distributor is capable of distributing to its "
          "clients."))
 
+    _answerParameters = Attribute(
+        ("An instance of ``bridgedb.bridgerequest.AnswerParameters`` which "
+         "describes necessary bridge attributes for responding to a client's "
+         "request. For example, we might wish to guarantee that every answer "
+         "to a request contains at least one bridge on port 443."))
+
     def __len__():
         """Get the number of bridges in this Distributor's ``hashring``."""
 
@@ -40,8 +48,15 @@ class IDistribute(interface.Interface):
     def __unicode__():
         """Get a unicode representation of this Distributor's ``name``."""
 
+    def answerParameters():
+        """A ``@property`` which allows this Distributor's
+        ``answerParameters`` attribute to be have ``__get__``, ``__set__``,
+        and ``__del__`` called on it.
+        """
+
     def setDistributorName(name):
         """Set this Distributor's ``name`` attribute."""
+
 
 
 class Distributor(object):
@@ -49,10 +64,64 @@ class Distributor(object):
 
     implements(IDistribute)
 
-    def __init__(self):
+    #: An instance of :class:`bridgedb.bridgerequest.AnswerParameters` which
+    #: describes necessary bridge attributes for responding to a client's
+    #: request. For example, we might wish to guarantee that every answer to a
+    #: request contains at least one bridge on port 443. This should be
+    #: accessed through the :property:`answerParameters` property.
+    _answerParameters = None
+
+    def __init__(self, answerParameters=None):
+        """Create a system for distributing bridges to clients.
+
+        :type answerParameters: :class:`~bridgerequest.AnswerParameters`
+        :param answerParameters: An instance of
+            ``bridgedb.bridgerequest.AnswerParameters`` which describes
+            necessary bridge attributes for responding to a client's
+            request. For example, we might wish to guarantee that every answer
+            to a request contains at least one bridge on port 443.
+        """
         super(Distributor, self).__init__()
         self.name = None
         self.hashring = None
+
+        if not answerParameters:
+            answerParameters = bridgerequest.AnswerParameters()
+        self.answerParameters = answerParameters
+
+    @property
+    def answerParameters(self):
+        """Get this Distributor's ``answerParameters``.
+
+        .. info:: An ``AnswerParameters`` instance should describe some
+            necessary conditions which must be met by all answers to client's
+            bridge requests which are handed out. For example, we might wish
+            to guarantee that an answer from this Distributor contains at
+            least one bridge on port 443, or at least one bridge which has
+            been marked with the ``Stable`` flag.
+
+        :rtype: :class:`~bridgerequest.AnswerParameters`
+        """
+        return self._answerParameters
+
+    @answerParameters.setter
+    def answerParameters(self, answerParameters=None):
+        """Set this Distributor's ``answerParameters`` attribute.
+
+        :type answerParameters: :class:`~bridgerequest.AnswerParameters`
+        :param answerParameters: An instance of
+            ``bridgedb.bridgerequest.AnswerParameters`` which describes
+            necessary bridge attributes for responding to a client's
+            request. For example, we might wish to guarantee that every answer
+            to a request contains at least one bridge on port 443.
+        """
+        if isinstance(answerParameters, bridgerequest.AnswerParameters):
+            self._answerParameters = answerParameters
+
+    @answerParameters.deleter
+    def answerParameters(self):
+        """Clear this Distributor's ``answerParameters`` attribute."""
+        self._answerParameters = None
 
     def __len__(self):
         """Get the number of bridges in this ``Distributor``'s ``hashring``.
