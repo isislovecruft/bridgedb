@@ -86,8 +86,10 @@ class IHashring(interface.Interface):
         """Create an HMAC of **data** using this HashRing's ``key``."""
 
 
-class BridgeRing(BridgeHolder):
+class BridgeRing(object):
     """Arranges bridges into a hashring based on an hmac function."""
+
+    implements(IHashring)
 
     def __init__(self, key, answerParameters=None):
         """Create a new BridgeRing, using key as its hmac key.
@@ -337,3 +339,5 @@ class BridgeRing(BridgeHolder):
                 if subring.getBridgeByID(ident):
                     desc.append("%s=%s"%(tp,val))
             f.write("%s %s\n"%( toHex(ident), " ".join(desc).strip()))
+
+    exportToFile = dumpAssignments
