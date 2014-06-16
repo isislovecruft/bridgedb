@@ -144,7 +144,7 @@ class Hashring(object):
         :type key: bytes
         :param key: The HMAC key, generated with
             :func:`bridgedb.crypto.getKey`.
-        :type answerParameters: :class:`BridgeRingParameters`
+        :type answerParameters: :class:`~bridgerequest.AnswerParameters`
         :param answerParameters: DOCDOC
         """
         self.bridges = {}
@@ -152,8 +152,10 @@ class Hashring(object):
         self.hmac = getHMACFunc(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
+
+        # XXX answerParameters should be part of an IDistribute
         if answerParameters is None:
-            answerParameters = BridgeRingParameters()
+            answerParameters = bridgerequest.AnswerParameters()
         self.answerParameters = answerParameters
 
         self.subrings = []

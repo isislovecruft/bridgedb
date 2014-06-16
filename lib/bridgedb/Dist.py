@@ -125,7 +125,8 @@ class IPBasedDistributor(Distributor):
             the hashrings.
         :type ipCategories: iterable or None
         :param ipCategories: DOCDOC
-        :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
+        :type answerParameters:
+            :class:`bridgedb.bridgerequest.AnswerParameters`
         :param answerParameters: A mechanism for ensuring that the set of
             bridges that this distributor answers a client with fit certain
             parameters, i.e. that an answer has "at least two obfsproxy
