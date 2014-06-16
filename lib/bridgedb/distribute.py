@@ -15,6 +15,7 @@
 
 from zope import interface
 from zope.interface import Attribute
+from zope.interface import implements
 
 
 class IDistribute(interface.Interface):
@@ -41,3 +42,70 @@ class IDistribute(interface.Interface):
 
     def setDistributorName(name):
         """Set this Distributor's ``name`` attribute."""
+
+
+class Distributor(object):
+    """Distributes bridges to clients."""
+
+    implements(IDistribute)
+
+    def __init__(self):
+        super(Distributor, self).__init__()
+        self.name = None
+        self.hashring = None
+
+    def __len__(self):
+        """Get the number of bridges in this ``Distributor``'s ``hashring``.
+
+        :rtype: int
+        :returns: The number of bridges currently stored in this
+            ``Distributor``'s ``hashring`` (including all bridges stored in
+            any of the ``hashring``'s subhashrings).
+        """
+        return int(len(self.hashring))
+
+    def __str__(self):
+        """Get a string representation of this ``Distributor``'s ``name``.
+
+        :rtype: str
+        :returns: This ``Distributor``'s ``name`` attribute.
+        """
+        if self.name:
+            return str(self.name)
+        return str()
+
+    def __unicode__():
+        """Get a unicode representation of this Distributor's ``name``.
+
+        :rtype: unicode
+        :returns: This ``Distributor``'s ``name`` attribute.
+        """
+        if self.name:
+            return unicode(self.name)
+        return unicode()
+
+    def setDistributorName(self, name):
+        """Set a **name** for identifying this distributor.
+
+        This is used to identify the distributor in the logs; the **name**
+        doesn't necessarily need to be unique. The hashrings created for this
+        distributor will be named after this distributor's name in
+        :meth:`propopulateRings`, and any sub hashrings of each of those
+        hashrings will also carry that name.
+
+        >>> from bridgedb.distribute import Distributor
+        >>> dist = Distributor(Dist.uniformMap, 5, 'fake-hmac-key')
+        >>> dist.setDistributorName('HTTPS Distributor')
+        >>> dist.prepopulateRings()
+        >>> hashrings = ipDist.splitter.filterRings
+        >>> firstSubring = hashrings.items()[0][1][1]
+        >>> assert firstSubring.name
+
+        :param str name: A name for this distributor.
+        """
+        self.name = name
+
+        try:
+            self.hashring.setName(name)
+        except AttributeError:
+            logging.debug("Couldn't setName() for %s Distributor's hashring.")
