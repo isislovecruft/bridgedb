@@ -93,14 +93,6 @@ class Distributor(object):
         :meth:`propopulateRings`, and any sub hashrings of each of those
         hashrings will also carry that name.
 
-        >>> from bridgedb.distribute import Distributor
-        >>> dist = Distributor(Dist.uniformMap, 5, 'fake-hmac-key')
-        >>> dist.setDistributorName('HTTPS Distributor')
-        >>> dist.prepopulateRings()
-        >>> hashrings = ipDist.splitter.filterRings
-        >>> firstSubring = hashrings.items()[0][1][1]
-        >>> assert firstSubring.name
-
         :param str name: A name for this distributor.
         """
         self.name = name
