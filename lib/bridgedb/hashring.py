@@ -84,3 +84,256 @@ class IHashring(interface.Interface):
 
     def hmac(data):
         """Create an HMAC of **data** using this HashRing's ``key``."""
+
+
+class BridgeRing(BridgeHolder):
+    """Arranges bridges into a hashring based on an hmac function."""
+
+    def __init__(self, key, answerParameters=None):
+        """Create a new BridgeRing, using key as its hmac key.
+
+        :type key: bytes
+        :param key: The HMAC key, generated with
+                    :func:`bridgedb.crypto.getKey`.
+        :type answerParameters: :class:`BridgeRingParameters`
+        :param answerParameters: DOCDOC
+        :ivar dict bridges: A dictionary which maps HMAC keys to
+                            :class:`~bridgedb.Bridges.Bridge`s.
+        :ivar dict bridgesByID: A dictionary which maps raw hash digests of
+                                bridge ID keys to
+                                :class:`~bridgedb.Bridges.Bridge`s.
+        :type hmac: callable
+        :ivar hmac: An HMAC function, which uses the **key** parameter to
+                    generate new HMACs for storing, inserting, and retrieving
+                    :class:`~bridgedb.Bridges.Bridge`s within mappings.
+        :ivar bool isSorted: ``True`` if ``sortedKeys`` is currently sorted.
+        :ivar list sortedKeys: A sorted list of all of the HMACs.
+        :ivar str name: A string which identifies this hashring, used mostly
+                        for differentiating this hashring in log messages, but
+                        it is also used for naming subrings. If this hashring
+                        is a subring, the ``name`` will include whatever
+                        distinguishing parameters differentiate that
+                        particular subring (i.e. ``'(port-443 subring)'`` or
+                        ``'(Stable subring)'``)
+        :type subrings: list
+        :ivar subrings: A list of other ``BridgeRing``s, each of which
+                        contains bridges of a particular type. For example, a
+                        subring might contain only ``Bridge``s which have been
+                        given the "Stable" flag, or it might contain only IPv6
+                        bridges. Each item in this list should be a 4-tuple:
+
+                          ``(type, value, count, ring)``
+
+                        where:
+
+                          * ``type`` is a string which describes what kind of
+                            parameter is used to determine if a ``Bridge``
+                            belongs in that subring, i.e. ``'port'`` or
+                            ``'flag'``.
+
+                          * ``value`` is a specific value pertaining to the
+                            ``type``, e.g. ``type='port'; value=443``.
+
+                          * ``count`` is an integer for the current total
+                             number of bridges in the subring.
+
+                          * ``ring`` is a
+                            :class:`~bridgedb.Bridges.BridgeRing`; it is the
+                            sub hashring which contains ``count`` number of
+                            :class:`~bridgedb.Bridges.Bridge`s of a certain
+                            ``type``.
+        """
+        self.bridges = {}
+        self.bridgesByID = {}
+        self.hmac = getHMACFunc(key, hex=False)
+        self.isSorted = False
+        self.sortedKeys = []
+        if answerParameters is None:
+            answerParameters = BridgeRingParameters()
+        self.answerParameters = answerParameters
+
+        self.subrings = []
+        for port,count in self.answerParameters.needPorts:
+            #note that we really need to use the same key here, so that
+            # the mapping is in the same order for all subrings.
+            self.subrings.append( ('port',port,count,BridgeRing(key,None)) )
+        for flag,count in self.answerParameters.needFlags:
+            self.subrings.append( ('flag',flag,count,BridgeRing(key,None)) )
+
+        self.setName("Ring")
+
+    def setName(self, name):
+        """Tag a unique name to this hashring for identification.
+
+        :param string name: The name for this hashring.
+        """
+        self.name = name
+        for tp, val, _, subring in self.subrings:
+            if tp == 'port':
+                subring.setName("%s (port-%s subring)" % (name, val))
+            else:
+                subring.setName("%s (%s subring)" % (name, val))
+
+    def __len__(self):
+        """Get the number of unique bridges this hashring contains."""
+        return len(self.bridges)
+
+    def clear(self):
+        """Remove all bridges and mappings from this hashring and subrings."""
+        self.bridges = {}
+        self.bridgesByID = {}
+        self.isSorted = False
+        self.sortedKeys = []
+
+        for tp, val, count, subring in self.subrings:
+            subring.clear()
+
+    def insert(self, bridge):
+        """Add a **bridge** to this hashring.
+
+        The bridge's position in the hashring is dependent upon the HMAC of
+        the raw hash digest of the bridge's ID key. The function used to
+        generate the HMAC, :ivar:`BridgeRing.hmac`, is unique to each
+        individual hashring.
+
+        If the (presumably same) bridge is already at that determined position
+        in this hashring, replace the old one.
+
+        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :param bridge: The bridge to insert into this hashring.
+        """
+        for tp, val, _, subring in self.subrings:
+            if tp == 'port':
+                if val == bridge.orport:
+                    subring.insert(bridge)
+            else:
+                assert tp == 'flag' and val == 'stable'
+                if val == 'stable' and bridge.stable:
+                    subring.insert(bridge)
+
+        ident = bridge.getID()
+        pos = self.hmac(ident)
+        if not self.bridges.has_key(pos):
+            self.sortedKeys.append(pos)
+            self.isSorted = False
+        self.bridges[pos] = bridge
+        self.bridgesByID[ident] = bridge
+        logging.debug("Adding %s to %s" % (bridge.ip, self.name))
+
+    def _sort(self):
+        """Helper: put the keys in sorted order."""
+        if not self.isSorted:
+            self.sortedKeys.sort()
+            self.isSorted = True
+
+    def _getBridgeKeysAt(self, pos, N=1):
+        """Bisect a list of bridges at a specified position, **pos**, and
+        retrieve bridges from that point onwards, wrapping around the hashring
+        if necessary.
+
+        If the number of bridges requested, **N**, is larger that the size of
+        this hashring, return the entire ring. Otherwise:
+
+          1. Sort this bridges in this hashring, if it is currently unsorted.
+
+          2. Bisect the sorted bridges. If the bridge at the desired position,
+             **pos**, already exists within this hashring, the the bisection
+             result is the bridge at position **pos**. Otherwise, the bisection
+             result is the first position after **pos** which has a bridge
+             assigned to it.
+
+          3. Try to obtain **N** bridges, starting at (and including) the
+             bridge in the requested position, **pos**.
+
+               a. If there aren't **N** bridges after **pos**, wrap back
+                  around to the beginning of the hashring and obtain bridges
+                  until we have **N** bridges.
+
+          4. Check that the number of bridges obtained is indeed **N**, then
+             return them.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
+        assert len(pos) == DIGEST_LEN
+        if N >= len(self.sortedKeys):
+            return self.sortedKeys
+        if not self.isSorted:
+            self._sort()
+        idx = bisect.bisect_left(self.sortedKeys, pos)
+        r = self.sortedKeys[idx:idx+N]
+        if len(r) < N:
+            # wrap around as needed.
+            r.extend(self.sortedKeys[:N - len(r)])
+        assert len(r) == N
+        return r
+
+    def getBridges(self, pos, N=1, countryCode=None):
+        """Return **N** bridges appearing in this hashring after a position.
+
+        :param bytes pos: The position to jump to. Any bridges returned will
+                          start at this position in the hashring, if there is
+                          a bridge assigned to that position. Otherwise,
+                          indexing will start at the first position after this
+                          one which has a bridge assigned to it.
+        :param int N: The number of bridges to return.
+        :type countryCode: str or None
+        :param countryCode: DOCDOC
+        :rtype: list
+        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        """
+        # XXX This can be removed after we determine if countryCode is ever
+        # actually being used. It seems the countryCode should be passed in
+        # from bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer() in
+        # order to hand out bridges which are believed to not be blocked in a
+        # given country.
+        if countryCode:
+            logging.debug("getBridges: countryCode=%r" % countryCode)
+
+        forced = []
+        for _, _, count, subring in self.subrings:
+            if len(subring) < count:
+                count = len(subring)
+            forced.extend(subring._getBridgeKeysAt(pos, count))
+
+        keys = [ ]
+        for k in forced + self._getBridgeKeysAt(pos, N):
+            if k not in keys:
+                keys.append(k)
+            else:
+                logging.debug(
+                    "Got duplicate bridge %r in main hashring for position %r."
+                    % (logSafely(k.encode('hex')), pos.encode('hex')))
+        keys = keys[:N]
+        keys.sort()
+
+        #Do not return bridges from the same /16
+        bridges = [ self.bridges[k] for k in keys ]
+
+        return bridges
+
+    def getBridgeByID(self, fp):
+        """Return the bridge whose identity digest is fp, or None if no such
+           bridge exists."""
+        for _,_,_,subring in self.subrings:
+            b = subring.getBridgeByID(fp)
+            if b is not None:
+                return b
+
+        return self.bridgesByID.get(fp)
+
+    def dumpAssignments(self, f, description=""):
+        logging.info("Dumping bridge assignments for %s..." % self.name)
+        for b in self.bridges.itervalues():
+            desc = [ description ]
+            ident = b.getID()
+            for tp,val,_,subring in self.subrings:
+                if subring.getBridgeByID(ident):
+                    desc.append("%s=%s"%(tp,val))
+            f.write("%s %s\n"%( toHex(ident), " ".join(desc).strip()))
