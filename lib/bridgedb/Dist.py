@@ -78,10 +78,18 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     return n_bridges_per_answer
 
 
-
 class IPBasedDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
+
+    >>> from bridgedb import Dist
+    >>> dist = Dist.IPBasedDistributor(Dist.uniformMap, 5, 'fake-hmac-key')
+    >>> dist.setDistributorName('HTTPS Distributor')
+    >>> dist.prepopulateRings()
+    >>> hashrings = dist.splitter.filterRings
+    >>> firstSubring = hashrings.items()[0][1][1]
+    >>> assert firstSubring.name
+
 
     :ivar areaOrderHmac: An HMAC function used to order areas within rings.
     :ivar areaClusterHmac: An HMAC function used to assign areas to rings.
