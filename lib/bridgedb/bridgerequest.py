@@ -127,3 +127,52 @@ class BridgeRequestBase(object):
             self.addFilter(Filters.filterBridgesByNotBlockedIn(country,
                                                                self.addressClass,
                                                                transport))
+
+
+class AnswerParameters(object):
+    """Store validated settings on minimum number of Bridges with certain
+    attributes which should be included in any generated subring of a
+    hashring, or in an answer to a `IRequestBridges`.
+
+    :ivar list needPorts: List of two-tuples of desired port numbers and their
+        respective minimums.
+    :ivar list needFlags: List of two-tuples of desired flags_ assigned to a
+        Bridge by the Bridge DirAuth.
+
+    .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696
+    """
+
+    def __init__(self, needPorts=[], needFlags=[]):
+        """Control the creation of subrings by including a minimum number of
+        bridges which possess certain attributes.
+
+        :type needPorts: iterable
+        :param needPorts: An iterable of two-tuples. Each two tuple should
+            contain ``(port, minimum)``, where ``port`` is an integer
+            specifying a port number, and ``minimum`` is another integer
+            specifying the minimum number of Bridges running on that ``port``
+            to include in any new subring.
+        :type needFlags: iterable
+        :param needFlags: An iterable of two-tuples. Each two tuple should
+            contain ``(flag, minimum)``, where ``flag`` is a string specifying
+            an OR flag_, and ``minimum`` is an integer for the minimum number
+            of Bridges which have acquired that ``flag`` to include in any new
+            subring.
+        :raises: An :exc:`TypeError` if an invalid port number, a minimum less
+            than one, or an "unsupported" flag is given. "Stable" appears to
+            be the only currently "supported" flag.
+        """
+        for port, count in needPorts:
+            if not (1 <= port <= 65535):
+                raise TypeError("Port %s out of range." % port)
+            if count <= 0:
+                raise TypeError("Count %s out of range." % count)
+        for flag, count in needFlags:
+            flag = flag.lower()
+            if flag not in ["stable", "running",]:
+                raise TypeError("Unsupported flag %s" % flag)
+            if count <= 0:
+                raise TypeError("Count %s out of range." % count)
+
+        self.needPorts = needPorts[:]
+        self.needFlags = [(flag.lower(), count) for flag, count in needFlags[:]]
