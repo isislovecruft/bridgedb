@@ -24,6 +24,7 @@ import bridgedb.Storage
 
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
+from bridgedb.distribute import Distributor
 from bridgedb.Filters import filterAssignBridgesToRing
 from bridgedb.Filters import filterBridgesByRules
 from bridgedb.Filters import filterBridgesByIP4
@@ -76,35 +77,6 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
 
     return n_bridges_per_answer
 
-class Distributor(bridgedb.Bridges.BridgeHolder):
-    """Distributes bridges to clients."""
-
-    def __init__(self):
-        super(Distributor, self).__init__()
-
-    def setDistributorName(self, name):
-        """Set a **name** for identifying this distributor.
-
-        This is used to identify the distributor in the logs; the **name**
-        doesn't necessarily need to be unique. The hashrings created for this
-        distributor will be named after this distributor's name in
-        :meth:`propopulateRings`, and any sub hashrings of each of those
-        hashrings will also carry that name.
-
-        >>> from bridgedb import Dist
-        >>> ipDist = Dist.IPBasedDistributor(Dist.uniformMap,
-        ...                                  5,
-        ...                                  'fake-hmac-key')
-        >>> ipDist.setDistributorName('HTTPS Distributor')
-        >>> ipDist.prepopulateRings()
-        >>> hashrings = ipDist.splitter.filterRings
-        >>> firstSubring = hashrings.items()[0][1][1]
-        >>> assert firstSubring.name
-
-        :param str name: A name for this distributor.
-        """
-        self.name = name
-        self.splitter.distributorName = name
 
 
 class IPBasedDistributor(Distributor):
