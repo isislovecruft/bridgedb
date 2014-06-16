@@ -17,6 +17,7 @@ import gettext
 
 from twisted.internet import reactor
 
+from bridgedb import bridgerequest
 from bridgedb import crypto
 from bridgedb import persistent
 from bridgedb import safelog
@@ -355,8 +356,8 @@ def createBridgeRings(cfg, proxyList, key):
     logging.debug("Created splitter: %r" % splitter)
 
     # Create ring parameters.
-    ringParams = Bridges.BridgeRingParameters(needPorts=cfg.FORCE_PORTS,
-                                              needFlags=cfg.FORCE_FLAGS)
+    ringParams = bridgerequest.AnswerParameters(needPorts=cfg.FORCE_PORTS,
+                                                needFlags=cfg.FORCE_FLAGS)
 
     emailDistributor = ipDistributor = None
     # As appropriate, create an IP-based distributor.
