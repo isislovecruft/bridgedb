@@ -24,67 +24,6 @@ REDIS_PORT = 6379
 #: after. (default: 604800, i.e. 1 week)
 DESC_EXPIRE = 7 * 24 * 60 * 60
 
-#: This will be our global ``txredis.client.RedisClientFactory``, created with
-#: :func:`buildClientFactory`.
-theFactory = None
-
-def buildClientFactory(db=None, password=None, clock=None):
-    """DOCDOC
-
-    .. info:: Uses ``REDIS_DBFILE`` and ``REDIS_PASSWORD`` config variables.
-
-    .. note:: The returned factory is a subclass of
-        :api:`twisted.internet.protocol.ReconnectingClientFactory`, meaning
-        that it will attempt to reconnect if a connection is dropped with an
-        error or otherwise not immediately connection when
-        ``factory.buildProtocol()`` is called.
-
-    :param str db: The path to an `.rdb` Redis database file to use.
-    :param str password: The string to use in the client AUTH message to the
-        Redis server. The corresponding Redis setting in `redis.conf` for
-        setting this on the server side is ``requirepass``.
-    :param clock: A provider of
-        :api:`twisted.internet.interfaces.IReactorTime`, to be used only for
-        unittesting purposes.
-    :rtype: ``txredis.client.RedisClientFactory``
-    :returns: A client factory which will load the specified **db** file, and
-        optionally AUTH with the given **password**.
-    """
-    logging.info("REDIS: Creating RedisClientFactory...")
-    logging.info("REDIS: Using database file: %s" % db)
-    if password:
-        logging.info("REDIS: Clients will AUTH with password: %s"
-                     % safelog.logSafely(password))
-    factory = RedisClientFactory(db=db, password=password,
-                                 charset='utf8', errors='strict')
-    if clock:  # pragma: no cover
-        factory.clock = clock
-
-    return factory
-
-def setClientFactory(factory=None, **kwargs):
-    """Set :data:`theFactory` to the given **factory**.
-
-    :type factory: ``txredis.client.RedisClientFactory``
-    :param factory: An initialised client factory for connecting to a Redis
-        server.
-    :kwargs: Are passed to :func:`buildClientFactory`.
-    :rtype: bool
-    :returns: ``True`` if we were able to set the global :data:`theFactory`,
-        and ``False`` otherwise.
-    """
-    try:
-        if factory is None:
-            factory = buildClientFactory(**kwargs)
-        global theFactory
-        theFactory = factory
-    except Exception as error:  # pragma: no cover
-        logging.exception(error)
-        return False
-    return True
-
-if not theFactory:
-    setClientFactory()
 
 def connectServer(host=REDIS_HOST, port=REDIS_PORT, password=None, **kwargs):
     """Create a `txredis.client.RedisClient`_, connected to a Redis_ server.
@@ -242,50 +181,6 @@ def setNetworkStatuses(routers, **kwargs):
     redis.addCallback(redisCB)
     return redis
 
-def storeNetworkStatus(router, **kwargs):
-    def storeDescriptor(db, router):
-        fingerprint, descriptor = router
-
-        # We don't want to serialise the entire file that the single
-        # networkstatus document originated from, so we need to override this
-        # attribute with just the single descriptor:
-        descriptor.document = str(descriptor)
-
-        descriptorLength = len(str(descriptor))
-        if descriptorLength >= 1000:
-            logging.warn("Got huge networkstatus descriptor with length=%d: %s"
-                         % (descriptorLength, str(descriptor)))
-
-        key = getNetworkStatusKey(fingerprint)
-        jellied = jelly.jelly(descriptor)
-
-        logging.debug("REDIS: SETEX %s ..." % (key))
-        response = db.set(key, jellied, expire=DESC_EXPIRE)
-        result = (db, key, response)
-
-        return result
-
-    def storeDescriptorCB(result):
-        (db, key, response) = result
-
-        def logResponse(response, key):
-            logging.debug("REDIS: %s: %s" % (key, response))
-        response.addCallback(logResponse, key)
-
-        logging.debug("REDIS: QUIT %s" % hash(db))
-        d = db.quit()
-        return d
-
-    def storeDescriptorEB(fail):
-        logging.error(fail.getTraceback())
-
-    d1 = connectServer(**kwargs)
-    d2 = defer.Deferred()
-    d2.addCallback(storeDescriptor, router)
-    d2.addCallbacks(storeDescriptorCB, storeDescriptorEB)
-    d1.chainDeferred(d2)
-    return d1
-
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(10)
@@ -298,18 +193,6 @@ if __name__ == "__main__":
     bridgeNetworkStatusDocument = descriptors.parseNetworkStatusFile(filename)
     bridgeRouters = bridgeNetworkStatusDocument.routers
 
-    #     This version creates a client for every single transaction. For 250
-    # networkstatus descriptors, the average runtime is 62ms.
-
-    #for router in bridgeRouters.items():
-    #    storeNetworkStatus(router, password=password)
-
-    #     This version creates a single client, and creates a DeferredList,
-    # which acts as a queue, feeding transactions onto the wire as fast as they
-    # can be handled. For 250 networkstatus descriptors, the average runtime is
-    # 20ms.
-
     setNetworkStatuses(bridgeRouters, password=password)
-
     reactor.callLater(2, reactor.stop)
     reactor.run()
