@@ -13,6 +13,8 @@
 
 """Classes for creating bridge distribution systems."""
 
+import logging
+
 from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
