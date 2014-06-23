@@ -164,7 +164,7 @@ def setNetworkStatuses(routers, **kwargs):
     logging.info(("REDIS: Attempting to store %d bridge networkstatus "
                   "documents.") % (len(routers.keys())))
 
-    def setDescriptor(redis, router):
+    def storeDescriptor(redis, router):
         """Store the networkstatus descriptor in Redis using SETEX.
 
         :type redis: ``txredis.client.RedisClient``
@@ -176,10 +176,18 @@ def setNetworkStatuses(routers, **kwargs):
             router) from Stem.
         """
         fingerprint, descriptor = router
-        # We don't want to serialise the entire file that the single
-        # networkstatus document originated from, so we need to override this
-        # attribute with just the single descriptor before serialisation:
+
+        # Stem stores the entire file which a networkstatus descriptor
+        # originated from in every single descriptor's ``document`` property,
+        # while it's ``__str__()`` method will produce the single descriptor.
+        #
+        # We don't want to serialise and store the entire file that the single
+        # networkstatus document originated from, so we need to override the
+        # ``document`` attribute with just the single descriptor:
         descriptor.document = str(descriptor)
+
+        # Basic sanity check, make sure we're not shoving massive amounts of
+        # data into the database:
         descriptorLength = len(str(descriptor))
         if descriptorLength >= 1000:
             logging.warn("Got huge networkstatus descriptor with length=%d: %s"
@@ -192,7 +200,8 @@ def setNetworkStatuses(routers, **kwargs):
         result = (redis, key, response)
         return result
 
-    def setDescriptorEB(fail):
+    def storeDescriptorEB(fail):
+        """Log and swallow failures stemming from :func:`storeDescriptor`."""
         logging.error(fail.getTraceback())
         return fail
 
@@ -217,7 +226,7 @@ def setNetworkStatuses(routers, **kwargs):
         redis = results[0][1][0]
 
         # The `success` here is a boolean, while the `value` is the returned
-        # result of :func:`setDescriptor`, i.e.::
+        # result of :func:`storeDescriptor`, i.e.::
         #   (<RedisClient at 0x1234>, key, <Deferred at 0x5678>)
         for (success, value) in results:
             if success:
@@ -232,7 +241,7 @@ def setNetworkStatuses(routers, **kwargs):
         d = redis.quit()
         return d
 
-    def redisCB(redis):
+    def redisCB(redis, transactions):
         """Callback every waiting database transaction in the ``DeferredList``
         with the ready ``RedisClient``, when the later has finished connecting
         to the Redis server.
