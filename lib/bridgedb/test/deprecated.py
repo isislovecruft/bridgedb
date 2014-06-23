@@ -213,3 +213,19 @@ class PortList:
 
     def __getitem__(self, x):
         return list(self.ports)[x]
+
+
+@deprecate.deprecated(Version('bridgedb', 0, 2, 3))
+class BridgeHolder(object):
+    """Abstract base class for all classes that hold bridges."""
+    def insert(self, bridge):
+        raise NotImplementedError
+
+    def clear(self):
+        pass
+
+    def assignmentsArePersistent(self):
+        return True
+
+    def dumpAssignments(self, f, description=""):
+        pass
