@@ -237,9 +237,7 @@ def setNetworkStatuses(routers, **kwargs):
         logging.info("REDIS: %d successful transactions, %d failed"
                      % (okay, len(fails)))
         [logging.warn("REDIS: %r" % repr(fail)) for fail in fails]
-        logging.debug("REDIS: QUIT %s" % hash(redis))
-        d = redis.quit()
-        return d
+        return redis
 
     def redisCB(redis, transactions):
         """Callback every waiting database transaction in the ``DeferredList``
@@ -252,6 +250,12 @@ def setNetworkStatuses(routers, **kwargs):
         """
         [d.callback(redis) for d in transactions]
         return redis
+
+    def doQuit(redis):
+        logging.debug("REDIS: QUIT %s" % hash(redis))
+        if redis.connected and not redis._disconnected:
+            d = redis.quit()
+            return d
 
     transactions = []
     for router in routers.items():
