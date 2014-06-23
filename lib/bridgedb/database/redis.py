@@ -234,7 +234,8 @@ def setNetworkStatuses(routers, **kwargs):
             else:
                 fails.append(value)
 
-        logging.info("REDIS: %d success, %d failed" % (okay, len(fails)))
+        logging.info("REDIS: %d successful transactions, %d failed"
+                     % (okay, len(fails)))
         [logging.warn("REDIS: %r" % repr(fail)) for fail in fails]
         logging.debug("REDIS: QUIT %s" % hash(redis))
         d = redis.quit()
