@@ -35,6 +35,10 @@ REDIS_PORT = 6379
 #: after. (default: 604800, i.e. 1 week)
 DESC_EXPIRE = 7 * 24 * 60 * 60
 
+#: The separator between fields comprising a key in Redis. This is inserted
+#: between each of the fields in :func:`createRedisKey`.
+REDIS_KEY_FIELD_SEPARATOR = '_'
+
 
 class ExternallyQueuedRedisClient(RedisClient):
     def connectionLost(self, reason):
@@ -102,18 +106,47 @@ def connectServer(host=REDIS_HOST, port=REDIS_PORT, password=None, **kwargs):
     redis.addCallbacks(cb, logging.error)
     return redis
 
+def createRedisKey(*fields):
+    """Create a key for storing some value in Redis.
+
+    >>> from bridgedb.database.redis import createRedisKey
+    >>> bridgeFingerprint = 'ABCDEF0123456789ABCDEF0123456789ABCDEF01'
+    >>> bridgeNickname = 'somefakebridge'
+    >>> redisKey = createRedisKey(bridgeFingerprint, bridgeNickname)
+    ABCDEF0123456789ABCDEF0123456789ABCDEF01_somefakebridge
+
+    :param fields: Arbitrary fields which should go into the key. These should
+        be some simple to obtain (but guaranteed to be unique) things which
+        describe whatever value is going to be stored in Redis.
+    :param separator:
+    :rtype: str or None
+    :returns: A suitable key for storing a value in Redis, comprised of the
+        **fields** joined by the **separator**. Or ``None``, if an encoding
+        issue meant that we couldn't create the key.
+    """
+    try:
+        key = REDIS_KEY_FIELD_SEPARATOR.join(fields)
+    # TypeError happens if one of *fields was ``None``, or something else
+    # which shouldn't be stringified.
+    except (UnicodeError, TypeError), error:
+        logging.error(error)
+    else:
+        return key
+
 def getNetworkStatusKey(fingerprint):
     """Create a key for storing a networkstatus descriptor in Redis, based upon
     the router's **fingerprint**.
 
     :param str fingerprint: The router's identity fingerprint.
+    :raises ValueError: if :func:`createRedisKey` could make a key for us.
     :rtype: str
-    :returns: The **fingerprint** with ``'_ns'`` appended to it. If for some
-        reason, the fingerprint is ``None`` (this seems to happen sometimes),
-        then ``None`` is returned.
+    :returns: The **fingerprint** with ``'_ns'`` appended to it.
     """
-    if fingerprint:
-        return u"%s_ns" % fingerprint
+    key = createRedisKey(fingerprint, 'ns')
+    if not key:
+        raise ValueError("Unsuitable key for storing data in Redis: '%r'"
+                         % fingerprint)
+    return key
 
 def setNetworkStatuses(routers, **kwargs):
     """Given a bunch of parsed networkstatus documents, create a single
