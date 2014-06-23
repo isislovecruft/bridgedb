@@ -60,6 +60,7 @@ TAGS
 # databases and keys
 *.db
 *.sqlite
+*.rdb
 secret_key
 cert
 privkey.pem
