@@ -203,7 +203,6 @@ def setNetworkStatuses(routers, **kwargs):
     def storeDescriptorEB(fail):
         """Log and swallow failures stemming from :func:`storeDescriptor`."""
         logging.error(fail.getTraceback())
-        return fail
 
     def transactionsResults(results):
         """Count the successes and handle the failures in the list of results
