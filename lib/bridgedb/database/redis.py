@@ -296,14 +296,32 @@ def setNetworkStatuses(routers, **kwargs):
 if __name__ == "__main__":
     logging.getLogger().setLevel(10)
 
+    import os
     from bridgedb.parse import descriptors
 
+    rundir = 'run-manual'
     password = "bridgedbtestingbridgedbtestingbridgedbtesting"
-    rundir = '/home/isis/code/torproject/bridgedb/run-manual'
-    filename = "%s/250_networkstatus-bridges" % rundir
-    bridgeNetworkStatusDocument = descriptors.parseNetworkStatusFile(filename)
-    bridgeRouters = bridgeNetworkStatusDocument.routers
 
-    setNetworkStatuses(bridgeRouters, password=password)
+    there = os.path.abspath(
+        os.path.join(__file__, '..', '..', '..', '..', rundir))
+
+    howManyDescriptors = 10000
+
+    nsFile = '%s_networkstatus-bridges' % howManyDescriptors
+    brFile = '%s_bridge-descriptors' % howManyDescriptors
+    eiFile = '%s_cached-extrainfo' % howManyDescriptors
+    enFile = '%s_cached-extrainfo.new' % howManyDescriptors
+
+    nsPath = "%s/%s" % (there, nsFile)
+    brPath = "%s/%s" % (there, brFile)
+    eiPath = "%s/%s" % (there, eiFile)
+    enPath = "%s/%s" % (there, enFile)
+
+    nsRouters = descriptors.parseNetworkStatusFile(nsPath).routers
+    brRouters = descriptors.parseServerDescriptorsFile(brPath)
+
+    setNetworkStatuses(nsRouters, password=password)
+
+
     reactor.callLater(2, reactor.stop)
     reactor.run()
