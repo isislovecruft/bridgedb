@@ -257,18 +257,40 @@ def setNetworkStatuses(routers, **kwargs):
             d = redis.quit()
             return d
 
-    transactions = []
+    numTransactions = len(routers.items())
+    transactionsPerQueue = 1000
+    numTransactionQueues = numTransactions / transactionsPerQueue
+
+    # Create the transaction queues:
+    transactionQueues = []
+    [transactionQueues.append([]) for _ in range(numTransactionQueues)]
+
+    # Split all the transactions up into the queues:
+    whichQueue = 0
     for router in routers.items():
         d = defer.Deferred()
-        d.addCallback(setDescriptor, router)
-        d.addCallbacks(defer.passthru, setDescriptorEB)
-        transactions.append(d)
+        d.addCallback(storeDescriptor, router)
+        d.addErrback(storeDescriptorEB)
+        if whichQueue >= numTransactionQueues:
+            whichQueue = 0
+        transactionQueues[whichQueue].append(d)
+        whichQueue += 1
 
-    redis = connectServer(**kwargs)
-    dl = defer.DeferredList(transactions, consumeErrors=True)
-    dl.addCallback(transactionsResults)
-    redis.addCallback(redisCB)
-    return redis
+    # Create a RedisClient worker per queue and assign it:
+    workers = []
+    for queue in transactionQueues:
+        redisWorker = connectServer(**kwargs)
+        dl = defer.DeferredList(queue)#, consumeErrors=True)
+        dl.addCallback(transactionsResults)
+        redisWorker.addCallback(redisCB, queue)
+        redisWorker.addBoth(doQuit)
+        workers.append(redisWorker)
+
+    logging.info("Total number of queued transactions: %d" % numTransactions)
+    logging.info("Total number of queues: %d" % numTransactionQueues)
+    logging.info("Transactions per queue: %d" % transactionsPerQueue)
+    logging.info("Total number of Redis workers: %d" % len(workers))
+    logging.debug("Redis workers: %r" % workers)
 
 
 if __name__ == "__main__":
