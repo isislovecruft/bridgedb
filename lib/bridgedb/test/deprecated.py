@@ -96,6 +96,39 @@ def parseORAddressLine(line):
     raise ParseORAddressError(line)
 
 @deprecate.deprecated(Version('bridgedb', 0, 2, 3),
+           replacement='bridgedb.parse.addr.isValidIP')
+def is_valid_ip(ip):
+    """Return True if ip is the string encoding of a valid IPv4 address,
+    and False otherwise.
+
+    XXX this should probably be deprecated in favour of
+    :func:`bridgedb.parse.addr.isValid`.
+
+    >>> from bridgedb import Bridges
+    >>> Bridges.is_valid_ip('1.2.3.4')
+    True
+    >>> Bridges.is_valid_ip('1.2.3.255')
+    True
+    >>> Bridges.is_valid_ip('1.2.3.256')
+    False
+    >>> Bridges.is_valid_ip('1')
+    False
+    >>> Bridges.is_valid_ip('1.2.3')
+    False
+    >>> Bridges.is_valid_ip('xyzzy')
+    False
+
+    :param str ip: A string representing an IPv4 or IPv6 address.
+    """
+    # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"
+    try:
+        ipaddr.IPAddress(ip)
+    except ValueError:
+        # not a valid IPv4 or IPv6 address
+        return False
+    return True
+
+@deprecate.deprecated(Version('bridgedb', 0, 2, 3),
                       replacement='bridgedb.parse.fingerprint.isValidFingerprint')
 def is_valid_fingerprint(fp):
     """Return true iff fp in the right format to be a hex fingerprint
