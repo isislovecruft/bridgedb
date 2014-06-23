@@ -20,6 +20,7 @@ from twisted.internet import defer
 from twisted.internet import endpoints
 from twisted.internet import protocol
 from twisted.internet import reactor
+from twisted.internet.error import ConnectionLost
 from twisted.spread import jelly
 
 from txredis.client import RedisClient
@@ -33,6 +34,37 @@ REDIS_PORT = 6379
 #: The number of seconds to expire strored bridge networkstatus documents
 #: after. (default: 604800, i.e. 1 week)
 DESC_EXPIRE = 7 * 24 * 60 * 60
+
+
+class ExternallyQueuedRedisClient(RedisClient):
+    def connectionLost(self, reason):
+        """Fixes a stupid design flaw in ``txredis``.
+
+        This fixes a problem where, after a ``txredis.RedisClient`` has
+        successfully sent a ``QUIT`` command to the Redis server, the server
+        properly tears down the connection, and Twisted properly calls
+        ``txredis.RedisClient.connectionLost``, which calls
+        ``txredis.RedisClient.failRequests``, the later of which propagates
+        the :api`~twisted.internet.error.ConnectionLost` to all requests in
+        its internal queue (``txredis.RedisClient._request_queue``), without
+        seemingly bothering to check if these requests have already succeeded.
+        This causes the deferred transactions in the internal queue to assume
+        that their overarching ``RedisClient`` has a half-terminated TCP
+        connection, causing thousands of errbacks to get propagated for NO
+        GOOD REASON.
+
+        Technically, the ``ConnectionLost`` is not really an error, it's just
+        a signal sent from Twisted that the other end tore down the
+        connection. This is *precisely* what *is* supposed to happen when you
+        send ``QUIT``, so this is really a design error by ``txredis``.
+        """
+        trapped = reason.trap(ConnectionLost)
+        if trapped:
+            logging.debug(
+                ("Trap prevented ConnectionLost from propagating to "
+                 "`RedisClient.failRequests()`. All's well."))
+        else:
+            super(ExternallyQueuedRedisClient, self).connectionLost(reason)
 
 
 def connectServer(host=REDIS_HOST, port=REDIS_PORT, password=None, **kwargs):
@@ -64,7 +96,8 @@ def connectServer(host=REDIS_HOST, port=REDIS_PORT, password=None, **kwargs):
             result.auth(password)
         return result
 
-    creator = protocol.ClientCreator(reactor, RedisClient, password=password, **kwargs)
+    creator = protocol.ClientCreator(reactor, ExternallyQueuedRedisClient,
+                                     password=password, **kwargs)
     redis = creator.connectTCP(host, port)
     redis.addCallbacks(cb, logging.error)
     return redis
