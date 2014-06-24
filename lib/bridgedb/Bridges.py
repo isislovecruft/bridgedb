@@ -1422,7 +1422,8 @@ class FilteredBridgeSplitter(BridgeHolder):
     def assignmentsArePersistent(self):
         return False
  
-class BridgeBlock:
+
+class BridgeBlock(object):
     """Base class that abstracts bridge blocking"""
     def __init__(self):
         pass
