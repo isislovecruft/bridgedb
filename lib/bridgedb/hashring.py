@@ -289,7 +289,9 @@ class Hashring(object):
         :rtype: list
         :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
         """
-        assert len(pos) == DIGEST_LEN
+        if not len(position) == DIGEST_LEN:
+            raise ValueError("position (%s) != DIGEST_LEN (%d)"
+                             % (position, DIGEST_LEN))
         if N >= len(self.sortedKeys):
             return self.sortedKeys
         if not self.isSorted:
