@@ -147,7 +147,7 @@ class Hashring(object):
     """
     implements(IHashring)
 
-    def __init__(self, key, answerParameters=None):
+    def __init__(self, key):
         """Create a new Hashring, using **key** as its HMAC key.
 
         :type key: bytes
@@ -161,19 +161,6 @@ class Hashring(object):
         self.hmac = getHMACFunc(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
-
-        # XXX answerParameters should be part of an IDistribute
-        if answerParameters is None:
-            answerParameters = bridgerequest.AnswerParameters()
-        self.answerParameters = answerParameters
-
-        self.subrings = []
-        for port,count in self.answerParameters.needPorts:
-            #note that we really need to use the same key here, so that
-            # the mapping is in the same order for all subrings.
-            self.subrings.append( ('port',port,count,BridgeRing(key,None)) )
-        for flag,count in self.answerParameters.needFlags:
-            self.subrings.append( ('flag',flag,count,BridgeRing(key,None)) )
 
         self.setName("Ring")
 

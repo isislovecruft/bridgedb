@@ -94,12 +94,24 @@ class Distributor(object):
         """
         super(Distributor, self).__init__()
         self.name = None
-        self.hashring = None
         self.key = key
+        # XXX the database manager should probably have the hashring
+        self.hashring = hashring.Hashring(key=self.key)
+
 
         if not answerParameters:
             answerParameters = bridgerequest.AnswerParameters()
         self.answerParameters = answerParameters
+
+        # Note that we really need to use the same key here for newly added
+        # subhashrings, so that the mapping is in the same order for all
+        # subhashrings.
+        for port, count in self.answerParameters.needPorts:
+            self.hashring.subrings.append(
+                ('port', port, count, hashring.Hashring(key)))
+        for flag, count in self.answerParameters.needFlags:
+            self.subrings.append(
+                ('flag', flag, count, hashring.Hashring(key)))
 
     @property
     def answerParameters(self):
