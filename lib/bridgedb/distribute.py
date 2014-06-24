@@ -20,6 +20,7 @@ from zope.interface import Attribute
 from zope.interface import implements
 
 from bridgedb import bridgerequest
+from bridgedb import hashring
 
 
 class IDistribute(interface.Interface):
