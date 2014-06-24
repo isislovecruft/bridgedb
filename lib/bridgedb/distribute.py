@@ -73,7 +73,7 @@ class Distributor(object):
     #: accessed through the :property:`answerParameters` property.
     _answerParameters = None
 
-    def __init__(self, answerParameters=None):
+    def __init__(self, key=None, answerParameters=None):
         """Create a system for distributing bridges to clients.
 
         :type answerParameters: :class:`~bridgerequest.AnswerParameters`
@@ -86,6 +86,7 @@ class Distributor(object):
         super(Distributor, self).__init__()
         self.name = None
         self.hashring = None
+        self.key = key
 
         if not answerParameters:
             answerParameters = bridgerequest.AnswerParameters()
