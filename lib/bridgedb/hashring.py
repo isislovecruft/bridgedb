@@ -16,6 +16,8 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
+from bridgedb.crypto import getHMACFunc
+
 
 class IHashring(interface.Interface):
     """A ``zope.interface`` specification for a HashRing.
