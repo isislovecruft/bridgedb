@@ -101,21 +101,18 @@ def is_valid_ip(ip):
     """Return True if ip is the string encoding of a valid IPv4 address,
     and False otherwise.
 
-    XXX this should probably be deprecated in favour of
-    :func:`bridgedb.parse.addr.isValid`.
-
-    >>> from bridgedb import Bridges
-    >>> Bridges.is_valid_ip('1.2.3.4')
+    >>> from bridgedb.test.deprecated import is_valid_ip
+    >>> is_valid_ip('1.2.3.4')
     True
-    >>> Bridges.is_valid_ip('1.2.3.255')
+    >>> is_valid_ip('1.2.3.255')
     True
-    >>> Bridges.is_valid_ip('1.2.3.256')
+    >>> is_valid_ip('1.2.3.256')
     False
-    >>> Bridges.is_valid_ip('1')
+    >>> is_valid_ip('1')
     False
-    >>> Bridges.is_valid_ip('1.2.3')
+    >>> is_valid_ip('1.2.3')
     False
-    >>> Bridges.is_valid_ip('xyzzy')
+    >>> is_valid_ip('xyzzy')
     False
 
     :param str ip: A string representing an IPv4 or IPv6 address.
