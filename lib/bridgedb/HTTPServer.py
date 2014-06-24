@@ -49,6 +49,7 @@ from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
+from bridgedb.parse.addr import isValidIP
 from bridgedb.safelog import logSafely
 
 
@@ -157,7 +158,7 @@ class CaptchaProtectedResource(resource.Resource):
             h = request.getHeader("X-Forwarded-For")
             if h:
                 ip = h.split(",")[-1].strip()
-                if not bridgedb.Bridges.is_valid_ip(ip):
+                if not isValidIP(ip):
                     logging.warn("Got weird X-Forwarded-For value %r" % h)
                     ip = None
         else:
@@ -683,7 +684,7 @@ class WebResourceBridges(resource.Resource):
             h = request.getHeader("X-Forwarded-For")
             if h:
                 ip = h.split(",")[-1].strip()
-                if not bridgedb.Bridges.is_valid_ip(ip):
+                if not isValidIP(ip):
                     logging.warn("Got weird forwarded-for value %r",h)
                     ip = None
         else:
