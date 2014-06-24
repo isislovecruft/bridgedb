@@ -147,14 +147,38 @@ class Hashring(object):
     """
     implements(IHashring)
 
-    def __init__(self, key):
+    name = None
+    key = None
+    subrings = []
+
+    def __init__(self, key, replications=1):
         """Create a new Hashring, using **key** as its HMAC key.
+
+        If replication is enabled, i.e. if ``replication >= 1``, then items
+        will be inserted into this hashring at ``replication`` number of
+        positions, in a uniform distribution.
+
+        For example, if we said that each item should be replicated around the
+        hashring four times (``replication = 4``), then, for example,
+        ``Item A`` would end up in four positions, distributed uniformly
+        around the ring, like so::
+
+                                   _-´¯¯`-_A
+                               A ,´        `.
+                                /            \
+                                |            |
+                                \            /
+                                 `.        ,´A
+                                  A`--__--´
+
+        So in this example, ``Item A`` would be positioned at those four
+        points on the ring.
 
         :type key: bytes
         :param key: The HMAC key, generated with
             :func:`bridgedb.crypto.getKey`.
-        :type answerParameters: :class:`~bridgerequest.AnswerParameters`
-        :param answerParameters: DOCDOC
+        :param int replications: The number of times to insert each item into
+            this hashring.
         """
         self.bridges = {}
         self.bridgesByID = {}
