@@ -135,6 +135,15 @@ class Hashring(object):
           * ``ring`` is a :class:`~bridgedb.Bridges.BridgeRing`; it is the sub
             hashring which contains ``count`` number of
             :class:`~bridgedb.Bridges.Bridge`s of a certain ``type``.
+
+        So, for example, we might have hashring with the following subrings::
+
+            subrings = [('port', 443, 100, Hashring(),),
+                        ('flag', 'Stable', 20, Hashring(),),]
+
+        meaning that we have two subrings, one with one hundred bridges on
+        port 443, and the other with twenty bridges who have been marked by
+        the ``BridgeAuth`` with the ``Stable`` flag.
     """
     implements(IHashring)
 
