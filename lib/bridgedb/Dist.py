@@ -132,14 +132,16 @@ class IPBasedDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
-        self.areaMapper = areaMapper
-        self.nClusters = nClusters
-        self.answerParameters = answerParameters
-
         if not ipCategories:
             ipCategories = []
         if not answerParameters:
             answerParameters = []
+        super(IPBasedDistributor, self).__init__(key, answerParameters)
+
+        self.areaMapper = areaMapper
+        self.nClusters = nClusters
+        self.answerParameters = answerParameters
+
         self.rings = []
 
         self.categories = []
@@ -344,6 +346,8 @@ class EmailBasedDistributor(Distributor):
         :param whitelist: A dictionary that maps whitelisted email addresses
             to GnuPG fingerprints.
         """
+        super(EmailBasedDistributor, self).__init__(key, answerParameters)
+
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
 
