@@ -1,5 +1,4 @@
-## BridgeDB [![Coverage Status](https://coveralls.io/repos/isislovecruft/bridgedb/badge.png)](https://coveralls.io/r/isislovecruft/bridgedb)
------------
+## BridgeDB [![Build Status](https://travis-ci.org/isislovecruft/bridgedb.svg)](https://travis-ci.org/isislovecruft/bridgedb) [![Coverage Status](https://coveralls.io/repos/isislovecruft/bridgedb/badge.png)](https://coveralls.io/r/isislovecruft/bridgedb)
 
 BridgeDB is a collection of backend servers used to distribute
 [Tor Bridges](https://www.torproject.org/docs/bridges). It currently consists
