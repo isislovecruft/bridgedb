@@ -81,6 +81,7 @@ def createResponseBody(lines, context, client, lang='en'):
             str(client),
             interval,
             context.nBridges,
+            ## XXX replace with raw request object
             countryCode=None,
             bridgeFilterRules=bridgeRequest.filters)
     except EmailRequestedHelp as error:
