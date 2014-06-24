@@ -24,6 +24,7 @@ from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
 from bridgedb.parse import options
+from bridgedb.parse.addr import isValidIP
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
@@ -292,7 +293,7 @@ def loadProxyList(cfg):
             line = line.strip()
             if line.startswith("#"):
                 continue
-            elif Bridges.is_valid_ip(line):
+            elif isValidIP(line):
                 ipset[line] = True
             elif line:
                 logging.info("Skipping line %r in %s: not an IP.",
