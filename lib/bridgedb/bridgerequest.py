@@ -40,6 +40,12 @@ class IRequestBridges(Interface):
     def addFilter():
         """Add a filter to the list of ``filters``."""
 
+    def fromJSON(json):
+        """Create an instance of this class from a **json** string."""
+
+    def toJSON():
+        """Format this request into a valid JSON string."""
+
     def clearFilters():
         """Clear the list of ``filters``."""
 
@@ -72,6 +78,8 @@ class BridgeRequestBase(object):
 
     implements(IRequestBridges)
 
+    _serialize = ['addressClass', 'transports', 'notBlockedIn', 'valid']
+
     def __init__(self, addressClass=None):
         self.addressClass = addressClass
         if not isinstance(self.addressClass,
@@ -99,6 +107,77 @@ class BridgeRequestBase(object):
 
     def addFilter(self, filtre):
         self.filters.append(filtre)
+
+    @staticmethod
+    def fromJSON(cls, json):
+        """Turn **json** into an instance of this class.
+
+        :returns: A new instance of **cls**, created from the deserialized
+            attributes found in **json**, if it was parseable.
+        """
+        decoder = simplejson.JSONDecoder()
+        decoded = None
+
+        # Check that all attributes listed in `cls._serialize` are present:
+        for attr in cls._serialize:
+            if not attr in json:
+                raise ValueError(
+                    "JSON must contain a '%s' key to create a %s class!"
+                    % (attr, cls.__class__))
+
+        try:
+            decoded = decoder.decode(json)
+        except simplejson.JSONDecodeError, error:
+            logging.error(error)
+            return None  # XXX is this really what we want to do?
+
+        deserialized = cls()
+        try:
+            for key, value in decoded.items():
+                if key in cls._serialize:
+                    if key == 'addressClass':
+                        if str(value) == '6':
+                            deserialized.withIPv6()
+                        elif str(value) == '4':
+                            deserialized.withIPv4()
+                    elif key == 'transports':
+                        for transport in key:
+                            deserialized.withPluggableTransportType(transport)
+                    elif key == 'notBlockedIn':
+                        for unblocked in key:
+                            deserialized.withoutBlockInCountry(unblocked)
+                    elif key == 'valid':
+                        if value == 'true':
+                            deserialized.isValid(True)
+        except Exception, error:
+            logging.exception(error)
+
+        return deserialized
+
+    def toJSON(self):
+        """Format this request into JSON like the following::
+
+            { 'addressClass': '4',
+              'transports': ['obfs2', 'obfs3'],
+              'notBlockedIn': ['cn', 'ir'],
+              'valid': 'true',}
+
+        :rtype: str
+        :returns: A JSON-formatted string serialization of this object.
+        """
+        encoder = simplejson.JSONEncoder()
+        encoded = {}
+
+        for attr in self._serialize:
+            encoded[attr] = getattr(self, attr, None)
+        # We cannot serialize `ipaddr.IPv*Address` classes:
+        if isinstance(encoded['addressClass'], ipaddr.IPv6Address):
+            encoded['addressClass'] = 6
+        else:
+            encoded['addressClass'] = 4
+
+        json = encoder.encode(data)
+        return json
 
     def clearFilters(self):
         self.filters = []
