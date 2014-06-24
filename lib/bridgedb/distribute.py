@@ -59,6 +59,15 @@ class IDistribute(interface.Interface):
     def setDistributorName(name):
         """Set this Distributor's ``name`` attribute."""
 
+    def formatRequestAsJSON(request):
+        """Take a **request** and produce some JSON for passing along to the
+        DatabaseManager.
+
+        :type request: An implementer of `bridgedb.interfaces.IRequestBridges`.
+        :rtype: str
+        :returns: A JSON-formatted string specifying the nature of the bridge
+            request to the DatabaseManager.
+        """
 
 
 class Distributor(object):
@@ -173,3 +182,14 @@ class Distributor(object):
             self.hashring.setName(name)
         except AttributeError:
             logging.debug("Couldn't setName() for %s Distributor's hashring.")
+
+    def formatRequestAsJSON(self, request):
+        """Take a **request** and produce some JSON for passing along to the
+        DatabaseManager.
+
+        :type request: An implementer of `bridgedb.interfaces.IRequestBridges`.
+        :rtype: str
+        :returns: A JSON-formatted string specifying the nature of the bridge
+            request to the DatabaseManager.
+        """
+        return request.toJSON()
