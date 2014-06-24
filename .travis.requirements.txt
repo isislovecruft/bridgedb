@@ -6,4 +6,5 @@ pycrypto==2.6.1
 pygeoip==0.2.7
 pygpgme==0.3
 recaptcha-client==1.0.6
+txredis==2.3
 zope.interface==3.6.1
