@@ -26,7 +26,7 @@ addons:
 
 env:
   global:
-    - LEEKSPIN_VERSION=0.1.3
+    - LEEKSPIN_VERSION=0.1.4
     - COVERAGE_VERSION=3.7.1
     - COVERALLS_VERSION=0.4.2
     - SURE_VERSION=1.2.2
