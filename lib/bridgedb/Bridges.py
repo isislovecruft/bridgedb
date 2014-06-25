@@ -1424,7 +1424,10 @@ class FilteredBridgeSplitter(BridgeHolder):
  
 
 class BridgeBlock(object):
-    """Base class that abstracts bridge blocking"""
+    """Base class that abstracts bridge blocking.
+
+    .. TODO:: This should be a zope.interface specification.
+    """
     def __init__(self):
         pass
 
