@@ -182,7 +182,6 @@ class Hashring(object):
         :param int replications: The number of times to insert each item into
             this hashring.
         """
-        self.bridges = {}
         self.bridgesByID = {}
         self.isSorted = False
         self.sortedKeys = []
@@ -190,6 +189,8 @@ class Hashring(object):
         self.setName("Ring")
         self.key = key
         self.hmac = getHMACFunc(self.key, hex=False)
+
+        self._ring = {}
 
     def setName(self, name):
         """Tag a unique name to this hashring for identification.
@@ -209,10 +210,10 @@ class Hashring(object):
 
     def clear(self):
         """Remove all bridges and mappings from this hashring and subrings."""
-        self.bridges = {}
         self.bridgesByID = {}
         self.isSorted = False
         self.sortedKeys = []
+        self._ring = {}
 
         for tp, val, count, subring in self.subrings:
             subring.clear()
@@ -242,10 +243,10 @@ class Hashring(object):
 
         ident = bridge.getID()
         pos = self.hmac(ident)
-        if not self.bridges.has_key(pos):
+        if not self._ring.has_key(pos):
             self.sortedKeys.append(pos)
             self.isSorted = False
-        self.bridges[pos] = bridge
+        self._ring[pos] = bridge
         self.bridgesByID[ident] = bridge
         logging.debug("Adding %s to %s" % (bridge.ip, self.name))
 
@@ -344,8 +345,8 @@ class Hashring(object):
         keys = keys[:N]
         keys.sort()
 
-        #Do not return bridges from the same /16
-        bridges = [ self.bridges[k] for k in keys ]
+        # XXX We shouldn't return bridges from the same /16
+        bridges = [ self._ring[k] for k in keys ]
 
         return bridges
 
