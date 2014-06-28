@@ -184,11 +184,12 @@ class Hashring(object):
         """
         self.bridges = {}
         self.bridgesByID = {}
-        self.hmac = getHMACFunc(key, hex=False)
         self.isSorted = False
         self.sortedKeys = []
 
         self.setName("Ring")
+        self.key = key
+        self.hmac = getHMACFunc(self.key, hex=False)
 
     def setName(self, name):
         """Tag a unique name to this hashring for identification.
