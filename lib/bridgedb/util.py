@@ -13,6 +13,7 @@
 
 from functools import partial
 
+import abc
 import logging
 import logging.config
 import logging.handlers
@@ -213,3 +214,53 @@ class JustifiedLogFormatter(logging.Formatter):
         """
         record = self._formatCallingFuncName(record)
         return super(JustifiedLogFormatter, self).format(record)
+
+
+class mixin:
+    """Subclasses of me can be used as a mixin class by registering another
+    class, ``ClassA``, which should be mixed with the ``mixin`` subclass, in
+    order to provide simple, less error-prone, multiple inheritance models::
+
+    >>> from __future__ import print_function
+    >>> from bridgedb.util import mixin
+    >>>
+    >>> class ClassA(object):
+    >>>     def sayWhich(self):
+    >>>         print("ClassA.sayWhich() called.")
+    >>>     def doSuperThing(self):
+    >>>         super(ClassA, self).__repr__()
+    >>>     def doThing(self):
+    >>>         print("ClassA is doing a thing.")
+    >>>
+    >>> class ClassB(ClassA):
+    >>>     def sayWhich(self):
+    >>>         print("ClassB.sayWhich() called.")
+    >>>     def doSuperThing(self):
+    >>>         super(ClassB, self).__repr__()
+    >>>     def doOtherThing(self):
+    >>>         print("ClassB is doing something else.")
+    >>>
+    >>> class ClassM(mixin):
+    >>>     def sayWhich(self):
+    >>>         print("ClassM.sayWhich() called.")
+    >>>
+    >>> ClassM.register(ClassA)
+    >>>
+    >>> class ClassC(ClassM, ClassB):
+    >>>     def sayWhich(self):
+    >>>         super(ClassC, self).sayWhich()
+    >>>
+    >>> c = ClassC()
+    >>> c.sayWhich()
+    ClassM.saywhich() called.
+    >>> c.doSuperThing()
+    <super: <class 'ClassA'>, NULL>
+    >>> c.doThing()
+    ClassA is doing a thing.
+    >>> c.doOtherThing()
+    ClassB is doing something else.
+
+    .. info:: This class' name is lowercased because pylint is hardcoded to
+        expect mixin classes to end in ``'mixin'``.
+    """
+    __metaclass__ = abc.ABCMeta
