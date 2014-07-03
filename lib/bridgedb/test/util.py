@@ -14,7 +14,6 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import doctest
 import os
 
 from functools import wraps
@@ -73,7 +72,3 @@ def fileCheckDecorator(func):
 #: being run as a ``TestCase`` by ``twisted.trial``.
 TestCaseMixin = bdbutil.mixin
 TestCaseMixin.register(unittest.TestCase)
-
-
-if __name__ == "__main__":
-    doctest.run_docstring_examples(fileCheckDecorator, None)
