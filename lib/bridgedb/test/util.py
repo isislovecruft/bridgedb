@@ -14,13 +14,14 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import abc
 import doctest
 import os
 
 from functools import wraps
 
 from twisted.trial import unittest
+
+from bridgedb import util as bdbutil
 
 
 def fileCheckDecorator(func):
@@ -66,9 +67,11 @@ def fileCheckDecorator(func):
     return wrapper
 
 
-class TestCaseMixin:
-    """Subclasses of me can be used as mix-in classes with ``TestCase``s."""
-    __metaclass__ = abc.ABCMeta
+#: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
+#: ``TestCaseMixin`` can be used to add additional methods, which should be
+#: common to multiple ``TestCase`` subclasses, without the ``TestCaseMixin``
+#: being run as a ``TestCase`` by ``twisted.trial``.
+TestCaseMixin = bdbutil.mixin
 TestCaseMixin.register(unittest.TestCase)
 
 
