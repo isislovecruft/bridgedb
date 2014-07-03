@@ -1,0 +1,15 @@
+# This is a pip requirements.txt file for running bridgedb's tests.
+#
+# To run install these dependencies and run the tests, do:
+#
+#     $ pip install -r .test.requirements.txt
+#     $ make coverage
+#
+coverage==3.7.1
+leekspin==0.1.4
+pep8==1.5.7
+# pylint must be pinned until pylint bug #203 is fixed. See
+# https://bitbucket.org/logilab/pylint/issue/203/importing-namespace-packages-crashes#comment-11013783
+pylint==1.1.0
+sure==1.2.2
+Twisted==13.2.0
