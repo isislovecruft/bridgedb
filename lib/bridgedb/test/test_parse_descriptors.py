@@ -133,14 +133,15 @@ feWndKJk/zj5ZtkMND8VVbWuJE+R6Jh2Q3L0p8IZ6J4=
 class ParseDescriptorsTests(unittest.TestCase):
     """Unittests for :class:`bridgedb.parse.descriptors` module."""
 
-    def test_parse_descriptors_parseBridgeDescriptorsFile(self):
-        """Test for ``b.p.descriptors.parseBridgeDescriptorsFile``."""
-        if not HAS_STEM:
-            self.skip = True
+    skip = True if not HAS_STEM else False
+
+    def setUp(self):
+        """Test if we have Stem installed. Skip these tests if it's missing."""
+        if self.skip:
             raise unittest.SkipTest("Couldn't import Stem.")
 
-        from bridgedb.parse import descriptors
-
+    def test_parse_descriptors_parseBridgeDescriptorsFile(self):
+        """Test for ``b.p.descriptors.parseBridgeDescriptorsFile``."""
         descFile = io.BytesIO(BRIDGE_SERVER_DESCRIPTOR)
         routers = descriptors.parseServerDescriptorsFile(descFile)
         self.assertIsInstance(routers, list)
