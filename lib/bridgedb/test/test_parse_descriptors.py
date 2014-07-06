@@ -150,3 +150,40 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.address, u'152.78.9.20')
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
+
+    def test_parse_descriptors_parseBridgeNetworkStatusFile(self):
+        """Test for ``b.p.descriptors.parseNetworkStatusFile``."""
+        descFile = io.BytesIO(BRIDGE_NETWORKSTATUS)
+        routers = descriptors.parseNetworkStatusFile(descFile)
+        self.assertIsInstance(routers, list)
+        bridge = routers[0]
+        self.assertIsInstance(bridge, RelayDescriptor)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
+
+    def test_parse_descriptors_parseBridgeExtraInfoFiles_one_file(self):
+        """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with only one
+        bridge extrainfo file."""
+        descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        routers = descriptors.parseBridgeExtraInfoFiles(descFile)
+        self.assertIsInstance(routers, list)
+        bridge = routers[0]
+        self.assertIsInstance(bridge, BridgeExtraInfoDescriptor)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
+
+    def test_parse_descriptors_parseBridgeExtraInfoFiles_two_files(self):
+        """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with two
+        bridge extrainfo files, and check that only the newest extrainfo
+        descriptor is used."""
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWER_DUPLICATE)
+        routers = descriptors.parseBridgeExtraInfoFiles(descFileOne, descFileTwo)
+        self.assertIsInstance(routers, list)
+        bridge = routers[0]
+        self.assertIsInstance(bridge, BridgeExtraInfoDescriptor)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
