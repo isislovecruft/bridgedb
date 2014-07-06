@@ -20,11 +20,21 @@ HAS_STEM = False
 
 try:
     from stem.descriptor.server_descriptor import RelayDescriptor
+    from stem.descriptor.extrainfo_descriptor import BridgeExtraInfoDescriptor
+    from bridgedb.parse import descriptors
 except (ImportError, NameError), error:
     print("There was an error importing stem: %s" % error)
 else:
     HAS_STEM = True
 
+
+BRIDGE_NETWORKSTATUS = '''\
+r OutwitsPlod b6khbPOgbomgMSGswx9w+N/X3cw qBckYSWbwl/F/qzQWwMJWBxHZ+w 2014-03-12 16:07:08 152.78.9.20 17810 0
+a [bfbd:7a90:2347:cc4:e854:64b3:2c31:124f]:17810
+s Fast Guard Running Stable Valid
+w Bandwidth=1902273
+p reject 1-65535
+'''
 
 BRIDGE_SERVER_DESCRIPTOR = '''\
 router OutwitsPlod 152.78.9.20 17810 0 0
@@ -58,7 +68,66 @@ router-signature
 i/nkrD4VxqWcnAlBS48hIilrE7C4DvRJhN4XWep7TXNbEC48IqFG+49xpKV6qkts
 yKaUDBfD9Y1tMM0mrRjEWK0xYWX/4Ug9Xbbv2q1so4EuS35AF11d69Yf/2ppnCu7
 r+qtX7csROF4KyFJYFNJUKf/hroPHKWuTGCcqzb+D68=
------END SIGNATURE-----'''
+-----END SIGNATURE-----
+'''
+
+BRIDGE_EXTRA_INFO_DESCRIPTOR = '''\
+extra-info OutwitsPlod 6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC
+published 2014-03-12 16:07:08
+write-history 2014-03-12 16:07:08 (900 s) 3188736,2226176,2866176
+read-history 2014-03-12 16:07:08 (900 s) 3891200,2483200,2698240
+dirreq-write-history 2014-03-12 16:07:08 (900 s) 1024,0,2048
+dirreq-read-history 2014-03-12 16:07:08 (900 s) 0,0,0
+geoip-db-digest AAF7B842E52974556F9969A62DF8D31F9D886A33
+geoip6-db-digest C2C80F4EF2908E55A764603B08A8CB99A681EA19
+dirreq-stats-end 2014-03-12 16:07:08 (86400 s)
+dirreq-v3-ips
+dirreq-v3-reqs
+dirreq-v3-resp ok=16,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
+transport obfs3 152.78.9.20:17811
+transport obfs2 152.78.9.20:17812
+bridge-stats-end 2014-03-12 16:07:08 (86400 s)
+bridge-ips ca=8
+bridge-ip-versions v4=8,v6=0
+bridge-ip-transports <OR>=8
+router-signature
+-----BEGIN SIGNATURE-----
+aW1ZlxqeaGcbNSxVpMONU0ER4xgdihb9X2crguzKa/TYVweCZ2Ew7x3Rsg4cUNpr
+Fb05F3Zxg6ZUTMC8gfh6leDGw5eSX7OGVaaJICTfeLbNopLVk+JKNGMJ32R/Zia0
+feWndKJk/zj5ZtkMND8VVbWuJE+R6Jh2Q3L0p8IZ6J4=
+-----END SIGNATURE-----
+'''
+
+BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWER_DUPLICATE = '''\
+extra-info OutwitsPlod 6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC
+published 2014-03-12 17:07:08
+write-history 2014-03-12 17:07:08 (900 s) 3188736,2226176,2866176
+read-history 2014-03-12 17:07:08 (900 s) 3891200,2483200,2698240
+dirreq-write-history 2014-03-12 17:07:08 (900 s) 1024,0,2048
+dirreq-read-history 2014-03-12 17:07:08 (900 s) 0,0,0
+geoip-db-digest AAF7B842E52974556F9969A62DF8D31F9D886A33
+geoip6-db-digest C2C80F4EF2908E55A764603B08A8CB99A681EA19
+dirreq-stats-end 2014-03-12 17:07:08 (86400 s)
+dirreq-v3-ips
+dirreq-v3-reqs
+dirreq-v3-resp ok=16,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
+transport obfs3 152.78.9.20:17811
+transport obfs2 152.78.9.20:17812
+bridge-stats-end 2014-03-12 17:07:08 (86400 s)
+bridge-ips ca=8
+bridge-ip-versions v4=8,v6=0
+bridge-ip-transports <OR>=8
+router-signature
+-----BEGIN SIGNATURE-----
+aW1ZlxqeaGcbNSxVpMONU0ER4xgdihb9X2crguzKa/TYVweCZ2Ew7x3Rsg4cUNpr
+Fb05F3Zxg6ZUTMC8gfh6leDGw5eSX7OGVaaJICTfeLbNopLVk+JKNGMJ32R/Zia0
+feWndKJk/zj5ZtkMND8VVbWuJE+R6Jh2Q3L0p8IZ6J4=
+-----END SIGNATURE-----
+'''
 
 
 class ParseDescriptorsTests(unittest.TestCase):
