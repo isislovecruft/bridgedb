@@ -46,7 +46,10 @@ docs:
 clean-docs:
 	-rm -rf build/sphinx
 
-clean:
+clean-coverage-html:
+	-rm -rf doc/coverage-html
+
+clean: clean-docs clean-coverage-html
 	-rm -rf build
 	-rm -rf dist
 	-rm -rf lib/bridgedb.egg-info
