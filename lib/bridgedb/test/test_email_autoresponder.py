@@ -562,3 +562,10 @@ class SMTPAutoresponderTests(unittest.TestCase):
         self.message.lines.insert(3, header)
         self._setUpResponder()
         self.assertFalse(self.responder.runChecks(emailFrom))
+
+    def test_SMTPAutoresponder_runChecks_blacklisted(self):
+        """runChecks() on an blacklisted email address should return False."""
+        emailFrom = Address('feidanchaoren0043@gmail.com')
+        self._getIncomingLines(str(emailFrom))
+        self._setUpResponder()
+        self.assertFalse(self.responder.runChecks(emailFrom))
