@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 
 import os
 
+from twisted.mail.smtp import Address
 from twisted.trial import unittest
 
 from bridgedb import util
@@ -58,3 +59,44 @@ class MiscLoggingUtilTests(unittest.TestCase):
         from bridgedb.persistent import Conf
         util.configureLogging(Conf())
         util.logging.info("BridgeDB's email address: bridges@torproject.org")
+
+
+class LevenshteinDistanceTests(unittest.TestCase):
+    """Unittests for `bridgedb.util.levenshteinDistance."""
+
+    def test_levenshteinDistance_blank_blank(self):
+        """The Levenshtein Distance between '' and '' should be 0."""
+        distance = util.levenshteinDistance('', '')
+        self.assertEqual(distance, 0)
+
+    def test_levenshteinDistance_cat_cat(self):
+        """The Levenshtein Distance between 'cat' and 'cat' should be 0."""
+        distance = util.levenshteinDistance('cat', 'cat')
+        self.assertEqual(distance, 0)
+
+    def test_levenshteinDistance_bat_cat(self):
+        """The Levenshtein Distance between 'bat' and 'cat' should be 1."""
+        distance = util.levenshteinDistance('bat', 'cat')
+        self.assertEqual(distance, 1)
+
+    def test_levenshteinDistance_bar_cat(self):
+        """The Levenshtein Distance between 'bar' and 'cat' should be 2."""
+        distance = util.levenshteinDistance('bar', 'cat')
+        self.assertEqual(distance, 2)
+
+    def test_levenshteinDistance_bridgedb_doge(self):
+        """The Levenshtein Distance between 'bridgedb' and 'doge' should be 6."""
+        distance = util.levenshteinDistance('bridgedb', 'doge')
+        self.assertEqual(distance, 6)
+
+    def test_levenshteinDistance_feidanchaoren0043_feidanchaoren0011(self):
+        """The Levenshtein Distance between the usernames in
+        'feidanchaoren0043@gmail.com' and 'feidanchaoren0011@gmail.com' should
+        be less than an EMAIL_FUZZY_MATCH parameter.
+        """
+        email1 = Address('feidanchaoren0043@gmail.com')
+        email2 = Address('feidanchaoren0011@gmail.com')
+        # Fuzzy match if the Levenshtein Distance is less than or equal to:
+        fuzzyMatch = 4
+        distance = util.levenshteinDistance(email1.local, email2.local)
+        self.assertLessEqual(distance, fuzzyMatch)
