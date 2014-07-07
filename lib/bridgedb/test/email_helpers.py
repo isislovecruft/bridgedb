@@ -38,7 +38,7 @@ EMAIL_DOMAIN_RULES = {
 }
 EMAIL_DOMAINS = ["gmail.com", "example.com", "localhost"]
 EMAIL_WHITELIST = {'white@list.ed': 'ABCD1234ABCD1234ABCD1234ABCD1234ABCD1234'}
-EMAIL_BLACKLIST = ['feidanchaoren']
+EMAIL_BLACKLIST = ['feidanchaoren0001@gmail.com']
 EMAIL_FUZZY_MATCH = 4
 EMAIL_USERNAME = "bridges"
 EMAIL_SMTP_HOST = "127.0.0.1"
