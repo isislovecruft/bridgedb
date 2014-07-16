@@ -91,6 +91,10 @@ class Unscheduled(object):
     def getInterval(self, when=0):
         """Get the interval that contains the time **when**.
 
+        .. note: We explicitly ignore the ``when`` parameter in this
+            implementation because if something is Unscheduled then
+            all timestamps should reside within the same period.
+
         :param int when: The time which we're trying to find the corresponding
             interval for.
         :rtype: str
@@ -98,8 +102,9 @@ class Unscheduled(object):
             specificity depends on what type of interval we're using. For
             example, if using ``"month"``, the return value would be something
             like ``"2013-12"``.
+
         """
-        return fromUnixSeconds(when).strftime('%04Y-%02m-%02d %02H:%02M:%02S')
+        return fromUnixSeconds(0).strftime('%04Y-%02m-%02d %02H:%02M:%02S')
 
     def nextIntervalStarts(self, when=0):
         """Return the start time of the interval starting _after_ when.
