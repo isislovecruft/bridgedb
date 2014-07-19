@@ -323,7 +323,8 @@ class EmailResponse(object):
                 headerName = headerName.capitalize()
                 headerName = headerName.replace(' ', '-')
                 headerName = headerName.replace('_', '-')
-                self.write("%s: %s" % (headerName, headerValue))
+                header = "%s: %s" % (headerName, headerValue)
+                self.write(header.encode('utf-8'))
 
         # The first blank line designates that the headers have ended:
         self.write(self.delimiter)
