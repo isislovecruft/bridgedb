@@ -75,7 +75,7 @@ def createResponseBody(lines, context, client, lang='en'):
                                      % str(client))
 
         # Otherwise they must have requested bridges:
-        interval = context.schedule.getInterval(time.time())
+        interval = context.schedule.intervalStart(time.time())
         bridges = context.distributor.getBridgesForEmail(
             str(client),
             interval,
