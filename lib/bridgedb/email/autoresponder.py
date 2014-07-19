@@ -136,9 +136,9 @@ def generateResponse(fromAddress, client, body, subject=None,
     """
     response = EmailResponse(gpgContext)
     response.to = client
-    response.writeHeaders(fromAddress, str(client), subject,
+    response.writeHeaders(fromAddress.encode('utf-8'), str(client), subject,
                           inReplyTo=messageID)
-    response.writeBody(body)
+    response.writeBody(body.encode('utf-8'))
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
     # disabled:
@@ -221,9 +221,9 @@ class EmailResponse(object):
                          self.__class__.__name__))
         try:
             if size is not None:
-                contents = self.mailfile.read(int(size))
+                contents = self.mailfile.read(int(size)).encode('utf-8')
             else:
-                contents = self.mailfile.read()
+                contents = self.mailfile.read().encode('utf-8')
         except Exception as error:  # pragma: no cover
             logging.exception(error)
 
@@ -306,17 +306,17 @@ class EmailResponse(object):
         self.write("From: %s" % fromAddress)
         self.write("To: %s" % toAddress)
         if includeMessageID:
-            self.write("Message-ID: %s" % smtp.messageid())
+            self.write("Message-ID: %s" % smtp.messageid().encode('utf-8'))
         if inReplyTo:
-            self.write("In-Reply-To: %s" % inReplyTo)
-        self.write("Content-Type: %s" % contentType)
-        self.write("Date: %s" % smtp.rfc822date())
+            self.write("In-Reply-To: %s" % inReplyTo.encode('utf-8'))
+        self.write("Content-Type: %s" % contentType.encode('utf-8'))
+        self.write("Date: %s" % smtp.rfc822date().encode('utf-8'))
 
         if not subject:
             subject = '[no subject]'
         if not subject.lower().startswith('re'):
             subject = "Re: " + subject
-        self.write("Subject: %s" % subject)
+        self.write("Subject: %s" % subject.encode('utf-8'))
 
         if kwargs:
             for headerName, headerValue in kwargs.items():
