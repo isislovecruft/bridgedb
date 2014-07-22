@@ -57,6 +57,11 @@ class MailServerContext(object):
     :ivar str fromAddr: Use this address in the email :header:`From:`
         line for outgoing mail. (default: ``bridges@torproject.org``)
     :ivar int nBridges: The number of bridges to send for each email.
+    :ivar list blacklist: A list of blacklisted email addresses, taken from
+        the ``EMAIL_BLACKLIST`` config setting.
+    :ivar int fuzzyMatch: An integer specifying the maximum Levenshtein
+        Distance from an incoming email address to a blacklisted email address
+        for the incoming email to be dropped.
     :ivar gpgContext: A ``gpgme.GpgmeContext`` (as created by
         :func:`bridgedb.crypto.getGPGContext`), or None if we couldn't create
         a proper GPGME context for some reason.
@@ -92,6 +97,8 @@ class MailServerContext(object):
         self.domainMap = config.EMAIL_DOMAIN_MAP or {}
         self.canon = self.buildCanonicalDomainMap()
         self.whitelist = config.EMAIL_WHITELIST or {}
+        self.blacklist = config.EMAIL_BLACKLIST or []
+        self.fuzzyMatch = config.EMAIL_FUZZY_MATCH or 0
 
         self.gpgContext = getGPGContext(config)
 

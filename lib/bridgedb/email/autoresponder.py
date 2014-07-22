@@ -38,6 +38,7 @@ from bridgedb.email import request
 from bridgedb.email import templates
 from bridgedb.parse import addr
 from bridgedb.parse.addr import canonicalizeEmailDomain
+from bridgedb.util import levenshteinDistance
 from bridgedb import translations
 
 
@@ -645,6 +646,19 @@ class SMTPAutoresponder(smtp.SMTPClient):
         # results, and those results look bad, reject this email:
         if not dkim.checkDKIM(self.incoming.message, self.incoming.domainRules):
             return False
+
+        # If fuzzy matching is enabled via the EMAIL_FUZZY_MATCH setting, then
+        # calculate the Levenshtein String Distance (see
+        # :func:`~bridgedb.util.levenshteinDistance`):
+        if self.incoming.context.fuzzyMatch != 0:
+            for blacklistedAddress in self.incoming.context.blacklist:
+                distance = levenshteinDistance(self.incoming.canonicalFromEmail,
+                                               blacklistedAddress)
+                if distance <= self.incoming.context.fuzzyMatch:
+                    logging.info("Fuzzy-matched %s to blacklisted address %s!"
+                                 % (self.incoming.canonicalFromEmail,
+                                    blacklistedAddress))
+                    return False
 
         return True
 
