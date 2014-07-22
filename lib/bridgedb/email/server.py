@@ -176,7 +176,7 @@ class SMTPMessage(object):
             self.lines.append(line)
         if not safelog.safe_logging:
             try:
-                logging.debug("> %s", line.rstrip("\r\n"))
+                logging.debug("> %s", line.rstrip("\r\n").encode('utf-8'))
             except UnicodeError:  # pragma: no cover
                 pass
             except Exception as error:  # pragma: no cover

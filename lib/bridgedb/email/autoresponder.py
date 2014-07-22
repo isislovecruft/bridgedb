@@ -75,7 +75,7 @@ def createResponseBody(lines, context, client, lang='en'):
                                      % str(client))
 
         # Otherwise they must have requested bridges:
-        interval = context.schedule.getInterval(time.time())
+        interval = context.schedule.intervalStart(time.time())
         bridges = context.distributor.getBridgesForEmail(
             str(client),
             interval,
@@ -136,9 +136,9 @@ def generateResponse(fromAddress, client, body, subject=None,
     """
     response = EmailResponse(gpgContext)
     response.to = client
-    response.writeHeaders(fromAddress, str(client), subject,
+    response.writeHeaders(fromAddress.encode('utf-8'), str(client), subject,
                           inReplyTo=messageID)
-    response.writeBody(body)
+    response.writeBody(body.encode('utf-8'))
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
     # disabled:
@@ -221,9 +221,9 @@ class EmailResponse(object):
                          self.__class__.__name__))
         try:
             if size is not None:
-                contents = self.mailfile.read(int(size))
+                contents = self.mailfile.read(int(size)).encode('utf-8')
             else:
-                contents = self.mailfile.read()
+                contents = self.mailfile.read().encode('utf-8')
         except Exception as error:  # pragma: no cover
             logging.exception(error)
 
@@ -306,24 +306,25 @@ class EmailResponse(object):
         self.write("From: %s" % fromAddress)
         self.write("To: %s" % toAddress)
         if includeMessageID:
-            self.write("Message-ID: %s" % smtp.messageid())
+            self.write("Message-ID: %s" % smtp.messageid().encode('utf-8'))
         if inReplyTo:
-            self.write("In-Reply-To: %s" % inReplyTo)
-        self.write("Content-Type: %s" % contentType)
-        self.write("Date: %s" % smtp.rfc822date())
+            self.write("In-Reply-To: %s" % inReplyTo.encode('utf-8'))
+        self.write("Content-Type: %s" % contentType.encode('utf-8'))
+        self.write("Date: %s" % smtp.rfc822date().encode('utf-8'))
 
         if not subject:
             subject = '[no subject]'
         if not subject.lower().startswith('re'):
             subject = "Re: " + subject
-        self.write("Subject: %s" % subject)
+        self.write("Subject: %s" % subject.encode('utf-8'))
 
         if kwargs:
             for headerName, headerValue in kwargs.items():
                 headerName = headerName.capitalize()
                 headerName = headerName.replace(' ', '-')
                 headerName = headerName.replace('_', '-')
-                self.write("%s: %s" % (headerName, headerValue))
+                header = "%s: %s" % (headerName, headerValue)
+                self.write(header.encode('utf-8'))
 
         # The first blank line designates that the headers have ended:
         self.write(self.delimiter)
@@ -630,12 +631,12 @@ class SMTPAutoresponder(smtp.SMTPClient):
 
         # The canonical domains from the SMTP ``MAIL FROM:`` and the email
         # ``From:`` header should match:
-        if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
-            logging.error("SMTP/Email canonical domain mismatch!")
-            logging.debug("Canonical domain mismatch: %s != %s"
-                          % (self.incoming.canonicalFromSMTP,
-                             self.incoming.canonicalFromEmail))
-            return False
+        #if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
+        #    logging.error("SMTP/Email canonical domain mismatch!")
+        #    logging.debug("Canonical domain mismatch: %s != %s"
+        #                  % (self.incoming.canonicalFromSMTP,
+        #                     self.incoming.canonicalFromEmail))
+        #    return False
 
         self.incoming.domainRules = self.incoming.context.domainRules.get(
             self.incoming.canonicalFromEmail, list())
