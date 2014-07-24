@@ -1,4 +1,21 @@
-Changes in version 0.2.2 - 2014-06-XXX
+Changes in version 0.2.3 - 2014-07-XXX
+
+        * FIXES #5463 https://bugs.torproject.org/5463
+        XXX
+
+        * FIXES #9385 https://bugs.torproject.org/9385
+        BridgeDB now has the ability to blacklist email addresses, and
+        configurable options to fuzzy match and block addresses which are
+        similar enough to those in the blacklist.
+
+        * FIXES #12147 https://bugs.torproject.org/12147
+        An additional issue with BridgeDB's code for scheduling actions
+        was identified by Robert Ransom, who also provided a unittest to
+        demonstrate the issue and test for future regressions. The issue
+        pointed out has also been fixed.
+
+
+Changes in version 0.2.2 - 2014-06-06
 
         * FIXES #9874 https://trac.torproject.org/projects/tor/ticket/9874
         BridgeDB's email and HTTPS distributors were written in a manner
