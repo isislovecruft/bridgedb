@@ -389,6 +389,12 @@ class SMTPAutoresponder(smtp.SMTPClient):
         clients = self.getMailTo()
         if not clients: return
         client = clients[0]  # There should have been only one anyway
+
+        # Log the email address that this message came from if SAFELOGGING is
+        # not enabled:
+        if not safelog.safe_logging:
+            logging.debug("Incoming email was from %s ..." % client)
+
         if not self.runChecks(client): return
 
         recipient = self.getMailFrom()
