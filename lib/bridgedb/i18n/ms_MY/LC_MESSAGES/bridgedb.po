@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
 "POT-Creation-Date: 2013-03-27 21:41+0000\n"
-"PO-Revision-Date: 2013-08-08 03:30+0000\n"
+"PO-Revision-Date: 2013-11-05 05:30+0000\n"
 "Last-Translator: shahril <mohd_shahril_96@yahoo.com>\n"
 "Language-Team: Malay (Malaysia) (http://www.transifex.com/projects/p/torproject/language/ms_MY/)\n"
 "MIME-Version: 1.0\n"
@@ -29,11 +29,11 @@ msgstr "Apakah itu bridges ?"
 #, python-format
 msgid ""
 "%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Bridge relays %s adalah tor relays yang akan membantu kamu menghindari penyaringan."
+msgstr "%s Bridge relays %s adalah tor relays yang akan membantu anda menghindari penapisan Internet."
 
 #: lib/bridgedb/templates/base.html:39
 msgid "I need an alternative way of getting bridges!"
-msgstr "Saya memerlukan cara alternatif untuk mendapatkan bridges!"
+msgstr "Saya perlukan cara alternatif untuk mendapatkan bridges!"
 
 #: lib/bridgedb/templates/base.html:40
 #, python-format
@@ -41,7 +41,7 @@ msgid ""
 "Another way to find public bridge addresses is to send an email (from a %s "
 "or a %s address) to %s with the line 'get bridges' by itself in the body of "
 "the mail."
-msgstr "Satu lagi cara untuk mencari alamat bridges awam adalah untuk menghantar email (dari %s atau alamat %s) ke %s dengan bertulis 'get bridges' dalam badan email tersebut."
+msgstr "Cara lain bagi mencari alamat bridges awam adalah dengan menghantar email (dari %s atau alamat %s) ke %s dengan menulis 'get bridges' pada badan email tersebut."
 
 #: lib/bridgedb/templates/base.html:48
 msgid "My bridges don't work! I need help!"
@@ -53,14 +53,14 @@ msgid ""
 "If your Tor doesn't work, you should email %s. Try including as much info "
 "about your case as you can, including the list of bridges you used, the "
 "bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Jika Tor kamu tidak berfungsi, kamu patut cuba email kepada %s. Cuba masukkan sebanyak mana info yang boleh terhadap permasalahan kamu, termasuk senarai bridges yang kamu guna, dan fail nama bundle dan versi bundle yang kamu guna, dan mesej yang Tor tunjukkan, dan lain-lain."
+msgstr "Jika Tor kamu tidak berfungsi, kamu patut menghantar e-mel kepada %s. Cuba masukkan sebanyak mana info yang boleh terhadap permasalahan kamu, termasuk senarai bridges yang kamu guna, dan nama fail bundle dan versi bundle yang kamu guna, dan mesej yang Tor tunjukkan, dan lain-lain."
 
 #: lib/bridgedb/templates/bridges.html:10
 msgid ""
 "To use the above lines, go to Vidalia's Network settings page, and click "
 "\"My ISP blocks connections to the Tor network\". Then add each bridge "
 "address one at a time."
-msgstr "Untuk menggunakan bridges di bawah, pergi ke halaman tetapan Jaringan Vidalia, dan klik \"ISP saya menyekat sambungan saya ke dalam jaringan Tor\". Kemudian tambah setiap alamat bridges satu persatu."
+msgstr "Untuk menggunakan bridges di bawah, pergi ke halaman tetapan Rangkaian Vidalia, dan klik \"ISP saya menyekat sambungan saya ke rangkaian Tor\". Kemudian tambah setiap alamat bridges satu per satu."
 
 #: lib/bridgedb/templates/bridges.html:13
 msgid "No bridges currently available"
@@ -99,4 +99,4 @@ msgstr "Langkah 3"
 #: lib/bridgedb/templates/index.html:21
 #, python-format
 msgid "Now %s add the bridges to Tor %s"
-msgstr "Sekarang %s tambah bridges tersebut ke Tor %s"
+msgstr "Kemudian %s tambah bridges tersebut ke Tor %s"
