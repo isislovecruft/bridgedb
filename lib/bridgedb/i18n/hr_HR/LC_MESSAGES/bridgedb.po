@@ -1,19 +1,18 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2013 ORGANIZATION
+# Copyright (C) 2014 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Translators:
-# dlb031 <abuljan031@gmail.com>, 2013
+# Ana B, 2013-2014
 # Armando Vega <synaan@gmail.com>, 2012
 # gogo <trebelnik2@gmail.com>, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
-"Report-Msgid-Bugs-To: https://trac.torproject.org/projects/tor\n"
-"POT-Creation-Date: 2013-03-27 21:41+0000\n"
-"PO-Revision-Date: 2013-07-31 07:38+0000\n"
-"Last-Translator: dlb031 <abuljan031@gmail.com>\n"
+"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
+"POT-Creation-Date: 2014-06-06 21:46+0000\n"
+"PO-Revision-Date: 2014-06-30 13:01+0000\n"
+"Last-Translator: Ana B\n"
 "Language-Team: Croatian (Croatia) (http://www.transifex.com/projects/p/torproject/language/hr_HR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,82 +21,339 @@ msgstr ""
 "Language: hr_HR\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-#: lib/bridgedb/templates/base.html:33
+#. TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+#. any string (regardless of capitalization and/or punctuation):
+#. "BridgeDB"
+#. "pluggable transport"
+#. "pluggable transports"
+#. "obfs2"
+#. "obfs3"
+#. "scramblesuit"
+#. "fteproxy"
+#. "Tor"
+#. "Tor Browser"
+#: lib/bridgedb/HTTPServer.py:121
+msgid "Sorry! Something went wrong with your request."
+msgstr "Oprostite! Nešto je pošlo po krivu s Vašim zahtjevom."
+
+#: lib/bridgedb/strings.py:18
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[Ovo je automatizirana poruka; molimo ne odgovarati.]"
+
+#: lib/bridgedb/strings.py:20
+msgid "Here are your bridges:"
+msgstr "Ovdje su vaši mostovi:"
+
+#: lib/bridgedb/strings.py:22
+#, python-format
+msgid ""
+"You have exceeded the rate limit. Please slow down! The minimum time between\n"
+"emails is %s hours. All further emails during this time period will be ignored."
+msgstr "Prešli ste limit. Molimo usporite! Minimum vremena između emailova je %s sati. Svi daljnji emailovi tijekom ovog vremenskog perioda bit će ignorirani."
+
+#: lib/bridgedb/strings.py:25
+msgid ""
+"COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"
+msgstr "COMMANDs: (kombinirajte COMMANDs kako bi naznačili više opcija istovremeno)"
+
+#. TRANSLATORS: Please DO NOT translate the word "BridgeDB".
+#: lib/bridgedb/strings.py:28
+msgid "Welcome to BridgeDB!"
+msgstr "Dobrodošli u BridgeDB!"
+
+#. TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
+#: lib/bridgedb/strings.py:30
+msgid "Currently supported transport TYPEs:"
+msgstr "Trenutno podržani transport TYPEs:"
+
+#: lib/bridgedb/strings.py:31
+#, python-format
+msgid "Hey, %s!"
+msgstr "Bok, %s!"
+
+#: lib/bridgedb/strings.py:32
+msgid "Hello, friend!"
+msgstr "Bok, prijatelju!"
+
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
+msgid "Public Keys"
+msgstr "Javni ključevi"
+
+#. TRANSLATORS: This string will end up saying something like:
+#. "This email was generated with rainbows, unicorns, and sparkles
+#. for alice@example.com on Friday, 09 May, 2014 at 18:59:39."
+#: lib/bridgedb/strings.py:37
+#, python-format
+msgid ""
+"This email was generated with rainbows, unicorns, and sparkles\n"
+"for %s on %s at %s."
+msgstr "Ovaj email sastavljen je s dugama, jednorozima i iskricama za %s na %s u %s."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#. TRANSLATORS: Please DO NOT translate "Tor Network".
+#: lib/bridgedb/strings.py:47
+#, python-format
+msgid ""
+"BridgeDB can provide bridges with several %stypes of Pluggable Transports%s,\n"
+"which can help obfuscate your connections to the Tor Network, making it more\n"
+"difficult for anyone watching your internet traffic to determine that you are\n"
+"using Tor.\n"
+"\n"
+msgstr "BridgeDB nudi mostove s različitim %stipovima Pluggable Transports%s\nkoji mogu pomutiti vaše veze s Tor Network, čineći težim\nda itko tko prati vaš internet promet vidi da\nkoristite Tor.\n"
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#: lib/bridgedb/strings.py:54
+msgid ""
+"Some bridges with IPv6 addresses are also available, though some Pluggable\n"
+"Transports aren't IPv6 compatible.\n"
+"\n"
+msgstr "Neki mostovi s IPv6 adresama su također dostupni, no neki Pluggable \nTransports nisu kompatibilni s IPv6.\n\n"
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring,
+#. regular, or unexciting". Like vanilla ice cream. It refers to bridges
+#. which do not have Pluggable Transports, and only speak the regular,
+#. boring Tor protocol. Translate it as you see fit. Have fun with it.
+#: lib/bridgedb/strings.py:63
+#, python-format
+msgid ""
+"Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any\n"
+"Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
+"help to circumvent internet censorship in many cases.\n"
+"\n"
+msgstr "Nadalje, BridgeDB ima mnoštvo dobrih, starih mostova %s bez ikakvih\nPluggable Transports %s koji možda ne zvuče prezanimljivo, ali mogu\npomoći zaobići internet cenzuru u mnogo slučajeva.\n"
+
+#: lib/bridgedb/strings.py:76
 msgid "What are bridges?"
 msgstr "Što su mostovi?"
 
-#: lib/bridgedb/templates/base.html:34
+#: lib/bridgedb/strings.py:77
 #, python-format
-msgid ""
-"%s Bridge relays %s are Tor relays that help you circumvent censorship."
-msgstr "%s Mostni releji %s su Tor releji koji vam pomažu zaobići cenzuru."
+msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
+msgstr "%s Mostovi %s su Tor releji koji vam pomažu zaobići cenzuru."
 
-#: lib/bridgedb/templates/base.html:39
+#: lib/bridgedb/strings.py:82
 msgid "I need an alternative way of getting bridges!"
 msgstr "Trebam alternativni način dobivanja mostova!"
 
-#: lib/bridgedb/templates/base.html:40
+#: lib/bridgedb/strings.py:83
 #, python-format
 msgid ""
-"Another way to find public bridge addresses is to send an email (from a %s "
-"or a %s address) to %s with the line 'get bridges' by itself in the body of "
-"the mail."
-msgstr "Još jedan način za pronalazak javnih mostnih adresa je poslati email (sa %s ili %s adrese) da %s samo s rečenicom 'dobiti mostove' u sadržaju maila."
+"Another way to get bridges is to send an email to %s. Please note that you must\n"
+"send the email using an address from one of the following email providers:\n"
+"%s or %s."
+msgstr "Još jedan način za dobiti mostove je da pošaljete email na %s. Imajte na umu da morate\nposlati email koristeći adresu jednog od sljedećih email providera:\n%s ili %s."
 
-#: lib/bridgedb/templates/base.html:48
+#: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
 msgstr "Moji mostovi ne rade! Treba mi pomoć!"
 
-#: lib/bridgedb/templates/base.html:49
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:92
+#, python-format
+msgid "If your Tor doesn't work, you should email %s."
+msgstr "Ako vaš Tor ne radi, pošaljite email na %s."
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:96
+msgid ""
+"Try including as much info about your case as you can, including the list of\n"
+"bridges and Pluggable Transports you tried to use, your Tor Browser version,\n"
+"and any messages which Tor gave out, etc."
+msgstr "Pokušajte naznačiti što više informacija o vašem slučaju, uključujući popis\nmostova i Pluggable Transports koje ste pokušali koristiti, verziju vašeg Tor Browsera,\ni bilo kakve poruke koje je Tor izbacio, itd."
+
+#: lib/bridgedb/strings.py:103
+msgid "Here are your bridge lines:"
+msgstr "Ovdje su linije vaših mostova:"
+
+#: lib/bridgedb/strings.py:104
+msgid "Get Bridges!"
+msgstr "Dobijte Mostove!"
+
+#: lib/bridgedb/strings.py:108
+msgid "Please select options for bridge type:"
+msgstr "Molimo odaberite opcije za tip mosta:"
+
+#: lib/bridgedb/strings.py:109
+msgid "Do you need IPv6 addresses?"
+msgstr "Trebaju li vam IPv6 adrese?"
+
+#: lib/bridgedb/strings.py:110
+#, python-format
+msgid "Do you need a %s?"
+msgstr "Trebate li %s?"
+
+#: lib/bridgedb/strings.py:114
+msgid "Your browser is not displaying images properly."
+msgstr "Vaš preglednik ima problema s prikazivanjem slika."
+
+#: lib/bridgedb/strings.py:115
+msgid "Enter the characters from the image above..."
+msgstr "Unesite znakove sa slike iznad..."
+
+#: lib/bridgedb/strings.py:119
+msgid "How to start using your bridges"
+msgstr "Kako početi koristite vaše mostove"
+
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"If your Tor doesn't work, you should email %s. Try including as much info "
-"about your case as you can, including the list of bridges you used, the "
-"bundle filename/version you used, the messages that Tor gave out, etc."
-msgstr "Ako vaš Tor ne radi, pošaljite email na %s. Probajte uključiti što više informacija o svom slučaju, uključujući popis mostova koje ste koristili, bunde ime datoteke/verziju koju ste koristili, poruke koje je slao Tor, itd."
+"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
+"Browser download page %s to start Tor Browser."
+msgstr "Kako bi unijeli mostove u Tor Browser, slijedite upute na %s Tor\nBrowser download stranici %s da bi pokrenuli Tor Browser."
 
-#: lib/bridgedb/templates/bridges.html:10
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:125
 msgid ""
-"To use the above lines, go to Vidalia's Network settings page, and click "
-"\"My ISP blocks connections to the Tor network\". Then add each bridge "
-"address one at a time."
-msgstr "Za korištenje gore navedenih redova, posjetite stranicu Mrežnih Postavki u VIdaliji, te kliknite \"Moj ISP blokira veze prema Tor mreži\". Onda dodajte sve mostne adrese jednu po jednu."
+"When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
+"the wizard until it asks:"
+msgstr "Kada iskoči prozorčić 'Tor Mrežne Postavke', kliknite 'Konfiguriraj' i slijedite\nčarobnjaka dok ne upita:"
 
-#: lib/bridgedb/templates/bridges.html:13
-msgid "No bridges currently available"
-msgstr "Nema trenutno dostupnih mostova"
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:129
+msgid ""
+"Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
+"to the Tor network?"
+msgstr "Blokira li vaš Internet Service Provider (ISP) ili ikako cenzurira veze\ns Tor mrežom?"
 
-#: lib/bridgedb/templates/captcha.html:6
-msgid "Upgrade your browser to Firefox"
-msgstr "Nadogradite vaš preglednik na Firefox"
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:133
+msgid ""
+"Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
+"paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
+"you should be good to go! If you experience trouble, try clicking the 'Help'\n"
+"button in the 'Tor Network Settings' wizard for further assistance."
+msgstr "Odaberite 'Da', a zatim 'Sljedeće'. Da bi konfigurirali vaše nove mostove, kopirajte i \nzalijepite linije mostova u kućicu za unos teksta. Na kraju, kliknite 'Spoji se', i \nsve bi trebalo biti u redu! Ako naiđete na probleme, probajte kliknuti dugme 'Pomoć'\nu 'Tor Mrežne Postavke' čarobnjaku za daljnju pomoć."
 
-#: lib/bridgedb/templates/captcha.html:8
-msgid "Type the two words"
-msgstr "Napišite ove dvije riječi"
+#: lib/bridgedb/strings.py:141
+msgid "Displays this message."
+msgstr "Prikazuje ovu poruku."
 
-#: lib/bridgedb/templates/index.html:6
-msgid "Step 1"
-msgstr "Korak 1"
+#. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
+#. same non-Pluggable Transport bridges described above as being
+#. "plain-ol'-vanilla" bridges.
+#: lib/bridgedb/strings.py:145
+msgid "Request vanilla bridges."
+msgstr "Zatraži dobre, stare mostove."
 
-#: lib/bridgedb/templates/index.html:8
+#: lib/bridgedb/strings.py:146
+msgid "Request IPv6 bridges."
+msgstr "Zatraži IPv6 mostove."
+
+#. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
+#: lib/bridgedb/strings.py:148
+msgid "Request a Pluggable Transport by TYPE."
+msgstr "Zatraži Pluggable Transport od TYPE."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "GnuPG".
+#: lib/bridgedb/strings.py:151
+msgid "Get a copy of BridgeDB's public GnuPG key."
+msgstr "Dobij kopiju BridgeDB javnog GnuPG ključa."
+
+#: lib/bridgedb/templates/base.html:91
+msgid "Report a Bug"
+msgstr "Prijavi Greški"
+
+#: lib/bridgedb/templates/base.html:93
+msgid "Source Code"
+msgstr "Izvorni Kod"
+
+#: lib/bridgedb/templates/base.html:96
+msgid "Changelog"
+msgstr "Changelog"
+
+#: lib/bridgedb/templates/base.html:98
+msgid "Contact"
+msgstr "Kontakt"
+
+#. TRANSLATORS: Please translate this into some silly way to say
+#. "There was a problem!" in your language. For example,
+#. for Italian, you might translate this into "Mama mia!",
+#. or for French: "Sacrebleu!". :)
+#: lib/bridgedb/templates/bridges.html:66
+msgid "Uh oh, spaghettios!"
+msgstr "O ne, greška!"
+
+#: lib/bridgedb/templates/bridges.html:72
+msgid "There currently aren't any bridges available..."
+msgstr "Trenutno nema dostupnih mostova..."
+
+#: lib/bridgedb/templates/bridges.html:73
 #, python-format
-msgid "Get %s Tor Browser Bundle %s"
-msgstr "Dobijte %s Tor Preglednički Paket %s"
+msgid ""
+" Perhaps you should try %s going back %s and choosing a different bridge "
+"type!"
+msgstr "Možda se trebate %s vratiti nazad %s i odabrati neki drugi tip mosta!"
+
+#: lib/bridgedb/templates/index.html:11
+#, python-format
+msgid "Step %s1%s"
+msgstr "Korak %s1%s"
 
 #: lib/bridgedb/templates/index.html:13
-msgid "Step 2"
-msgstr "Korak 2"
+#, python-format
+msgid "Download %s Tor Browser %s"
+msgstr "Preuzmi %s Tor Browser %s"
 
-#: lib/bridgedb/templates/index.html:15
+#: lib/bridgedb/templates/index.html:25
+#, python-format
+msgid "Step %s2%s"
+msgstr "Korak %s2%s"
+
+#: lib/bridgedb/templates/index.html:27
 #, python-format
 msgid "Get %s bridges %s"
 msgstr "Dobijte %s mostove %s"
 
-#: lib/bridgedb/templates/index.html:19
-msgid "Step 3"
-msgstr "Korak 3"
-
-#: lib/bridgedb/templates/index.html:21
+#: lib/bridgedb/templates/index.html:36
 #, python-format
-msgid "Now %s add the bridges to Tor %s"
-msgstr "Sad %s dodajte mostove na Tor %s"
+msgid "Step %s3%s"
+msgstr "Korak %s3%s"
+
+#: lib/bridgedb/templates/index.html:38
+#, python-format
+msgid "Now %s add the bridges to Tor Browser %s"
+msgstr "Sad %s dodaj mostove u Tor Browser %s"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. (These are used to insert HTML5 underlining tags, to mark accesskeys
+#. for disabled users.)
+#: lib/bridgedb/templates/options.html:38
+#, python-format
+msgid "%sJ%sust give me bridges!"
+msgstr "%sS%samo mi daj mostove!"
+
+#: lib/bridgedb/templates/options.html:52
+msgid "Advanced Options"
+msgstr "Napredne Opcije"
+
+#: lib/bridgedb/templates/options.html:88
+msgid "No"
+msgstr "Ne"
+
+#: lib/bridgedb/templates/options.html:89
+msgid "none"
+msgstr "ništa"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+#: lib/bridgedb/templates/options.html:130
+#, python-format
+msgid "%sY%ses!"
+msgstr "%sD%sa!"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Please do NOT translate the word "bridge"!
+#: lib/bridgedb/templates/options.html:154
+#, python-format
+msgid "%sG%set Bridges"
+msgstr "%sD%sobij Bridges"
