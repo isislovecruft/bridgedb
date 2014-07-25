@@ -183,8 +183,9 @@ class SMTPMessage(object):
             self.lines.append(line)
         if not safelog.safe_logging:
             try:
-                logging.debug("> %s", line.rstrip("\r\n").encode('utf-8'))
-            except UnicodeError:  # pragma: no cover
+                ln = line.rstrip("\r\n").encode('utf-8', 'replace')
+                logging.debug("> %s" % ln)
+            except (UnicodeError, UnicodeDecodeError):  # pragma: no cover
                 pass
             except Exception as error:  # pragma: no cover
                 logging.error("Error while trying to log incoming email")
