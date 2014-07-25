@@ -597,7 +597,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.assertSubstring("direction: rtl", page)
         self.assertSubstring(
             # "I need an alternative way to get bridges!"
-            "انا بحاجة إلى وسيلة بديلة للحصول على الجسور!", page)
+            "أحتاج إلى وسيلة بديلة للحصول على bridges", page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
@@ -618,8 +618,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.assertSubstring("direction: rtl", page)
         self.assertSubstring(
             # "I need an alternative way to get bridges!"
-            "به یک راه دیگر برای دریافت پل‌ها احتیاج دارم!",
-            page)
+            "أحتاج إلى وسيلة بديلة للحصول على bridges", page)
 
         for bridgeLine in self.parseBridgesFromHTMLPage(page):
             # Check that each bridge line had the expected number of fields:
