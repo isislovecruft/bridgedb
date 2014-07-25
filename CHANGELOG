@@ -14,6 +14,68 @@ Changes in version 0.2.3 - 2014-07-XXX
         demonstrate the issue and test for future regressions. The issue
         pointed out has also been fixed.
 
+And include the following general changes:
+
+        * UPDATE translation: Chinese - Taiwan (zh_TW)
+                THANKS TO danfong.
+        * UPDATE translation: Chinese - China (zh_CN)
+                THANKS TO Meng3, leungsookfan, and Wu Ming Shi.
+        * UPDATE translation: Turkish (tr)
+                THANKS TO eromytsatiffird, Emre, Idil Yuksel, ozkansib,
+                Volkan Gezer, and zeki.
+        * UPDATE translation: Swedish (sv)
+                THANKS TO Anders Jensen-Urstad, GabSeb, and phst.
+        * UPDATE translation: Russian (ru)
+                THANKS TO Evgrafov Denis, Eugene, foo, Sergey Briskin,
+                Valid Olov, and Vitaliy Grishenko.
+        * UPDATE translation: Brazilian Portuguese (pt_BR)
+                THANKS TO Isabel Ferreira, and Rodrigo Emmanuel Santana
+                Borges.
+        * UPDATE translation: Portuguese (pt)
+                THANKS TO André Monteiro, kagazz, Manuela Silva,
+                Andrew_Melim, and Sérgio Marques.
+        * UPDATE translation: Polish (pl)
+                THANKS TO Aron, Dawid, Krzysztof Łojowski, and seb.
+        * UPDATE translation: Norwegian Bokmål (nb)
+                THANKS TO Allan Nordhøy, Harald, and thor574.
+        * UPDATE translation: Malay (ms_MY)
+                THANKS TO shahril.
+        * UPDATE translation: Latvian (lv)
+                THANKS TO Ojārs Balcers.
+        * UPDATE translation: Khmer (km)
+                THANKS TO Seng Sutha, Sokhem Khoem, and Sok Sophea.
+        * UPDATE translation: Hungarian (hu)
+                THANKS TO Blackywantscookies, and Cerbo.
+        * UPDATE translation: Croatian (hr_HR)
+                THANKS TO Ana B.
+        * UPDATE translation: Hebrew (he)
+                THANKS TO Elifelet.
+        * UPDATE translation: Canadian French (fr_CA)
+                THANKS TO yahoe.001.
+        * UPDATE translation: French (fr)
+                THANKS TO fayçal fatihi, Frisson Reynald, hpatte, Lunar,
+                Onizuka, themen, Towinet, and Yannick Heintz.
+        * UPDATE translation: Finish (fi)
+                THANKS TO viljaminojonen, and Finland355.
+        * UPDATE translation: Farsi (fa)
+                THANKS TO Mohammad Hossein.
+        * UPDATE translation: Spanish - Chile (es_CL)
+                THANKS TO Pablo Lezaeta.
+        * UPDATE translation: Spanish (es)
+                THANKS TO Paola Falcon.
+        * UPDATE translation: British English (en_GB)
+                THANKS TO richardshaylor.
+        * UPDATE translation: Greek (el)
+                THANKS TO Adrian Pappas, andromeas, isv31, and Wasilis
+                Mandratzis.
+        * UPDATE translation: German (de)
+                THANKS TO Tobias Bannert.
+        * UPDATE translation: Danish (da)
+                THANKS TO autofunk78.
+        * UPDATE translation: Arabic (ar)
+                THANKS TO Ahmad Gharbeia, Mohamed El-Feky, AnonymousLady,
+                0xidz, Sherief Alaa , and محيي الدين.
+
 
 Changes in version 0.2.2 - 2014-06-06
 
