@@ -135,7 +135,7 @@ else
 fi
 
 cd $PARENT_PATH
-rsync -PCAXrq \
+rsync -PCAXvrq \
     --filter 'include ./translation/*/LC_MESSAGES/bridgedb.po' \
     --filter 'exclude .gitignore' \
     ./translation/ ./bridgedb/lib/bridgedb/i18n/
