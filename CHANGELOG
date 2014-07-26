@@ -17,6 +17,12 @@ Changes in version 0.2.3 - 2014-07-XXX
         demonstrate the issue and test for future regressions. The issue
         pointed out has also been fixed.
 
+        * FIXES #12635 https://bugs.torproject.org/12635
+        The links in BridgeDB's email and HTTPS distributor UIs have been
+        changed from the obsolete
+        https://www.torproject.org/projects/torbrowser.html.en#downloads-beta
+        to https://www.torproject.org/projects/torbrowser.html.
+
 And include the following general changes:
 
         * UPDATE translation: Chinese - Taiwan (zh_TW)
