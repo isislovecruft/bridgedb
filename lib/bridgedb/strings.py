@@ -83,7 +83,7 @@ OTHER_DISTRIBUTORS = {
     1: _("""\
 Another way to get bridges is to send an email to %s. Please note that you must
 send the email using an address from one of the following email providers:
-%s or %s."""),
+%s, %s or %s."""),
 }
 
 HELP = {
