@@ -23,6 +23,16 @@ Changes in version 0.2.3 - 2014-07-XXX
         https://www.torproject.org/projects/torbrowser.html.en#downloads-beta
         to https://www.torproject.org/projects/torbrowser.html.
 
+        * FIXES #12650 https://bugs.torproject.org/12650
+        BridgeDB's translation files sometimes take a little while to
+        update because real live human volunteers need to go to
+        Transifex.org and convert the strings between languages. Then I
+        need to import the strings, check all of them by hand to make sure
+        there's no funny business which could harm users in them, and then
+        commit all the diffs. Sadly, there isn't much more we can do to
+        speed up this process, so sometimes BridgeDB's UI falls back to
+        English when it doesn't have new enough translations files. Sorry!
+
 And include the following general changes:
 
         * UPDATE translation: Chinese - Taiwan (zh_TW)
