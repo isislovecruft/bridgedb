@@ -212,5 +212,5 @@ BridgeDB can provide bridges with several types of Pluggable Transports[0],
 
 EMAIL_REFERENCE_LINKS = {
     "WELCOME0": "[0]: https://www.torproject.org/docs/pluggable-transports.html",
-    "HOWTO_TBB1": "[0]: https://www.torproject.org/projects/torbrowser.html.en#downloads-beta",
+    "HOWTO_TBB1": "[0]: https://www.torproject.org/projects/torbrowser.html",
 }
