@@ -3,14 +3,15 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
+# Isis <isis@torproject.org>, 2014
 # danfong <danfong.hsieh@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
 "POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-05 18:43+0000\n"
-"Last-Translator: danfong <danfong.hsieh@gmail.com>\n"
+"PO-Revision-Date: 2014-07-26 02:03+0000\n"
+"Last-Translator: Isis <isis@torproject.org>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/torproject/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -141,8 +142,8 @@ msgstr "我需要使用其他方式取得橋接!"
 msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
-"%s or %s."
-msgstr "取得橋接的另一種方式是發送電子郵件至 %s。請注意，您必須 \n使用來自下列電子郵件提供者之一的位址發送電子郵件: \n%s 或 %s。"
+"%s, %s or %s."
+msgstr "取得橋接的另一種方式是發送電子郵件至 %s。請注意，您必須 \n使用來自下列電子郵件提供者之一的位址發送電子郵件: \n%s，%s 或 %s。"
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"

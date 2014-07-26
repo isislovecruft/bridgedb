@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
+# Isis <isis@torproject.org>, 2014
 # Aron <aron.plotnikowski@cryptolab.net>, 2014
 # Aron <aron.plotnikowski@cryptolab.net>, 2013
 # JerBen <ayurveda63@gmail.com>, 2012
@@ -15,8 +16,8 @@ msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
 "POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-06-25 10:05+0000\n"
-"Last-Translator: Aron <aron.plotnikowski@cryptolab.net>\n"
+"PO-Revision-Date: 2014-07-26 02:05+0000\n"
+"Last-Translator: Isis <isis@torproject.org>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/torproject/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -147,8 +148,8 @@ msgstr "Potrzebuję alternatywnego sposobu na pozyskanie mostków!"
 msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
-"%s or %s."
-msgstr "Innym sposobem uzyskania bridges jest wysłanie e-maila do %s. Proszę pamiętaj, że musisz \nwysłać e-mail za uzywając adresu z jednego z następujących dostawców usługi email:\n%s lub %s."
+"%s, %s or %s."
+msgstr "Innym sposobem uzyskania bridges jest wysłanie e-maila do %s. Proszę pamiętaj, że musisz \nwysłać e-mail za uzywając adresu z jednego z następujących dostawców usługi email:\n%s, %s lub %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"

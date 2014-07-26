@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
+# Isis <isis@torproject.org>, 2014
 # karvjorm <karvonen.jorma@gmail.com>, 2014
 # Ossi Kallunki <ossikallunki@gmail.com>, 2013
 # viljaminojonen <Viljami.Nojonen@live.com>, 2014
@@ -12,8 +13,8 @@ msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
 "POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-19 07:40+0000\n"
-"Last-Translator: karvjorm <karvonen.jorma@gmail.com>\n"
+"PO-Revision-Date: 2014-07-26 01:58+0000\n"
+"Last-Translator: Isis <isis@torproject.org>\n"
 "Language-Team: Finnish (http://www.transifex.com/projects/p/torproject/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -144,8 +145,8 @@ msgstr "Tarvitsen vaihtoehtoisen tavan tavoittaa sillat!"
 msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
-"%s or %s."
-msgstr "Toinen tapa siltojen hankkimiseen on lähettää sähköpostia osoitteeseen %s. Huomaa,\nettä sinun on lähetettävä sähköpostiviesti käyttäen yhtä seuraavien sähköpostitarjoajien\nosoitetta:\n%s tai %s."
+"%s, %s or %s."
+msgstr "Toinen tapa siltojen hankkimiseen on lähettää sähköpostia osoitteeseen %s. Huomaa,\nettä sinun on lähetettävä sähköpostiviesti käyttäen yhtä seuraavien sähköpostitarjoajien\nosoitetta:\n%s, %s tai %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"

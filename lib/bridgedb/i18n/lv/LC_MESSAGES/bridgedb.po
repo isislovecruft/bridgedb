@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
+# Isis <isis@torproject.org>, 2014
 # Ojārs Balcers <ojars.balcers@gmail.com>, 2012
 # Ojārs Balcers <ojars.balcers@gmail.com>, 2013-2014
 msgid ""
@@ -10,8 +11,8 @@ msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
 "POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-06-16 17:01+0000\n"
-"Last-Translator: Ojārs Balcers <ojars.balcers@gmail.com>\n"
+"PO-Revision-Date: 2014-07-26 02:01+0000\n"
+"Last-Translator: Isis <isis@torproject.org>\n"
 "Language-Team: Latvian (http://www.transifex.com/projects/p/torproject/language/lv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -142,8 +143,8 @@ msgstr "Man nepieciešams alternatīvs tiltu iegūšanas veids!"
 msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
-"%s or %s."
-msgstr "Vēl cits veids kā saņemt tiltu sarakstus ir nosūtīt e-pastu uz %s. Lūdzu, ievērojiet, ka e-pasts jānosūta no norādīto e-pasta pakalpojumu sniedzēju nodrošinātas adreses:\n%s vai %s."
+"%s, %s or %s."
+msgstr "Vēl cits veids kā saņemt tiltu sarakstus ir nosūtīt e-pastu uz %s. Lūdzu, ievērojiet, ka e-pasts jānosūta no norādīto e-pasta pakalpojumu sniedzēju nodrošinātas adreses:\n%s, %s vai %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
