@@ -20,7 +20,7 @@ from twisted.internet import defer
 from twisted.internet import protocol
 from twisted.internet import reactor
 from twisted.python import failure
-from twisted.python.util import Version
+from twisted.python.versions import Version
 from twisted.web import client
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
