@@ -167,6 +167,7 @@ CURRENT_TRANSPORTS = [
     "obfs2",
     "obfs3",
     "scramblesuit",
+    "fte",
 ]
 
 EMAIL_SPRINTF = {
