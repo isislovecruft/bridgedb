@@ -8,6 +8,9 @@ Changes in version 0.2.3 - 2014-07-XXX
         configurable options to fuzzy match and block addresses which are
         similar enough to those in the blacklist.
 
+        * FIXES #11139 https://bugs.torproject.org/11139
+        You can now email BridgeDB from Riseup email addresses!
+
         * FIXES #12147 https://bugs.torproject.org/12147
         An additional issue with BridgeDB's code for scheduling actions
         was identified by Robert Ransom, who also provided a unittest to
