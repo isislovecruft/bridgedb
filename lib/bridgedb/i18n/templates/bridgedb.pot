@@ -6,12 +6,12 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: bridgedb 0.2.1-101-g6553596-dirty\n"
+"Project-Id-Version: bridgedb 0.2.2-84-ge798a44\n"
 "Report-Msgid-Bugs-To: "
 "'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords"
 "=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-06-06 21:46+0000\n"
+"POT-Creation-Date: 2014-07-26 02:11+0000\n"
+"PO-Revision-Date: 2014-07-26 02:11+0000\n"
 "Last-Translator: Isis Lovecruft <isis@torproject.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -73,7 +73,7 @@ msgstr ""
 msgid "Hello, friend!"
 msgstr ""
 
-#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
 msgid "Public Keys"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you "
 "must\n"
 "send the email using an address from one of the following email providers:\n"
-"%s or %s."
+"%s, %s or %s."
 msgstr ""
 
 #: lib/bridgedb/strings.py:90
@@ -261,19 +261,19 @@ msgstr ""
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:92
 msgid "Report a Bug"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:94
 msgid "Source Code"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:97
 msgid "Changelog"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:98
+#: lib/bridgedb/templates/base.html:99
 msgid "Contact"
 msgstr ""
 
