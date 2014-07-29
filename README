@@ -1,5 +1,4 @@
-## BridgeDB [![Coverage Status](https://coveralls.io/repos/isislovecruft/bridgedb/badge.png)](https://coveralls.io/r/isislovecruft/bridgedb)
------------
+## BridgeDB [![Build Status](https://travis-ci.org/isislovecruft/bridgedb.svg)](https://travis-ci.org/isislovecruft/bridgedb) [![Coverage Status](https://coveralls.io/repos/isislovecruft/bridgedb/badge.png)](https://coveralls.io/r/isislovecruft/bridgedb)
 
 BridgeDB is a collection of backend servers used to distribute
 [Tor Bridges](https://www.torproject.org/docs/bridges). It currently consists
@@ -161,20 +160,39 @@ the ```HTTPS_CERT_FILE``` option, and a private key where ```HTTPS_KEY_FILE```
 points to. The defaults are 'cert' and 'privkey.pem', respectively.
 
 #### CAPTCHAs
-To enable Captchas on the webserver interface, set these options in
-bridgedb.conf:
+
+BridgeDB has two ways to use CAPTCHAs on webpages. The first uses reCaptcha_,
+an external Google service (this requires an account with them), which
+BridgeDB fetches the CAPTCHAs images from for each incoming request from a
+client. The second method uses a local cache of pre-made CAPTCHAs, created by
+scripting Gimp using gimp-captcha_. The latter cannot easily be run on
+headless server, unfortunately, because Gimp requires an X server to be
+installed.
+
+.. _reCaptcha: https://www.google.com/recaptcha
+.. gimp-capthca: https://github.com/isislovecruft/gimp-captcha
+
+##### reCaptcha
+To enable fetching CAPTCHAs from the reCaptcha API server, set these options
+in bridgedb.conf:
 
     RECAPTCHA_ENABLED
     RECAPTCHA_PUB_KEY
     RECAPTCHA_SEC_KEY
     
-A [recaptcha.net](https://www.google.com/recaptcha) account is required.
+##### gimp-captcha
+To enable using a local cache of CAPTCHAs, set the following options::
+
+    GIMP_CAPTCHA_ENABLED
+    GIMP_CAPTCHA_DIR
+    GIMP_CAPTCHA_HMAC_KEYFILE
+    GIMP_CAPTCHA_RSA_KEYFILE
 
 #### GnuPG email signing
-Add these two options to your bridgedb.conf:
+Add these two options to your bridgedb.conf::
 
-     EMAIL_GPG_SIGNING_ENABLED
-     EMAIL_GPG_SIGNING_KEY
+    EMAIL_GPG_SIGNING_ENABLED
+    EMAIL_GPG_SIGNING_KEY
     
 The former may be either True or False, and the latter must point to the
 ascii-armored private key file. The keyfile must not be passphrase protected.
@@ -208,13 +226,24 @@ Enter the following commands at the ```sqlite>``` prompt:
 To run BridgeDB, simply make any necessary changes to bridgedb.conf, and
 do: ```bridgedb```.
 
-When you have new lists of bridges, replace the old files and do:
+And remember that all files/directories in ```bridgedb.conf``` are assumed
+relative to the runtime directory. By default, BridgeDB uses the current
+working directory; you can, however specify an a different runtime directory::
 
-    bridgedb --reload
+    bridgedb -r /srv/bridges.torproject.org/run
 
 Make sure that the files and directories referred to in bridgedb.conf
 exist. However, many of them, if not found, will be touched on disk so that
 attempts to read/write from/to them will not raise excessive errors.
+
+When you have new lists of bridges from the Bridge Authority, replace the old
+files and do::
+
+    bridgedb --reload
+
+Or just give it a SIGHUP::
+
+    kill -s SIGHUP `cat .../run/bridgedb.pid`
 
 #### To extract bucket files of all unallocated bridges:
 Edit the configuration file value ```FILE_BUCKETS``` according to your
@@ -230,13 +259,18 @@ the same pool and the third one similarly 3 bridges. These files can then be
 handed out to trusted parties via mail or fed to other distribution mechanisms
 such as Twitter.
 
+To dump all buckets to their files, send BridgeDB a ```SIGUSR1``` signal by
+doing::
+
+    kill -s SIGUSR1 `cat .../run/bridgedb.pid`
+
 #### To use with HTTPS:
 Just connect to the appropriate port.
 
-#### To use with email:
-Any mail sent to the email port with a destination username as defined by the
-EMAIL_USERNAME configuration option (default is 'bridge', e.g. bridges@...)
-and sent from a yahoo or gmail address (by default, configured with the
+#### To use with email: Any mail sent to the email port with a destination
+username as defined by the EMAIL_USERNAME configuration option (default is
+'bridge', e.g. bridges@...)  and sent from an ```@riseup.net```,
+```@gmail.com```, or ```@yahoo.com``` address (by default, configured with the
 EMAIL_DOMAINS option).
 
 ### Support

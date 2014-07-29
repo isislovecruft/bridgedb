@@ -13,6 +13,7 @@
 
 from functools import partial
 
+import abc
 import logging
 import logging.config
 import logging.handlers
@@ -141,6 +142,46 @@ def configureLogging(cfg):
     logging.info("Level: %s", logLevel)
     logging.info("Safe Logging: %sabled" % ("En" if safelogging else "Dis"))
 
+def levenshteinDistance(s1, s2, len1=None, len2=None,
+                        offset1=0, offset2=0, memo=None):
+    """Compute the Levenstein Distance between two strings.
+
+    The `Levenshtein String Distance Algorithm`_ efficiently computes the
+    number of characters which must be changed in **s1** to make it
+    identical to **s2**.
+
+    .. `Levenshtein String Distance Algorithm`:
+        https://en.wikipedia.org/wiki/Levenshtein_distance
+
+    >>> levenshteinDistance('cat', 'cat')
+    0
+    >>> levenshteinDistance('cat', 'hat')
+    1
+    >>> levenshteinDistance('arma', 'armadillo')
+    5
+
+    :param str s1: The string which should be changed.
+    :param str s2: The string which **stringOne** should be compared to.
+    """
+    len1 = len(s1) if len1 is None else len1
+    len2 = len(s2) if len2 is None else len2
+    memo = {} if memo is None else memo
+
+    key = ','.join([str(offset1), str(len1), str(offset2), str(len2)])
+    if memo.get(key) is not None: return memo[key]
+
+    if len1 == 0: return len2
+    elif len2 == 0: return len1
+
+    cost = 0 if (s1[offset1] == s2[offset2]) else 1
+    distance = min(
+        levenshteinDistance(s1, s2, len1-1, len2,   offset1+1, offset2,   memo) + 1,
+        levenshteinDistance(s1, s2, len1,   len2-1, offset1,   offset2+1, memo) + 1,
+        levenshteinDistance(s1, s2, len1-1, len2-1, offset1+1, offset2+1, memo) + cost,
+    )
+    memo[key] = distance
+    return distance
+
 
 class JustifiedLogFormatter(logging.Formatter):
     """A logging formatter which pretty prints thread and calling function
@@ -213,3 +254,53 @@ class JustifiedLogFormatter(logging.Formatter):
         """
         record = self._formatCallingFuncName(record)
         return super(JustifiedLogFormatter, self).format(record)
+
+
+class mixin:
+    """Subclasses of me can be used as a mixin class by registering another
+    class, ``ClassA``, which should be mixed with the ``mixin`` subclass, in
+    order to provide simple, less error-prone, multiple inheritance models::
+
+    >>> from __future__ import print_function
+    >>> from bridgedb.util import mixin
+    >>>
+    >>> class ClassA(object):
+    >>>     def sayWhich(self):
+    >>>         print("ClassA.sayWhich() called.")
+    >>>     def doSuperThing(self):
+    >>>         super(ClassA, self).__repr__()
+    >>>     def doThing(self):
+    >>>         print("ClassA is doing a thing.")
+    >>>
+    >>> class ClassB(ClassA):
+    >>>     def sayWhich(self):
+    >>>         print("ClassB.sayWhich() called.")
+    >>>     def doSuperThing(self):
+    >>>         super(ClassB, self).__repr__()
+    >>>     def doOtherThing(self):
+    >>>         print("ClassB is doing something else.")
+    >>>
+    >>> class ClassM(mixin):
+    >>>     def sayWhich(self):
+    >>>         print("ClassM.sayWhich() called.")
+    >>>
+    >>> ClassM.register(ClassA)
+    >>>
+    >>> class ClassC(ClassM, ClassB):
+    >>>     def sayWhich(self):
+    >>>         super(ClassC, self).sayWhich()
+    >>>
+    >>> c = ClassC()
+    >>> c.sayWhich()
+    ClassM.saywhich() called.
+    >>> c.doSuperThing()
+    <super: <class 'ClassA'>, NULL>
+    >>> c.doThing()
+    ClassA is doing a thing.
+    >>> c.doOtherThing()
+    ClassB is doing something else.
+
+    .. info:: This class' name is lowercased because pylint is hardcoded to
+        expect mixin classes to end in ``'mixin'``.
+    """
+    __metaclass__ = abc.ABCMeta

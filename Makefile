@@ -46,17 +46,20 @@ docs:
 clean-docs:
 	-rm -rf build/sphinx
 
-clean:
+clean-coverage-html:
+	-rm -rf doc/coverage-html
+
+clean: clean-docs clean-coverage-html
 	-rm -rf build
 	-rm -rf dist
 	-rm -rf lib/bridgedb.egg-info
 	-rm -rf _trial_temp
 
 coverage-test:
-	-coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
-	-coverage report --rcfile=".coveragerc"
+	coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
+	coverage report --rcfile=".coveragerc"
 
 coverage-html:
-	-coverage html --rcfile=".coveragerc"
+	coverage html --rcfile=".coveragerc"
 
 coverage: coverage-test coverage-html

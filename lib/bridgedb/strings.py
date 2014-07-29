@@ -83,7 +83,7 @@ OTHER_DISTRIBUTORS = {
     1: _("""\
 Another way to get bridges is to send an email to %s. Please note that you must
 send the email using an address from one of the following email providers:
-%s or %s."""),
+%s, %s or %s."""),
 }
 
 HELP = {
@@ -167,6 +167,7 @@ CURRENT_TRANSPORTS = [
     "obfs2",
     "obfs3",
     "scramblesuit",
+    "fte",
 ]
 
 EMAIL_SPRINTF = {
@@ -212,5 +213,5 @@ BridgeDB can provide bridges with several types of Pluggable Transports[0],
 
 EMAIL_REFERENCE_LINKS = {
     "WELCOME0": "[0]: https://www.torproject.org/docs/pluggable-transports.html",
-    "HOWTO_TBB1": "[0]: https://www.torproject.org/projects/torbrowser.html.en#downloads-beta",
+    "HOWTO_TBB1": "[0]: https://www.torproject.org/projects/torbrowser.html",
 }

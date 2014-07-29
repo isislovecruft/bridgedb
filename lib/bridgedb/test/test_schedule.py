@@ -36,10 +36,21 @@ class UnscheduledTests(unittest.TestCase):
         self.assertIsInstance(time, int)
         self.assertEquals(time, -62135596800)
 
-    def test_Unscheduled_getInterval_noargs(self):
-        time = self.sched.getInterval()
-        self.assertIsInstance(time, str)
-        self.assertEquals(time, "1970-01-01 00:00:00")
+    def test_Unscheduled_getInterval_is_constant(self):
+        import time
+        now = time.time()
+
+        interval_default = self.sched.getInterval()
+        self.assertIsInstance(interval_default, str)
+
+        interval_zero = self.sched.getInterval(0)
+        self.assertIsInstance(interval_zero, str)
+
+        interval_now = self.sched.getInterval(now)
+        self.assertIsInstance(interval_now, str)
+
+        self.assertEquals(interval_default, interval_zero)
+        self.assertEquals(interval_default, interval_now)
 
     def test_Unscheduled_nextIntervalStarts_noargs(self):
         time = self.sched.nextIntervalStarts()

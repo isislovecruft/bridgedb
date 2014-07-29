@@ -1422,8 +1422,12 @@ class FilteredBridgeSplitter(BridgeHolder):
     def assignmentsArePersistent(self):
         return False
  
-class BridgeBlock:
-    """Base class that abstracts bridge blocking"""
+
+class BridgeBlock(object):
+    """Base class that abstracts bridge blocking.
+
+    .. TODO:: This should be a zope.interface specification.
+    """
     def __init__(self):
         pass
 

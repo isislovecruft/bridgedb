@@ -37,6 +37,8 @@ from bridgedb.email import dkim
 from bridgedb.email import request
 from bridgedb.email import templates
 from bridgedb.parse import addr
+from bridgedb.parse.addr import canonicalizeEmailDomain
+from bridgedb.util import levenshteinDistance
 from bridgedb import translations
 
 
@@ -74,7 +76,7 @@ def createResponseBody(lines, context, client, lang='en'):
                                      % str(client))
 
         # Otherwise they must have requested bridges:
-        interval = context.schedule.getInterval(time.time())
+        interval = context.schedule.intervalStart(time.time())
         bridges = context.distributor.getBridgesForEmail(
             str(client),
             interval,
@@ -135,9 +137,9 @@ def generateResponse(fromAddress, client, body, subject=None,
     """
     response = EmailResponse(gpgContext)
     response.to = client
-    response.writeHeaders(fromAddress, str(client), subject,
+    response.writeHeaders(fromAddress.encode('utf-8'), str(client), subject,
                           inReplyTo=messageID)
-    response.writeBody(body)
+    response.writeBody(body.encode('utf-8'))
 
     # Only log the email text (including all headers) if SAFE_LOGGING is
     # disabled:
@@ -220,9 +222,9 @@ class EmailResponse(object):
                          self.__class__.__name__))
         try:
             if size is not None:
-                contents = self.mailfile.read(int(size))
+                contents = self.mailfile.read(int(size)).encode('utf-8')
             else:
-                contents = self.mailfile.read()
+                contents = self.mailfile.read().encode('utf-8')
         except Exception as error:  # pragma: no cover
             logging.exception(error)
 
@@ -305,24 +307,25 @@ class EmailResponse(object):
         self.write("From: %s" % fromAddress)
         self.write("To: %s" % toAddress)
         if includeMessageID:
-            self.write("Message-ID: %s" % smtp.messageid())
+            self.write("Message-ID: %s" % smtp.messageid().encode('utf-8'))
         if inReplyTo:
-            self.write("In-Reply-To: %s" % inReplyTo)
-        self.write("Content-Type: %s" % contentType)
-        self.write("Date: %s" % smtp.rfc822date())
+            self.write("In-Reply-To: %s" % inReplyTo.encode('utf-8'))
+        self.write("Content-Type: %s" % contentType.encode('utf-8'))
+        self.write("Date: %s" % smtp.rfc822date().encode('utf-8'))
 
         if not subject:
             subject = '[no subject]'
         if not subject.lower().startswith('re'):
             subject = "Re: " + subject
-        self.write("Subject: %s" % subject)
+        self.write("Subject: %s" % subject.encode('utf-8'))
 
         if kwargs:
             for headerName, headerValue in kwargs.items():
                 headerName = headerName.capitalize()
                 headerName = headerName.replace(' ', '-')
                 headerName = headerName.replace('_', '-')
-                self.write("%s: %s" % (headerName, headerValue))
+                header = "%s: %s" % (headerName, headerValue)
+                self.write(header.encode('utf-8'))
 
         # The first blank line designates that the headers have ended:
         self.write(self.delimiter)
@@ -386,6 +389,12 @@ class SMTPAutoresponder(smtp.SMTPClient):
         clients = self.getMailTo()
         if not clients: return
         client = clients[0]  # There should have been only one anyway
+
+        # Log the email address that this message came from if SAFELOGGING is
+        # not enabled:
+        if not safelog.safe_logging:
+            logging.debug("Incoming email was from %s ..." % client)
+
         if not self.runChecks(client): return
 
         recipient = self.getMailFrom()
@@ -432,17 +441,28 @@ class SMTPAutoresponder(smtp.SMTPClient):
             else: addrHeader = senderHeader
         if not addrHeader:
             logging.warn("No Sender header on incoming mail.")
-        else:
-            try:
-                client = smtp.Address(addr.normalizeEmail(
+            return clients
+
+        client = None
+        try:
+            if addrHeader in self.incoming.context.whitelist.keys():
+                logging.debug("Email address was whitelisted: %s."
+                              % addrHeader)
+                client = smtp.Address(addrHeader)
+            else:
+                normalized = addr.normalizeEmail(
                     addrHeader,
                     self.incoming.context.domainMap,
-                    self.incoming.context.domainRules))
-            except (addr.UnsupportedDomain, addr.BadEmail,
-                    smtp.AddressError) as error:
-                logging.warn(error)
-            else:
-                clients.append(client)
+                    self.incoming.context.domainRules)
+                client = smtp.Address(normalized)
+        except (addr.UnsupportedDomain) as error:
+            logging.warn(error)
+        except (addr.BadEmail, smtp.AddressError) as error:
+            logging.warn(error)
+
+        if client:
+            clients.append(client)
+
         return clients
 
     def getMailFrom(self):
@@ -566,13 +586,15 @@ class SMTPAutoresponder(smtp.SMTPClient):
     def runChecks(self, client):
         """Run checks on the incoming message, and only reply if they pass.
 
-          1. Check that the domain names, taken from the SMTP ``MAIL FROM:``
-        command and the email ``'From:'`` header, can be
-        :func:`canonicalized <addr.canonicalizeEmailDomain>`.
+          1. Check if the client's address is whitelisted.
 
-          2. Check that those canonical domains match,
+          2. If it's not whitelisted, check that the domain names, taken from
+        the SMTP ``MAIL FROM:`` command and the email ``'From:'`` header, can
+        be :func:`canonicalized <addr.canonicalizeEmailDomain>`.
 
-          3. If the incoming message is from a domain which supports DKIM
+          3. Check that those canonical domains match.
+
+          4. If the incoming message is from a domain which supports DKIM
         signing, then run :func:`bridgedb.email.dkim.checkDKIM` as well.
 
         .. note:: Calling this method sets the ``canonicalFromEmail`` and
@@ -593,31 +615,57 @@ class SMTPAutoresponder(smtp.SMTPClient):
                           "for email from %s") % str(client))
             return False
 
-        logging.debug("Canonicalizing client email domain...")
-        # The client's address was already checked to see if it came from a
-        # supported domain and is a valid email address in :meth:`getMailTo`,
-        # so we should just be able to re-extract the canonical domain safely
-        # here:
-        canonicalFromEmail = addr.canonicalizeEmailDomain(
-            client.domain, self.incoming.canon)
-        logging.debug("Canonical email domain: %s" % canonicalFromEmail)
+        # Allow whitelisted addresses through the canonicalization check:
+        if str(client) in self.incoming.context.whitelist.keys():
+            self.incoming.canonicalFromEmail = client.domain
+            logging.info("'From:' header contained whitelisted address: %s"
+                         % str(client))
+        else:
+            logging.debug("Canonicalizing client email domain...")
+            try:
+                # The client's address was already checked to see if it came
+                # from a supported domain and is a valid email address in
+                # :meth:`getMailTo`, so we should just be able to re-extract
+                # the canonical domain safely here:
+                self.incoming.canonicalFromEmail = canonicalizeEmailDomain(
+                    client.domain, self.incoming.canon)
+                logging.debug("Canonical email domain: %s"
+                              % self.incoming.canonicalFromEmail)
+            except addr.UnsupportedDomain as error:
+                logging.info("Domain couldn't be canonicalized: %s"
+                             % safelog.logSafely(client.domain))
+                return False
 
         # The canonical domains from the SMTP ``MAIL FROM:`` and the email
         # ``From:`` header should match:
-        if self.incoming.canonicalFromSMTP != canonicalFromEmail:
-            logging.error("SMTP/Email canonical domain mismatch!")
-            return False
+        #if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
+        #    logging.error("SMTP/Email canonical domain mismatch!")
+        #    logging.debug("Canonical domain mismatch: %s != %s"
+        #                  % (self.incoming.canonicalFromSMTP,
+        #                     self.incoming.canonicalFromEmail))
+        #    return False
 
-        domainRules = self.incoming.context.domainRules.get(
-            canonicalFromEmail, list())
+        self.incoming.domainRules = self.incoming.context.domainRules.get(
+            self.incoming.canonicalFromEmail, list())
 
         # If the domain's ``domainRules`` say to check DKIM verification
         # results, and those results look bad, reject this email:
-        if not dkim.checkDKIM(self.incoming.message, domainRules):
+        if not dkim.checkDKIM(self.incoming.message, self.incoming.domainRules):
             return False
 
-        self.incoming.canonicalDomainRules = domainRules
-        self.incoming.canonicalFromEmail = canonicalFromEmail
+        # If fuzzy matching is enabled via the EMAIL_FUZZY_MATCH setting, then
+        # calculate the Levenshtein String Distance (see
+        # :func:`~bridgedb.util.levenshteinDistance`):
+        if self.incoming.context.fuzzyMatch != 0:
+            for blacklistedAddress in self.incoming.context.blacklist:
+                distance = levenshteinDistance(self.incoming.canonicalFromEmail,
+                                               blacklistedAddress)
+                if distance <= self.incoming.context.fuzzyMatch:
+                    logging.info("Fuzzy-matched %s to blacklisted address %s!"
+                                 % (self.incoming.canonicalFromEmail,
+                                    blacklistedAddress))
+                    return False
+
         return True
 
     def send(self, response, retries=0, timeout=30, reaktor=reactor):
