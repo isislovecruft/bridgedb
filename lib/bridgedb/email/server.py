@@ -211,7 +211,7 @@ class SMTPMessage(object):
         """
         rawMessage = io.StringIO()
         for line in self.lines:
-            rawMessage.writelines(unicode(line) + unicode('\n'))
+            rawMessage.writelines(unicode(line.decode('utf8')) + u'\n')
         rawMessage.seek(0)
         return smtp.rfc822.Message(rawMessage)
 
