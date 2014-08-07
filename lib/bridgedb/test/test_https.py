@@ -7,9 +7,19 @@
 #             (c) 2014, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
-"""integration tests for BridgeDB .
-http://wwwsearch.sourceforge.net/mechanize/
-http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html
+
+"""Integration tests for BridgeDB's HTTPS Distributor.
+
+These tests use `mechanize`_ and `BeautifulSoup`_, and require a BridgeDB
+instance to have been started in a separate process. To see how a BridgeDB is
+started for our CI infrastructure from a fresh clone of this repository, see
+the "before_script" section of the `.travis.yml` file in the top level of this
+repository.
+
+.. _mechanize: https://pypi.python.org/pypi/mechanize/
+    http://wwwsearch.sourceforge.net/mechanize/
+.. _BeautifulSoup:
+    http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html
 """
 
 from __future__ import print_function
@@ -19,6 +29,7 @@ import mechanize
 
 HTTPS_ROOT = 'https://127.0.0.1:6789'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'
+
 
 class HTTPTests(unittest.TestCase):
     def setUp(self):
