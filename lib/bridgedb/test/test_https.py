@@ -1,3 +1,12 @@
+#_____________________________________________________________________________
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: trygve <tor-dev@lists.torproject.org>
+# :copyright: (c) trygve
+#             (c) 2014, The Tor Project, Inc.
+# :license: see LICENSE for licensing information
+#_____________________________________________________________________________
 """integration tests for BridgeDB .
 http://wwwsearch.sourceforge.net/mechanize/
 http://www.crummy.com/software/BeautifulSoup/bs3/documentation.html
