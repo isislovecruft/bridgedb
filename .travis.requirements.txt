@@ -15,7 +15,7 @@
 #------------------------------------------------------------------------------
 coverage==3.7.1
 coveralls==0.4.2
-leekspin==0.1.4
+leekspin==0.2.0
 mechanize==0.2.5
 pep8==1.5.7
 # pylint must be pinned until pylint bug #203 is fixed. See
