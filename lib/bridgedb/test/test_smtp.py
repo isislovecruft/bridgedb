@@ -9,8 +9,6 @@ import asyncore
 import threading
 import Queue
 import random
-import time
-import random
 
 # ------------- SMTP Client Config
 SMTP_DEBUG_LEVEL = 0  # set to 1 to see SMTP message exchange
