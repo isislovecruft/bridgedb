@@ -38,11 +38,11 @@ class EmailServer(SMTPServer):
         self.message_queue.put(data)
 
     def thread_proc(self):
-        ''' This function runs in thread, and will continue looping 
+        ''' This function runs in thread, and will continue looping
         until the _stop Event object is set by the stop() function'''
         while self._stop.is_set() == False:
             asyncore.loop(timeout=0.0, count=1)
-        # must close, or asyncore will hold on to the socket and subsequent tests will fail with 'Address not in use' 
+        # must close, or asyncore will hold on to the socket and subsequent tests will fail with 'Address not in use'
         self.close()
 
     def start(self):
@@ -63,7 +63,7 @@ class EmailServer(SMTPServer):
         # signal thread_proc to stop
         self._stop.set()
         # wait for thread_proc to return (shouldn't take long)
-        self._thread.join()        
+        self._thread.join()
         assert self._thread.is_alive() == False, "Thread is alive and kicking"
 
     def getAndCheckMessageContains(self, text, timeoutInSecs=2.0):
@@ -75,7 +75,7 @@ class EmailServer(SMTPServer):
         try:
             self.message_queue.get(block=True, timeout=timeoutInSecs)
         except Queue.Empty:
-            return True          
+            return True
         assert False, "Found a message in the queue, but expected none"
 
 def sendMail(fromAddress):
@@ -101,7 +101,7 @@ class SMTPTests(unittest.TestCase):
         # send the mail to bridgedb, choosing a random email address
         sendMail(fromAddress=FROM_ADDRESS_TEMPLATE % random.randint(MIN_FROM_ADDRESS, MAX_FROM_ADDRESS))
 
-        # then check that our local SMTP server received a response 
+        # then check that our local SMTP server received a response
         # and that response contained some bridges
         self.server.getAndCheckMessageContains("Here are your bridges")
 
@@ -110,11 +110,11 @@ class SMTPTests(unittest.TestCase):
         FROM_ADDRESS = FROM_ADDRESS_TEMPLATE % random.randint(MIN_FROM_ADDRESS, MAX_FROM_ADDRESS)
         sendMail(FROM_ADDRESS)
 
-        # then check that our local SMTP server received a response 
+        # then check that our local SMTP server received a response
         # and that response contained some bridges
         self.server.getAndCheckMessageContains("Here are your bridges")
 
-	# send another request from the same email address
+        # send another request from the same email address
         sendMail(FROM_ADDRESS)
 
         # this time, the email response should not contain any bridges
@@ -127,7 +127,7 @@ class SMTPTests(unittest.TestCase):
         self.server.checkNoMessageReceived(timeoutInSecs=1.0)
 
     def test_getBridges_stressTest(self):
-        ''' Sends a large number of emails in a short period of time, and checks that 
+        ''' Sends a large number of emails in a short period of time, and checks that
             a response is received for each message '''
         NUM_MAILS = 100
         for i in range(NUM_MAILS):
@@ -137,4 +137,3 @@ class SMTPTests(unittest.TestCase):
 
         for i in range(NUM_MAILS):
             self.server.getAndCheckMessageContains("Here are your bridges")
-
