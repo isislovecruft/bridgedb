@@ -114,7 +114,7 @@ class HTTPTests(unittest.TestCase):
 	#print soup.prettify()
 	return soup
 
-    def getBridgeLinesFromSoup(self, soup):
+    def getBridgeLinesFromSoup(self, soup, fieldsPerBridge):
 	# Now we're looking for something like this in the response:
 	#     <div class="bridge-lines">
 	#      obfs2 175.213.252.207:11125 5c6da7d927460317c6ff5420b75c2d0f431f18dd
@@ -126,7 +126,7 @@ class HTTPTests(unittest.TestCase):
 	    text = bridge_line.text
 	    #print("Found bridge-line: %s" % text)
 	    items = text.split(' ')
-   	    self.assertEquals(len(items), 3, "Expected Pluggale Transport, Bridge and Fingerprint in %s" % str(items))
+   	    self.assertEquals(len(items), fieldsPerBridge, "Expected %d fields in bridge line %s" % (fieldsPerBridge, str(items)))
 	    bridges.append(items)
 	return bridges
 
@@ -137,7 +137,7 @@ class HTTPTests(unittest.TestCase):
 	PT = 'obfs2'
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
-	bridges = self.getBridgeLinesFromSoup(soup)
+	bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
         for pt, bridge, fingerprint in bridges:
 	    self.assertEquals(PT, pt)
 
@@ -148,19 +148,32 @@ class HTTPTests(unittest.TestCase):
 	PT = 'obfs3'
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
-	bridges = self.getBridgeLinesFromSoup(soup)
+	bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
         for pt, bridge, fingerprint in bridges:
 	    self.assertEquals(PT, pt)
 
-    def test_get_obfs3_ipv6(self):
+    def test_get_vanilla_ipv4(self):
 	self.openBrowser()
 	self.goToOptionsPage()
 
-	PT = 'obfs3'
-        soup = self.submitOptions(transport=PT, ipv6=True, captchaResponse=CAPTCHA_RESPONSE)
+	PT = '0'
+        soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
-	# at the time of writing, this test fails due to lack of ipv6 bridges
-	bridges = self.getBridgeLinesFromSoup(soup)
-        for pt, bridge, fingerprint in bridges:
+	bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
+	for bridge, fingerprint in bridges:
+           # TODO: do more interesting checks
+	   self.assertTrue(bridge != None) 
+
+    def test_get_scramblesuit_ipv4(self):
+	self.openBrowser()
+	self.goToOptionsPage()
+
+	PT = 'scramblesuit'
+	soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
+
+	bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=4)
+	for pt, bridge, fingerprint, password in bridges:
 	    self.assertEquals(PT, pt)
+	    self.assertTrue(password.find("password=") != -1, "Password field missing expected text")
+
 
