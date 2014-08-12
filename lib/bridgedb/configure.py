@@ -111,7 +111,7 @@ def loadConfig(configFile=None, configCls=None):
         else:
             setattr(config, attr, os.path.abspath(os.path.expanduser(setting)))
 
-    for attr in ["FORCE_PORTS", "FORCE_FLAGS"]:
+    for attr in ["FORCE_PORTS", "FORCE_FLAGS", "NO_DISTRIBUTION_COUNTRIES"]:
         setting = getattr(config, attr, []) # Default to empty lists
         setattr(config, attr, setting)
 
