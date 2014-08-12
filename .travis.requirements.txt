@@ -1,10 +1,10 @@
+# This is a pip requirements.txt file for running BridgeDB and BridgeDB's test
+# suites on Travis CI infrastructure. See https://travis-ci.org/ and the
+# .travis.yml file for more info.
 #
-# This is a pip requirements.txt file for running BridgeDB's tests on Travis
-# See https://travis-ci.org/ and the .travis.yml file for more info. Please
-# note that there may be additional dependencies not listed here but specified
-# with their version numbers in .travis.yml in order to submit test runs which
-# use multiple different dependency versions.
-#
+# Please note that there may be additional dependencies not listed here but
+# specified with their version numbers in .travis.yml in order to submit test
+# runs which use multiple different dependency versions.
 #------------------------------------------------------------------------------
 #
 # To run install these dependencies and run the tests, do:
