@@ -6,7 +6,8 @@
 #     $ make coverage
 #
 coverage==3.7.1
-leekspin==0.1.4
+leekspin==0.2.0
+mechanize==0.2.5
 pep8==1.5.7
 # pylint must be pinned until pylint bug #203 is fixed. See
 # https://bitbucket.org/logilab/pylint/issue/203/importing-namespace-packages-crashes#comment-11013783

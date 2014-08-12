@@ -14,121 +14,88 @@
 from __future__ import print_function
 
 import os
-import shutil
 import signal
 import time
 
-from os.path import join as pjoin
-from subprocess import Popen, PIPE
-
-from twisted.python import log
-from twisted.python.procutils import which
 from twisted.trial import unittest
+from twisted.trial.unittest import SkipTest
 
-from bridgedb.test.util import fileCheckDecorator
+from bridgedb.test.util import pidExists
 
 
 class BridgeDBCliTest(unittest.TestCase):
     """Test the `bridgedb` command."""
 
-    @fileCheckDecorator
-    def doCopyFile(self, src, dst, description=None):
-        shutil.copy(src, dst)
+    def setUp(self):
+        here = os.getcwd()
+        topdir = here.rstrip('_trial_temp')
+        self.rundir = os.path.join(topdir, 'run')
+        self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
+        self.pid = self.getBridgeDBPID(self.pidfile)
+        self.assignmentsFile = os.path.join(self.rundir, 'assignments.log')
 
-    @fileCheckDecorator
-    def doMoveFile(self, src, dst, description=None):
-        shutil.move(src, dst)
+    def getBridgeDBPID(self, pidfile="bridgedb.pid"):
+        """Read the ``bridgedb.pid`` file in **rundir**, if it exists, to get
+        the PID.
 
-    def test_bridgedb_commands(self):
-        print('')
-        here       = os.getcwd()
-        runDir     = pjoin(here, 'rundir')
-        topDir     = here.rstrip('_trial_temp')
-        scriptsDir = pjoin(topDir, 'scripts')
-
-        # Create the lowest directory we need, and all its parents:
-        os.makedirs(os.path.join(runDir, 'gnupghome'))
-
-        conf      = pjoin(topDir, 'bridgedb.conf')
-        confMoved = pjoin(runDir, 'bridgedb.conf')
-        gpgFile   = pjoin(topDir, 'gnupghome', 'TESTING.subkeys.sec')
-        gpgMoved  = pjoin(runDir, 'gnupghome', 'TESTING.subkeys.sec')
-        certFile  = pjoin(topDir, 'cert')
-        certMoved = pjoin(runDir, 'cert')
-        keyFile   = pjoin(topDir, 'privkey.pem')
-        keyMoved  = pjoin(runDir, 'privkey.pem')
-
-        makeSSLCertScript = os.path.join(scriptsDir, 'make-ssl-cert')
-        bridgedbScript    = which('bridgedb') # this returns a list
-
-        self.doCopyFile(conf, confMoved, 'config')
-        self.doCopyFile(gpgFile, gpgMoved, 'GPG test key')
-        print("Running subcommands from directory:\n  %r" % runDir)
-        print("Running %r..." % makeSSLCertScript)
-        makeSSLCertProcess = Popen(makeSSLCertScript)
-        makeSSLCertProcess.wait()
-        self.doMoveFile(certFile, certMoved, 'certificate')
-        self.doMoveFile(keyFile, keyMoved, 'SSL private key')
-
-        self.assertTrue(os.path.isfile(bridgedbScript[0]),
-                        "Couldn't find bridgedb script %r" % bridgedbScript[0])
-        bridgedbScript = bridgedbScript[0]
-        print("Running bridgedb script %r..." % bridgedbScript)
-
-        os.chdir(runDir)  # we have to do this to get files to end up there
-        print("Running `bridgedb mock' to generate mock bridge descriptors...")
-        mockProc = Popen([bridgedbScript, 'mock', '-n', '50'])
-        mockProcCode = mockProc.wait()
-        print("`bridgedb mock' exited with status code %d" % int(mockProcCode))
-        os.chdir(here)
-
-        # See ticket #11216, cached-extrainfo* files should not be parsed
-        # cumulatively.
-        eidesc  = pjoin(runDir, 'cached-extrainfo')
-        eindesc = pjoin(runDir, 'cached-extrainfo.new')
-        self.doCopyFile(eindesc, eidesc, 'duplicated cached-extrainfo(.new)')
-        self.assertTrue(os.path.isfile(eidesc))
-        self.assertTrue(os.path.isfile(eindesc))
-
-
-        print("Running `bridgedb' to test server startups...")
-        # Sorry Windows users
-        devnull = open('/dev/null', 'w')
-        bridgedbProc = Popen([bridgedbScript, '-r', runDir], stdout=devnull)
-        print("Waiting 10 seconds while bridgedb loads...")
-        time.sleep(10)
-        assignments = pjoin(runDir, 'assignments.log')
-        self.assertTrue(os.path.isfile(assignments))
-        os.unlink(assignments)
-        print("Sending SIGHUP, checking for assignments.log ...")
-        bridgedbProc.send_signal(signal.SIGHUP)
-        time.sleep(5)
+        :param str pidfile: The path to the BridgeDB pidfile.
+        :rtype: int
+        :returns: The process ID, if available, otherwise ``0``.
+        """
+        fh = None
         try:
-            self.assertTrue(os.path.isfile(assignments))
-        except self.failureException as e:
-            bridgedbProc.send_signal(signal.SIGKILL)
-            bridgedbProcCode = bridgedbProc.wait()
-            print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
-            raise e
-        print("Sending SIGUSR1, checking for bucket files...")
-        bridgedbProc.send_signal(signal.SIGUSR1)
+            fh = open(pidfile)
+        except (IOError, OSError) as err:
+            print(err)
+            pid = 0
+        else:
+            pid = int(fh.read())
+
+        if fh:
+            fh.close()
+
+        return pid
+
+    def test_bridgedb_assignments_log(self):
+        """This test should only be run if a BridgeDB server has already been
+        started in another process.
+
+        To see how this is done for the Travis CI tests, see the
+        'before_script' section of the ``.travis.yml`` file in the top
+        directory of this repository.
+
+        This test ensures that an ``assignments.log`` file is created after a
+        BridgeDB process was started.
+        """
+        if not self.pid:
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        self.assertTrue(os.path.isfile(self.assignmentsFile))
+
+    def test_bridgedb_SIGHUP_assignments_log(self):
+        """Test that BridgeDB creates a new ``assignments.log`` file after
+        receiving a SIGHUP.
+        """
+        if not self.pid:
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        os.unlink(self.assignmentsFile)
+        os.kill(self.pid, signal.SIGHUP)
+        time.sleep(5)
+        self.assertTrue(os.path.isfile(self.assignmentsFile))
+
+    def test_bridgedb_SIGUSR1_buckets(self):
+        """Test that BridgeDB dumps buckets appropriately after a SIGUSR1."""
+        if not self.pid:
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        os.kill(self.pid, signal.SIGUSR1)
         time.sleep(5)
         buckets = [['email', False], ['https', False], ['unallocated', False]]
-        for rundirfile in os.listdir(runDir):
+        for rundirfile in os.listdir(self.rundir):
             for bucket in buckets:
                 if rundirfile.startswith(bucket[0]):
                     bucket[1] = True
                     break
         for bucket in buckets:
-            try:
-                self.assertTrue(bucket[1], "%s bucket was not dumped!" % bucket[0])
-            except self.failureException as e:
-                bridgedbProc.send_signal(signal.SIGKILL)
-                bridgedbProcCode = bridgedbProc.wait()
-                print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
-                raise e
-        print("Done. Killing processes.")
-        bridgedbProc.send_signal(signal.SIGINT)
-        bridgedbProcCode = bridgedbProc.wait()
-        print("`bridgedb' exited with status code %d" % int(bridgedbProcCode))
-        self.assertEqual(bridgedbProcCode, 0)
+            self.assertTrue(bucket[1], "%s bucket was not dumped!" % bucket[0])

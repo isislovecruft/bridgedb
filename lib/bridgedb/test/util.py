@@ -65,6 +65,28 @@ def fileCheckDecorator(func):
                         % (str(description), dst, src))
     return wrapper
 
+def pidExists(pid):
+    """Test if **pid** exists.
+
+    :raises: OSError, if ``OSError.errno`` wasn't an expected errno (according
+        to the "ERRORS" section from ``man 2 kill``).
+    :rtype: bool
+    :returns: ``True`` if a process with **pid** exists, ``False`` otherwise.
+    """
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:  # ESRCH: No such process
+            return False
+        if err.errno == errno.EPERM:  # EPERM: Operation not permitted
+            # If we're not allowed to signal the process, then there exists a
+            # process that we don't have permissions to access.
+            return True
+        else:
+            raise
+    else:
+        return True
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be

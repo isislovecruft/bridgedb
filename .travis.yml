@@ -26,11 +26,6 @@ addons:
     - bridges.torproject.org
 
 env:
-  global:
-    - LEEKSPIN_VERSION=0.1.4
-    - COVERAGE_VERSION=3.7.1
-    - COVERALLS_VERSION=0.4.2
-    - SURE_VERSION=1.2.2
   matrix:
     - TWISTED_VERSION=13.2.0 PYOPENSSL_VERSION=0.13.1
 
@@ -47,11 +42,19 @@ before_install:
 
 install:
   - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools
-  - pip install -q -r .travis.requirements.txt
-  - pip install -q --no-use-wheel leekspin==$LEEKSPIN_VERSION sure==$SURE_VERSION
-  - pip install -q --no-use-wheel coverage==$COVERAGE_VERSION coveralls==$COVERALLS_VERSION
+  - pip install -q --no-use-wheel -r .travis.requirements.txt
   - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
   - make install
+
+# Start a BridgeDB instance before running the tests:
+before_script:
+  - mkdir run
+  - cp -R -t run bridgedb.conf captchas gnupghome
+  - leekspin -n 100
+  - cp -t run networkstatus-bridges cached-extrainfo* bridge-descriptors
+  - ./scripts/make-ssl-cert
+  - cp -t run privkey.pem cert
+  - bridgedb -r run &
 
 script:
   - make coverage-test
