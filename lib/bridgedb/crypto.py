@@ -58,6 +58,13 @@ from Crypto.PublicKey import RSA
 from twisted.internet import ssl
 from twisted.python.procutils import which
 
+#: This is done to cause :class:`SSLVerifyingContextFactory` to implement an
+#: :api:`twisted.web.iweb.IPolicyForHTTPS` in Twisted >= 14.0.0:
+from twisted._version import version as twistedversion
+if twistedversion.major >= 14:
+    from twisted.web import iweb
+    from zope.interface import implements
+
 
 #: The hash digest to use for HMACs.
 DIGESTMOD = hashlib.sha1
@@ -453,7 +460,20 @@ def gpgSignMessage(gpgmeCtx, messageString, mode=None):
 class SSLVerifyingContextFactory(ssl.CertificateOptions):
     """``OpenSSL.SSL.Context`` factory which does full certificate-chain and
     hostname verfication.
+
+    .. note:: For Twisted-14.1.0 and higher, the OpenSSL context is buried in
+        :api:`twisted.web.client.BrowserLikePolicyForHTTPS.creatorForNetloc`,
+        which calls :api:`twisted.internet.ssl.optionsForClientTLS`, which in
+        turn uses the ``**extraCertificateOptions` parameter to create a
+        :api:`twisted.internet._sslverify.OpenSSLCertificateOptions`. The
+        ``OpenSSLCertificateOptions`` class is what has a ``getContext()``
+        method and a ``_contextFactory`` attribute, not the
+        :api:`twisted.web.client.Agent`` (as it was in Twisted-13.2.0 and
+        prior).
     """
+    if twistedversion.major >= 14:
+        implements(iweb.IPolicyForHTTPS)
+
     isClient = True
 
     def __init__(self, url, **kwargs):
@@ -497,6 +517,14 @@ class SSLVerifyingContextFactory(ssl.CertificateOptions):
         verifyOptions = OpenSSL.SSL.VERIFY_PEER
         ctx.set_verify(verifyOptions, self.verifyHostname)
         return ctx
+
+    def creatorForNetloc(hostname, port):
+        """Synonym for :meth:`getContext`.
+
+        This is used for Twisted-14.0.0 and higher to implement the new
+        :api:`twisted.web.iweb.IPolicyForHTTPS` interface.
+        """
+        return self.getContext(hostname, port)
 
     def getHostnameFromURL(self, url):
         """Parse the hostname from the originally requested URL.

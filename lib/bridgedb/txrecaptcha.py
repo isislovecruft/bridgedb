@@ -74,17 +74,31 @@ def _getAgent(reactor=reactor, url=API_SSL_VERIFY_URL, connectTimeout=30,
         :api:`twisted.internet.reactor.connectSSL` for specifying the
         connection timeout. (default: ``30``)
     """
+    contextFactory = SSLVerifyingContextFactory(url)
+
     if _connectionPoolAvailable:
-        return client.Agent(reactor,
-                            contextFactory=SSLVerifyingContextFactory(url),
-                            connectTimeout=connectTimeout,
-                            pool=_pool,
-                            **kwargs)
+        agent = client.Agent(reactor,
+                             contextFactory=contextFactory,
+                             connectTimeout=connectTimeout,
+                             pool=_pool,
+                             **kwargs)
     else:
-        return client.Agent(reactor,
-                            contextFactory=SSLVerifyingContextFactory(url),
-                            connectTimeout=connectTimeout,
-                            **kwargs)
+        agent = client.Agent(reactor,
+                             contextFactory=contextFactory,
+                             connectTimeout=connectTimeout,
+                             **kwargs)
+
+    # Make Twisted's changes for their implementation of the SSL hostname
+    # verification (in twisted-14.0.0) backwards compatible with ours (and
+    # twisted-13.2.0).
+    #
+    # See https://twistedmatrix.com/trac/ticket/4888 and
+    # https://twistedmatrix.com/trac/changeset/42546
+    if hasattr(agent, '_policyForHTTPS'):
+        setattr(agent, '_contextFactory', contextFactory)
+
+    return agent
+
 
 _setAgent(_getAgent())
 
