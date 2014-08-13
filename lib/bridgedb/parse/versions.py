@@ -23,14 +23,14 @@ bridgedb.parse.versions
 ..
 """
 
-from twisted.python import util as txutil
+from twisted.python.versions import Version as TxVersion
 
 
 class InvalidVersionStringFormat(ValueError):
     """Raised when a version string is not in a parseable format."""
 
 
-class Version(txutil.Version):
+class Version(TxVersion):
     """Holds, parses, and does comparison operations for version numbers.
 
     :attr str package: The package name, if available.
