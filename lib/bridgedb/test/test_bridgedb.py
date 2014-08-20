@@ -56,6 +56,19 @@ class BridgeDBCliTest(unittest.TestCase):
 
         return pid
 
+    def doSleep(self):
+        """Sleep for some ammount of time.
+
+        We usually have less fake bridge descriptors with CI runs than we do
+        during other tests, so we can safely decrease the sleep time on CI
+        machines.
+        """
+        if os.environ.get("TRAVIS"):
+            time.sleep(5)
+        else:
+            time.sleep(20)
+        return
+
     def test_bridgedb_assignments_log(self):
         """This test should only be run if a BridgeDB server has already been
         started in another process.
@@ -81,7 +94,7 @@ class BridgeDBCliTest(unittest.TestCase):
 
         os.unlink(self.assignmentsFile)
         os.kill(self.pid, signal.SIGHUP)
-        time.sleep(5)
+        self.doSleep()
         self.assertTrue(os.path.isfile(self.assignmentsFile))
 
     def test_bridgedb_SIGUSR1_buckets(self):
@@ -90,7 +103,7 @@ class BridgeDBCliTest(unittest.TestCase):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
         os.kill(self.pid, signal.SIGUSR1)
-        time.sleep(5)
+        self.doSleep()
         buckets = [['email', False], ['https', False], ['unallocated', False]]
         for rundirfile in os.listdir(self.rundir):
             for bucket in buckets:
