@@ -28,6 +28,7 @@ import time
 import bridgedb.Storage
 import bridgedb.Bridges 
 import binascii
+import sqlite3
 from gettext import gettext as _
 toHex = binascii.b2a_hex
 
@@ -140,11 +141,15 @@ class BucketManager:
         # Mark pseudo-allocators in the database as such
         allocator_name = bucket.name
         #print "KEY: %d NAME: %s" % (hex_key, allocator_name)
+        logging.debug("Moving %s to %s" % (hex_key, allocator_name))
         with bridgedb.Storage.getDB() as db:
             try:
                 db.updateDistributorForHexKey(allocator_name, hex_key)
             except:
                 db.rollback()
+                logging.warn("Failed to move %s to new distributor (%s)"
+                             % (hex_key, allocator_name))
+
                 # Ok, this seems useless, but for consistancy's sake, we'll
                 # re-assign the bridge from this missed db update attempt to the
                 # unallocated list. Remember? We pop()'d it before.
@@ -161,6 +166,7 @@ class BucketManager:
         """Read file bucket identifiers from the configuration, sort them and 
            write necessary changes to the database
         """
+        logging.debug("Assigning bridges to buckets for pseudo-distributors")
         # Build distributor list
         for k, v in self.cfg.FILE_BUCKETS.items():
             prefixed_key = self.distributor_prefix + k
@@ -197,11 +203,18 @@ class BucketManager:
         # Loop through bucketList while we have and need unallocated
         # bridges, assign one bridge at a time
         while self.unallocated_available and len(self.bucketList) > 0:
+            logging.debug("We have %d unallocated bridges and %d buckets to " \
+                          "fill. Let's do it."
+                          % (len(self.unallocatedList), len(self.bucketList)))
             for d in self.bucketList:
                 if d.allocated < d.needed:
-                    if not self.assignUnallocatedBridge(d):
+                    try:
+                        if not self.assignUnallocatedBridge(d):
+                            break
+                    except sqlite3.DatabaseError as e:
                         dist = d.name.replace(self.distributor_prefix, "")
-                        print "Couldn't assign unallocated bridge to %s" % dist
+                        logging.warn("Couldn't assign unallocated bridge to " \
+                                     "%s: %s" % (dist, e))
                 else:
                     # When we have enough bridges, remove bucket identifier 
                     # from list
@@ -215,10 +228,11 @@ class BucketManager:
         bridgeHistories = []
         with bridgedb.Storage.getDB() as db:
             for b in bridges:
-                bh = db.getBridgeHistory(b.hex_key)
-                if bh: bridgeHistories.append(bh)
-            bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
-                y.weightedFractionalUptime))
+                if self.cfg.COLLECT_TIMESTAMPS:
+                    bh = db.getBridgeHistory(b.hex_key)
+                    if bh: bridgeHistories.append(bh)
+                    bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
+                                     y.weightedFractionalUptime))
 
             # for a bridge, get the list of countries it might not work in
             blocklist = dict()
@@ -230,14 +244,20 @@ class BucketManager:
 
             try:
                 f = open(filename, 'w')
-                for bh in bridgeHistories:
-                    days = bh.tosa / long(60*60*24)
-                    line = "%s:%s\t(%d days at this address)" %  \
-                           (bh.ip, bh.port, days)
-                    if str(bh.fingerprint) in blocklist.keys():
-                        line = line + "\t(Might be blocked): (%s)" % \
-                               ",".join(blocklist[bh.fingerprint])
+                if self.cfg.COLLECT_TIMESTAMPS:
+                    for bh in bridgeHistories:
+                        days = bh.tosa / long(60*60*24)
+                        line = "%s:%s\t(%d days at this address)" %  \
+                               (bh.ip, bh.port, days)
+                        if str(bh.fingerprint) in blocklist.keys():
+                            line = line + "\t(Might be blocked): (%s)" % \
+                                   ",".join(blocklist[bh.fingerprint])
                     f.write(line + '\n')
+                else:
+                    for bridge in bridges:
+                        line = "%s:%d %s" \
+                               % (bridge.address, bridge.or_port, bridge.hex_key)
+                        f.write(line + '\n')
                 f.close()
             except IOError:
                 print "I/O error: %s" % filename
@@ -245,6 +265,7 @@ class BucketManager:
     def dumpBridges(self):
         """Dump all known file distributors to files, sort by distributor
         """
+        logging.info("Dumping all distributors to file.")
         with bridgedb.Storage.getDB() as db:
             allBridges = db.getAllBridges()
         bridgeDict = {}
