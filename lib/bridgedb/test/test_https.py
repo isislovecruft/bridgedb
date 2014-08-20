@@ -121,12 +121,21 @@ class HTTPTests(unittest.TestCase):
         #     </div>
         bridges = []
         soup = soup.findAll(attrs={'class' : 'bridge-lines'})
-        bridge_lines = [line.text.split('\n') for line in soup]
-        self.assertTrue(len(bridge_lines) > 0, "Found no bridge lines")
-        for bridge_line in bridge_lines:
-            items = bridge_line.split(' ')
-            self.assertEquals(len(items), fieldsPerBridge, "Expected %d fields in bridge line %s" % (fieldsPerBridge, str(items)))
-            bridges.append(items)
+        self.assertTrue(soup, "Could not find <div class='bridge-lines'>!")
+
+        for portion in soup:
+            bridge_lines = portion.text.strip().split('\n')
+            for bridge_line in bridge_lines:
+                fields = bridge_line.split()
+                print("\nFields in bridge line: %s" % fields)
+                bridges.append(fields)
+
+        self.assertTrue(len(bridges) > 0, "Found no bridge lines in %s" % soup)
+
+        for bridge in bridges:
+            self.assertEquals(len(bridge), fieldsPerBridge,
+                                  "Expected %d fields in bridge line %s"
+                                  % (fieldsPerBridge, bridge))
         return bridges
 
     def test_get_obfs2_ipv4(self):
@@ -137,7 +146,8 @@ class HTTPTests(unittest.TestCase):
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
-        for pt, bridge, fingerprint in bridges:
+        for bridge in bridges:
+            pt = bridge[0]
             self.assertEquals(PT, pt)
 
     def test_get_obfs3_ipv4(self):
@@ -146,9 +156,9 @@ class HTTPTests(unittest.TestCase):
 
         PT = 'obfs3'
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
-
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
-        for pt, bridge, fingerprint in bridges:
+        for bridge in bridges:
+            pt = bridge[0]
             self.assertEquals(PT, pt)
 
     def test_get_vanilla_ipv4(self):
@@ -159,7 +169,7 @@ class HTTPTests(unittest.TestCase):
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
-        for bridge, fingerprint in bridges:
+        for bridge in bridges:
            # TODO: do more interesting checks
            self.assertTrue(bridge != None)
 
@@ -171,8 +181,8 @@ class HTTPTests(unittest.TestCase):
         soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
 
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=4)
-        for pt, bridge, fingerprint, password in bridges:
+        for bridge in bridges:
+            pt = bridge[0]
+            password = bridge[-1]
             self.assertEquals(PT, pt)
             self.assertTrue(password.find("password=") != -1, "Password field missing expected text")
-
-
