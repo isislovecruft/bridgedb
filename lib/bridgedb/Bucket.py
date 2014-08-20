@@ -37,7 +37,7 @@ toHex = binascii.b2a_hex
 # distinguish them from real distributors?
 PSEUDO_DISTRI_PREFIX = "pseudo_"
 
-class BucketData:
+class BucketData(object):
     """A file bucket value class.
        name      - Name of the bucket (From config), prefixed by pseudo
                    distributor prefix
@@ -52,7 +52,7 @@ class BucketData:
         self.needed = int(needed)
         self.allocated = 0
 
-class BucketManager:
+class BucketManager(object):
     """BucketManager reads a number of file bucket identifiers from the config.
        They're expected to be in the following format:
 
