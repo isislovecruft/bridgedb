@@ -21,6 +21,8 @@ from sure import expect
 
 from bridgedb import Bucket
 
+from twisted.trial import unittest
+
 
 class BucketDataTest(unittest.TestCase):
     """Tests for :class:`bridgedb.Bucket.BucketData`."""
