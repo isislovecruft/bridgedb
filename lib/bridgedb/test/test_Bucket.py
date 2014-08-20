@@ -39,7 +39,7 @@ class BucketDataTest(unittest.TestCase):
         distname = "test-distributor"
         bucket = Bucket.BucketData(distname, alloc)
         this(distname).should.be.equal(bucket.name)
-        this(alloc).should.be.equal(1000000)
+        this(Bucket.BUCKET_MAX_BRIDGES).should.be.equal(bucket.needed)
 
 
 class BucketManagerTest(unittest.TestCase):

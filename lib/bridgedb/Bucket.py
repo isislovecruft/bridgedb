@@ -37,6 +37,9 @@ toHex = binascii.b2a_hex
 # distinguish them from real distributors?
 PSEUDO_DISTRI_PREFIX = "pseudo_"
 
+# Set to rediculously high number
+BUCKET_MAX_BRIDGES = 1000000
+
 class BucketData:
     """A file bucket value class.
        name      - Name of the bucket (From config), prefixed by pseudo
@@ -47,8 +50,7 @@ class BucketData:
     def __init__(self, name, needed):
         self.name = name
         if needed == "*":
-            # Set to rediculously high number
-            needed = 1000000
+            needed = BUCKET_MAX_BRIDGES
         self.needed = int(needed)
         self.allocated = 0
 
