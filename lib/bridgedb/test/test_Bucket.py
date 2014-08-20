@@ -31,19 +31,19 @@ class BucketDataTest(unittest.TestCase):
 
     def test_alloc_some_of_the_bridges(self):
         """Set the needed number of bridges"""
-        alloc = 10
+        needed = 10
         distname = "test-distributor"
         bucket = Bucket.BucketData(distname, alloc)
-        this(distname).should.be.equal(bucket.name)
-        this(alloc).should.be.equal(bucket.needed)
+        this(bucket.name).should.be.equal(distname)
+        this(bucket.needed).should.be.equal(needed)
 
     def test_alloc_all_the_bridges(self):
         """Set the needed number of bridges to the default"""
-        alloc = '*'
+        needed = '*'
         distname = "test-distributor"
         bucket = Bucket.BucketData(distname, alloc)
-        this(distname).should.be.equal(bucket.name)
-        this(alloc).should.be.equal(1000000)
+        this(bucket.name).should.be.equal(distname)
+        this(bucket.needed).should.be.equal(needed)
 
 
 class BucketManagerTest(unittest.TestCase):
