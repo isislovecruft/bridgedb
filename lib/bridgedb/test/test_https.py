@@ -120,12 +120,11 @@ class HTTPTests(unittest.TestCase):
         #      obfs2 175.213.252.207:11125 5c6da7d927460317c6ff5420b75c2d0f431f18dd
         #     </div>
         bridges = []
-        bridge_lines = soup.findAll(attrs={'class' : 'bridge-lines'})
+        soup = soup.findAll(attrs={'class' : 'bridge-lines'})
+        bridge_lines = [line.text.split('\n') for line in soup]
         self.assertTrue(len(bridge_lines) > 0, "Found no bridge lines")
         for bridge_line in bridge_lines:
-            text = bridge_line.text
-            #print("Found bridge-line: %s" % text)
-            items = text.split(' ')
+            items = bridge_line.split(' ')
             self.assertEquals(len(items), fieldsPerBridge, "Expected %d fields in bridge line %s" % (fieldsPerBridge, str(items)))
             bridges.append(items)
         return bridges
