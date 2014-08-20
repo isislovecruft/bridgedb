@@ -19,6 +19,8 @@ from sure import this
 from sure import the
 from sure import expect
 
+from twisted.trial import unittest
+
 from bridgedb import Bucket
 
 
@@ -31,7 +33,7 @@ class BucketDataTest(unittest.TestCase):
         distname = "test-distributor"
         bucket = Bucket.BucketData(distname, alloc)
         this(distname).should.be.equal(bucket.name)
-        this(alloc).should.be.equal(bucket.needed)
+        this(Bucket.BUCKET_MAX_BRIDGES).should.be.equal(bucket.needed)
 
     def test_alloc_all_the_bridges(self):
         """Set the needed number of bridges to the default"""
