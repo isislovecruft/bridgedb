@@ -35,7 +35,7 @@ class BucketDataTest(unittest.TestCase):
         distname = "test-distributor"
         bucket = Bucket.BucketData(distname, needed)
         this(bucket.name).should.be.equal(distname)
-        this(bucket.needed).should.be.equal(Bucket.BUCKET_MAX_BRIDGES)
+        this(bucket.needed).should.be.equal(needed)
 
     def test_alloc_all_the_bridges(self):
         """Set the needed number of bridges to the default"""
