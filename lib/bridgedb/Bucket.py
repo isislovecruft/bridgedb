@@ -47,7 +47,7 @@ class BucketData:
     def __init__(self, name, needed):
         self.name = name
         if needed == "*":
-            # Set to rediculously high number
+            # Set to ridiculously high number
             needed = 1000000
         self.needed = int(needed)
         self.allocated = 0
