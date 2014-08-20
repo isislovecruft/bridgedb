@@ -14,6 +14,8 @@ functioning as expected.
 
 from __future__ import print_function
 
+from io import StringIO
+
 import sure
 from sure import this
 from sure import the
