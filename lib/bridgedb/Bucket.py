@@ -38,11 +38,15 @@ toHex = binascii.b2a_hex
 PSEUDO_DISTRI_PREFIX = "pseudo_"
 
 class BucketData(object):
-    """A file bucket value class.
-       name      - Name of the bucket (From config), prefixed by pseudo
-                   distributor prefix
-       needed    - Needed number of bridges for that bucket (From config)
-       allocated - Number of already allocated bridges for that bucket
+    """Configures a bridge bucket with the number of bridges which should be
+    allocated, the name of the bucket, and other similar data.
+
+    :param str name: The name of this bucket (from the config file). This will
+        be prefixed by the :data:`PSEUDO_DISTRIBUTOR_PREFIX`.
+    :type needed: str or int
+    :param needed: The number of bridges needed for this bucket (also from the
+        config file).
+    :param int allocated: Number of bridges already allocated for this bucket.
     """
     def __init__(self, name, needed):
         self.name = name
@@ -54,57 +58,61 @@ class BucketData(object):
 
 class BucketManager(object):
     """BucketManager reads a number of file bucket identifiers from the config.
-       They're expected to be in the following format:
 
-       FILE_BUCKETS = { "name1": 10, "name2": 15, "foobar": 3 }
+    They're expected to be in the following format::
 
-       This syntax means that certain buckets ("name1", "name2" and so on)
-       are given a number of bridges (10, 15 and so on). Names can be anything.
-       The name will later be the prefix of the file that is written with the
-       assigned number of bridges in it. Instead of a number, a wildcard item
-       ("*") is allowed, too. This means that the corresponsing bucket file 
-       will get the maximum number of possible bridges (as many as are left in 
-       the unallocated bucket).
+        FILE_BUCKETS = { "name1": 10, "name2": 15, "foobar": 3 }
 
-       The files will be written in ip:port format, one bridge per line.
+    This syntax means that certain buckets ("name1", "name2" and so on) are
+    given a number of bridges (10, 15 and so on). Names can be anything.  The
+    name will later be the prefix of the file that is written with the
+    assigned number of bridges in it. Instead of a number, a wildcard item
+    ("*") is allowed, too. This means that the corresponsing bucket file will
+    get the maximum number of possible bridges (as many as are left in the
+    unallocated bucket).
 
-       The way this works internally is as follows:
+    The files will be written in ip:port format, one bridge per line.
 
-       First of all, the assignBridgesToBuckets() routine runs through
-       the database of bridges and looks up the 'distributor' field of each 
-       bridge. Unallocated bridges are sent to a pool for later assignement.
-       Already allocated bridges for file bucket distribution are sorted and 
-       checked.
-       They're checked for whether their bucket identifier still exists in the 
-       current config and also whether the number of assigned bridges is still 
-       valid. If either the bucket identifier is not existing anymore or too 
-       many bridges are currently assigned to it, bridges will go to the 
-       unassigned pool.
+    The way this works internally is as follows:
 
-       In the second step, after bridges are sorted and the unassigned pool is
-       ready, the assignBridgesToBuckets() routine assigns one bridge
-       from the unassigned pool to a known bucket identifier at a time until it
-       either runs out of bridges in the unallocated pool or the number of
-       needed bridges for that bucket is reached.
+    First of all, the assignBridgesToBuckets() routine runs through the
+    database of bridges and looks up the 'distributor' field of each
+    bridge. Unallocated bridges are sent to a pool for later assignement.
+    Already allocated bridges for file bucket distribution are sorted and
+    checked.  They're checked for whether their bucket identifier still exists
+    in the current config and also whether the number of assigned bridges is
+    still valid. If either the bucket identifier is not existing anymore or
+    too many bridges are currently assigned to it, bridges will go to the
+    unassigned pool.
 
-       When all bridges are assigned in this way, they can then be dumped into
-       files by calling the dumpBridges() routine.
+    In the second step, after bridges are sorted and the unassigned pool is
+    ready, the assignBridgesToBuckets() routine assigns one bridge from the
+    unassigned pool to a known bucket identifier at a time until it either
+    runs out of bridges in the unallocated pool or the number of needed
+    bridges for that bucket is reached.
 
-       cfg                      - The central configuration instance
-       bucketList               - A list of BucketData instances, holding all
-                                  configured (and thus requested) buckets with
-                                  their respective numbers
-       unallocatedList          - Holding all bridges from the 'unallocated'
-                                  pool
-       unallocated_available    - Is at least one unallocated bridge
-                                  available?
-       distributor_prefix       - The 'distributor' field in the database will
-                                  hold the name of our pseudo-distributor,
-                                  prefixed by this
-       db                       - The bridge database access instance
+    When all bridges are assigned in this way, they can then be dumped into
+    files by calling the dumpBridges() routine.
+
+    :type cfg: :class:`bridgedb.persistent.Conf`
+    :ivar cfg: The central configuration instance.
+    :ivar list bucketList: A list of BucketData instances, holding all
+        configured (and thus requested) buckets with their respective numbers.
+    :ivar list unallocatedList: Holds all bridges from the 'unallocated' pool.
+    :ivar bool unallocated_available: Is at least one unallocated bridge
+        available?
+    :ivar str distributor_prefix: The 'distributor' field in the database will
+        hold the name of our pseudo-distributor, prefixed by this string. By
+        default, this uses :data:`PSEUDO_DISTRIBUTOR_PREFIX`.
+    :ivar db: The bridge database instance.
     """
 
     def __init__(self, cfg):
+        """Create a ``BucketManager``.
+
+        :type cfg: :class:`bridgedb.persistent.Conf`
+        :param cfg: The central configuration instance.
+        """
         self.cfg = cfg
         self.bucketList = []
         self.unallocatedList = []
@@ -112,8 +120,7 @@ class BucketManager(object):
         self.distributor_prefix = PSEUDO_DISTRI_PREFIX
 
     def addToUnallocatedList(self, hex_key):
-        """Add a bridge by hex_key into the unallocated pool
-        """
+        """Add a bridge by **hex_key** into the unallocated pool."""
         with bridgedb.Storage.getDB() as db:
             try:
                 db.updateDistributorForHexKey("unallocated", hex_key)
@@ -126,8 +133,8 @@ class BucketManager(object):
         self.unallocated_available = True
 
     def getBucketByIdent(self, bucketIdent):
-        """Do we know this bucket identifier? If yes, return the corresponding
-           BucketData object.
+        """If we know this bucket identifier, then return the corresponding
+        :class:`BucketData` object.
         """
         for d in self.bucketList:
             if d.name == bucketIdent:
@@ -135,8 +142,7 @@ class BucketManager(object):
         return None
 
     def assignUnallocatedBridge(self, bucket):
-        """Assign an unallocated bridge to a certain bucket
-        """
+        """Assign an unallocated bridge to a certain **bucket**."""
         hex_key = self.unallocatedList.pop()
         # Mark pseudo-allocators in the database as such
         allocator_name = bucket.name
@@ -163,8 +169,8 @@ class BucketManager(object):
         return True
 
     def assignBridgesToBuckets(self):
-        """Read file bucket identifiers from the configuration, sort them and 
-           write necessary changes to the database
+        """Read file bucket identifiers from the configuration, sort them, and
+        write necessary changes to the database.
         """
         logging.debug("Assigning bridges to buckets for pseudo-distributors")
         # Build distributor list
@@ -221,8 +227,7 @@ class BucketManager(object):
                     self.bucketList.remove(d)
 
     def dumpBridgesToFile(self, filename, bridges):
-        """Dump a list of given bridges into a file
-        """
+        """Dump a list of given **bridges** into **filename**."""
         logging.debug("Dumping bridge assignments to file: %r" % filename)
         # get the bridge histories and sort by Time On Same Address
         bridgeHistories = []
@@ -263,8 +268,7 @@ class BucketManager(object):
                 print "I/O error: %s" % filename
 
     def dumpBridges(self):
-        """Dump all known file distributors to files, sort by distributor
-        """
+        """Dump all known file distributors to files, sorted by distributor."""
         logging.info("Dumping all distributors to file.")
         with bridgedb.Storage.getDB() as db:
             allBridges = db.getAllBridges()
