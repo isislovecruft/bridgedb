@@ -37,6 +37,10 @@ toHex = binascii.b2a_hex
 # distinguish them from real distributors?
 PSEUDO_DISTRI_PREFIX = "pseudo_"
 
+# Set to rediculously high number
+BUCKET_MAX_BRIDGES = 1000000
+
+
 class BucketData(object):
     """Configures a bridge bucket with the number of bridges which should be
     allocated, the name of the bucket, and other similar data.
@@ -51,8 +55,7 @@ class BucketData(object):
     def __init__(self, name, needed):
         self.name = name
         if needed == "*":
-            # Set to ridiculously high number
-            needed = 1000000
+            needed = BUCKET_MAX_BRIDGES
         self.needed = int(needed)
         self.allocated = 0
 
@@ -257,7 +260,7 @@ class BucketManager(object):
                         if str(bh.fingerprint) in blocklist.keys():
                             line = line + "\t(Might be blocked): (%s)" % \
                                    ",".join(blocklist[bh.fingerprint])
-                    f.write(line + '\n')
+                        f.write(line + '\n')
                 else:
                     for bridge in bridges:
                         line = "%s:%d %s" \
