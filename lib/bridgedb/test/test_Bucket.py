@@ -33,7 +33,7 @@ class BucketDataTest(unittest.TestCase):
         """Set the needed number of bridges"""
         needed = 10
         distname = "test-distributor"
-        bucket = Bucket.BucketData(distname, alloc)
+        bucket = Bucket.BucketData(distname, needed)
         this(bucket.name).should.be.equal(distname)
         this(bucket.needed).should.be.equal(needed)
 
@@ -41,7 +41,7 @@ class BucketDataTest(unittest.TestCase):
         """Set the needed number of bridges to the default"""
         needed = '*'
         distname = "test-distributor"
-        bucket = Bucket.BucketData(distname, alloc)
+        bucket = Bucket.BucketData(distname, needed)
         this(bucket.name).should.be.equal(distname)
         this(bucket.needed).should.be.equal(needed)
 
