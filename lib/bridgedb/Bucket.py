@@ -254,7 +254,7 @@ class BucketManager:
                         if str(bh.fingerprint) in blocklist.keys():
                             line = line + "\t(Might be blocked): (%s)" % \
                                    ",".join(blocklist[bh.fingerprint])
-                    f.write(line + '\n')
+                        f.write(line + '\n')
                 else:
                     for bridge in bridges:
                         line = "%s:%d %s" \
