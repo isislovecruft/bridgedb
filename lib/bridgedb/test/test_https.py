@@ -41,7 +41,8 @@ class HTTPTests(unittest.TestCase):
     def openBrowser(self):
         # use mechanize to open the BridgeDB website in its browser
         self.br = mechanize.Browser()
-        self.br.set_handle_robots(False) # prevents 'HTTP Error 403: request disallowed by robots.txt'
+        # prevents 'HTTP Error 403: request disallowed by robots.txt'
+        self.br.set_handle_robots(False)
         self.br.open(HTTPS_ROOT)
 
         # -------------- Home/Root  page
@@ -88,14 +89,15 @@ class HTTPTests(unittest.TestCase):
             EXPECTED_URL += "&ipv6=yes"
         self.assertEquals(self.br.response().geturl(), EXPECTED_URL)
 
-        # As on the previous page, the form does not define a 'name' attribute, forcing
-        # us to use the index of the form i.e. 0
+        # As on the previous page, the form does not define a 'name'
+        # attribute, forcing us to use the index of the form, i.e. 0
         #self.br.select_form(name="captchaSubmission")
         self.br.select_form(nr=0)
 
-        # input the required captcha response. There is only one captcha defined
-        # by default, so this should always be accepted. Note this will not be possible
-        # to automate if used with a real captcha systems (e.g. reCAPTCHA)
+        # input the required captcha response. There is only one captcha
+        # defined by default, so this should always be accepted. Note this
+        # will not be possible to automate if used with a third-party CAPTCHA
+        # systems (e.g. reCAPTCHA)
         self.br.form['captcha_response_field'] = captchaResponse
         captcha_response = self.br.submit()
 
@@ -134,8 +136,8 @@ class HTTPTests(unittest.TestCase):
         self.goToOptionsPage()
 
         PT = 'obfs2'
-        soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
-
+        soup = self.submitOptions(transport=PT, ipv6=False,
+                                  captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
         for bridge in bridges:
             pt = bridge[0]
@@ -146,7 +148,8 @@ class HTTPTests(unittest.TestCase):
         self.goToOptionsPage()
 
         PT = 'obfs3'
-        soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
+        soup = self.submitOptions(transport=PT, ipv6=False,
+                                  captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
         for bridge in bridges:
             pt = bridge[0]
@@ -157,8 +160,8 @@ class HTTPTests(unittest.TestCase):
         self.goToOptionsPage()
 
         PT = '0'
-        soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
-
+        soup = self.submitOptions(transport=PT, ipv6=False,
+                                  captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
         for bridge in bridges:
            # TODO: do more interesting checks
@@ -169,11 +172,12 @@ class HTTPTests(unittest.TestCase):
         self.goToOptionsPage()
 
         PT = 'scramblesuit'
-        soup = self.submitOptions(transport=PT, ipv6=False, captchaResponse=CAPTCHA_RESPONSE)
-
+        soup = self.submitOptions(transport=PT, ipv6=False,
+                                  captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=4)
         for bridge in bridges:
             pt = bridge[0]
             password = bridge[-1]
             self.assertEquals(PT, pt)
-            self.assertTrue(password.find("password=") != -1, "Password field missing expected text")
+            self.assertTrue(password.find("password=") != -1,
+                            "Password field missing expected text")
