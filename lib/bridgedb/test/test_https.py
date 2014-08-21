@@ -48,8 +48,6 @@ class HTTPTests(unittest.TestCase):
         self.assertTrue(self.br.viewing_html())
         self.assertEquals(self.br.response().geturl(), HTTPS_ROOT)
         self.assertEquals(self.br.title(), "BridgeDB")
-        #for link in self.br.links(): print(link)
-        #for form in self.br.forms(): print(form)
         return self.br
 
     def goToOptionsPage(self):
@@ -64,8 +62,6 @@ class HTTPTests(unittest.TestCase):
 
         # ------------- Options
         self.assertEquals(self.br.response().geturl(), HTTPS_ROOT + "/options")
-        #print(self.br.response().read())
-        #for form in self.br.forms(): print(form)
         return self.br
 
     def submitOptions(self, transport, ipv6, captchaResponse):
@@ -81,7 +77,6 @@ class HTTPTests(unittest.TestCase):
         self.br.select_form(nr=0)
 
         # change the pluggable transport to something else
-        #print(self.br.form)
         self.br.form['transport'] = [transport]
         if ipv6:
             self.br.form['ipv6'] = ['yes']
@@ -92,8 +87,6 @@ class HTTPTests(unittest.TestCase):
         if ipv6:
             EXPECTED_URL += "&ipv6=yes"
         self.assertEquals(self.br.response().geturl(), EXPECTED_URL)
-        #print(self.br.response().read())
-        #for form in self.br.forms(): print(form)
 
         # As on the previous page, the form does not define a 'name' attribute, forcing
         # us to use the index of the form i.e. 0
@@ -103,7 +96,6 @@ class HTTPTests(unittest.TestCase):
         # input the required captcha response. There is only one captcha defined
         # by default, so this should always be accepted. Note this will not be possible
         # to automate if used with a real captcha systems (e.g. reCAPTCHA)
-        #self.br.form['captcha_response_field'] = 'Tvx74PMy'
         self.br.form['captcha_response_field'] = captchaResponse
         captcha_response = self.br.submit()
 
@@ -111,7 +103,6 @@ class HTTPTests(unittest.TestCase):
         # URL should be the same as last time
         self.assertEquals(self.br.response().geturl(), EXPECTED_URL)
         soup = BeautifulSoup(captcha_response.read())
-        #print soup.prettify()
         return soup
 
     def getBridgeLinesFromSoup(self, soup, fieldsPerBridge):
@@ -127,7 +118,6 @@ class HTTPTests(unittest.TestCase):
             bridge_lines = portion.text.strip().split('\n')
             for bridge_line in bridge_lines:
                 fields = bridge_line.split()
-                print("\nFields in bridge line: %s" % fields)
                 bridges.append(fields)
 
         self.assertTrue(len(bridges) > 0, "Found no bridge lines in %s" % soup)
