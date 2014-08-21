@@ -164,8 +164,8 @@ class HTTPTests(unittest.TestCase):
                                   captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
         for bridge in bridges:
-           # TODO: do more interesting checks
-           self.assertTrue(bridge != None)
+            # TODO: do more interesting checks
+            self.assertTrue(bridge != None)
 
     def test_get_scramblesuit_ipv4(self):
         self.openBrowser()
