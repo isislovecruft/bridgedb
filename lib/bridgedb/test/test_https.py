@@ -106,10 +106,11 @@ class HTTPTests(unittest.TestCase):
         return soup
 
     def getBridgeLinesFromSoup(self, soup, fieldsPerBridge):
-        # Now we're looking for something like this in the response:
-        #     <div class="bridge-lines">
-        #      obfs2 175.213.252.207:11125 5c6da7d927460317c6ff5420b75c2d0f431f18dd
-        #     </div>
+        """We're looking for something like this in the response::
+            <div class="bridge-lines">
+             obfs2 175.213.252.207:11125 5c6da7d927460317c6ff5420b75c2d0f431f18dd
+            </div>
+        """
         bridges = []
         soup = soup.findAll(attrs={'class' : 'bridge-lines'})
         self.assertTrue(soup, "Could not find <div class='bridge-lines'>!")
