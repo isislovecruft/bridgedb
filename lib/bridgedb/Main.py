@@ -1,12 +1,15 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Main -*-
 #
-# BridgeDB by Nick Mathewson.
-# Copyright (c) 2007-2009, The Tor Project, Inc.
-# See LICENSE for licensing information
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: please see the AUTHORS file for attributions
+# :copyright: (c) 2013-2014, Isis Lovecruft
+#             (c) 2013-2014, Matthew Finkel
+#             (c) 2007-2014, Nick Mathewson
+#             (c) 2007-2014, The Tor Project, Inc.
+# :license: see LICENSE for licensing information
 
-"""
-This module sets up a bridgedb and starts the servers running.
-"""
+"""This module sets up BridgeDB and starts the servers running."""
 
 import os
 import signal
