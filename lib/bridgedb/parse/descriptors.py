@@ -98,45 +98,61 @@ def deduplicate(descriptors):
         :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s,
         :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
     """
-    duplicates = []
-    nonDuplicates = []
+    duplicates = {}
+    nonDuplicates = {}
 
     for descriptor in descriptors:
-        router = descriptors.pop(descriptors.index(descriptor))
-        fingerprint = router.fingerprint
+        fingerprint = descriptor.fingerprint
 
         logging.debug("Deduplicating %s descriptor for router %s"
-                      % (str(router.__class__).rsplit('.', 1)[1],
+                      % (str(descriptor.__class__).rsplit('.', 1)[1],
                          safelog.logSafely(fingerprint)))
 
-        for possibleDuplicate in descriptors:
-            if fingerprint == possibleDuplicate.fingerprint:
-                logging.warn("Duplicate extra-info descriptor for router %s"
-                             % safelog.logSafely(fingerprint))
-                if router.published > possibleDuplicate.published:
-                    # The router is newer than the duplicate, so get rid of
-                    # the duplicate:
-                    duplicates.append(possibleDuplicate)
-                elif router.published < possibleDuplicate.published:
-                    # The router is older than the duplicate, so replace our
-                    # router:
-                    duplicates.append(router)
-                    router = possibleDuplicate
-                else:
-                    duplicates.append(possibleDuplicate)
-                    logging.warn(("Duplicate descriptor and original "
-                                  "descriptor for router %s both had the same "
-                                  "timestamp: %s")
-                                 % (safelog.logSafely(fingerprint),
-                                    router.published))
+        if fingerprint in nonDuplicates.keys():
+            # We already found a descriptor for this fingerprint:
+            conflict = nonDuplicates[fingerprint]
+
+            # If the descriptor we are currently parsing is newer than the
+            # last one we found:
+            if descriptor.published > conflict.published:
+                # And if this is the first duplicate we've found for this
+                # router, then create a list in the ``duplicates`` dictionary
+                # for the router:
+                if not fingerprint in duplicates.keys():
+                    duplicates[fingerprint] = list()
+                # Add this to the list of duplicates for this router:
+                duplicates[fingerprint].append(conflict)
+                # Finally, put the newest descriptor in the ``nonDuplicates``
+                # dictionary:
+                nonDuplicates[fingerprint] = descriptor
+            # Same thing, but this time the one we're parsing is older:
+            elif descriptor.published < conflict.published:
+                if not fingerprint in duplicates.keys():
+                    duplicates[fingerprint] = list()
+                duplicates[fingerprint].append(descriptor)
+            # This *shouldn't* happen. It would mean that two descriptors for
+            # the same router had the same timestamps, probably meaning there
+            # is a severely-messed up OR implementation out there. Let's log
+            # its fingerprint (no matter what!) so that we can look up its
+            # ``platform`` line in its server-descriptor and tell whoever
+            # wrote that code that they're probably (D)DOSing the Tor network.
             else:
-                nonDuplicates.append(router)
+                logging.warn(("Duplicate descriptor with identical timestamp "
+                              "(%s) for router with fingerprint '%s'!")
+                             % (descriptor.published, fingerprint))
+
+        # Hoorah! No duplicates! (yet...)
+        else:
+            nonDuplicates[fingerprint] = descriptor
 
     logging.info("Descriptor deduplication finished.")
     logging.info("Number of duplicates: %d" % len(duplicates))
+    for (fingerprint, dittos) in duplicates.items():
+        logging.info("  For %s: %d duplicates"
+                     % (safelog.logSafely(fingerprint), len(dittos)))
     logging.info("Number of non-duplicates: %d" % len(nonDuplicates))
-    return nonDuplicates
 
+    return nonDuplicates
 
 def parseBridgeExtraInfoFiles(*filenames, **kwargs):
     """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
