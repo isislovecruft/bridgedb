@@ -22,6 +22,7 @@ HAS_STEM = False
 try:
     from stem.descriptor.server_descriptor import RelayDescriptor
     from stem.descriptor.extrainfo_descriptor import BridgeExtraInfoDescriptor
+    from stem.descriptor.router_status_entry import RouterStatusEntryV2
     from bridgedb.parse import descriptors
 except (ImportError, NameError), error:
     print("There was an error importing stem: %s" % error)
@@ -188,7 +189,7 @@ class ParseDescriptorsTests(unittest.TestCase):
                                                    BRIDGE_NETWORKSTATUS_0)
         routers = descriptors.parseNetworkStatusFile(descFile)
         bridge = routers.items()[0]
-        self.assertIsInstance(bridge, RelayDescriptor)
+        self.assertIsInstance(bridge, RouterStatusEntryV2)
         self.assertEqual(bridge.address, u'152.78.9.20')
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
