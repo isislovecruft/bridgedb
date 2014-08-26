@@ -265,6 +265,5 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWER_DUPLICATE)
         routers = descriptors.parseBridgeExtraInfoFiles(descFileOne, descFileTwo)
-        bridge = routers.values()[0]
-        self.assertEqual(bridge.fingerprint,
-                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
+        # We shouldn't have duplicates:
+        self.assertEqual(len(routers), 1)
