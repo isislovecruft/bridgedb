@@ -253,7 +253,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         routers = descriptors.parseBridgeExtraInfoFiles(descFile)
         bridge = routers.values()[0]
-        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(len(bridge.transport), 2)
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
@@ -266,6 +266,5 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWER_DUPLICATE)
         routers = descriptors.parseBridgeExtraInfoFiles(descFileOne, descFileTwo)
         bridge = routers.values()[0]
-        self.assertEqual(bridge.address, u'152.78.9.20')
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
