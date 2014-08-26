@@ -12,6 +12,7 @@
 from __future__ import print_function
 
 import io
+import os
 import textwrap
 
 from twisted.trial import unittest
@@ -28,7 +29,7 @@ else:
     HAS_STEM = True
 
 
-BRIDGE_NETWORKSTATUS = '''\
+BRIDGE_NETWORKSTATUS_0 = '''\
 r OutwitsPlod b6khbPOgbomgMSGswx9w+N/X3cw qBckYSWbwl/F/qzQWwMJWBxHZ+w 2014-03-12 16:07:08 152.78.9.20 17810 0
 a [bfbd:7a90:2347:cc4:e854:64b3:2c31:124f]:17810
 s Fast Guard Running Stable Valid
@@ -139,6 +140,23 @@ class ParseDescriptorsTests(unittest.TestCase):
         """Test if we have Stem installed. Skip these tests if it's missing."""
         if self.skip:
             raise unittest.SkipTest("Couldn't import Stem.")
+
+    def writeTestDescriptorsToFile(self, filename, *descriptors):
+        """Write **descriptors** to **filename**.
+
+        :param str filename: A filename. It will be appended to the current
+            working directory automatically.
+        :param str descriptors: Some optional strings containing
+            descriptors. Each one will be written to **filename** as-is.
+        :rtype: str
+        :returns: The full path to the file which was written to.
+        """
+        descFilename = os.path.join(os.getcwd(), filename)
+        with open(descFilename, 'w') as fh:
+            for desc in descriptors:
+                fh.write(desc)
+                fh.flush()
+        return descFilename
 
     def test_parse_descriptors_parseBridgeDescriptorsFile(self):
         """Test for ``b.p.descriptors.parseBridgeDescriptorsFile``."""
