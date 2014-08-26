@@ -82,8 +82,7 @@ def parseServerDescriptorsFile(filename, validate=False):
     logging.info("Parsing server descriptors with Stem: %s" % filename)
     descriptorType = 'server-descriptor 1.0'
     document = parse_file(filename, descriptorType, validate=validate)
-
-    routers = [router for router in document]
+    routers = list(document)
     return routers
 
 def deduplicate(descriptors):
