@@ -141,9 +141,15 @@ def deduplicate(descriptors):
 def parseBridgeExtraInfoFiles(*filenames, **kwargs):
     """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
 
-    :kwargs: If there is a ``'validate'`` keyword argument, its value will be
-        passed along as the ``'validate'`` argument to
+    .. note:: This function will call :func:`deduplicate` to deduplicate the
+        extrainfo descriptors parsed from all **filenames**.
+
+    :kwargs validate: If there is a ``'validate'`` keyword argument, its value
+        will be passed along as the ``'validate'`` argument to
         :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`.
+    :rtype: dict
+    :returns: A dictionary mapping bridge fingerprints to deduplicated
+        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s.
     """
     descriptors = []
     descriptorType = 'bridge-extra-info 1.1'
