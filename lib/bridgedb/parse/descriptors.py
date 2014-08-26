@@ -86,6 +86,18 @@ def parseServerDescriptorsFile(filename, validate=False):
     return routers
 
 def deduplicate(descriptors):
+    """Deduplicate some descriptors, returning only the newest for each router.
+
+    .. note:: If two descriptors for the same router are discovered, AND both
+        descriptors have the **same** published timestamp, then the router's
+        fingerprint WILL BE LOGGED ON PURPOSE, because we assume that router
+        to be malicious (deliberately, or unintentionally).
+
+    :param list descriptors: A list of
+        :api:`stem.descriptor.server_descriptor.RelayDescriptor`s,
+        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s,
+        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
+    """
     duplicates = []
     nonDuplicates = []
 
