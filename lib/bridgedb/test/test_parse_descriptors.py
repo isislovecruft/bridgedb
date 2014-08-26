@@ -248,7 +248,8 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_one_file(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with only one
-        bridge extrainfo file."""
+        bridge extrainfo file.
+        """
         descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         routers = descriptors.parseBridgeExtraInfoFiles(descFile)
         bridge = routers.values()[0]
@@ -259,7 +260,8 @@ class ParseDescriptorsTests(unittest.TestCase):
     def test_parse_descriptors_parseBridgeExtraInfoFiles_two_files(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with two
         bridge extrainfo files, and check that only the newest extrainfo
-        descriptor is used."""
+        descriptor is used.
+        """
         descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWER_DUPLICATE)
         routers = descriptors.parseBridgeExtraInfoFiles(descFileOne, descFileTwo)
