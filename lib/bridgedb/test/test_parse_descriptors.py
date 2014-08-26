@@ -38,6 +38,14 @@ w Bandwidth=1902273
 p reject 1-65535
 '''
 
+BRIDGE_NETWORKSTATUS_1 = '''\
+r Reestablishes jPqMRoqkH62eLMXl76DqIddlpto 2BETKn1sOghC6coUkCSq/9mvPNM 2014-08-20 19:52:41 25.178.4.186 32324 0
+a [d7b3:8c3e:186a:d65f:706:cbfd:8512:fd1]:32324
+s Fast Guard Running Stable Valid
+w Bandwidth=497963
+p reject 1-65535
+'''
+
 BRIDGE_SERVER_DESCRIPTOR = '''\
 router OutwitsPlod 152.78.9.20 17810 0 0
 or-address [bfbd:7a90:2347:cc4:e854:64b3:2c31:124f]:17810
@@ -187,6 +195,22 @@ class ParseDescriptorsTests(unittest.TestCase):
         # because the function opens the networkstatus file to read it.
         descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
                                                    BRIDGE_NETWORKSTATUS_0)
+        routers = descriptors.parseNetworkStatusFile(descFile)
+        bridge = routers.items()[0]
+        self.assertIsInstance(bridge, RouterStatusEntryV2)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
+
+    def test_parse_descriptors_parseBridgeNetworkStatusFile_two_files(self):
+        """Test ``b.p.descriptors.parseNetworkStatusFile`` with two bridge
+        networkstatus descriptors.
+        """
+        # Write the descriptor to a file for testing. This is necessary
+        # because the function opens the networkstatus file to read it.
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   BRIDGE_NETWORKSTATUS_0,
+                                                   BRIDGE_NETWORKSTATUS_1)
         routers = descriptors.parseNetworkStatusFile(descFile)
         bridge = routers.items()[0]
         self.assertIsInstance(bridge, RouterStatusEntryV2)
