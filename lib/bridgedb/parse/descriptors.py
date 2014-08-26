@@ -27,8 +27,8 @@ def parseNetworkStatusFile(filename, validate=True):
     """Parse a file which contains an ``@type bridge-networkstatus`` document.
 
     :rtype: dict
-    :returns: A dictionary of
-        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`.
+    :returns: A dictionary fingerprints mapped to
+        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
     """
     logging.info("Parsing networkstatus entries with Stem: %s" % filename)
 
@@ -55,9 +55,9 @@ def parseNetworkStatusFile(filename, validate=True):
             ("Networkstatus file '%s' started with 'published' line! Please "
              "revise this function!") % filename)
 
-    routers = networkstatus.BridgeNetworkStatusDocument(descriptors,
-                                                        validate=validate)
-    return routers
+    document = networkstatus.BridgeNetworkStatusDocument(descriptors,
+                                                         validate=validate)
+    return document.routers
 
 def parseServerDescriptorsFile(filename, validate=False):
     """Parse a file which contains ``@type bridge-server-descriptor``s.
