@@ -209,10 +209,9 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
                                                    BRIDGE_NETWORKSTATUS_0)
         routers = descriptors.parseNetworkStatusFile(descFile)
-        bridge = routers.items()[0]
-        self.assertIsInstance(bridge, RouterStatusEntryV2)
+        fingerprint, bridge = routers.items()[0]
         self.assertEqual(bridge.address, u'152.78.9.20')
-        self.assertEqual(bridge.fingerprint,
+        self.assertEqual(fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeNetworkStatusFile_2(self):
@@ -225,10 +224,9 @@ class ParseDescriptorsTests(unittest.TestCase):
                                                    BRIDGE_NETWORKSTATUS_0,
                                                    BRIDGE_NETWORKSTATUS_1)
         routers = descriptors.parseNetworkStatusFile(descFile)
-        bridge = routers.items()[0]
-        self.assertIsInstance(bridge, RouterStatusEntryV2)
+        fingerprint, bridge = routers.items()[0]
         self.assertEqual(bridge.address, u'152.78.9.20')
-        self.assertEqual(bridge.fingerprint,
+        self.assertEqual(fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_return_type(self):
