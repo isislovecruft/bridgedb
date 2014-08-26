@@ -231,11 +231,11 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_return_type(self):
         """The return type of ``b.p.descriptors.parseBridgeExtraInfoFiles``
-        should be a list.
+        should be a dictionary (after deduplication).
         """
         descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         routers = descriptors.parseBridgeExtraInfoFiles(descFile)
-        self.assertIsInstance(routers, list)
+        self.assertIsInstance(routers, dict)
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_has_BridgeExtraInfoDescriptor(self):
         """The return of ``b.p.descriptors.parseBridgeExtraInfoFiles`` should
