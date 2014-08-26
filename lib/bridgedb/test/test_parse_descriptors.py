@@ -169,12 +169,25 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile(self):
-        """Test for ``b.p.descriptors.parseNetworkStatusFile``."""
-        descFile = io.BytesIO(BRIDGE_NETWORKSTATUS)
+    def test_parse_descriptors_parseBridgeNetworkStatusFile_return_type(self):
+        """``b.p.descriptors.parseNetworkStatusFile`` should return a dict."""
+        # Write the descriptor to a file for testing. This is necessary
+        # because the function opens the networkstatus file to read it.
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   BRIDGE_NETWORKSTATUS_0)
         routers = descriptors.parseNetworkStatusFile(descFile)
-        self.assertIsInstance(routers, list)
-        bridge = routers[0]
+        self.assertIsInstance(routers, dict)
+
+    def test_parse_descriptors_parseBridgeNetworkStatusFile_one_file(self):
+        """Test ``b.p.descriptors.parseNetworkStatusFile`` with one bridge
+        networkstatus descriptor.
+        """
+        # Write the descriptor to a file for testing. This is necessary
+        # because the function opens the networkstatus file to read it.
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   BRIDGE_NETWORKSTATUS_0)
+        routers = descriptors.parseNetworkStatusFile(descFile)
+        bridge = routers.items()[0]
         self.assertIsInstance(bridge, RelayDescriptor)
         self.assertEqual(bridge.address, u'152.78.9.20')
         self.assertEqual(bridge.fingerprint,
