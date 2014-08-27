@@ -145,6 +145,9 @@ class HTTPTests(unittest.TestCase):
         return bridges
 
     def test_get_obfs2_ipv4(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
@@ -160,6 +163,9 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_obfs3_ipv4(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
@@ -175,6 +181,9 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_vanilla_ipv4(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
@@ -190,6 +199,9 @@ class HTTPTests(unittest.TestCase):
             self.assertTrue(bridge != None)
 
     def test_get_scramblesuit_ipv4(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
