@@ -23,9 +23,15 @@ repository.
 """
 
 from __future__ import print_function
-from twisted.trial import unittest
-from BeautifulSoup import BeautifulSoup
+
 import mechanize
+import os
+
+from BeautifulSoup import BeautifulSoup
+from twisted.trial import unittest
+
+from bridgedb.test.util import processExists
+from bridgedb.test.util import getBridgeDBPID
 
 HTTPS_ROOT = 'https://127.0.0.1:6789'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'
@@ -33,6 +39,11 @@ CAPTCHA_RESPONSE = 'Tvx74Pmy'
 
 class HTTPTests(unittest.TestCase):
     def setUp(self):
+        here = os.getcwd()
+        topdir = here.rstrip('_trial_temp')
+        self.rundir = os.path.join(topdir, 'run')
+        self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
+        self.pid = getBridgeDBPID(self.pidfile)
         self.br = None
 
     def tearDown(self):
@@ -132,6 +143,9 @@ class HTTPTests(unittest.TestCase):
         return bridges
 
     def test_get_obfs2_ipv4(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -144,6 +158,9 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_obfs3_ipv4(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -156,6 +173,9 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_vanilla_ipv4(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -168,6 +188,9 @@ class HTTPTests(unittest.TestCase):
             self.assertTrue(bridge != None)
 
     def test_get_scramblesuit_ipv4(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         self.openBrowser()
         self.goToOptionsPage()
 
