@@ -21,6 +21,7 @@ from twisted.trial import unittest
 from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import pidExists
+from bridgedb.test.util import getBridgeDBPID
 
 
 class BridgeDBCliTest(unittest.TestCase):
@@ -31,30 +32,8 @@ class BridgeDBCliTest(unittest.TestCase):
         topdir = here.rstrip('_trial_temp')
         self.rundir = os.path.join(topdir, 'run')
         self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
-        self.pid = self.getBridgeDBPID(self.pidfile)
+        self.pid = getBridgeDBPID(self.pidfile)
         self.assignmentsFile = os.path.join(self.rundir, 'assignments.log')
-
-    def getBridgeDBPID(self, pidfile="bridgedb.pid"):
-        """Read the ``bridgedb.pid`` file in **rundir**, if it exists, to get
-        the PID.
-
-        :param str pidfile: The path to the BridgeDB pidfile.
-        :rtype: int
-        :returns: The process ID, if available, otherwise ``0``.
-        """
-        fh = None
-        try:
-            fh = open(pidfile)
-        except (IOError, OSError) as err:
-            print(err)
-            pid = 0
-        else:
-            pid = int(fh.read())
-
-        if fh:
-            fh.close()
-
-        return pid
 
     def doSleep(self):
         """Sleep for some ammount of time.

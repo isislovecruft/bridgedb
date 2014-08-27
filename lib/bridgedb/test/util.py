@@ -87,6 +87,28 @@ def pidExists(pid):
     else:
         return True
 
+def getBridgeDBPID(pidfile="bridgedb.pid"):
+    """Read the ``bridgedb.pid`` file in **rundir**, if it exists, to get the
+    PID.
+
+    :param str pidfile: The path to the BridgeDB pidfile.
+    :rtype: int
+    :returns: The process ID, if available, otherwise ``0``.
+    """
+    fh = None
+    try:
+        fh = open(pidfile)
+    except (IOError, OSError) as err:
+        print(err)
+        pid = 0
+    else:
+        pid = int(fh.read())
+
+    if fh:
+        fh.close()
+
+    return pid
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be
