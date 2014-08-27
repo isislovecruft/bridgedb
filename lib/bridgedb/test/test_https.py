@@ -23,10 +23,12 @@ repository.
 """
 
 from __future__ import print_function
-from twisted.trial import unittest
-from BeautifulSoup import BeautifulSoup
+
 import mechanize
 import os
+
+from BeautifulSoup import BeautifulSoup
+from twisted.trial import unittest
 
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
