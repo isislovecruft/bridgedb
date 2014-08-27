@@ -1,16 +1,17 @@
 """integration tests for BridgeDB ."""
 
 from __future__ import print_function
-from twisted.trial import unittest
 
 import smtplib
-from smtpd import SMTPServer
 import asyncore
 import threading
 import Queue
 import random
 import os
 
+from smtpd import SMTPServer
+
+from twisted.trial import unittest
 from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists
