@@ -66,8 +66,9 @@ def fileCheckDecorator(func):
     return wrapper
 
 def processExists(pid):
-    """Test if **pid** exists.
+    """Test if the process with **pid** exists.
 
+    :param int pid: An integer specifying the process ID.
     :raises: OSError, if ``OSError.errno`` wasn't an expected errno (according
         to the "ERRORS" section from ``man 2 kill``).
     :rtype: bool
