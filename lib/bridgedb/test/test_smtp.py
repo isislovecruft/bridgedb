@@ -9,6 +9,12 @@ import asyncore
 import threading
 import Queue
 import random
+import os
+
+from twisted.trial.unittest import SkipTest
+
+from bridgedb.test.util import processExists
+from bridgedb.test.util import getBridgeDBPID
 
 # ------------- SMTP Client Config
 SMTP_DEBUG_LEVEL = 0  # set to 1 to see SMTP message exchange
@@ -109,6 +115,11 @@ class SMTPTests(unittest.TestCase):
         '''Called at the start of each test, ensures that the SMTP server is
         running.
         '''
+        here = os.getcwd()
+        topdir = here.rstrip('_trial_temp')
+        self.rundir = os.path.join(topdir, 'run')
+        self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
+        self.pid = getBridgeDBPID(self.pidfile)
         self.server = EmailServer.startServer()
 
     def tearDown(self):
@@ -117,6 +128,9 @@ class SMTPTests(unittest.TestCase):
         self.server.stop()
 
     def test_getBridges(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         # send the mail to bridgedb, choosing a random email address
         sendMail(fromAddress=FROM_ADDRESS_TEMPLATE
                  % random.randint(MIN_FROM_ADDRESS, MAX_FROM_ADDRESS))
@@ -126,6 +140,9 @@ class SMTPTests(unittest.TestCase):
         self.server.getAndCheckMessageContains("Here are your bridges")
 
     def test_getBridges_rateLimitExceeded(self):
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         # send the mail to bridgedb, choosing a random email address
         FROM_ADDRESS = FROM_ADDRESS_TEMPLATE % random.randint(
             MIN_FROM_ADDRESS, MAX_FROM_ADDRESS)
@@ -152,6 +169,9 @@ class SMTPTests(unittest.TestCase):
         '''Sends a large number of emails in a short period of time, and checks
         that a response is received for each message.
         '''
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
         NUM_MAILS = 100
         for i in range(NUM_MAILS):
             # Note: if by chance two emails with the same FROM_ADDRESS are
