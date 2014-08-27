@@ -43,7 +43,7 @@ class BridgeDBCliTest(unittest.TestCase):
         machines.
         """
         if os.environ.get("TRAVIS"):
-            time.sleep(5)
+            time.sleep(10)
         else:
             time.sleep(20)
         return
