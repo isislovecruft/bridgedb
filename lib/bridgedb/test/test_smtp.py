@@ -129,6 +129,9 @@ class SMTPTests(unittest.TestCase):
         self.server.stop()
 
     def test_getBridges(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
@@ -141,6 +144,9 @@ class SMTPTests(unittest.TestCase):
         self.server.getAndCheckMessageContains("Here are your bridges")
 
     def test_getBridges_rateLimitExceeded(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
@@ -170,6 +176,9 @@ class SMTPTests(unittest.TestCase):
         '''Sends a large number of emails in a short period of time, and checks
         that a response is received for each message.
         '''
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
         if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
