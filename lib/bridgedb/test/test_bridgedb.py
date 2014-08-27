@@ -59,7 +59,7 @@ class BridgeDBCliTest(unittest.TestCase):
         This test ensures that an ``assignments.log`` file is created after a
         BridgeDB process was started.
         """
-        if not self.pid:
+        if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
         self.assertTrue(os.path.isfile(self.assignmentsFile))
@@ -68,7 +68,7 @@ class BridgeDBCliTest(unittest.TestCase):
         """Test that BridgeDB creates a new ``assignments.log`` file after
         receiving a SIGHUP.
         """
-        if not self.pid:
+        if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
         os.unlink(self.assignmentsFile)
@@ -78,7 +78,7 @@ class BridgeDBCliTest(unittest.TestCase):
 
     def test_bridgedb_SIGUSR1_buckets(self):
         """Test that BridgeDB dumps buckets appropriately after a SIGUSR1."""
-        if not self.pid:
+        if not self.pid or not processExists(self.pid):
             raise SkipTest("Can't run test: no BridgeDB process running.")
 
         os.kill(self.pid, signal.SIGUSR1)
