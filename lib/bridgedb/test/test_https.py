@@ -28,7 +28,9 @@ import mechanize
 import os
 
 from BeautifulSoup import BeautifulSoup
+
 from twisted.trial import unittest
+from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
