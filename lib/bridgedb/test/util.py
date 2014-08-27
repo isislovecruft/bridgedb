@@ -65,7 +65,7 @@ def fileCheckDecorator(func):
                         % (str(description), dst, src))
     return wrapper
 
-def pidExists(pid):
+def processExists(pid):
     """Test if **pid** exists.
 
     :raises: OSError, if ``OSError.errno`` wasn't an expected errno (according

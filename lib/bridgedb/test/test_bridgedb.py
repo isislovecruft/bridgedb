@@ -20,7 +20,7 @@ import time
 from twisted.trial import unittest
 from twisted.trial.unittest import SkipTest
 
-from bridgedb.test.util import pidExists
+from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
 
 
