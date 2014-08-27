@@ -93,7 +93,7 @@ def loadConfig(configFile=None, configCls=None):
 
     for attr in ["PROXY_LIST_FILES", "BRIDGE_FILES", "EXTRA_INFO_FILES"]:
         setting = getattr(config, attr, None)
-        if setting is None:
+        if setting is None:  # pragma: no cover
             setattr(config, attr, []) # If they weren't set, make them lists
         else:
             setattr(config, attr, # If they were set, expand the paths:
