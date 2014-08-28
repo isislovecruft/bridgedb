@@ -102,7 +102,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxjp.themecore',
               'sphinxarg.ext',
               'sphinxcontrib.fulltoc',
-              'sphinxcontrib.zopeext.autointerface',
+              'repoze.sphinx.autointerface',
               'apilinks_sphinxext']
 
 todo_include_todos = True
