@@ -6,6 +6,7 @@ BridgeDB Package and Module Documentation
 .. autosummary::
     :toctree:
 
+    bridgedb.bridgerequest
     bridgedb.Bridges
     bridgedb.Bucket
     bridgedb.captcha
