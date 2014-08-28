@@ -21,6 +21,7 @@ BridgeDB Package and Module Documentation
     bridgedb.email.templates
     bridgedb.Filters
     bridgedb.HTTPServer
+    bridgedb.interfaces
     bridgedb.Main
     bridgedb.parse
     bridgedb.persistent
