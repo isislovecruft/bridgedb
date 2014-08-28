@@ -14,7 +14,7 @@
 from twisted.trial import unittest
 
 from bridgedb import bridgerequest
-from bridgedb.bridgerequest import IBridgeRequest
+from bridgedb.bridgerequest import IRequestBridges
 from bridgedb.bridgerequest import BridgeRequestBase
 
 
@@ -27,7 +27,7 @@ class BridgeRequestBaseTests(unittest.TestCase):
 
     def test_BridgeRequestBase_implements_IRequestBridges(self):
         """BridgeRequestBase should implement IRequestBridges interface."""
-        self.assertTrue(IBridgeRequest.implementedBy(BridgeRequestBase))
+        self.assertTrue(IRequestBridges.implementedBy(BridgeRequestBase))
 
     def test_BridgeRequestBase_withoutBlockInCountry(self):
         """BridgeRequestBase.withoutBlockInCountry() should add the country CC

@@ -22,7 +22,7 @@ from zope.interface import Interface
 from bridgedb import Filters
 
 
-class IBridgeRequest(Interface):
+class IRequestBridges(Interface):
     """Interface specification of client options for requested bridges."""
 
     addressClass = Attribute(
@@ -69,7 +69,8 @@ class IBridgeRequest(Interface):
 
 class BridgeRequestBase(object):
     """A generic base class for storing options of a client bridge request."""
-    implements(IBridgeRequest)
+
+    implements(IRequestBridges)
 
     def __init__(self, addressClass=None):
         self.addressClass = addressClass

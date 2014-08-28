@@ -320,7 +320,7 @@ class IPBridgeDistTests(unittest.TestCase):
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv6Address)
             address, portlist = networkstatus.parseALine(bridge_line)
-            assert type(address) is ipaddr.IPv6Address
+            assert type(ipaddr.IPAddress(address)) is ipaddr.IPv6Address
             assert filterBridgesByIP6(random.choice(bridges))
 
     def testDistWithFilterIP4(self):
@@ -336,7 +336,7 @@ class IPBridgeDistTests(unittest.TestCase):
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
             address, portlist = networkstatus.parseALine(bridge_line)
-            assert type(address) is ipaddr.IPv4Address
+            assert type(ipaddr.IPAddress(address)) is ipaddr.IPv4Address
             assert filterBridgesByIP4(random.choice(bridges))
 
     def testDistWithFilterBoth(self):

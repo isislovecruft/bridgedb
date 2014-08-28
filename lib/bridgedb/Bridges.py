@@ -10,7 +10,6 @@
 them into hashrings for distributors.
 """
 
-import binascii
 import bisect
 import logging
 import re
@@ -26,6 +25,9 @@ import bridgedb.Bucket
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
+from bridgedb.parse.fingerprint import toHex
+from bridgedb.parse.fingerprint import fromHex
+from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.safelog import logSafely
 
 try:
@@ -34,9 +36,7 @@ except ImportError:
     from io import StringIO
 
 
-HEX_FP_LEN = 40
-ID_LEN = 20
-HEX_DIGEST_LEN = 40
+ID_LEN = 20  # XXX Only used in commented out line in Storage.py
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
@@ -72,22 +72,6 @@ def is_valid_ip(ip):
         # not a valid IPv4 or IPv6 address
         return False
     return True
-
-def is_valid_fingerprint(fp):
-    """Return true iff fp in the right format to be a hex fingerprint
-       of a Tor server.
-    """
-    if len(fp) != HEX_FP_LEN:
-        return False
-    try:
-        fromHex(fp)
-    except TypeError:
-        return False
-    else:
-        return True
-
-toHex = binascii.b2a_hex
-fromHex = binascii.a2b_hex
 
 
 class Bridge(object):
@@ -142,7 +126,7 @@ class Bridge(object):
                 raise TypeError("Bridge with invalid ID")
             self.fingerprint = toHex(id_digest)
         elif fingerprint is not None:
-            if not is_valid_fingerprint(fingerprint):
+            if not isValidFingerprint(fingerprint):
                 raise TypeError("Bridge with invalid fingerprint (%r)"%
                                 fingerprint)
             self.fingerprint = fingerprint.lower()
@@ -248,7 +232,7 @@ class Bridge(object):
 
     def assertOK(self):
         assert is_valid_ip(self.ip)
-        assert is_valid_fingerprint(self.fingerprint)
+        assert isValidFingerprint(self.fingerprint)
         assert 1 <= self.orport <= 65535
         if self.or_addresses:
             for address, portlist in self.or_addresses.items():
@@ -603,7 +587,7 @@ def parseExtraInfoFile(f):
             line = line[11:]
             (nickname, ID) = line.split()
             logging.debug("  Parsed Nickname: %s", nickname)
-            if is_valid_fingerprint(ID):
+            if isValidFingerprint(ID):
                 logging.debug("  Parsed fingerprint: %s", ID)
                 ID = fromHex(ID)
             else:
@@ -720,7 +704,7 @@ def parseCountryBlockFile(f):
         line = line.strip()
         try:
             ID, addrspec, countries = line.split()
-            if is_valid_fingerprint(ID):
+            if isValidFingerprint(ID):
                 ID = fromHex(ID)
                 logging.debug("Parsed ID: %s", ID)
             else:
@@ -750,11 +734,9 @@ class BridgeHolder(object):
     def clear(self):
         pass
 
-    def assignmentsArePersistent(self):
-        return True
-
     def dumpAssignments(self, f, description=""):
         pass
+
 
 class BridgeRingParameters(object):
     """Store validated settings on minimum number of Bridges with certain
@@ -772,10 +754,6 @@ class BridgeRingParameters(object):
     def __init__(self, needPorts=[], needFlags=[]):
         """Control the creation of subrings by including a minimum number of
         bridges which possess certain attributes.
-
-        XXX In bridgedb.conf, there is a note on the FORCE_FLAGS setting which
-            reads: "Only 'stable' is now supported." Is this still the case?
-            Why?
 
         :type needPorts: iterable
         :param needPorts: An iterable of two-tuples. Each two tuple should
@@ -800,7 +778,7 @@ class BridgeRingParameters(object):
                 raise TypeError("Count %s out of range." % count)
         for flag, count in needFlags:
             flag = flag.lower()
-            if flag not in ["stable",]:
+            if flag not in ["stable", "running",]:
                 raise TypeError("Unsupported flag %s" % flag)
             if count <= 0:
                 raise TypeError("Count %s out of range." % count)
@@ -1113,9 +1091,6 @@ class UnallocatedHolder(BridgeHolder):
         if not bridge.fingerprint in self.fingerprints:
             self.fingerprints.append(bridge.fingerprint)
 
-    def assignmentsArePersistent(self):
-        return False
-
     def __len__(self):
         return len(self.fingerprints)
 
@@ -1419,10 +1394,6 @@ class FilteredBridgeSplitter(BridgeHolder):
                     " ".join([v for k,v in grouped.items()]).strip())
             f.write("%s %s\n"%( toHex(b.getID()), desc))
 
-    def assignmentsArePersistent(self):
-        return False
- 
-
 class BridgeBlock(object):
     """Base class that abstracts bridge blocking.
 
@@ -1436,9 +1407,6 @@ class BridgeBlock(object):
 
     def clear(self):
         pass
-
-    def assignmentsArePersistent(self):
-        return True
 
 class CountryBlock(BridgeBlock):
     """Countrywide bridge blocking"""

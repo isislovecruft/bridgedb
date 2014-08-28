@@ -16,6 +16,7 @@ be compatible with the newer :api:`twisted.trial` unittests in this directory.
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import binascii
 import doctest
 import glob
 import logging
@@ -88,6 +89,11 @@ def monkeypatchTests():
     patcher.addPatch(Tests.bridgedb.Bridges, 'PORTSPEC_LEN', 16)
     patcher.addPatch(Tests.bridgedb.Bridges, 're_ipv4', deprecated.re_ipv4)
     patcher.addPatch(Tests.bridgedb.Bridges, 're_ipv6', deprecated.re_ipv6)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'HEX_FP_LEN', 40)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'toHex', binascii.b2a_hex)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'fromHex', binascii.a2b_hex)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'is_valid_fingerprint',
+                     deprecated.is_valid_fingerprint)
     return patcher
 
 
