@@ -109,15 +109,23 @@ def addHowto(template):
     return howToTBB
 
 def addFooter(template, clientAddress=None):
-    """Add a footer.
+    """Add a footer::
 
-     --
-     <3 BridgeDB
-    ________________________________________________________________________
-    Public Keys: https://bridges.torproject.org/keys
+        --
+        <3 BridgeDB
+       ________________________________________________________________________
+       Public Keys: https://bridges.torproject.org/keys
 
-    This email was generated with rainbows, unicorns, and sparkles
-    for alice@example.com on Friday, 09 May, 2014 at 18:59:39.
+       This email was generated with rainbows, unicorns, and sparkles
+       for alice@example.com on Friday, 09 May, 2014 at 18:59:39.
+
+
+    :type template: ``gettext.NullTranslation`` or ``gettext.GNUTranslation``
+    :param template: A gettext translations instance, optionally with fallback
+        languages set.
+    :type clientAddress: :api:`twisted.mail.smtp.Address`
+    :param clientAddress: The client's email address which should be in the
+        ``To:`` header of the response email.
     """
     now = datetime.utcnow()
     clientAddr = clientAddress.addrstr
