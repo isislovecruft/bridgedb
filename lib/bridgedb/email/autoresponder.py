@@ -181,13 +181,12 @@ class EmailResponse(object):
         keyfile, for example, rather than simply pasting it into the body of
         the email.)
 
-    :cvar _buff: (unicode or buffer) Used internally to write lines for the
+    :var _buff: (unicode or buffer) Used internally to write lines for the
         response email into the ``_mailfile``. The reason why both of these
         attributes have two possible types is for the same Python-buggy
         reasons which require :data:`~bridgedb.crypto.NEW_BUFFER_INTERFACE`.
-    :cvar mailfile: (:class:`io.StringIO` or :class:`io.BytesIO`) An in-memory
+    :var mailfile: (:class:`io.StringIO` or :class:`io.BytesIO`) An in-memory
         file for storing the formatted headers and body of the response email.
-
     :var str delimiter: Delimiter between lines written to the
         :data:`mailfile`.
     :var bool closed: ``True`` if :meth:`close` has been called.
