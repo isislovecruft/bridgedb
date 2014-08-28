@@ -28,6 +28,15 @@ BridgeDB Package and Module Documentation:
     bridgedb
 
 
+^^^^^^^^^^^^^^^^^
+BridgeDB's README
+^^^^^^^^^^^^^^^^^
+.. toctree::
+    :maxdepth: 3
+
+    readme
+
+
 Help Us Develop BridgeDB!
 =========================
 
