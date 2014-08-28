@@ -12,7 +12,21 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Functions for checking DKIM verification results in email headers."""
+"""Functions for checking DKIM verification results in email headers.
+
+.. py:module:: bridgedb.email.dkim
+    :synopsis: Functions for checking DKIM verification results in email
+               headers.
+
+bridgedb.email.dkim
+===================
+
+::
+
+ bridgedb.email.dkim
+  |_ checkDKIM - Check the DKIM verification results header.
+..
+"""
 
 from __future__ import unicode_literals
 

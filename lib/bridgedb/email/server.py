@@ -13,7 +13,34 @@
 #_____________________________________________________________________________
 
 
-"""Servers which interface with clients and distribute bridges over SMTP."""
+"""Servers which interface with clients and distribute bridges over SMTP.
+
+.. py:module:: bridgedb.email.server
+    :synopsis: Servers which interface with clients and distribute bridges
+               over SMTP.
+
+bridgedb.email.server
+=====================
+
+::
+
+  bridgedb.email.server
+   | |_ addServer - Set up a SMTP server which listens on the configured
+   |                EMAIL_PORT for incoming connections, and responds as
+   |                necessary to requests for bridges.
+   |
+   |_ MailServerContext - Helper object that holds information used by the
+   |                      email subsystem.
+   |_ SMTPMessage - Plugs into Twisted Mail and receives an incoming message.
+   |_ SMTPIncomingDelivery - Plugs into SMTPIncomingServerFactory and handles
+   |                         SMTP commands for incoming connections.
+   |_ SMTPIncomingDeliveryFactory - Factory for SMTPIncomingDeliverys.
+   |_ SMTPIncomingServerFactory - Plugs into twisted.mail.smtp.SMTPFactory;
+                                  creates a new SMTPMessageDelivery, which
+                                  handles response email automation, whenever
+                                  we get a incoming connection on the SMTP port.
+..
+"""
 
 from __future__ import unicode_literals
 

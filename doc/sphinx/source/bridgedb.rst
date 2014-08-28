@@ -14,11 +14,6 @@ BridgeDB Package and Module Documentation
     bridgedb.crypto
     bridgedb.Dist
     bridgedb.email
-    bridgedb.email.autoresponder
-    bridgedb.email.dkim
-    bridgedb.email.request
-    bridgedb.email.server
-    bridgedb.email.templates
     bridgedb.Filters
     bridgedb.HTTPServer
     bridgedb.interfaces

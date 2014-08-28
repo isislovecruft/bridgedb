@@ -12,7 +12,25 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Functionality for autoresponding to incoming emails."""
+"""Functionality for autoresponding to incoming emails.
+
+.. py:module:: bridgedb.email.autoresponder
+    :synopsis: Functionality for autoresponding to incoming emails.
+
+bridgedb.email.autoresponder
+============================
+
+::
+
+  bridgedb.email.autoresponder
+   | |_ createResponseBody - Parse lines from an incoming email and determine
+   | |                       how to respond.
+   | |_ generateResponse - Create an email response.
+   |
+   |_ EmailResponse - Holds information for generating a response to a request.
+   |_ SMTPAutoresponder - An SMTP autoresponder for incoming mail.
+..
+"""
 
 from __future__ import unicode_literals
 from __future__ import print_function

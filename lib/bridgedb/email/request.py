@@ -14,6 +14,22 @@
 
 """Classes for parsing and storing information about requests for bridges
 which are sent to the email distributor.
+
+.. py:module:: bridgedb.email.request
+    :synopsis: Classes for parsing and storing information about requests for
+               bridges which are sent to the email distributor.
+
+bridgedb.email.request
+======================
+
+::
+
+  bridgedb.email.request
+   | |_ determineBridgeRequestOptions - Figure out which filters to apply, or
+   |                                    offer help.
+   |_ EmailBridgeRequest - A request for bridges which was received through
+                           the email distributor.
+..
 """
 
 from __future__ import print_function

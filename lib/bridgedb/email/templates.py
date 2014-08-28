@@ -10,7 +10,15 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Templates for formatting emails sent out by the email distributor."""
+"""Templates for formatting emails sent out by the email distributor.
+
+.. py:module:: bridgedb.email.templates
+    :synopsis: Templates for formatting emails sent out by the email
+               distributor.
+
+bridgedb.email.templates
+========================
+"""
 
 from __future__ import print_function
 from __future__ import unicode_literals
