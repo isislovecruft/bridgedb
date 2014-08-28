@@ -10,6 +10,7 @@ BridgeDB Package and Module Documentation
     bridgedb.Bridges
     bridgedb.Bucket
     bridgedb.captcha
+    bridgedb.configure
     bridgedb.crypto
     bridgedb.Dist
     bridgedb.email
