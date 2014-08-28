@@ -6,6 +6,10 @@
 Welcome to BridgeDB's documentation!
 ====================================
 
+.. image:: _static/bay-bridge.jpg
+    :align: center
+
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Tor Bridge Descriptor Formats:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
