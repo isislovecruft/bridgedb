@@ -12,15 +12,16 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Classes for parsing and storing information about requests for bridges
-which are sent to the email distributor.
-
+"""
 .. py:module:: bridgedb.email.request
     :synopsis: Classes for parsing and storing information about requests for
                bridges which are sent to the email distributor.
 
 bridgedb.email.request
 ======================
+
+Classes for parsing and storing information about requests for bridges
+which are sent to the email distributor.
 
 ::
 

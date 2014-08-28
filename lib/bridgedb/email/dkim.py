@@ -12,14 +12,15 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Functions for checking DKIM verification results in email headers.
-
+"""
 .. py:module:: bridgedb.email.dkim
     :synopsis: Functions for checking DKIM verification results in email
                headers.
 
 bridgedb.email.dkim
 ===================
+
+Functions for checking DKIM verification results in email headers.
 
 ::
 
@@ -40,17 +41,20 @@ def checkDKIM(message, rules):
     a domain for which we're configured (in the ``EMAIL_DOMAIN_RULES``
     dictionary in the config file) to check DKIM verification results for.
 
+    Returns ``False`` if:
+
+    1. We're supposed to expect and check the DKIM headers for the
+       client's email provider domain.
+    2. Those headers were *not* okay.
+
+    Otherwise, returns ``True``.
+
     :type message: :api:`twisted.mail.smtp.rfc822.Message`
     :param message: The incoming client request email, including headers.
     :param dict rules: The list of configured ``EMAIL_DOMAIN_RULES`` for the
         canonical domain which the client's email request originated from.
-
     :rtype: bool
-    :returns: ``False`` if:
-        1. We're supposed to expect and check the DKIM headers for the
-           client's email provider domain.
-        2. Those headers were *not* okay.
-        Otherwise, returns ``True``.
+    :returns: ``False`` if the checks failed, ``True`` otherwise.
     """
     logging.info("Checking DKIM verification results...")
     logging.debug("Domain has rules: %s" % ', '.join(rules))

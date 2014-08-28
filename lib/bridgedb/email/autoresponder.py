@@ -12,13 +12,14 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Functionality for autoresponding to incoming emails.
-
+"""
 .. py:module:: bridgedb.email.autoresponder
     :synopsis: Functionality for autoresponding to incoming emails.
 
 bridgedb.email.autoresponder
 ============================
+
+Functionality for autoresponding to incoming emails.
 
 ::
 
@@ -66,15 +67,16 @@ def createResponseBody(lines, context, client, lang='en'):
 
     :param list lines: The list of lines from the original request sent by the
         client.
-    :type context: class:`MailServerContext`
+    :type context: class:`bridgedb.email.server.MailServerContext`
     :param context: The context which contains settings for the email server.
     :type client: :api:`twisted.mail.smtp.Address`
     :param client: The client's email address which should be in the
-        :header:`To:` header of the response email.
+        ``'To:'`` header of the response email.
     :param str lang: The 2-5 character locale code to use for translating the
         email. This is obtained from a client sending a email to a valid plus
         address which includes the translation desired, i.e. by sending an
-        email to ``bridges+fa@torproject.org``, the client should receive a
+        email to `bridges+fa@torproject.org
+        <mailto:bridges+fa@torproject.org>`__, the client should receive a
         response in Farsi.
     :rtype: None or str
     :returns: None if we shouldn't respond to the client (i.e., if they have
@@ -136,21 +138,20 @@ def generateResponse(fromAddress, client, body, subject=None,
         the :header:`From:` header.
     :type client: :api:`twisted.mail.smtp.Address`
     :param client: The client's email address which should be in the
-        :header:`To:` header of the response email.
-    :param str subject: The string to write to the :header:`subject` header.
+        ``'To:'`` header of the response email.
+    :param str subject: The string to write to the ``Subject:'`` header.
     :param str body: The body of the email. If a **gpgContext** is also given,
         and that ``Context`` has email signing configured, then
         :meth:`EmailResponse.writeBody` will generate and include any
         ascii-armored OpenPGP signatures in the **body**.
     :type messageID: None or str
-    :param messageID: The :rfc:`2822` specifier for the :header:`Message-ID:`
+    :param messageID: The :rfc:`2822` specifier for the ``'Message-ID:'``
         header, if including one is desirable.
-    :type gpgContext: None or ``gpgme.Context``.
+    :type gpgContext: None or ``gpgme.Context``
     :param gpgContext: A pre-configured GPGME context. See
-        :func:`~crypto.getGPGContext`.
-    :rtype: :class:`EmailResponse`
-    :returns: A ``EmailResponse`` which contains the entire email. To obtain
-        the contents of the email, including all headers, simply use
+        :func:`~bridgedb.crypto.getGPGContext`.
+    :returns: An :class:`EmailResponse` which contains the entire email. To
+        obtain the contents of the email, including all headers, simply use
         :meth:`EmailResponse.readContents`.
     """
     response = EmailResponse(gpgContext)
@@ -180,20 +181,18 @@ class EmailResponse(object):
         keyfile, for example, rather than simply pasting it into the body of
         the email.)
 
-    :type _buff: unicode or buffer
-    :cvar _buff: Used internally to write lines for the response email into
-        the ``_mailfile``. The reason why both of these attributes have two
-        possible types is for the same Python-buggy reasons which require
-        :data:`~bridgedb.crypto.NEW_BUFFER_INTERFACE`.
-    :type mailfile: :class:`io.StringIO` or :class:`io.BytesIO`.
-    :cvar mailfile: An in-memory file for storing the formatted headers and
-        body of the response email.
+    :cvar _buff: (unicode or buffer) Used internally to write lines for the
+        response email into the ``_mailfile``. The reason why both of these
+        attributes have two possible types is for the same Python-buggy
+        reasons which require :data:`~bridgedb.crypto.NEW_BUFFER_INTERFACE`.
+    :cvar mailfile: (:class:`io.StringIO` or :class:`io.BytesIO`) An in-memory
+        file for storing the formatted headers and body of the response email.
 
-    :ivar str delimiter: Delimiter between lines written to the
-        :cvar:`mailfile`.
-    :ivar bool closed: ``True`` if :meth:`close` has been called.
-    :type to: :api:`twisted.mail.smtp.Address`
-    :ivar to: The client's email address which this response should be sent to.
+    :var str delimiter: Delimiter between lines written to the
+        :data:`mailfile`.
+    :var bool closed: ``True`` if :meth:`close` has been called.
+    :var to: An :api:`twisted.mail.smtp.Address` for the client's email address
+        which this response should be sent to.
     """
     _buff = buffer if NEW_BUFFER_INTERFACE else unicode
     mailfile = io.BytesIO if NEW_BUFFER_INTERFACE else io.StringIO
@@ -202,7 +201,7 @@ class EmailResponse(object):
         """Create a response to an email we have recieved.
 
         This class deals with correctly formatting text for the response email
-        headers and the response body into an instance of :cvar:`mailfile`.
+        headers and the response body into an instance of :data:`mailfile`.
 
         :type gpgContext: None or ``gpgme.Context``
         :param gpgContext: A pre-configured GPGME context. See
@@ -219,20 +218,20 @@ class EmailResponse(object):
         self.to = None
 
     def close(self):
-        """Close our :ivar:`mailfile` and set :ivar:`closed` to ``True``."""
+        """Close our :data:`mailfile` and set :data:`closed` to ``True``."""
         logging.debug("Closing %s.mailfile..." % (self.__class__.__name__))
         self.mailfile.close()
         self.closed = True
 
     def read(self, size=None):
-        """Read, at most, **size** bytes from our :ivar:`mailfile`.
+        """Read, at most, **size** bytes from our :data:`mailfile`.
 
         .. note:: This method is required by Twisted's SMTP system.
 
         :param int size: The number of bytes to read. Defaults to ``None``,
             which reads until EOF.
         :rtype: str
-        :returns: The bytes read from the :ivar:`mailfile`.
+        :returns: The bytes read from the :data:`mailfile`.
         """
         contents = ''
         logging.debug("Reading%s from %s.mailfile..."
@@ -249,12 +248,12 @@ class EmailResponse(object):
         return contents
 
     def readContents(self):
-        """Read the all the contents written thus far to the :cvar:`mailfile`,
+        """Read the all the contents written thus far to the :data:`mailfile`,
         and then :meth:`seek` to return to the original pointer position we
         were at before this method was called.
 
         :rtype: str
-        :returns: The entire contents of the :cvar:`mailfile`.
+        :returns: The entire contents of the :data:`mailfile`.
         """
         pointer = self.mailfile.tell()
         self.mailfile.seek(0)
@@ -263,17 +262,17 @@ class EmailResponse(object):
         return contents
 
     def rewind(self):
-        """Rewind to the very beginning of the :cvar:`mailfile`."""
+        """Rewind to the very beginning of the :data:`mailfile`."""
         logging.debug("Rewinding %s.mailfile..." % self.__class__.__name__)
         self.mailfile.seek(0)
 
     def write(self, line):
-        """Write the **line** to the :ivar:`mailfile`.
+        """Write the **line** to the :data:`mailfile`.
 
-        Any **line** written to me will have :ivar:`delimiter` appended to it
+        Any **line** written to me will have :data:`delimiter` appended to it
         beforehand.
 
-        :param str line: Something to append into the :ivar:`mailfile`.
+        :param str line: Something to append into the :data:`mailfile`.
         """
         if line.find('\r\n') != -1:
             # If **line** contains newlines, send it to :meth:`writelines` to
@@ -288,8 +287,8 @@ class EmailResponse(object):
     def writelines(self, lines):
         """Calls :meth:`write` for each line in **lines**.
 
-        Line endings of ``'\r\n'`` will be replaced with :ivar:`delimiter`
-        (i.e. ``'\n'``). See :api:`twisted.mail.smtp.SMTPClient.getMailData`
+        Line endings of ``'\\r\\n'`` will be replaced with :data:`delimiter`
+        (i.e. ``'\\n'``). See :api:`twisted.mail.smtp.SMTPClient.getMailData`
         for the reason.
 
         :type lines: basestring or list
@@ -308,17 +307,17 @@ class EmailResponse(object):
                      contentType='text/plain; charset="utf-8"', **kwargs):
         """Write all headers into the response email.
 
-        :param str fromAddress: The email address for the ``From:`` header.
-        :param str toAddress: The email address for the ``To:`` header.
+        :param str fromAddress: The email address for the ``'From:'`` header.
+        :param str toAddress: The email address for the ``'To:'`` header.
         :type subject: None or str
-        :param subject: The ``Subject:`` header.
+        :param subject: The ``'Subject:'`` header.
         :type inReplyTo: None or str
-        :param inReplyTo: If set, an ``In-Reply-To:`` header will be
-            generated. This should be set to the ``Message-ID:`` header from
+        :param inReplyTo: If set, an ``'In-Reply-To:'`` header will be
+            generated. This should be set to the ``'Message-ID:'`` header from
             the client's original request email.
         :param bool includeMessageID: If ``True``, generate and include a
-            ``Message-ID:`` header for the response.
-        :param str contentType: The ``Content-Type:`` header.
+            ``'Message-ID:'`` header for the response.
+        :param str contentType: The ``'Content-Type:'`` header.
         :kwargs: If given, the key will become the name of the header, and the
             value will become the Contents of that header.
         """
@@ -398,7 +397,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         """Gather all the data for building the response to the client.
 
         This method must return a file-like object containing the data of the
-        message to be sent. Lines in the file should be delimited by '\n'.
+        message to be sent. Lines in the file should be delimited by ``\\n``.
 
         :rtype: ``None`` or :class:`EmailResponse`
         :returns: An ``EmailResponse``, if we have a response to send in reply
@@ -438,7 +437,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
 
         :rtype: list
         :returns: A list containing the client's
-            :func:`normalized <addr.normalizeEmail>` email
+            :func:`normalized <bridgedb.parse.addr.normalizeEmail>` email
             :api:`Address <twisted.mail.smtp.Address>`, if it originated from
             a domain that we accept and the address was well-formed. Otherwise,
             returns ``None``. Even though we're likely to respond to only one
@@ -604,19 +603,19 @@ class SMTPAutoresponder(smtp.SMTPClient):
     def runChecks(self, client):
         """Run checks on the incoming message, and only reply if they pass.
 
-          1. Check if the client's address is whitelisted.
+        1. Check if the client's address is whitelisted.
 
-          2. If it's not whitelisted, check that the domain names, taken from
+        2. If it's not whitelisted, check that the domain names, taken from
         the SMTP ``MAIL FROM:`` command and the email ``'From:'`` header, can
         be :func:`canonicalized <addr.canonicalizeEmailDomain>`.
 
-          3. Check that those canonical domains match.
+        3. Check that those canonical domains match.
 
-          4. If the incoming message is from a domain which supports DKIM
+        4. If the incoming message is from a domain which supports DKIM
         signing, then run :func:`bridgedb.email.dkim.checkDKIM` as well.
 
         .. note:: Calling this method sets the ``canonicalFromEmail`` and
-            :ivar:``canonicalDomainRules`` attributes of the :ivar:`incoming`
+            :data:``canonicalDomainRules`` attributes of the :data:`incoming`
             message.
 
         :param client: An :api:`twisted.mail.smtp.Address`, which contains
@@ -687,7 +686,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         return True
 
     def send(self, response, retries=0, timeout=30, reaktor=reactor):
-        """Send our **response** in reply to :ivar:`incoming`.
+        """Send our **response** in reply to :data:`incoming`.
 
         :type client: :api:`twisted.mail.smtp.Address`
         :param client: The email address of the client.
@@ -695,7 +694,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         :param int retries: Try resending this many times. (default: ``0``)
         :param int timeout: Timeout after this many seconds. (default: ``30``)
         :rtype: :api:`Deferred <twisted.internet.defer.Deferred>`
-        :returns: Our :ivar:`deferred`.
+        :returns: Our :data:`deferred`.
         """
         logging.info("Sending reply to %s ..." % str(response.to))
 

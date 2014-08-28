@@ -10,14 +10,15 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Templates for formatting emails sent out by the email distributor.
-
+"""
 .. py:module:: bridgedb.email.templates
     :synopsis: Templates for formatting emails sent out by the email
                distributor.
 
 bridgedb.email.templates
 ========================
+
+Templates for formatting emails sent out by the email distributor.
 """
 
 from __future__ import print_function
@@ -34,6 +35,9 @@ from bridgedb.HTTPServer import TEMPLATE_DIR
 
 
 def addCommands(template):
+    """Add some text telling a client about supported email command, as well as
+    which Pluggable Transports are currently available.
+    """
     # Tell them about the various email commands:
     cmdlist = []
     cmdlist.append(template.gettext(strings.EMAIL_MISC_TEXT.get(3)))
@@ -95,6 +99,12 @@ def addBridgeAnswer(template, answer):
     return bridgeLines
 
 def addHowto(template):
+    """Add help text on how to add bridges to Tor Browser.
+
+    :type template: ``gettext.NullTranslation`` or ``gettext.GNUTranslation``
+    :param template: A gettext translations instance, optionally with fallback
+        languages set.
+    """
     howToTBB  = template.gettext(strings.HOWTO_TBB[1]) % strings.EMAIL_SPRINTF["HOWTO_TBB1"]
     howToTBB += u'\n\n'
     howToTBB += template.gettext(strings.HOWTO_TBB[2])
