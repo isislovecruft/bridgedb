@@ -275,8 +275,12 @@ def createBridgeRings(cfg, proxyList, key):
 
     return splitter, emailDistributor, ipDistributor
 
-def startup(options):
-    """Parse bridges,
+def run(options):
+    """This is BridgeDB's main entry point and main runtime loop.
+
+    Given the parsed commandline options, this function handles locating the
+    configuration file, loading and parsing it, and then either (re)parsing
+    plus (re)starting the servers, or dumping bridge assignments to files.
 
     :type options: :class:`bridgedb.parse.options.MainOptions`
     :param options: A pre-parsed options class containing any arguments and
@@ -544,16 +548,3 @@ def runSubcommand(options, config):
         logging.info("Subcommand '%s' finished with status %s."
                      % (options.subCommand, statuscode))
         sys.exit(statuscode)
-
-def run(options):
-    """This is the main entry point into BridgeDB.
-
-    Given the parsed commandline options, this function handles locating the
-    configuration file, loading and parsing it, and then either
-    starting/reloading the servers or dumping bridge assignments to files.
-
-    :type options: :class:`bridgedb.parse.options.MainOptions`
-    :param options: A pre-parsed options class containing any arguments and
-        options given in the commandline we were called with.
-    """
-    startup(options)
