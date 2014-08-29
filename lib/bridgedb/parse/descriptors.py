@@ -59,8 +59,8 @@ def parseNetworkStatusFile(filename, validate=True, skipHeaders=True,
             while not fh.readline().startswith('r '):
                 position = fh.tell()
         logging.debug("Skipping %d bytes of networkstatus file." % position)
-        document = _parseNSFile(fh, validate, entry_class=descriptorClass,
-                                start_position=position)
+        fh.seek(position)
+        document = _parseNSFile(fh, validate, entry_class=descriptorClass)
         routers.extend(list(document))
     logging.info("Closed networkstatus file: %s" % filename)
 
