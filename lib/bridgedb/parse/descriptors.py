@@ -16,48 +16,55 @@ import datetime
 import logging
 
 from stem.descriptor import extrainfo_descriptor
-from stem.descriptor import networkstatus
 from stem.descriptor import server_descriptor
 from stem.descriptor import parse_file
+from stem.descriptor.router_status_entry import _parse_file as _parseNSFile
+from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 from bridgedb import safelog
 
 
-def parseNetworkStatusFile(filename, validate=True):
+def parseNetworkStatusFile(filename, validate=True, skipHeaders=True,
+                           descriptorClass=RouterStatusEntryV3):
     """Parse a file which contains an ``@type bridge-networkstatus`` document.
 
-    :rtype: dict
-    :returns: A dictionary fingerprints mapped to
-        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
+    See `ticket #12254 <https://bugs.torproject.org/12254>`__ for why
+    networkstatus-bridges documents don't look anything like the networkstatus
+    v2 documents that they are purported to look like. They are missing all
+    headers, and the entire footer including authority signatures.
+
+    :param str filename: The location of the file containing bridge
+        networkstatus descriptors.
+    :param bool validate: Passed along to Stem's parsers. If ``True``, the
+        descriptors will raise exceptions if they do not meet some definition
+        of correctness.
+    :param bool skipHeaders: If ``True``, skip parsing everything before the
+        first ``r`` line.
+    :param descriptorClass: A class (probably from
+        :api:`stem.descriptors.router_status_entry`) which Stem will parse
+        each descriptor it reads from **filename** into.
+    :raises ValueError: if the contents of a descriptor are malformed and
+        **validate** is ``True``.
+    :raises IOError: if the file at **filename** can't be read.
+    :rtype: list
+    :returns: A list of
+        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV#`s.
     """
-    logging.info("Parsing networkstatus entries with Stem: %s" % filename)
+    routers = []
 
-    fh = open(filename)
-    descriptors = fh.read()
-    fh.close()
+    logging.info("Parsing networkstatus file: %s" % filename)
+    with open(filename) as fh:
+        position = fh.tell()
+        if skipHeaders:
+            while not fh.readline().startswith('r '):
+                position = fh.tell()
+        logging.debug("Skipping %d bytes of networkstatus file." % position)
+        document = _parseNSFile(fh, validate, entry_class=descriptorClass,
+                                start_position=position)
+        routers.extend(list(document))
+    logging.info("Closed networkstatus file: %s" % filename)
 
-    # See ticket #12254 for why networkstatus-bridges documents don't look
-    # anything like the networkstatus v2 documents that they are purported to
-    # look like. They are missing all headers, and the entire footer including
-    # authority signatures.
-    #
-    # https://trac.torproject.org/projects/tor/ticket/12254
-    #
-    # As such, they do not currently start with a "published" line with an
-    # ISO8601 timestamp, as stem expects them to:
-    #
-    if not descriptors.startswith("published"):
-        precise = datetime.datetime.now().isoformat(sep=chr(0x20))
-        timestamp = precise.rsplit('.', 1)[0]
-        descriptors = "published {t}\n{d}".format(t=timestamp, d=descriptors)
-    else:
-        logging.warn(
-            ("Networkstatus file '%s' started with 'published' line! Please "
-             "revise this function!") % filename)
-
-    document = networkstatus.BridgeNetworkStatusDocument(descriptors,
-                                                         validate=validate)
-    return document.routers
+    return routers
 
 def parseServerDescriptorsFile(filename, validate=False):
     """Parse a file which contains ``@type bridge-server-descriptor``s.
