@@ -49,13 +49,13 @@ def loadConfig(configFile=None, configCls=None):
         then it's the first time this function has been called and it is
         therefore not safe to make calls to the logging module.
     :type: configFile: string or None
-    :param string configFile: If given, the filename of the config file to
-        load.
-    :type configCls: :class:`bridgedb.Main.Conf` or None
-    :param configCls: The current configuration, if one already exists.
-    :rtype: :class:`Conf`
-    :returns: A new configuration, with the old settings as defaults, and the
-        settings from the config file overriding them.
+    :param configFile: If given, the filename of the config file to load.
+    :type configCls: :class:`Conf` or None
+    :param configCls: The current configuration instance, if one already
+        exists.
+    :returns: A new :class:`configuration <bridgedb.configure.Conf>`, with the
+        old settings as defaults, and the settings from the **configFile** (if
+        given) overriding those defaults.
     """
     itsSafeToUseLogging = False
     configuration = {}
