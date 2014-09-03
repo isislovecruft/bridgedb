@@ -24,7 +24,7 @@ from stem.descriptor.router_status_entry import RouterStatusEntryV3
 from bridgedb import safelog
 
 
-def parseNetworkStatusFile(filename, validate=True, skipHeaders=True,
+def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
                            descriptorClass=RouterStatusEntryV3):
     """Parse a file which contains an ``@type bridge-networkstatus`` document.
 
@@ -38,7 +38,7 @@ def parseNetworkStatusFile(filename, validate=True, skipHeaders=True,
     :param bool validate: Passed along to Stem's parsers. If ``True``, the
         descriptors will raise exceptions if they do not meet some definition
         of correctness.
-    :param bool skipHeaders: If ``True``, skip parsing everything before the
+    :param bool skipAnnotations: If ``True``, skip parsing everything before the
         first ``r`` line.
     :param descriptorClass: A class (probably from
         :api:`stem.descriptors.router_status_entry`) which Stem will parse
@@ -55,7 +55,7 @@ def parseNetworkStatusFile(filename, validate=True, skipHeaders=True,
     logging.info("Parsing networkstatus file: %s" % filename)
     with open(filename) as fh:
         position = fh.tell()
-        if skipHeaders:
+        if skipAnnotations:
             while not fh.readline().startswith('r '):
                 position = fh.tell()
         logging.debug("Skipping %d bytes of networkstatus file." % position)
