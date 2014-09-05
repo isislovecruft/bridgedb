@@ -548,7 +548,7 @@ class PluggableTransport(object):
         if includeFingerprint:
             sections.append(self.bridge.fingerprint)
 
-        args = ",".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
+        args = " ".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
         sections.append(args)
 
         line = ' '.join(sections)
