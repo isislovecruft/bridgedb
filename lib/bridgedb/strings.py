@@ -166,6 +166,7 @@ EMAIL_COMMANDS = {
 CURRENT_TRANSPORTS = [
     "obfs2",
     "obfs3",
+    #"obfs4",
     "scramblesuit",
     "fte",
 ]
