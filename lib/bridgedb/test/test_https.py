@@ -218,3 +218,136 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
             self.assertTrue(password.find("password=") != -1,
                             "Password field missing expected text")
+
+    def test_get_obfs4_ipv4(self):
+        """Try asking for obfs4 bridges, and check that the PT arguments in the
+        returned bridge lines were space-separated.
+
+        This is a regression test for #12932, see
+        https://bugs.torproject.org/12932.
+        """
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = 'obfs4'
+
+        try:
+            soup = self.submitOptions(transport=PT, ipv6=False,
+                                      captchaResponse=CAPTCHA_RESPONSE)
+        except ValueError as error:
+            if 'non-disabled' in str(error):
+                raise SkipTest("Pluggable Transport obfs4 is currently disabled.")
+
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=6)
+        for bridge in bridges:
+            pt = bridge[0]
+            ptArgs = bridge[-3:]
+            self.assertEquals(PT, pt)
+            self.assertTrue(len(ptArgs) == 3,
+                            ("Expected obfs4 bridge line to have 3 PT args, "
+                             "found %d instead: %s") % (len(ptArgs), ptArgs))
+
+    def test_get_obfs4_ipv4_iatmode(self):
+        """Ask for obfs4 bridges and check that there is an 'iat-mode' PT
+        argument in the bridge lines.
+        """
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = 'obfs4'
+
+        try:
+            soup = self.submitOptions(transport=PT, ipv6=False,
+                                      captchaResponse=CAPTCHA_RESPONSE)
+        except ValueError as error:
+            if 'non-disabled' in str(error):
+                raise SkipTest("Pluggable Transport obfs4 is currently disabled.")
+
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=6)
+        for bridge in bridges:
+            ptArgs = bridge[-3:]
+            hasIATMode = False
+            for arg in ptArgs:
+                if 'iat-mode' in arg:
+                    hasIATMode = True
+
+            self.assertTrue(hasIATMode,
+                            "obfs4 bridge line is missing 'iat-mode' PT arg.")
+
+    def test_get_obfs4_ipv4_publickey(self):
+        """Ask for obfs4 bridges and check that there is an 'public-key' PT
+        argument in the bridge lines.
+        """
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = 'obfs4'
+
+        try:
+            soup = self.submitOptions(transport=PT, ipv6=False,
+                                      captchaResponse=CAPTCHA_RESPONSE)
+        except ValueError as error:
+            if 'non-disabled' in str(error):
+                raise SkipTest("Pluggable Transport obfs4 is currently disabled.")
+
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=6)
+        for bridge in bridges:
+            ptArgs = bridge[-3:]
+            hasPublicKey = False
+            for arg in ptArgs:
+                if 'public-key' in arg:
+                    hasPublicKey = True
+
+            self.assertTrue(hasPublicKey,
+                            "obfs4 bridge line is missing 'public-key' PT arg.")
+
+    def test_get_obfs4_ipv4_nodeid(self):
+        """Ask for obfs4 bridges and check that there is an 'node-id' PT
+        argument in the bridge lines.
+        """
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        if not self.pid or not processExists(self.pid):
+            raise SkipTest("Can't run test: no BridgeDB process running.")
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = 'obfs4'
+
+        try:
+            soup = self.submitOptions(transport=PT, ipv6=False,
+                                      captchaResponse=CAPTCHA_RESPONSE)
+        except ValueError as error:
+            if 'non-disabled' in str(error):
+                raise SkipTest("Pluggable Transport obfs4 is currently disabled.")
+
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=6)
+        for bridge in bridges:
+            ptArgs = bridge[-3:]
+            hasNodeID = False
+            for arg in ptArgs:
+                if 'node-id' in arg:
+                    hasNodeID = True
+
+            self.assertTrue(hasNodeID,
+                            "obfs4 bridge line is missing 'node-id' PT arg.")
