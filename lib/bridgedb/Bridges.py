@@ -548,7 +548,7 @@ class PluggableTransport(object):
         if includeFingerprint:
             sections.append(self.bridge.fingerprint)
 
-        args = ",".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
+        args = " ".join(["%s=%s" % (k, v) for k, v in self.argdict.items()])
         sections.append(args)
 
         line = ' '.join(sections)
@@ -596,16 +596,24 @@ def parseExtraInfoFile(f):
         # get the transport line
         if ID and line.startswith("transport "):
             fields = line[10:].split()
-            # [ arglist ] field, optional
+
             if len(fields) >= 3:
-                arglist = fields[2:]
-                # parse arglist [k=v,...k=v] as argdict {k:v,...,k:v} 
                 argdict = {}
-                for arg in arglist:
-                    try: k,v = arg.split('=')
-                    except ValueError: continue
-                    argdict[k] = v
-                    logging.debug("  Parsing Argument: %s: %s", k, v)
+                # PT argumentss are comma-separated in the extrainfo
+                # descriptors. While there *shouldn't* be anything after them
+                # that was separated by a space (and hence would wind up being
+                # in a different `field`), if there was we'll join it to the
+                # rest of the PT arguments with a comma so that they are
+                # parsed as if they were PT arguments as well:
+                allargs = ','.join(fields[2:])
+                for arg in allargs.split(','):
+                    try:
+                        k, v = arg.split('=')
+                    except ValueError:
+                        logging.warn("  Couldn't parse K=V from PT arg: %r" % arg)
+                    else:
+                        logging.debug("  Parsed PT Argument: %s: %s" % (k, v))
+                        argdict[k] = v
 
             # get the required fields, method name and address
             if len(fields) >= 2:
