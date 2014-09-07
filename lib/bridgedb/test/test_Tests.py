@@ -94,6 +94,8 @@ def monkeypatchTests():
     patcher.addPatch(Tests.bridgedb.Bridges, 'fromHex', binascii.a2b_hex)
     patcher.addPatch(Tests.bridgedb.Bridges, 'is_valid_fingerprint',
                      deprecated.is_valid_fingerprint)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'PluggableTransport',
+                     deprecated.PluggableTransport)
     return patcher
 
 

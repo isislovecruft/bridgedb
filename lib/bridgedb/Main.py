@@ -27,6 +27,9 @@ from bridgedb import proxy
 from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
+from bridgedb.bridges import InvalidPluggableTransportIP
+from bridgedb.bridges import MalformedPluggableTransport
+from bridgedb.bridges import PluggableTransport
 from bridgedb.configure import loadConfig
 from bridgedb.configure import Conf
 from bridgedb.parse import options
@@ -128,13 +131,19 @@ def load(state, splitter, clear=False):
                 if bridges[ID].running:
                     logging.info("Adding %s transport to running bridge"
                                  % method_name)
-                    bridgePT = Bridges.PluggableTransport(
-                        bridges[ID], method_name, address, port, argdict)
-                    bridges[ID].transports.append(bridgePT)
-                    if not bridgePT in bridges[ID].transports:
-                        logging.critical(
-                            "Added a transport, but it disappeared!",
-                            "\tTransport: %r" % bridgePT)
+                    try:
+                        bridgePT = PluggableTransport(Bridges.toHex(ID),
+                                                      method_name, address,
+                                                      port, argdict)
+                    except (InvalidPluggableTransportIP,
+                            MalformedPluggableTransport) as error:
+                        logging.warn(error)
+                    else:
+                        bridges[ID].transports.append(bridgePT)
+                        if not bridgePT in bridges[ID].transports:
+                            logging.critical(
+                                "Added a transport, but it disappeared!",
+                                "\tTransport: %r" % bridgePT)
             except KeyError as error:
                 logging.error("Could not find bridge with fingerprint '%s'."
                               % Bridges.toHex(ID))

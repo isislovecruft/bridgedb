@@ -15,6 +15,7 @@ from binascii import a2b_hex
 from twisted.trial import unittest
 
 from bridgedb import Bridges
+from bridgedb.bridges import PluggableTransport
 from bridgedb.parse.addr import PortList
 
 import hashlib
@@ -125,9 +126,9 @@ class BridgeClassTest(unittest.TestCase):
                                 id_digest=self.id_digest,
                                 or_addresses=self.or_addresses)
         ptArgs = {'password': 'NEQGQYLUMUQGK5TFOJ4XI2DJNZTS4LRO'}
-        pt = Bridges.PluggableTransport(bridge, 'scramblesuit',
-                                        ipaddr.IPAddress('42.42.42.42'), 4242,
-                                        ptArgs)
+        pt = PluggableTransport(bridge.fingerprint, 'scramblesuit',
+                                ipaddr.IPAddress('42.42.42.42'), 4242,
+                                ptArgs)
         bridge.transports.append(pt)
         bridgeLine = bridge.getConfigLine(includeFingerprint=True,
                                           transport='scramblesuit')
