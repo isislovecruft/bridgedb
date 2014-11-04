@@ -124,6 +124,262 @@ class ParseORAddressError(Exception):
 
 @deprecate.deprecated(
     Version('bridgedb', 0, 2, 4),
+    replacement='bridgedb.bridges.Bridge')
+class Bridge(object):
+    """Holds information for a single bridge, along with any Pluggable
+    Transports it is also running.
+
+    :attr str nickname: The bridge's nickname.  Not currently used.
+    :attr ip: (:class:`ipaddr.IPAddress`) The bridge's IPv4 address, specified
+        on the 'r'-line in a networkstatus document.
+    :attr int orport: The bridge's OR port.
+    :attr dict or_addresses: The bridges alternate IP addresses. The keys
+        should be instances of ``ipaddr.IPAddress``, and the value should be a
+        :class:`bridgedb.parse.addr.PortList` for the port(s) on which that
+        address is listening.
+    :attr list transports: List of :class:`PluggableTransport` instances for
+        each PT which the bridge supports.
+    :attr str fingerprint: The bridge's identity digest, in lowercase hex,
+        without whitespace.
+    :attr bool running: ``True``, if this bridge was given the ``Running`` flag.
+    :attr bool stable: ``True``, if this bridge was given the ``Stable`` flag.
+    :attr dict blockingCountries: A dictionary whose keys are strings of
+        ``"IP:port"`` pairs, and the keys are lists of two letter country
+        codes which block that IP:port. For example::
+            {"1.2.3.4:9001": ['sk', 'us', 'ir', 'cn']}
+    :attr str desc_digest: SHA1 hexdigest of the bridge's descriptor as
+        defined in the networkstatus document.
+    :attr str ei_digest: SHA1 hexdigest of the bridge's extra-info document as
+        given in the bridge's descriptor, corresponding to desc_digest.
+    :attr bool verified: Did we receive the descriptor for this bridge that
+        was specified in the networkstatus?
+    """
+    def __init__(self, nickname, ip, orport, fingerprint=None, id_digest=None,
+                 or_addresses=None, transports=None):
+        """Create a new Bridge. One of fingerprint and id_digest must be set.
+        """
+        self.nickname = nickname
+        self.ip = ip
+        self.orport = orport
+        if not or_addresses: or_addresses = {}
+        self.or_addresses = or_addresses
+        if not transports: transports = []
+        self.transports = transports
+        self.running = self.stable = None
+        self.blockingCountries = {}
+        self.desc_digest = None
+        self.ei_digest = None
+        self.verified = False
+
+        if id_digest is not None:
+            assert fingerprint is None
+            if len(id_digest) != DIGEST_LEN:
+                raise TypeError("Bridge with invalid ID")
+            self.fingerprint = toHex(id_digest)
+        elif fingerprint is not None:
+            if not isValidFingerprint(fingerprint):
+                raise TypeError("Bridge with invalid fingerprint (%r)"%
+                                fingerprint)
+            self.fingerprint = fingerprint.lower()
+        else:
+            raise TypeError("Bridge with no ID")
+
+    def setDescriptorDigest(self, digest):
+        """Set the descriptor digest, specified in the NS."""
+        self.desc_digest = digest
+
+    def setExtraInfoDigest(self, digest):
+        """Set the extra-info digest, specified in the descriptor."""
+        self.ei_digest = digest
+
+    def setVerified(self):
+        """Call when the bridge's descriptor is parsed"""
+        self.verified = True
+
+    def isVerified(self):
+        """Returns the truthiness of ``verified``"""
+        return self.verified
+
+    def getID(self):
+        """Return the bridge's identity digest."""
+        return fromHex(self.fingerprint)
+
+    def __repr__(self):
+        """Return a piece of python that evaluates to this bridge."""
+        if self.or_addresses:
+            return "Bridge(%r,%r,%d,%r,or_addresses=%s)"%(
+                self.nickname, self.ip, self.orport, self.fingerprint,
+                self.or_addresses)
+        return "Bridge(%r,%r,%d,%r)"%(
+            self.nickname, self.ip, self.orport, self.fingerprint)
+
+    def getConfigLine(self, includeFingerprint=False, addressClass=None,
+            request=None, transport=None):
+        """Returns a valid bridge line for inclusion in a torrc.
+
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param DOCDOC addressClass: Type of address to choose.
+        :param str request: A string unique to this request e.g. email-address
+            or ``uniformMap(ip)`` or ``'default'``.
+        :param str transport: A pluggable transport method name.
+        """
+
+        if not request: request = 'default'
+        digest = getHMACFunc('Order-Or-Addresses')(request)
+        pos = long(digest[:8], 16) # lower 8 bytes -> long
+
+        # default address type
+        if not addressClass: addressClass = ipaddr.IPv4Address
+
+        # pluggable transports
+        if transport:
+            # filter by 'methodname'
+            transports = filter(lambda x: transport == x.methodname,
+                    self.transports)
+            # filter by 'addressClass'
+            transports = filter(lambda x: isinstance(x.address, addressClass),
+                    transports)
+            if transports:
+                pt = transports[pos % len(transports)]
+                return pt.getTransportLine(includeFingerprint)
+
+        # filter addresses by address class
+        addresses = filter(lambda x: isinstance(x[0], addressClass),
+                self.or_addresses.items())
+
+        # default ip, orport should get a chance at being selected
+        if isinstance(self.ip, addressClass):
+            addresses.insert(0,(self.ip, addr.PortList(self.orport)))
+
+        if addresses:
+            address,portlist = addresses[pos % len(addresses)]
+            if isinstance(address, ipaddr.IPv6Address): ip = "[%s]"%address
+            else: ip = "%s"%address
+            orport = portlist[pos % len(portlist)]
+
+            if includeFingerprint:
+                return "%s:%d %s" % (ip, orport, self.fingerprint)
+            else:
+                return "%s:%d" % (ip, orport)
+
+    def getAllConfigLines(self,includeFingerprint=False):
+        """Generator. Iterate over all valid config lines for this bridge."""
+        for address,portlist in self.or_addresses.items():
+            if type(address) is ipaddr.IPv6Address:
+                ip = "[%s]" % address
+            else:
+                ip = "%s" % address
+
+            for orport in portlist:
+                if includeFingerprint:
+                    yield "bridge %s:%d %s" % (ip,orport,self.fingerprint)
+                else:
+                    yield "bridge %s:%d" % (ip,orport)
+        for pt in self.transports:
+            yield pt.getTransportLine(includeFingerprints)
+
+
+    def assertOK(self):
+        assert is_valid_ip(self.ip)
+        assert isValidFingerprint(self.fingerprint)
+        assert 1 <= self.orport <= 65535
+        if self.or_addresses:
+            for address, portlist in self.or_addresses.items():
+                assert is_valid_ip(address)
+                for port in portlist:
+                    assert type(port) is int
+                    assert 1 <= port <= 65535
+
+    def setStatus(self, running=None, stable=None):
+        if running is not None:
+            self.running = running
+        if stable is not None:
+            self.stable = stable
+
+    def isBlocked(self, countryCode, addressClass, methodname=None):
+        """ if at least one address:port of the selected addressClass and
+        (optional) transport type is not blocked in countryCode, return True
+        """
+        # 1) transport is specified
+        if methodname is not None:
+            for transport in self.transports:
+                key = "%s:%s" % (transport.address, transport.port)
+                if (isinstance(transport.address, addressClass)
+                        and transport.methodname.lower() == methodname.lower()):
+                    try:
+                        if countryCode not in self.blockingCountries[key]:
+                            return False
+                    except KeyError:
+                        return False # no blocklist
+            return True
+        # 2) no transport specified (default)
+        else:
+            # 3) check primary ip, port
+            # XXX: could be more elegant if ip,orport were not special case
+            if isinstance(self.ip, addressClass):
+                key = "%s:%s" % (self.ip, self.orport)
+                try:
+                    if countryCode not in self.blockingCountries[key]:
+                        return False
+                except KeyError: return False # no blocklist
+
+            # 4) check or addresses
+            for address,portlist in self.or_addresses.items():
+                if isinstance(address, addressClass):
+                    # check each port
+                    for port in portlist:
+                        key = "%s:%s" % (address, port)
+                        try:
+                            if countryCode not in self.blockingCountries[key]:
+                                return False
+                        except KeyError: return False # no blocklist
+            return True
+
+    # Bridge Stability (#5482) properties.
+    @property
+    def familiar(self):
+        """
+        A bridge is 'familiar' if 1/8 of all active bridges have appeared
+        more recently than it, or if it has been around for a Weighted Time of 8 days.
+        """
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).familiar
+
+    @property
+    def wfu(self):
+        """Weighted Fractional Uptime"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+
+    @property
+    def weightedTime(self):
+        """Weighted Time"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedTime
+
+    @property
+    def wmtbac(self):
+        """Weighted Mean Time Between Address Change"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).wmtbac
+
+    @property
+    def tosa(self):
+        """the Time On Same Address (TOSA)"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).tosa
+
+    @property
+    def weightedUptime(self):
+        """Weighted Uptime"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
+
+
+@deprecate.deprecated(
+    Version('bridgedb', 0, 2, 4),
     replacement='bridgedb.bridges.PluggableTransport')
 class PluggableTransport(object):
     """A PT with reference to the parent bridge on which it is running.
