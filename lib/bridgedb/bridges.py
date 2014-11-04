@@ -31,6 +31,17 @@ class InvalidPluggableTransportIP(MalformedBridgeInfo):
     """Raised when a :class:`PluggableTransport` has an invalid address."""
 
 
+class ServerDescriptorDigestMismatch(MalformedBridgeInfo):
+    """Raised when the digest in an ``@type bridge-networkstatus`` document
+    doesn't match the hash digest of the ``@type bridge-server-descriptor``'s
+    contents.
+    """
+
+class ServerDescriptorWithoutNetworkstatus(MalformedBridgeInfo):
+    """Raised when we find a ``@type bridge-server-descriptor`` which was not
+    mentioned in the latest ``@type bridge-networkstatus`` document.
+    """
+
 class PluggableTransport(object):
     """A single instance of a Pluggable Transport (PT) offered by a
     :class:`Bridge`.
@@ -288,3 +299,293 @@ class PluggableTransport(object):
         self.port = kitchenSink[1]
         self.arguments = self._parseArgumentsIntoDict(kitchenSink[2])
         self._runChecks()
+
+
+class Bridge(object):
+    """A single bridge, and all the information we have for it.
+
+    :type fingerprint: str or None
+    :ivar fingerprint:
+
+    :type nickname: str or None
+    :ivar nickname:
+
+    :ivar orPort: int or None
+    :ivar orPort:
+
+    :ivar socksPort: int
+    :ivar socksPort:
+
+    :type dirPort: int
+    :ivar dirPort:
+
+    :type orAddresses: list
+    :ivar orAddresses:
+
+    :type transports: list
+    :ivar transports:
+
+    :type flags: :class:`~bridgedb.bridges.Flags`
+    :ivar flags:
+
+    :type hibernating: bool
+    :ivar hibernating:
+
+    :type contact: str or None
+    :ivar contact: The contact information for the this bridge's operator.
+
+    :type platform: str or None
+    :ivar platform: The ``platform`` line taken from the
+        ``@type bridge-server-descriptor``, e.g.
+        ``'Tor 0.2.5.4-alpha on Linux'``.
+
+    :type family: set or None
+    :ivar family: The fingerprints of other bridges related to this one.
+    """
+    #: (bool) If ``True``, check that the signature of the bridge's
+    #: ``@type bridge-server-descriptor`` is valid and that the signature was
+    #: created with the ``signing-key`` contained in that descriptor.
+    _checkServerDescriptorSignature = True
+
+    def __init__(self):
+        """Create a new ``Bridge``."""
+        self.fingerprint = None
+        self.nickname = None
+        self.address = None
+        self.orPort = None
+        self.socksPort = 0  # Bridges should always have ``SOCKSPort`` and
+        self.dirPort = 0    # ``DirPort`` set to ``0``
+        self.orAddresses = []
+        self.transports = []
+        self.flags = BridgeFlags()
+        self.hibernating = False
+
+        self.bandwidth = None
+        self.bandwidthAverage = None
+        self.bandwidthBurst = None
+        self.bandwidthObserverd = None
+
+        self.contact = None
+        self.family = None
+        self.platform = None
+        self.software = None
+        self.os = None
+        self.uptime = None
+
+        self.onionKey = None
+        self.ntorOnionKey = None
+        self.signingKey = None
+
+        self.descriptors = {'networkstatus': None,
+                            'server': None,
+                            'extrainfo': None}
+
+        #: The hash digest of this bridge's ``@type bridge-server-descriptor``,
+        #: as signed (but not including the signature). This is found in the
+        #: 'r'-line of this bridge's ``@type bride-networkstatus`` document,
+        #: however it is stored here re-encoded from base64 into hexadecimal,
+        #: and converted to uppercase.
+        self.descriptorDigest = None
+        self.extrainfoDigest = None
+
+    def _checkServerDescriptor(self, descriptor):
+        # If we're parsing the server-descriptor, require a networkstatus
+        # document:
+        if not self.descriptors['networkstatus']:
+            raise ServerDescriptorWithoutNetworkstatus(
+                ("We received a server-descriptor for bridge '%s' which has "
+                 "no corresponding networkstatus document.") %
+                descriptor.fingerprint)
+
+        ns = self.descriptors['networkstatus']
+
+        # We must have the digest of the server-descriptor from the
+        # networkstatus document:
+        if not self.descriptorDigest:
+            raise MissingServerDescriptorDigest(
+                ("The server-descriptor digest was missing from networkstatus "
+                 "document for bridge '%s'.") % descriptor.fingerprint)
+
+        digested = descriptor.digest()
+        # The digested server-descriptor must match the digest reported by the
+        # BridgeAuthority in the bridge's networkstatus document:
+        if not self.descriptorDigest == digested:
+            raise ServerDescriptorDigestMismatch(
+                ("The server-descriptor digest for bridge '%s' doesn't match "
+                 "the digest reported by the BridgeAuthority in the "
+                 "networkstatus document: \n"
+                 "Digest reported in networkstatus: %s\n"
+                 "Actual descriptor digest:         %s\n") %
+                (descriptor.fingerprint, self.descriptorDigest, digested))
+
+    def _updateORAddresses(self, orAddresses):
+        for (address, port, ipVersion) in orAddresses:
+            if not ipVersion:  # `False` means IPv4; `True` means IPv6.
+                # See https://bugs.torproject.org/9380#comment:27
+                warnings.warn(FutureWarning(
+                    ("Got IPv4 address in 'a'/'or-address' line! "
+                     "Desriptor format may have changed!")))
+            self.orAddresses.append(tuple([address, port]))
+
+    def assertOK(self):
+        """Perform some additional validation on this bridge's info.
+
+        We require that:
+
+          1. This bridge's :data:`fingerprint` is valid, accoring to
+             :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+
+          2. This bridge's :data:`address` and any IP addresses contained in
+             :data:`orAddresses` are valid, according to
+             :func:`~bridgedb.parse.addr.isValidIP`.
+
+          3. The :data:`orPort` and any ports in :data:`orAddresses` are
+             between ``1`` and ``65535`` (inclusive).
+
+        :raises MalformedBridgeInfo: if something was found to be malformed or
+            invalid.
+        """
+        malformed = []
+
+        if not isValidFingerprint(self.fingerprint):
+            malformed.append("Invalid fingerprint: '%s'" % self.fingerprint)
+        if not isValidIP(self.address):
+            malformed.append("Invalid ORPort address: '%s'" % self.address)
+        if not (1 <= self.orPort <= 65535):
+            malformed.append("Invalid ORPort port: '%d'" % self.orPort)
+        for (address, port) in self.orAddresses:
+            if not isValidIP(address):
+                malformed.append("Invalid ORAddress address: '%s'" % address)
+            if not (1 <= port <= 65535):
+                malformed.append("Invalid ORAddress port: '%d'" % port)
+
+        if malformed:
+            raise MalformedBridgeInfo('\n'.join(malformed))
+
+    def getDescriptorLastPublished(self):
+        """Get the timestamp for when this bridge's last known server
+        descriptor was published.
+
+        :rtype: :type:`datetime.datetime` or ``None``
+        :returns: A datetime object representing the timestamp of when the
+            last known ``@type bridge-server-descriptor`` was published, or
+            ``None`` if we have never seen a server descriptor for this
+            bridge.
+        """
+        return getattr(self.descriptors['server'], 'published', None)
+
+    def getExtrainfoLastPublished(self):
+        """Get the timestamp for when this bridge's last known extrainfo
+        descriptor was published.
+
+        :rtype: :type:`datetime.datetime` or ``None``
+        :returns: A datetime object representing the timestamp of when the
+            last known ``@type bridge-extrainfo`` descriptor was published, or
+            ``None`` if we have never seen an extrainfo descriptor for this
+            bridge.
+        """
+        return getattr(self.descriptors['extrainfo'], 'published', None)
+
+    def getNetworkstatusLastPublished(self):
+        """Get the timestamp for when this bridge's last known networkstatus
+        descriptor was published.
+
+        :rtype: :type:`datetime.datetime` or ``None``
+        :returns: A datetime object representing the timestamp of when the
+            last known ``@type networkstatus-bridge`` document was published,
+            or ``None`` if we have never seen a networkstatus document for
+            this bridge.
+        """
+        return getattr(self.descriptors['networkstatus'], 'published', None)
+
+    def updateFromNetworkstatus(self, descriptor):
+        """Update this bridge's attributes from a parsed networkstatus
+        descriptor.
+
+        :type ns: :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
+        :param ns:
+        """
+        self.descriptors['networkstatus'] = descriptor
+
+        # These fields are *only* found in the networkstatus document:
+        self.descriptorDigest = descriptor.digest
+        self.flags.update(descriptor.flags)
+        self.bandwidth = descriptor.bandwith
+
+        # These fields are also found in the server-descriptor. We will prefer
+        # to use the information taken later from the server-descriptor
+        # because it is signed by the bridge. However, for now, we harvest all
+        # the info we can:
+        self.fingerprint = descriptor.fingerprint
+        self.nickname = descriptor.nickname
+        self.address = descriptor.address
+        self.orPort = descriptor.or_port
+
+        self._updateORAddresses(descriptor.or_addresses)
+
+    def updateFromServerDescriptor(self, descriptor):
+        """Update this bridge's info from an ``@type bridge-server-descriptor``.
+
+        .. info::
+            If :func:`~bridgedb.parse.descriptor.parseServerDescriptorFile` is
+            called with ``validate=True``, then Stem will handle checking that
+            the ``signing-key`` hashes to the ``fingerprint``. Stem will also
+            check that the ``router-signature`` on the descriptor is valid,
+            was created with the ``signing-key``, and is a signature of the
+            correct digest of the descriptor document (it recalculates the
+            digest for the descriptor to ensure that the signed one and the
+            actual digest match).
+
+        :type descriptor:
+            :api:`stem.descriptor.server_descriptor.RelayDescriptor`
+        :param descriptor:
+        """
+        self.descriptors['server'] = descriptor
+
+        try:
+            self._checkServerDescriptor(descriptor)
+        except ValueError as error:
+            logging.warn(error)
+            # XXX should we throw away this descriptor?
+
+        # Replace the values which we harvested from the networkstatus
+        # descriptor, because that one isn't signed with the bridge's identity
+        # key.
+        self.fingerprint = descriptor.fingerprint
+        self.address = descriptor.address
+        self.nickname = descriptor.nickname
+        self.orPort = descriptor.or_port
+        self._updateORAddresses(descriptor.or_addresses)
+        self.hibernating = descriptor.hibernating
+
+        self.onionKey = descriptor.onion_key
+        self.ntorOnionKey = descriptor.ntor_onion_key
+        self.signingKey = descriptor.signing_key
+
+        self.bandwidthAverage = descriptor.average_bandwidth
+        self.bandwidthBurst = descriptor.burst_bandwidth
+        self.bandwidthObserved = descriptor.bandwidth_observed
+
+        self.contact = descriptor.contact
+        self.family = descriptor.family
+        self.platform = descriptor.platform
+        self.software = descriptor.tor_version
+        self.os = descriptor.operating_system
+        self.uptime = descriptor.uptime
+
+        self.extrainfoDigest = descriptor.extrainfoDigest
+
+    def updateFromExtraInfoDescriptor(self, descriptor):
+        """Update this bridge's information from an extrainfo descriptor.
+
+        .. todo:: The ``transport`` attribute of Stem's
+            ``BridgeExtraInfoDescriptor`` class is a dictionary that uses the
+            Pluggable Transport's eype as the keys. Meaning that if a bridge
+            were to offer four instances of ``obfs3``, only one of them would
+            get to us through Stem. This might pose a problem someday.
+
+        :type descriptor:
+            :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
+        :param descriptor: DOCDOC
+        """
+        self.descriptors['extrainfo'] = descriptor
