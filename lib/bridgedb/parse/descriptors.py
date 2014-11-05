@@ -238,10 +238,38 @@ def parseBridgeExtraInfoFiles(*filenames, **kwargs):
         validate = False
 
     for filename in filenames:
+        document = None
+        documentWasUnparseable = False
+
         logging.info("Parsing %s descriptors with Stem: %s"
                      % (descriptorType, filename))
-        document = parse_file(filename, descriptorType, validate=validate)
-        descriptors.extend([router for router in document])
+        try:
+            document = parse_file(filename, descriptorType, validate=validate)
+        except ValueError as error:
+            documentWasUnparseable = True
+
+        if documentWasUnparseable:
+            logging.warn(("Stem ran into an exception while parsing extrainfo "
+                          "file '%s'!") % filename)
+            logging.debug("Error while parsing extrainfo file:\n%s"
+                          % str(error))
+
+        if documentWasUnparseable and (validate is True):
+            logging.info(("Retrying parsing of extrainfo file '%s' with "
+                          "validation disabled...") % filename)
+            try:
+                document = parse_file(filename, descriptorType, validate=False)
+            except ValueError as another:
+                logging.critical(("We were still unable to parse extrainfo "
+                                  "file on the second attempt! Bailing!"))
+            else:
+                documentWasUnparseable = False
+
+        if documentWasUnparseable:
+            _copyUnparseableDescriptorFile(filename)
+
+        if document:
+            descriptors.extend([router for router in document])
 
     routers = deduplicate(descriptors)
     return routers
