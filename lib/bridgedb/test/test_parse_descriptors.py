@@ -21,7 +21,7 @@ HAS_STEM = False
 
 try:
     from stem.descriptor.server_descriptor import RelayDescriptor
-    from stem.descriptor.extrainfo_descriptor import RelayExtraInfoDescriptor
+    from stem.descriptor.extrainfo_descriptor import BridgeExtraInfoDescriptor
     from stem.descriptor.router_status_entry import RouterStatusEntryV3
     from bridgedb.parse import descriptors
 except (ImportError, NameError), error:
@@ -150,11 +150,6 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def setUp(self):
         """Test if we have Stem installed. Skip these tests if it's missing."""
-        self.expectedIPBridge0 = '2.215.61.223'
-        self.expectedIPBridge1 = '80.44.173.87'
-
-        self.expectedFprBridge0 = 'E08B324D20AD0A13E114F027AB9AC3F32CA696A0'
-
         if self.skip:
             raise unittest.SkipTest("Couldn't import Stem.")
 
@@ -182,8 +177,9 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertIsInstance(routers, list)
         bridge = routers[0]
         self.assertIsInstance(bridge, RelayDescriptor)
-        self.assertEqual(bridge.address, self.expectedIPBridge0)
-        self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeNetworkStatusFile_return_type(self):
         """``b.p.descriptors.parseNetworkStatusFile`` should return a dict."""
@@ -217,15 +213,14 @@ class ParseDescriptorsTests(unittest.TestCase):
                                                    BRIDGE_NETWORKSTATUS_0)
         routers = descriptors.parseNetworkStatusFile(descFile)
         bridge = routers[0]
-        self.assertEqual(bridge.address, self.expectedIPBridge0)
-        self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeNetworkStatusFile_2(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with two bridge
         networkstatus descriptors.
         """
-        expectedIPs = [self.expectedIPBridge0, self.expectedIPBridge1]
-
         # Write the descriptor to a file for testing. This is necessary
         # because the function opens the networkstatus file to read it.
         descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
@@ -233,9 +228,9 @@ class ParseDescriptorsTests(unittest.TestCase):
                                                    BRIDGE_NETWORKSTATUS_1)
         routers = descriptors.parseNetworkStatusFile(descFile)
         bridge = routers[0]
-
-        self.assertIn(bridge.address, expectedIPs)
-        self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
+        self.assertEqual(bridge.address, u'152.78.9.20')
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_return_type(self):
         """The return type of ``b.p.descriptors.parseBridgeExtraInfoFiles``
@@ -252,7 +247,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         routers = descriptors.parseBridgeExtraInfoFiles(descFile)
         bridge = routers.values()[0]
-        self.assertIsInstance(bridge, RelayExtraInfoDescriptor)
+        self.assertIsInstance(bridge, BridgeExtraInfoDescriptor)
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_one_file(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with only one
@@ -267,7 +262,8 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(len(bridge.transport),
                          BRIDGE_EXTRA_INFO_DESCRIPTOR.count('transport '))
 
-        self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
+        self.assertEqual(bridge.fingerprint,
+                         u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_two_files(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with two
