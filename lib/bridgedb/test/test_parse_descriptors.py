@@ -21,7 +21,7 @@ HAS_STEM = False
 
 try:
     from stem.descriptor.server_descriptor import RelayDescriptor
-    from stem.descriptor.extrainfo_descriptor import BridgeExtraInfoDescriptor
+    from stem.descriptor.extrainfo_descriptor import RelayExtraInfoDescriptor
     from stem.descriptor.router_status_entry import RouterStatusEntryV3
     from bridgedb.parse import descriptors
 except (ImportError, NameError), error:
@@ -252,7 +252,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         descFile = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         routers = descriptors.parseBridgeExtraInfoFiles(descFile)
         bridge = routers.values()[0]
-        self.assertIsInstance(bridge, BridgeExtraInfoDescriptor)
+        self.assertIsInstance(bridge, RelayExtraInfoDescriptor)
 
     def test_parse_descriptors_parseBridgeExtraInfoFiles_one_file(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with only one

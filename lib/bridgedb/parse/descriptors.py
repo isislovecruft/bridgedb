@@ -164,22 +164,41 @@ def deduplicate(descriptors):
 def parseBridgeExtraInfoFiles(*filenames, **kwargs):
     """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
 
+    .. warning:: This function will *not* check that the ``router-signature``
+        at the end of the extrainfo descriptor is valid. See
+        ``bridgedb.bridges.Bridge._verifyExtraInfoSignature`` for a method for
+        checking the signature.
+
     .. note:: This function will call :func:`deduplicate` to deduplicate the
         extrainfo descriptors parsed from all **filenames**.
 
     :kwargs validate: If there is a ``'validate'`` keyword argument, its value
         will be passed along as the ``'validate'`` argument to
         :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`.
+        The ``'validate'`` keyword argument defaults to ``True``, meaning that
+        the hash digest stored in the ``router-digest`` line will be checked
+        against the actual contents of the descriptor and the extrainfo
+        document's signature will be verified.
     :rtype: dict
     :returns: A dictionary mapping bridge fingerprints to deduplicated
-        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s.
+        :api:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`s.
     """
     descriptors = []
-    descriptorType = 'bridge-extra-info 1.1'
 
-    validate = False
-    if ('validate' in kwargs) and (kwargs['validate'] is True):
-        validate = True
+    # The ``stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor``
+    # class (with ``descriptorType = 'bridge-extra-info 1.1``) is unsuitable
+    # for our purposes for the following reasons:
+    #
+    #   1. It expects a ``router-digest`` line, which is only present in
+    #      sanitised bridge extrainfo descriptors.
+    #
+    #   2. It doesn't check the ``router-signature`` (nor does it expect there
+    #      to be a signature).
+    descriptorType = 'extra-info 1.0'
+
+    validate = True
+    if ('validate' in kwargs) and (kwargs['validate'] is False):
+        validate = False
 
     for filename in filenames:
         logging.info("Parsing %s descriptors with Stem: %s"
