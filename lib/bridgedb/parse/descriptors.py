@@ -66,7 +66,7 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
 
     return routers
 
-def parseServerDescriptorsFile(filename, validate=False):
+def parseServerDescriptorsFile(filename, validate=True):
     """Parse a file which contains ``@type bridge-server-descriptor``s.
 
     .. note:: ``validate`` defaults to ``False`` because there appears to be a
