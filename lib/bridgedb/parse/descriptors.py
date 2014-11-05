@@ -14,6 +14,8 @@ from __future__ import print_function
 
 import datetime
 import logging
+import os
+import shutil
 
 from stem.descriptor import extrainfo_descriptor
 from stem.descriptor import server_descriptor
@@ -23,6 +25,41 @@ from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 from bridgedb import safelog
 
+
+def _copyUnparseableDescriptorFile(filename):
+    """Save a copy of the bad descriptor file for later debugging.
+
+    If the old filename was ``'descriptors/cached-extrainfo.new'``, then the
+    name of the copy will be something like
+    ``'descriptors/2014-11-05-01:57:23_cached-extrainfo.new.unparseable'``.
+
+    :param str filename: The path to the unparseable descriptor file that we
+        should save a copy of.
+    :rtype: bool
+    :returns: ``True`` if a copy of the file was saved successfully, and
+        ``False`` otherwise.
+    """
+    timestamp = datetime.datetime.now()
+    timestamp = timestamp.isoformat(sep=chr(0x2d))
+    timestamp = timestamp.rsplit('.', 1)[0]
+
+    path, sep, fname = filename.rpartition(os.path.sep)
+    newfilename = "%s%s%s_%s%sunparseable" % (path, sep, timestamp,
+                                              fname, os.path.extsep)
+
+    logging.info(("Unparseable descriptor file '%s' will be copied to '%s' "
+                  "for debugging.") % (filename, newfilename))
+
+    try:
+        shutil.copyfile(filename, newfilename)
+    except Exception as error:  # pragma: no cover
+        logging.error(("Could not save copy of unparseable descriptor file "
+                       "in '%s': %s") % (newfilename, str(error)))
+        return False
+    else:
+        logging.debug(("Successfully finished saving a copy of an unparseable "
+                       "descriptor file."))
+        return True
 
 def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
                            descriptorClass=RouterStatusEntryV3):
