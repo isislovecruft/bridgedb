@@ -232,6 +232,44 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
+    def test_parse_descriptors_parseBridgeNetworkStatusFile_with_annotations(self):
+        """Test ``b.p.descriptors.parseNetworkStatusFile`` with some document
+        headers before the first 'r'-line.
+        """
+        expectedIPs = [self.expectedIPBridge0, self.expectedIPBridge1]
+        descFile = 'networkstatus-bridges'
+
+        with open(descFile, 'w') as fh:
+            fh.write('signature and stuff from the BridgeAuth would go here\n')
+            fh.write('some more annotations with parameters and stuff\n')
+            fh.write(BRIDGE_NETWORKSTATUS_0)
+            fh.write(BRIDGE_NETWORKSTATUS_1)
+            fh.flush()
+
+        routers = descriptors.parseNetworkStatusFile(descFile)
+        bridge = routers[0]
+        self.assertIn(bridge.address, expectedIPs)
+        self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
+
+    def test_parse_descriptors_parseBridgeNetworkStatusFile_with_annotations_no_skipping(self):
+        """Test ``b.p.descriptors.parseNetworkStatusFile`` with some
+        document headers before the first 'r'-line, but without skipping said
+        annotations.
+        """
+        expectedIPs = [self.expectedIPBridge0, self.expectedIPBridge1]
+        descFile = 'networkstatus-bridges'
+
+        with open(descFile, 'w') as fh:
+            fh.write('signature and stuff from the BridgeAuth would go here\n')
+            fh.write('some more annotations with parameters and stuff\n')
+            fh.write(BRIDGE_NETWORKSTATUS_0)
+            fh.write(BRIDGE_NETWORKSTATUS_1)
+            fh.flush()
+
+        self.assertRaises(ValueError,
+                          descriptors.parseNetworkStatusFile,
+                          descFile, skipAnnotations=False)
+
     def test_parse_descriptors_parseBridgeExtraInfoFiles_return_type(self):
         """The return type of ``b.p.descriptors.parseBridgeExtraInfoFiles``
         should be a dictionary (after deduplication).
