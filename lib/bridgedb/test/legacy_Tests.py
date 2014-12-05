@@ -2,6 +2,11 @@
 # Copyright (c) 2007-2009, The Tor Project, Inc.
 # See LICENSE for licensing information
 
+"""These are legacy integration and unittests which historically lived at
+``lib/bridgedb/Tests.py``. They have been moved here to keep the test code
+separate from the production codebase.
+"""
+
 from __future__ import print_function
 
 import doctest
@@ -186,7 +191,7 @@ def fake16Bridge(orport=8080, running=True, stable=True):
     nn = "bridge-%s"%random.randrange(0,1000000)
     ip = random16IP()
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
-    b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)  
+    b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
     return b
 
@@ -261,7 +266,7 @@ class IPBridgeDistTests(unittest.TestCase):
             f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
             g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
             n = d.getBridgesForIP(g(), "x", 10)
-            n2 = d.getBridgesForIP(f(), "x", 10) 
+            n2 = d.getBridgesForIP(f(), "x", 10)
 
             assert(len(n) > 0)
             assert(len(n2) > 0)
@@ -305,7 +310,7 @@ class IPBridgeDistTests(unittest.TestCase):
     #        m = re.match(r'(\d+\.\d+)\.\d+\.\d+', bridge.ip)
     #        upper16 = m.group(1)
     #        self.assertTrue(upper16 not in slash16s)
-    #        slash16s[upper16] = True 
+    #        slash16s[upper16] = True
 
     def testDistWithFilterIP6(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
@@ -542,7 +547,7 @@ class SQLStorageTests(unittest.TestCase):
         db.setWarnedEmail("def@example.com")
         self.assertEquals(db.getWarnedEmail("def@example.com"), True)
         db.cleanWarnedEmails(t+200)
-        self.assertEquals(db.getWarnedEmail("def@example.com"), False) 
+        self.assertEquals(db.getWarnedEmail("def@example.com"), False)
 
 class ParseDescFileTests(unittest.TestCase):
     def testSimpleDesc(self):
@@ -554,7 +559,7 @@ class ParseDescFileTests(unittest.TestCase):
             test+="router-signature\n"
 
         bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100) 
+        self.assertEquals(len(bs), 100)
 
         for b in bs:
             b.assertOK()
@@ -569,10 +574,10 @@ class ParseDescFileTests(unittest.TestCase):
             test+= "router-signature\n"
 
         bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100) 
+        self.assertEquals(len(bs), 100)
 
         for b in bs:
-            b.assertOK() 
+            b.assertOK()
 
     def testMultipleOrAddress(self):
         test = ""
@@ -584,10 +589,10 @@ class ParseDescFileTests(unittest.TestCase):
             test+= "router-signature\n"
 
         bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100) 
+        self.assertEquals(len(bs), 100)
 
         for b in bs:
-            b.assertOK()  
+            b.assertOK()
 
     def testConvolutedOrAddress(self):
         test = ""
@@ -599,10 +604,10 @@ class ParseDescFileTests(unittest.TestCase):
             test+= "router-signature\n"
 
         bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100) 
+        self.assertEquals(len(bs), 100)
 
         for b in bs:
-            b.assertOK()   
+            b.assertOK()
 
     def testParseCountryBlockFile(self):
         simpleBlock = "%s:%s %s\n"
@@ -715,7 +720,7 @@ class BridgeStabilityTests(unittest.TestCase):
         """ Test pruning of old Bridge History """
         if os.environ.get('TRAVIS'):
             self.skipTest("Hangs on Travis-CI.")
-            
+
         db = self.db
 
         # make a bunch of bridges
@@ -731,7 +736,7 @@ class BridgeStabilityTests(unittest.TestCase):
 
         for b in running: assert b not in expired
 
-        # Solving: 
+        # Solving:
         # 1 discount event per 12 hours, 24 descriptors 30m apart
         num_successful = random.randint(2,60)
         # figure out how many intervals it will take for weightedUptime to
