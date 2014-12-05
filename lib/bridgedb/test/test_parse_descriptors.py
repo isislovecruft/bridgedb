@@ -303,6 +303,16 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.fingerprint,
                          u'6FA9216CF3A06E89A03121ACC31F70F8DFD7DDCC')
 
+    def test_parse_descriptors_deduplicate_identical_timestamps(self):
+        """Parsing two descriptors for the same bridge with identical
+        timestamps should raise a ``b.p.descriptors.DescriptorWarning``.
+        """
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        self.assertRaises(descriptors.DescriptorWarning,
+                          descriptors.parseBridgeExtraInfoFiles,
+                          descFileOne, descFileTwo)
+
     def test_parse_descriptors_parseBridgeExtraInfoFiles_two_files(self):
         """Test for ``b.p.descriptors.parseBridgeExtraInfoFiles`` with two
         bridge extrainfo files, and check that only the newest extrainfo
