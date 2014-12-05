@@ -82,8 +82,18 @@ class BridgeRequestBase(object):
         self.notBlockedIn = list()
         self.valid = False
 
-    def isValid(self):
-        pass
+    def isValid(self, valid=None):
+        """Set or determine if this request was valid.
+
+        :type valid: None or bool
+        :param valid: If ``None``, get the current request validity. If
+            ``True`` or ``False``, set the request validity accordingly.
+        :rtype: bool
+        :returns: Whether or not this request is valid.
+        """
+        if isinstance(valid, bool):
+            self.valid = valid
+        return self.valid
 
     def withIPv4(self):
         self.addressClass = ipaddr.IPv4Address
