@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 
+from stem import ProtocolError
 from stem.descriptor import extrainfo_descriptor
 from stem.descriptor import server_descriptor
 from stem.descriptor import parse_file
@@ -24,6 +25,10 @@ from stem.descriptor.router_status_entry import _parse_file as _parseNSFile
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 from bridgedb import safelog
+
+
+class DescriptorWarning(Warning):
+    """Raised when we parse a very odd descriptor."""
 
 
 def _copyUnparseableDescriptorFile(filename):
@@ -181,9 +186,10 @@ def deduplicate(descriptors):
             # ``platform`` line in its server-descriptor and tell whoever
             # wrote that code that they're probably (D)DOSing the Tor network.
             else:
-                logging.warn(("Duplicate descriptor with identical timestamp "
-                              "(%s) for router with fingerprint '%s'!")
-                             % (descriptor.published, fingerprint))
+                raise DescriptorWarning(
+                    ("Duplicate descriptor with identical timestamp (%s) for "
+                     "router with fingerprint '%s'!")
+                    % (descriptor.published, fingerprint))
 
         # Hoorah! No duplicates! (yet...)
         else:
@@ -238,38 +244,19 @@ def parseBridgeExtraInfoFiles(*filenames, **kwargs):
         validate = False
 
     for filename in filenames:
-        document = None
-        documentWasUnparseable = False
-
-        logging.info("Parsing %s descriptors with Stem: %s"
+        logging.info("Parsing %s descriptors in %s..."
                      % (descriptorType, filename))
+
+        document = parse_file(filename, descriptorType, validate=validate)
+
         try:
-            document = parse_file(filename, descriptorType, validate=validate)
-        except ValueError as error:
-            documentWasUnparseable = True
-
-        if documentWasUnparseable:
-            logging.warn(("Stem ran into an exception while parsing extrainfo "
-                          "file '%s'!") % filename)
-            logging.debug("Error while parsing extrainfo file:\n%s"
-                          % str(error))
-
-        if documentWasUnparseable and (validate is True):
-            logging.info(("Retrying parsing of extrainfo file '%s' with "
-                          "validation disabled...") % filename)
-            try:
-                document = parse_file(filename, descriptorType, validate=False)
-            except ValueError as another:
-                logging.critical(("We were still unable to parse extrainfo "
-                                  "file on the second attempt! Bailing!"))
-            else:
-                documentWasUnparseable = False
-
-        if documentWasUnparseable:
+            for router in document:
+                descriptors.append(router)
+        except (ValueError, ProtocolError) as error:
+            logging.error(
+                ("Stem exception while parsing extrainfo descriptor from "
+                 "file '%s':\n%s") % (filename, str(error)))
             _copyUnparseableDescriptorFile(filename)
-
-        if document:
-            descriptors.extend([router for router in document])
 
     routers = deduplicate(descriptors)
     return routers
