@@ -81,7 +81,7 @@ class BridgeIntegrationTests(unittest.TestCase):
         b = bridges.Bridge(self.nickname, self.ip, self.orport,
                            fingerprint=self.fingerprint)
         self.assertIsInstance(b, bridges.Bridge)
-            
+
     def test_integration_init_1(self):
         """Ensure that we can initialise the new :class:`bridgedb.bridges.Bridge`
         class in the same manner as the old :class:`bridgedb.Bridges.Bridge`
@@ -91,7 +91,7 @@ class BridgeIntegrationTests(unittest.TestCase):
         b = bridges.Bridge(self.nickname, self.ip, self.orport,
                            id_digest=self.id_digest)
         self.assertIsInstance(b, bridges.Bridge)
-            
+
     def test_integration_init_2(self):
         """Initialisation of a :class:`bridgedb.bridges.Bridge` with a bad
         ``id_digest`` should raise a TypeError.
@@ -324,3 +324,167 @@ class FlagsTests(unittest.TestCase):
         self.flags.update(["Fast", "Stable"])
         self.assertTrue(self.flags.fast)
         self.assertTrue(self.flags.stable)
+
+
+class PluggableTransportTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.bridges.PluggableTransport."""
+
+    def setUp(self):
+        self.fingerprint = "ABCDEF0123456789ABCDEF0123456789ABCDEF01"
+
+    def test_PluggableTransport_init_with_parameters(self):
+        """Initialising a PluggableTransport with args should work."""
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar'})
+        self.assertIsInstance(pt, bridges.PluggableTransport)
+
+    def test_PluggableTransport_init(self):
+        """Initialising a PluggableTransport without args should work."""
+        pt = bridges.PluggableTransport()
+        self.assertIsInstance(pt, bridges.PluggableTransport)
+
+    def test_PluggableTransport_parseArgumentsIntoDict_valid_list(self):
+        """Parsing a valid list of PT args should return a dictionary."""
+        pt = bridges.PluggableTransport()
+        args = pt._parseArgumentsIntoDict(["sharedsecret=foobar",
+                                           "publickey=1234"])
+        self.assertIsInstance(args, dict)
+        self.assertItemsEqual(args, {"sharedsecret": "foobar",
+                                     "publickey": "1234"})
+
+    def test_PluggableTransport_parseArgumentsIntoDict_valid_list_multi(self):
+        """Parsing a valid list with multiple PT args in a single list element
+        should return a dictionary.
+        """
+        pt = bridges.PluggableTransport()
+        args = pt._parseArgumentsIntoDict(["sharedsecret=foobar,password=baz",
+                                           "publickey=1234"])
+        self.assertIsInstance(args, dict)
+        self.assertItemsEqual(args, {"sharedsecret": "foobar",
+                                     "password": "baz",
+                                     "publickey": "1234"})
+
+    def test_PluggableTransport_parseArgumentsIntoDict_invalid_missing_equals(self):
+        """Parsing a string of PT args where one PT arg (K=V) is missing an
+        ``=`` character should raise a ValueError.
+        """
+        pt = bridges.PluggableTransport()
+        args = pt._parseArgumentsIntoDict(
+            ["sharedsecret=foobar,password,publickey=1234"])
+        self.assertItemsEqual(args, {"sharedsecret": "foobar",
+                                     "publickey": "1234"})
+
+    def test_PluggableTransport_runChecks_invalid_fingerprint(self):
+        """Calling _runChecks() on a PluggableTransport with an invalid
+        fingerprint should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            "INVALIDFINGERPRINT", 'obfs4', ('34.230.223.87', 37341, [
+                ('iat-mode=0,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722,'
+                 'public-key=0a5b046d07f6f971b7776de682f57c5b9cdc8fa060db7ef59de82e721c8098f4')]))
+
+    def test_PluggableTransport_runChecks_invalid_ip(self):
+        """Calling _runChecks() on a PluggableTransport with an invalid
+        IP address should raise a InvalidPluggableTransportIP exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.InvalidPluggableTransportIP,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223', 37341, [
+                ('iat-mode=0,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722,')]))
+
+    def test_PluggableTransport_runChecks_invalid_port_type(self):
+        """Calling _runChecks() on a PluggableTransport with an invalid port
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', "anyport", [
+                ('iat-mode=0,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722,')]))
+
+    def test_PluggableTransport_runChecks_invalid_port_range(self):
+        """Calling _runChecks() on a PluggableTransport with an invalid port
+        (too high) should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 65536, [
+                ('iat-mode=0,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722,')]))
+
+    def test_PluggableTransport_runChecks_invalid_pt_args(self):
+        """Calling _runChecks() on a PluggableTransport with an invalid PT
+        args should raise a MalformedPluggableTransport exception.
+        """
+        try:
+            pt = bridges.PluggableTransport(self.fingerprint,
+                                            "voltronPT", "1.2.3.4", 443,
+                                            'sharedsecret=foobar')
+        except Exception as error:
+            self.failUnlessIsInstance(error,
+                                      bridges.MalformedPluggableTransport)
+
+    def test_PluggableTransport_getTransportLine_bridge_prefix(self):
+        """If the 'Bridge ' prefix was requested, then it should be at the
+        beginning of the bridge line.
+        """
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar',
+                                         'password': 'unicorns'})
+        bridgeLine = pt.getTransportLine(bridgePrefix=True)
+        self.assertTrue(bridgeLine.startswith("Bridge "))
+
+    def test_PluggableTransport_getTransportLine_without_Fingerprint(self):
+        """If no fingerprint was requested, then there shouldn't be a
+        fingerprint in the bridge line.
+        """
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar',
+                                         'password': 'unicorns'})
+        bridgeLine = pt.getTransportLine(includeFingerprint=False)
+        self.assertNotSubstring(self.fingerprint, bridgeLine)
+
+    def test_PluggableTransport_getTransportLine_content_order(self):
+        """Check the order and content of the bridge line string."""
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar',
+                                         'password': 'unicorns'})
+        bridgeLine = pt.getTransportLine()
+
+        # We have to check for substrings because we don't know which order
+        # the PT arguments will end up in the bridge line.  Fortunately, the
+        # following three are the only ones which are important to have in
+        # order:
+        self.assertTrue(bridgeLine.startswith("voltronPT"))
+        self.assertSubstring("voltronPT 1.2.3.4:443 " + self.fingerprint,
+                             bridgeLine)
+        # These ones can be in any order, but they should be at the end of the
+        # bridge line:
+        self.assertSubstring("password=unicorns", bridgeLine)
+        self.assertSubstring("sharedsecret=foobar", bridgeLine)
+
+    def test_PluggableTransport_getTransportLine_ptargs_space_delimited(self):
+        """The PT arguments in a bridge line should be space-separated."""
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar',
+                                         'password': 'unicorns'})
+        bridgeLine = pt.getTransportLine()
+        self.assertTrue(
+            ("password=unicorns sharedsecret=foobar" in bridgeLine) or
+            ("sharedsecret=foobar password=unicorns" in bridgeLine))
