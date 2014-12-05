@@ -281,3 +281,46 @@ class BridgeIntegrationTests(unittest.TestCase):
         splitter.insert(bridge4)
         # Check that identical bridges are not inserted twice
         self.failUnlessEqual(len(splitter), 3)
+
+
+class FlagsTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.bridges.Flags`."""
+
+    def setUp(self):
+        self.flags = bridges.Flags()
+        self._all_flag_names = ["fast", "guard", "running", "stable", "valid"]
+
+    def test_init(self):
+        """Upon initialisation, all flags should be ``False``."""
+        for flag in self._all_flag_names:
+            f = getattr(self.flags, flag, None)
+            self.assertFalse(f, "%s should be False" % flag)
+
+    def test_settingStable(self):
+        """Setting the Stable flag to ``True`` should result in Flags.stable
+        being ``True``.
+        """
+        self.flags.stable = True
+        self.assertTrue(self.flags.stable, "The Stable flag should be True")
+
+    def test_settingRunning(self):
+        """Setting the Running flag to ``True`` should result in Flags.running
+        being ``True``.
+        """
+        self.flags.running = True
+        self.assertTrue(self.flags.running, "The Running flag should be True")
+
+    def test_changingFlags(self):
+        """Setting a flag and then unsetting it should result in it being
+        ``True`` and then ``False``.
+        """
+        self.flags.valid = True
+        self.assertTrue(self.flags.valid, "The Valid flag should be True")
+        self.flags.valid = False
+        self.assertFalse(self.flags.valid, "The Valid flag should be False")
+
+    def test_update(self):
+        """Test changing flags with the update() method."""
+        self.flags.update(["Fast", "Stable"])
+        self.assertTrue(self.flags.fast)
+        self.assertTrue(self.flags.stable)
