@@ -12,6 +12,7 @@
 from __future__ import print_function
 
 import datetime
+import glob
 import io
 import os
 import textwrap
@@ -419,3 +420,113 @@ class ParseDescriptorsTests(unittest.TestCase):
         routers = descriptors.parseBridgeExtraInfoFiles(descFileOne,
                                                         validate=False)
         self.assertGreaterEqual(len(routers), 1)
+
+    def test_parse_descriptosrs_parseBridgeExtraInfoFiles_unparseable(self):
+        """Test parsing three extrainfo descriptors: one is a valid descriptor,
+        one is an older duplicate, and one is unparseable (it has a bad
+        geoip-db-digest line). There should be only one descriptor returned
+        after parsing.
+        """
+        # Give it a bad geoip-db-digest:
+        unparseable = BRIDGE_EXTRA_INFO_DESCRIPTOR.replace(
+            "MiserLandfalls E08B324D20AD0A13E114F027AB9AC3F32CA696A0",
+            "DontParseMe F373CC1D86D82267F1F1F5D39470F0E0A022122E").replace(
+                "geoip-db-digest 09A0E093100B279AD9CFF47A67B13A21C6E1483F",
+                "geoip-db-digest FOOOOOOOOOOOOOOOOOOBAAAAAAAAAAAAAAAAAARR")
+
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWEST_DUPLICATE)
+        descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        # This must be a "real" file or _copyUnparseableDescriptorFile() will
+        # raise an AttributeError saying:
+        # '_io.BytesIO' object has no attribute 'rpartition'"
+        descFileThree = self.writeTestDescriptorsToFile(
+            "unparseable-descriptor", unparseable)
+        routers = descriptors.parseBridgeExtraInfoFiles(descFileOne,
+                                                        descFileTwo,
+                                                        descFileThree)
+        self.assertIsInstance(routers, dict)
+        self.assertEqual(len(routers), 1, (
+            "There were three extrainfo descriptors: one was a duplicate, "
+            "and one was unparseable, so that should only leave one "
+            "descriptor remaining."))
+
+        bridge = routers.values()[0]
+        self.assertEqual(
+            bridge.fingerprint,
+            "E08B324D20AD0A13E114F027AB9AC3F32CA696A0",
+            ("It looks like the (supposedly) unparseable bridge was returned "
+             "instead of the valid one!"))
+        self.assertEqual(
+            bridge.published,
+            datetime.datetime.strptime("2014-12-04 03:10:25", "%Y-%m-%d %H:%M:%S"),
+            "We should have the newest available descriptor for this router.")
+
+    def test_parse_descriptosrs_parseBridgeExtraInfoFiles_unparseable_and_parseable(self):
+        """Test parsing four extrainfo descriptors: two are valid descriptors,
+        one is an older duplicate of one of the valid descriptors, and one is
+        unparseable (it has a line we shouldn't recognise). There should be
+        only two descriptors returned after parsing.
+        """
+        # Mess up the bridge-ip-transports line:
+        unparseable = BRIDGE_EXTRA_INFO_DESCRIPTOR.replace(
+            "MiserLandfalls E08B324D20AD0A13E114F027AB9AC3F32CA696A0",
+            "DontParseMe F373CC1D86D82267F1F1F5D39470F0E0A022122E").replace(
+                "bridge-ip-transports <OR>=8",
+                "bridge-ip-transports <OR>")
+
+        parseable = BRIDGE_EXTRA_INFO_DESCRIPTOR.replace(
+            "MiserLandfalls E08B324D20AD0A13E114F027AB9AC3F32CA696A0",
+            "ImOkWithBeingParsed 2B5DA67FBA13A6449DE625673B7AE9E3AA7DF75F")
+
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWEST_DUPLICATE)
+        # This must be a "real" file or _copyUnparseableDescriptorFile() will
+        # raise an AttributeError saying:
+        # '_io.BytesIO' object has no attribute 'rpartition'"
+        descFileThree = self.writeTestDescriptorsToFile(
+            "unparseable-descriptor.new", unparseable)
+        descFileFour = io.BytesIO(parseable)
+        routers = descriptors.parseBridgeExtraInfoFiles(descFileOne,
+                                                        descFileTwo,
+                                                        descFileThree,
+                                                        descFileFour)
+        self.assertIsInstance(routers, dict)
+        self.assertEqual(len(routers), 2, (
+            "There were four extrainfo descriptors: one was a duplicate, "
+            "and one was unparseable, so that should only leave two "
+            "descriptors remaining."))
+
+        self.assertNotIn("F373CC1D86D82267F1F1F5D39470F0E0A022122E", routers.keys(),
+                         "The 'unparseable' descriptor was returned by the parser.")
+
+        self.assertIn("E08B324D20AD0A13E114F027AB9AC3F32CA696A0", routers.keys(),
+            ("A bridge extrainfo which had duplicates was completely missing "
+             "from the data which the parser returned."))
+        self.assertEqual(
+            routers["E08B324D20AD0A13E114F027AB9AC3F32CA696A0"].published,
+            datetime.datetime.strptime("2014-12-04 03:10:25", "%Y-%m-%d %H:%M:%S"),
+            "We should have the newest available descriptor for this router.")
+
+        self.assertIn("2B5DA67FBA13A6449DE625673B7AE9E3AA7DF75F", routers.keys(),
+                      "The 'parseable' descriptor wasn't returned by the parser.")
+
+    def test_parse_descriptosrs_parseBridgeExtraInfoFiles_unparseable_BytesIO(self):
+        """Test parsing three extrainfo descriptors: one is a valid descriptor,
+        one is an older duplicate, and one is unparseable (it has a bad
+        geoip-db-digest line). The parsing should raise an unhandled
+        AttributeError because _copyUnparseableDescriptorFile() tries to
+        manipulate the io.BytesIO object's filename, and it doesn't have one.
+        """
+        # Give it a bad geoip-db-digest:
+        unparseable = BRIDGE_EXTRA_INFO_DESCRIPTOR.replace(
+            "MiserLandfalls E08B324D20AD0A13E114F027AB9AC3F32CA696A0",
+            "DontParseMe F373CC1D86D82267F1F1F5D39470F0E0A022122E").replace(
+                "geoip-db-digest 09A0E093100B279AD9CFF47A67B13A21C6E1483F",
+                "geoip-db-digest FOOOOOOOOOOOOOOOOOOBAAAAAAAAAAAAAAAAAARR")
+
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
+        descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_NEWEST_DUPLICATE)
+        descFileThree = io.BytesIO(unparseable)
+        self.assertRaises(AttributeError,
+                          descriptors.parseBridgeExtraInfoFiles,
+                          descFileOne, descFileTwo, descFileThree)
