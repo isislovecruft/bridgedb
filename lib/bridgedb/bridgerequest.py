@@ -36,6 +36,12 @@ class IRequestBridges(Interface):
         "not be blocked in these countries.")
     valid = Attribute(
         "A boolean. Should be ``True`` if the client's request was valid.")
+    client = Attribute(
+        "This should be some information unique to the client making the "
+        "request for bridges, such that we are able to HMAC this unique "
+        "data, via getHashringPlacement(), in order to place the client "
+        "into a hashring (determining which bridge addresses they get in "
+        "the request response).")
 
     def addFilter():
         """Add a filter to the list of ``filters``."""
@@ -47,6 +53,13 @@ class IRequestBridges(Interface):
         """Build the list of callables, ``filters``, according to the current
         contents of the lists of ``transports``, ``notBlockedIn``, and the
         ``addressClass``.
+        """
+
+    def getHashringPlacement():
+        """Use some unique parameters of the client making this request to
+        obtain a value which we can use to place them into one of the hashrings
+        with :class:`~bridgedb.bridges.Bridge`s in it, in order to give that
+        client different bridges than other clients.
         """
 
     def isValid():
