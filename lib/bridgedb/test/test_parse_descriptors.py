@@ -536,3 +536,40 @@ class ParseDescriptorsTests(unittest.TestCase):
         routers = descriptors.parseBridgeExtraInfoFiles(io.BytesIO(''))
         self.assertIsInstance(routers, dict)
         self.assertEqual(len(routers), 0)
+
+    def test_parse_descriptors_copyUnparseableDescriptorFile_return_value(self):
+        """``b.p.descriptors._copyUnparseableDescriptorFile()`` should return
+        True when the new file is successfully created.
+        """
+        filename = "bridge-descriptors"
+        with open(filename, 'w') as fh:
+            fh.write(BRIDGE_SERVER_DESCRIPTOR)
+            fh.flush()
+
+        result = descriptors._copyUnparseableDescriptorFile(filename)
+        self.assertTrue(result)  # should return True
+
+    def test_parse_descriptors_copyUnparseableDescriptorFile_new_filename(self):
+        """``b.p.descriptors._copyUnparseableDescriptorFile()`` should create a
+        copy of the bad file with a specific filename format.
+        """
+        filename = "bridge-descriptors"
+        with open(filename, 'w') as fh:
+            fh.write(BRIDGE_SERVER_DESCRIPTOR)
+            fh.flush()
+
+        descriptors._copyUnparseableDescriptorFile(filename)
+        matchingFiles = glob.glob("*_bridge-descriptors.unparseable")
+        self.assertEqual(len(matchingFiles), 1)
+
+        newFile = matchingFiles[-1]
+        self.assertTrue(os.path.isfile(newFile))
+
+        timestamp = datetime.datetime.strptime(newFile.split("_")[0],
+                                               "%Y-%m-%d-%H:%M:%S")
+        # The timestamp should be roughly today (unless we just passed
+        # midnight, then it might be +/- 1):
+        self.assertApproximates(timestamp.now().day, timestamp.day, 1)
+
+        # The timestamp should be roughly this hour (+/- 1):
+        self.assertApproximates(timestamp.now().hour, timestamp.hour, 1)
