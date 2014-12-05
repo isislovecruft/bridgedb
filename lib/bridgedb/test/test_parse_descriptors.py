@@ -530,3 +530,9 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertRaises(AttributeError,
                           descriptors.parseBridgeExtraInfoFiles,
                           descFileOne, descFileTwo, descFileThree)
+
+    def test_parse_descriptosrs_parseBridgeExtraInfoFiles_empty_file(self):
+        """Test parsing an empty extrainfo descriptors file."""
+        routers = descriptors.parseBridgeExtraInfoFiles(io.BytesIO(''))
+        self.assertIsInstance(routers, dict)
+        self.assertEqual(len(routers), 0)
