@@ -177,6 +177,7 @@ class PluggableTransport(object):
         self.port = port
         self.methodname = methodname
         self.arguments = arguments
+        self._blockedIn = {}
 
         # Because we can intitialise this class with the __init__()
         # parameters, or use the ``updateFromStemTransport()`` method, we'll
@@ -432,6 +433,7 @@ class Bridge(object):
         self.transports = []
         self.flags = Flags()
         self.hibernating = False
+        self._blockedIn = {}
 
         self.bandwidth = None
         self.bandwidthAverage = None
@@ -699,6 +701,25 @@ class Bridge(object):
 
         return ' '.join(bridgeLine)
 
+    @classmethod
+    def _getBlockKey(cls, address, port):
+        """Format an **address**:**port** pair appropriately for use as a key
+        in the :data:`_blockedIn` dictionary.
+
+        :param address: An IP address of this :class:`Bridge` or one of its
+            :data:`transports`.
+        :param port: A port.
+        :rtype: str
+        :returns: A string in the form ``"ADDRESS:PORT"`` for IPv4 addresses,
+            and ``"[ADDRESS]:PORT`` for IPv6.
+        """
+        if isIPv6(str(address)):
+            key = "[%s]:%s" % (address, port)
+        else:
+            key = "%s:%s" % (address, port)
+
+        return key
+
     def _getTransportForRequest(self, bridgeRequest):
         """If a transport was requested, return the correlated
         :term:`Bridge Line` based upon the client identifier in the
@@ -890,6 +911,143 @@ class Bridge(object):
                                                    includeFingerprint,
                                                    bridgePrefix)
         return bridgeLine
+
+    def _addBlockByKey(self, key, countryCode):
+        """Create or append to the list of blocked countries for a **key**.
+
+        :param str key: The key to lookup in the :data:`Bridge._blockedIn`
+            dictionary. This should be in the form returned by
+            :classmethod:`_getBlockKey`.
+        :param str countryCode: A two-character country code specifier.
+        """
+        if self._blockedIn.has_key(key):
+            self._blockedIn[key].append(countryCode.lower())
+        else:
+            self._blockedIn[key] = [countryCode.lower(),]
+
+    def addressIsBlockedIn(self, countryCode, address, port):
+        """Determine if a specific (address, port) tuple is blocked in
+        **countryCode**.
+
+        :param str countryCode: A two-character country code specifier.
+        :param str address: An IP address (presumedly one used by this
+            bridge).
+        :param int port: A port.
+        :rtype: bool
+        :returns: ``True`` if the **address**:**port** pair is blocked in
+            **countryCode**, ``False`` otherwise.
+        """
+        key = self._getBlockKey(address, port)
+
+        try:
+            if countryCode.lower() in self._blockedIn[key]:
+                logging.info("Vanilla address %s of bridge %s blocked in %s."
+                             % (key, self, countryCode.lower()))
+                return True
+        except KeyError:
+            return False  # That address:port pair isn't blocked anywhere
+
+        return False
+
+    def transportIsBlockedIn(self, countryCode, methodname):
+        """Determine if any of a specific type of pluggable transport which
+        this bridge might be running is blocked in a specific country.
+
+        :param str countryCode: A two-character country code specifier.
+        :param str methodname: The type of pluggable transport to check,
+            i.e. ``'obfs3'``.
+        :rtype: bool
+        :returns: ``True`` if any address:port pair which this bridge is
+            running a :class:`PluggableTransport` on is blocked in
+            **countryCode**, ``False`` otherwise.
+        """
+        for pt in self.transports:
+            if pt.methodname.lower() == methodname.lower():
+                if self.addressIsBlockedIn(countryCode, pt.address, pt.port):
+                    logging.info("Transport %s of bridge %s is blocked in %s."
+                                 % (pt.methodname, self, countryCode))
+                    return True
+        return False
+
+    def isBlockedIn(self, countryCode):
+        """Determine, according to our stored bridge reachability reports, if
+        any of the address:port pairs used by this :class:`Bridge` or it's
+        :data:`transports` are blocked in **countryCode**.
+
+        :param str countryCode: A two-character country code specifier.
+        :rtype: bool
+        :returns: ``True`` if at least one address:port pair used by this
+            bridge is blocked in **countryCode**; ``False`` otherwise.
+        """
+        # Check all supported pluggable tranport types:
+        for methodname in self.supportedTransportTypes:
+            if self.transportIsBlockedIn(countryCode.lower(), methodname):
+                return True
+
+        for address, port, version in self.allVanillaAddresses:
+            if self.addressIsBlockedIn(countryCode.lower(), address, port):
+                return True
+
+        return False
+
+    def setBlockedIn(self, countryCode, address=None, port=None, methodname=None):
+        """Mark this :class:`Bridge` as being blocked in **countryCode**.
+
+        By default, if called with no parameters other than a **countryCode**,
+        we'll mark all this :class:`Bridge`'s :data:`allVanillaAddresses` and
+        :data:`transports` as being blocked.
+
+        Otherwise, we'll filter on any and all parameters given.
+
+        If only a **methodname** is given, then we assume that all
+        :data:`transports` with that **methodname** are blocked in
+        **countryCode**. If the methodname is ``"vanilla"``, then we assume
+        each address in data:`allVanillaAddresses` is blocked.
+
+        :param str countryCode: A two-character country code specifier.
+        :param address: An IP address of this Bridge or one of its
+            :data:`transports`.
+        :param port: A specific port that is blocked, if available. If the
+            **port** is ``None``, then any address this :class:`Bridge` or its
+            :class:`PluggableTransport`s has that matches the given **address**
+            will be marked as block, regardless of its port. This parameter
+            is ignored unless an **address** is given.
+        :param str methodname: A :data:`PluggableTransport.methodname` to
+            match. Any remaining :class:`PluggableTransport`s from
+            :data:`transports` which matched the other parameters and now also
+            match this **methodname** will be marked as being blocked in
+            **countryCode**.
+        """
+        vanillas   = self.allVanillaAddresses
+        transports = self.transports
+
+        if methodname:
+            # Don't process the vanilla if we weren't told to do so:
+            if not (methodname == 'vanilla') and not (address or port):
+                vanillas = []
+
+            transports = filter(lambda pt: methodname == pt.methodname, transports)
+
+        if address:
+            vanillas   = filter(lambda ip: str(address) == str(ip[0]), vanillas)
+            transports = filter(lambda pt: str(address) == str(pt.address), transports)
+
+        if port:
+            vanillas   = filter(lambda ip: int(port) == int(ip[1]), vanillas)
+            transports = filter(lambda pt: int(port) == int(pt.port), transports)
+
+        for addr, port, _ in vanillas:
+            key = self._getBlockKey(addr, port)
+            logging.info("Vanilla address %s for bridge %s is now blocked in %s."
+                         % (key, self, countryCode))
+            self._addBlockByKey(key, countryCode)
+
+        for transport in transports:
+            key = self._getBlockKey(transport.address, transport.port)
+            logging.info("Transport %s %s for bridge %s is now blocked in %s."
+                         % (transport.methodname, key, self, countryCode))
+            self._addBlockByKey(key, countryCode)
+            transport._blockedIn[key] = self._blockedIn[key]
 
     def getDescriptorLastPublished(self):
         """Get the timestamp for when this bridge's last known server
