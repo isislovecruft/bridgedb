@@ -42,6 +42,53 @@ class ServerDescriptorWithoutNetworkstatus(MalformedBridgeInfo):
     mentioned in the latest ``@type bridge-networkstatus`` document.
     """
 
+class Flags(object):
+    """All the flags which a :class:`Bridge` may have."""
+
+    fast = False
+    guard = False
+    running = False
+    stable = False
+    valid = False
+
+    def update(self, flags):
+        """Update with **flags** taken from an ``@type networkstatus-bridge``
+        's'-line.
+
+        From `dir-spec.txt`_:
+          |
+          | "s" SP Flags NL
+          |
+          |    [Exactly once.]
+          |
+          |    A series of space-separated status flags, in lexical order (as ASCII
+          |    byte strings).  Currently documented flags are:
+          |
+          | [...]
+          |      "Fast" if the router is suitable for high-bandwidth circuits.
+          |      "Guard" if the router is suitable for use as an entry guard.
+          | [...]
+          |      "Stable" if the router is suitable for long-lived circuits.
+          |      "Running" if the router is currently usable.
+          | [...]
+          |      "Valid" if the router has been 'validated'.
+
+        .. _dir-spec.txt:
+            https://gitweb.torproject.org/torspec.git/blob/7647f6d4d:/dir-spec.txt#l1603
+
+        :param list flags: A list of strings containing each of the flags
+            parsed from the 's'-line.
+        """
+        self.fast = 'Fast' in flags
+        self.guard = 'Guard' in flags
+        self.running = 'Running' in flags
+        self.stable = 'Stable' in flags
+        self.valid = 'Valid' in flags
+
+        if self.fast or self.guard or self.running or self.stable or self.valid:
+            logging.debug("Parsed Flags: %s" % ' '.join(flags))
+
+
 class PluggableTransport(object):
     """A single instance of a Pluggable Transport (PT) offered by a
     :class:`Bridge`.
@@ -357,7 +404,7 @@ class Bridge(object):
         self.dirPort = 0    # ``DirPort`` set to ``0``
         self.orAddresses = []
         self.transports = []
-        self.flags = BridgeFlags()
+        self.flags = Flags()
         self.hibernating = False
 
         self.bandwidth = None
