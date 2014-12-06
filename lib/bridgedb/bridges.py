@@ -11,6 +11,7 @@
 
 from __future__ import print_function
 
+import hashlib
 import ipaddr
 import logging
 import os
@@ -464,6 +465,36 @@ class Bridge(object):
                                       orPort=orport, fingerprint=fingerprint,
                                       idDigest=id_digest,
                                       orAddresses=or_addresses)
+
+    def __str__(self):
+        """Return a pretty string representation that identifies this Bridge.
+
+        .. warning:: With safelogging disabled, the returned string contains
+            the bridge's fingerprint, which should be handled with care.
+
+        If safelogging is enabled, the returned string will have the SHA-1
+        hash of the bridge's fingerprint (a.k.a. a hashed fingerprint).
+
+        Hashed fingerprints will be prefixed with ``'$$'``, and the real
+        fingerprints are prefixed with ``'$'``.
+
+        :rtype: str
+        :returns: A string in the form:
+            :data:`nickname```.$``:data:`fingerprint`.
+        """
+        nickname = self.nickname if self.nickname else 'Unnamed'
+        separator = '.$'
+        fingerprint = self.fingerprint
+
+        if safelog.safe_logging:
+            separator = '.$$'
+            if fingerprint:
+                fingerprint = hashlib.sha1(fingerprint).hexdigest()
+
+        if not fingerprint:
+            fingerprint = '0' * 40
+
+        return nickname + separator + fingerprint
 
     def _backwardsCompatible(self, nickname=None, address=None, orPort=None,
                              fingerprint=None, idDigest=None,
