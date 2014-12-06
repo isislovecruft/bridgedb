@@ -22,6 +22,8 @@ from Crypto.Util import asn1
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.number import long_to_bytes
 
+import bridgedb.Storage
+
 from bridgedb import safelog
 from bridgedb import bridgerequest
 from bridgedb.crypto import removePKCS1Padding
@@ -1326,3 +1328,43 @@ class Bridge(object):
                      % (self, ' '.join(dead)))
         for died in dead:
             self.transports.remove(died)
+
+    # Bridge Stability (`#5482 <https://bugs.torproject.org>`_) properties.
+    @property
+    def familiar(self):
+        """A bridge is "familiar" if 1/8 of all active bridges have appeared
+        more recently than it, or if it has been around for a Weighted Time of
+        eight days.
+        """
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).familiar
+
+    @property
+    def wfu(self):
+        """Weighted Fractional Uptime"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+
+    @property
+    def weightedTime(self):
+        """Weighted Time"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedTime
+
+    @property
+    def wmtbac(self):
+        """Weighted Mean Time Between Address Change"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).wmtbac
+
+    @property
+    def tosa(self):
+        """The Time On Same Address (TOSA)"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).tosa
+
+    @property
+    def weightedUptime(self):
+        """Weighted Uptime"""
+        with bridgedb.Storage.getDB() as db:
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
