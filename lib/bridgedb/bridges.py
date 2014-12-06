@@ -52,7 +52,6 @@ class MalformedPluggableTransport(MalformedBridgeInfo):
 class InvalidPluggableTransportIP(MalformedBridgeInfo):
     """Raised when a :class:`PluggableTransport` has an invalid address."""
 
-
 class ServerDescriptorDigestMismatch(MalformedBridgeInfo):
     """Raised when the digest in an ``@type bridge-networkstatus`` document
     doesn't match the hash digest of the ``@type bridge-server-descriptor``'s
