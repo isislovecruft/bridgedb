@@ -9,13 +9,22 @@
 
 """Classes for manipulating and storing Bridges and their attributes."""
 
+from __future__ import print_function
 
 import ipaddr
 import logging
 import os
 
+from bridgedb import safelog
+from bridgedb import bridgerequest
+from bridgedb.parse.addr import isIPAddress
+from bridgedb.parse.addr import isIPv6
 from bridgedb.parse.addr import isValidIP
+from bridgedb.parse.addr import PortList
 from bridgedb.parse.fingerprint import isValidFingerprint
+from bridgedb.parse.fingerprint import toHex
+from bridgedb.parse.fingerprint import fromHex
+
 
 
 class MalformedBridgeInfo(ValueError):
@@ -394,8 +403,21 @@ class Bridge(object):
     #: created with the ``signing-key`` contained in that descriptor.
     _checkServerDescriptorSignature = True
 
-    def __init__(self):
-        """Create a new ``Bridge``."""
+    def __init__(self,
+                 # for backwards compatibility:
+                 nickname=None, ip=None, orport=None,
+                 fingerprint=None, id_digest=None, or_addresses=None):
+        """Create a and store information for a new ``Bridge``.
+
+        .. info: For backwards compatibility, `nickname`, `ip`, and `orport`
+            must be the first, second, and third arguments, respectively.  The
+            `fingerprint` and `id_digest` were previously kwargs, and are also
+            provided for backwards compatibility.  New calls to
+            :meth:`__init__` *should* avoid using these kwargs, and instead
+            use the methods :meth:`updateFromNetworkStatus`,
+            :meth:`updateFromServerDescriptor`, and
+            :meth:`updateFromExtraInfoDescriptor`.
+        """
         self.fingerprint = None
         self.nickname = None
         self.address = None
@@ -434,6 +456,141 @@ class Bridge(object):
         #: and converted to uppercase.
         self.descriptorDigest = None
         self.extrainfoDigest = None
+
+        # For backwards compatibility with the old, deprecated version of this
+        # class:
+        if nickname or ip or orport or fingerprint or id_digest:
+            self._backwardsCompatible(nickname=nickname, address=ip,
+                                      orPort=orport, fingerprint=fingerprint,
+                                      idDigest=id_digest,
+                                      orAddresses=or_addresses)
+
+    def _backwardsCompatible(self, nickname=None, address=None, orPort=None,
+                             fingerprint=None, idDigest=None,
+                             orAddresses=None):
+        """Functionality for maintaining backwards compatibility with the older
+        version of this class (see :class:`bridgedb.test.deprecated.Bridge`).
+        """
+        def getID():
+            """Get the binary encoded form of this ``Bridge``'s ``fingerprint``.
+
+            This method is provided for backwards compatibility and should not
+            be relied upon.
+            """
+            if self.fingerprint:
+                return fromHex(self.fingerprint)
+        self.getID = getID
+
+        def setDescriptorDigest(digest):
+            """Set this ``Bridge``'s server-descriptor digest.
+
+            This method is provided for backwards compatibility and should not
+            be relied upon.
+            """
+            self.desc_digest = digest  # old attribute for backwards compat
+            self.descriptorDigest = digest  # new attribute
+        self.desc_digest = None
+        self.setDescriptorDigest = setDescriptorDigest
+
+        def setExtraInfoDigest(digest):
+            """Set this ``Bridge``'s extrainfo digest.
+
+            This method is provided for backwards compatibility and should not
+            be relied upon.
+            """
+            self.ei_digest = digest  # old attribute for backwards compat
+            self.extrainfoDigest = digest  # new attribute
+        self.ei_digest = None
+        self.setExtraInfoDigest = setExtraInfoDigest
+
+        def setStatus(running=None, stable=None):
+            """Set this ``Bridge``'s "Running" and "Stable" flags.
+
+            This method is provided for backwards compatibility and should not
+            be relied upon.
+            """
+            if running is not None:
+                self.running = bool(running)
+                self.flags.running = bool(running)
+            if stable is not None:
+                self.stable = bool(stable)
+                self.flags.stable = bool(running)
+        self.running = False
+        self.stable = False
+        self.setStatus = setStatus
+
+        def getConfigLine(includeFingerprint=False, addressClass=None,
+                          request=None, transport=None):
+            """Get a vanilla bridge line for this ``Bridge``.
+
+            This method is provided for backwards compatibility and should not
+            be relied upon.
+
+            The old ``bridgedb.Bridges.Bridge.getConfigLine()`` method didn't
+            know about :class:`~bridgedb.bridgerequest.BridgeRequestBase`s,
+            and so this modified version is backwards compatible by creating a
+            :class:`~bridgedb.bridgerequest.BridgeRequestBase` for
+            :meth:`getBridgeLine`. The default parameters are the same as they
+            were in the old ``bridgedb.Bridges.Bridge`` class.
+
+            :param bool includeFingerprint: If ``True``, include the
+                ``fingerprint`` of this :class:`Bridge` in the returned bridge
+                line.
+            :type addressClass: :class:`ipaddr.IPv4Address` or
+                :class:`ipaddr.IPv6Address`.
+            :param addressClass: Type of address to choose.
+            :param str request: A string unique to this request
+                e.g. email-address or ``uniformMap(ip)`` or ``'default'``. In
+                this case, this is not a
+                :class:`~bridgerequest.BridgeRequestBase` (as might be
+                expected) but the equivalent of
+                :data:`bridgerequest.BridgeRequestBase.client`.
+            :param str transport: A pluggable transport method name.
+            """
+            bridgeRequest = bridgerequest.BridgeRequestBase(addressClass)
+            bridgeRequest.client = request if request else bridgeRequest.client
+            bridgeRequest.isValid(True)
+
+            if transport:
+                bridgeRequest.withPluggableTransportType(transport)
+
+            bridgeRequest.generateFilters()
+            bridgeLine = self.getBridgeLine(bridgeRequest, includeFingerprint)
+            return bridgeLine
+        self.getConfigLine = getConfigLine
+
+        if nickname:
+            self.nickname = nickname  # XXX check nickname spec conformity?
+        if address:
+            self.address = address  # XXX check validip?
+        if orPort:
+            self.orPort = orPort  # XXX check validity?
+
+        if idDigest:
+            if not fingerprint:
+                if not len(idDigest) == 20:
+                    raise TypeError("Bridge with invalid ID")
+                self.fingerprint = toHex(idDigest)
+        elif fingerprint:
+            if not isValidFingerprint(fingerprint):
+                raise TypeError("Bridge with invalid fingerprint (%r)"
+                                % fingerprint)
+            self.fingerprint = fingerprint.lower()
+        else:
+            raise TypeError("Bridge with no ID")
+
+        if orAddresses and isinstance(orAddresses, dict):
+            for ip, portlist in orAddresses.items():
+                validAddress = isIPAddress(ip, compressed=False)
+                if validAddress:
+                    # The old code expected a `bridgedb.parse.addr.PortList`:
+                    if isinstance(portlist, PortList):
+                        for port in portlist.ports:
+                            self.orAddresses.append(
+                                (validAddress, port, validAddress.version,))
+                    else:
+                        self.orAddresses.append(
+                            (validAddress, port, validAddress.version))
 
     def _checkServerDescriptor(self, descriptor):
         # If we're parsing the server-descriptor, require a networkstatus
