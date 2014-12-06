@@ -11,13 +11,20 @@
 
 from __future__ import print_function
 
+import base64
+import codecs
 import hashlib
 import ipaddr
 import logging
 import os
 
+from Crypto.Util import asn1
+from Crypto.Util.number import bytes_to_long
+from Crypto.Util.number import long_to_bytes
+
 from bridgedb import safelog
 from bridgedb import bridgerequest
+from bridgedb.crypto import removePKCS1Padding
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.parse.addr import isIPv6
 from bridgedb.parse.addr import isValidIP
@@ -54,6 +61,10 @@ class ServerDescriptorWithoutNetworkstatus(MalformedBridgeInfo):
     """Raised when we find a ``@type bridge-server-descriptor`` which was not
     mentioned in the latest ``@type bridge-networkstatus`` document.
     """
+
+class InvalidExtraInfoSignature(MalformedBridgeInfo):
+    """Raised if the signature on an ``@type bridge-extrainfo`` is invalid."""
+
 
 class Flags(object):
     """All the flags which a :class:`Bridge` may have."""
@@ -1174,7 +1185,91 @@ class Bridge(object):
 
         self.extrainfoDigest = descriptor.extrainfoDigest
 
-    def updateFromExtraInfoDescriptor(self, descriptor):
+    def _verifyExtraInfoSignature(self, descriptor):
+        """Verify the signature on the contents of this :class:`Bridge`'s
+        ``@type bridge-extrainfo`` descriptor.
+
+        :type descriptor:
+            :api:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`
+        :param descriptor: An ``@type bridge-extrainfo`` descriptor for this
+            :class:`Bridge`, parsed with Stem.
+        :raises InvalidExtraInfoSignature: if the signature was invalid,
+            missing, malformed, or couldn't be verified successfully.
+        :returns: ``None`` if the signature was valid and verifiable.
+        """
+        # The blocksize is always 128 bits for a 1024-bit key
+        BLOCKSIZE = 128
+
+        TOR_SIGNING_KEY_HEADER = u'-----BEGIN RSA PUBLIC KEY-----\n'
+        TOR_SIGNING_KEY_FOOTER = u'-----END RSA PUBLIC KEY-----'
+        TOR_BEGIN_SIGNATURE = u'-----BEGIN SIGNATURE-----\n'
+        TOR_END_SIGNATURE = u'-----END SIGNATURE-----\n'
+
+        logging.info("Verifying extrainfo signature for %s..." % self)
+
+        # Get the bytes of the descriptor signature without the headers:
+        document, signature = descriptor.get_bytes().split(TOR_BEGIN_SIGNATURE)
+        signature = signature.replace(TOR_END_SIGNATURE, '')
+        signature = signature.replace('\n', '')
+        signature = signature.strip()
+
+        try:
+            # Get the ASN.1 sequence:
+            sequence = asn1.DerSequence()
+
+            key = self.signingKey
+            key = key.strip(TOR_SIGNING_KEY_HEADER)
+            key = key.strip(TOR_SIGNING_KEY_FOOTER)
+            key = key.replace('\n', '')
+            key = base64.b64decode(key)
+
+            sequence.decode(key)
+
+            modulus = sequence[0]
+            publicExponent = sequence[1]
+
+            # The public exponent of RSA signing-keys should always be 65537,
+            # but we're not going to turn them down if they want to use a
+            # potentially dangerous exponent.
+            if publicExponent != 65537:  # pragma: no cover
+                logging.warn("Odd RSA exponent in signing-key for %s: %s" %
+                             (self, publicExponent))
+
+            # Base64 decode the signature:
+            signatureDecoded = base64.b64decode(signature)
+
+            # Convert the signature to a long:
+            signatureLong = bytes_to_long(signatureDecoded)
+
+            # Decrypt the long signature with the modulus and public exponent:
+            decryptedInt = pow(signatureLong, publicExponent, modulus)
+
+            # Then convert it back to a byte array:
+            decryptedBytes = long_to_bytes(decryptedInt, BLOCKSIZE)
+
+            # Remove the PKCS#1 padding from the signature:
+            unpadded = removePKCS1Padding(decryptedBytes)
+
+            # This is the hexadecimal SHA-1 hash digest of the descriptor document
+            # as it was signed:
+            signedDigest = codecs.encode(unpadded, 'hex_codec')
+            actualDigest = hashlib.sha1(document).hexdigest()
+
+        except Exception as error:
+            logging.debug("Error verifying extrainfo signature: %s" % error)
+            raise InvalidExtraInfoSignature(
+                "Extrainfo signature for %s couldn't be decoded: %s" %
+                (self, signature))
+        else:
+            if signedDigest != actualDigest:
+                raise InvalidExtraInfoSignature(
+                    ("The extrainfo digest signed by bridge %s didn't match the "
+                     "actual digest.\nSigned digest: %s\nActual digest: %s") %
+                    (self, signedDigest, actualDigest))
+            else:
+                logging.info("Extrainfo signature was verified successfully!")
+
+    def updateFromExtraInfoDescriptor(self, descriptor, verify=True):
         """Update this bridge's information from an extrainfo descriptor.
 
         .. todo:: The ``transport`` attribute of Stem's
@@ -1186,5 +1281,17 @@ class Bridge(object):
         :type descriptor:
             :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
         :param descriptor: DOCDOC
+        :param bool verify: If ``True``, check that the ``router-signature``
+            on the extrainfo **descriptor** is a valid signature from
+            :data:`signingkey`.
         """
+        if verify:
+            try:
+                self._verifyExtraInfoSignature(descriptor)
+            except InvalidExtraInfoSignature as error:
+                logging.warn(error)
+                logging.info(("Tossing extrainfo descriptor due to an invalid "
+                              "signature."))
+                return
+
         self.descriptors['extrainfo'] = descriptor

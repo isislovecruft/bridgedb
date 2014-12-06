@@ -87,6 +87,9 @@ GPGME_CONTEXT_HOMEDIR = '.gnupg'
 GPGME_CONTEXT_BINARY = which('gpg2') or which('gpg')  # These will be lists
 
 
+class PKCS1PaddingError(Exception):
+    """Raised when there is a problem adding or removing PKCS#1 padding."""
+
 class RSAKeyGenerationError(Exception):
     """Raised when there was an error creating an RSA keypair."""
 
@@ -272,6 +275,44 @@ def getHMACFunc(key, hex=True):
         else:
             return h_tmp.digest()
     return hmac_fn
+
+def removePKCS1Padding(message):
+    """Remove PKCS#1 padding from a **message**.
+
+    (PKCS#1 v1.0? see https://bugs.torproject.org/13042)
+
+    Each block is 128 bytes total in size:
+
+        * 2 bytes for the type info ('\x00\x01')
+        * 1 byte for the separator ('\x00')
+        * variable length padding ('\xFF')
+        * variable length for the **message**
+
+    For more information on the structure of PKCS#1 padding, see :rfc:`2313`,
+    particularly the notes in §8.1.
+
+    :param str message: A message which is PKCS#1 padded.
+    :raises PKCS1PaddingError: if there is an issue parsing the **message**.
+    :rtype: bytes
+    :returns: The message without the PKCS#1 padding.
+    """
+    padding = b'\xFF'
+    typeinfo = b'\x00\x01'
+    separator = b'\x00'
+
+    unpadded = None
+
+    try:
+        if message.index(typeinfo) != 0:
+            raise PKCS1PaddingError("Couldn't find PKCS#1 identifier bytes!")
+        start = message.index(separator, 2) + 1  # 2 bytes for the typeinfo,
+                                                 # and 1 byte for the separator.
+    except ValueError:
+        raise PKCS1PaddingError("Couldn't find PKCS#1 separator byte!")
+    else:
+        unpadded = message[start:]
+
+    return unpadded
 
 def _createGPGMEErrorInterpreters():
     """Create a mapping of GPGME ERRNOs ←→ human-readable error names/causes.
