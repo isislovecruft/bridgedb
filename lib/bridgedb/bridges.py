@@ -27,10 +27,13 @@ from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 
 
+class PluggableTransportUnavailable(Exception):
+    """Raised when a :class:`Bridge` doesn't have the requested
+    :class:`PluggableTransport`.
+    """
 
 class MalformedBridgeInfo(ValueError):
     """Raised when some information about a bridge appears malformed."""
-
 
 class MalformedPluggableTransport(MalformedBridgeInfo):
     """Raised when information used to initialise a :class:`PluggableTransport`
@@ -653,14 +656,170 @@ class Bridge(object):
                  "Actual descriptor digest:         %s\n") %
                 (descriptor.fingerprint, self.descriptorDigest, digested))
 
+    def _constructBridgeLine(self, addrport, includeFingerprint=True,
+                             bridgePrefix=False):
+        """Construct a :term:`Bridge Line` from an (address, port) tuple.
+
+        :param tuple addrport: A 3-tuple of ``(address, port, ipversion)``
+            where ``address`` is a string, ``port`` is an integer, and
+            ``ipversion`` is a integer (``4`` or ``6``).
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param bool bridgePrefix: if ``True``, prefix the :term:`Bridge Line`
+            with ``'Bridge '``.
+        :raises MalformedBridgeInfo: if the **addrport** didn't turn out to be
+            a 2-tuple containing ``(ipaddress, port)``.
+        :rtype: string
+        :returns: A bridge line suitable for adding into a ``torrc`` file or
+            Tor Launcher.
+        """
+        if not addrport:
+            return
+
+        try:
+            address, port, version = addrport
+        except (TypeError, ValueError):
+            raise MalformedBridgeInfo("Can't process addrport: %r" % addrport)
+
+        bridgeLine = []
+
+        if bridgePrefix:
+            bridgeLine.append('Bridge')
+
+        if version == 4:
+            bridgeLine.append("%s:%d" % (str(address), port))
+        elif version == 6:
+            bridgeLine.append("[%s]:%d" % (str(address), port))
+        else:
+            raise MalformedBridgeInfo("IP version must be 4 or 6")
+
+        if includeFingerprint:
+            bridgeLine.append("%s" % self.fingerprint)
+
+        return ' '.join(bridgeLine)
+
+    def _getTransportForRequest(self, bridgeRequest):
+        """If a transport was requested, return the correlated
+        :term:`Bridge Line` based upon the client identifier in the
+        **bridgeRequest**.
+
+        :type bridgeRequest: :class:`bridgedb.bridgerequest.BridgeRequestBase`
+        :param bridgeRequest: A ``BridgeRequest`` which stores all of the
+            client-specified options for which type of bridge they want to
+            receive.
+        :raises PluggableTransportUnavailable: if this bridge doesn't have any
+            of the requested pluggable transport type. This shouldn't happen
+            because the bridges are filtered into the client's hashring based
+            on the **bridgeRequest** options, however, this is useful in the
+            unlikely event that it does happen, so that the calling function
+            can fetch an additional bridge from the hashring as recompense for
+            what would've otherwise been a missing :term:`Bridge Line`.
+        :rtype: str or ``None``
+        :returns: If no transports were requested, return ``None``, otherwise
+            return a :term:`Bridge Line` for the requested pluggable transport
+            type.
+        """
+        addressClass = bridgeRequest.addressClass
+        desiredTransport = bridgeRequest.justOnePTType()
+        hashringPosition = bridgeRequest.getHashringPlacement(bridgeRequest.client,
+                                                              'Order-Or-Addresses')
+
+        logging.info("Bridge %s answering request for %s transport..." %
+                     (safelog.logSafely(self.fingerprint), desiredTransport))
+        # Filter all this Bridge's ``transports`` according to whether or not
+        # their ``methodname`` matches the requested transport, i.e. only
+        # 'obfs3' transports, or only 'scramblesuit' transports:
+        transports = filter(lambda pt: desiredTransport == pt.methodname,
+                            self.transports)
+        # Filter again for whichever of IPv4 or IPv6 was requested:
+        transports = filter(lambda pt: isinstance(pt.address, addressClass),
+                            transports)
+
+        if transports:
+            return transports[hashringPosition % len(transports)]
+        else:
+            raise PluggableTransportUnavailable(
+                ("Client requested transport %s from bridge %s, but this "
+                 "bridge doesn't have any of that transport!") %
+                (desiredTransport, self.fingerprint))
+
+    def _getVanillaForRequest(self, bridgeRequest):
+        """If vanilla bridges were requested, return the assigned
+        :term:`Bridge Line` based upon the client identifier in the
+        **bridgeRequest**.
+
+        :type bridgeRequest: :class:`bridgedb.bridgerequest.BridgeRequestBase`
+        :param bridgeRequest: A ``BridgeRequest`` which stores all of the
+            client-specified options for which type of bridge they want to
+            receive.
+        :rtype: str or ``None``
+        :returns: If no transports were requested, return ``None``, otherwise
+            return a :term:`Bridge Line` for the requested pluggable transport
+            type.
+        """
+        logging.info("Bridge %s answering request for vanilla address..." % self)
+
+        if not bridgeRequest.filters:
+            logging.debug(("Request %s didn't have any filters; "
+                           "generating them now...") % bridgeRequest)
+            bridgeRequest.generateFilters()
+
+        addresses = self.allVanillaAddresses
+
+        # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
+        addresses = filter(
+            # ``address`` here is a 3-tuple:
+            # ``(ipaddr.IPAddress, int(port), int(ipaddr.IPAddress.version))``
+            lambda address: isinstance(address[0], bridgeRequest.addressClass),
+            self.allVanillaAddresses)
+
+        if addresses:
+            # Use the client's unique data to HMAC them into their position in
+            # the hashring of filtered bridges addresses:
+            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses',
+                                                          bridgeRequest.client)
+            logging.debug("Client's hashring position is %r" % position)
+            vanilla = addresses[position % len(addresses)]
+            logging.info("Got vanilla bridge for client.")
+
+            return vanilla
+
     def _updateORAddresses(self, orAddresses):
+        """Update this :class:`Bridge`'s :data:`orAddresses` attribute from a
+        3-tuple (i.e. as Stem creates when parsing descriptors).
+
+        :param tuple orAddresses: A 3-tuple of: an IP address, a port number,
+            and a boolean (``False`` if IPv4, ``True`` if IPv6).
+        :raises FutureWarning: if any IPv4 addresses are found. As of
+            tor-0.2.5, only IPv6 addresses should be found in a descriptor's
+            `ORAddress` line.
+        """
         for (address, port, ipVersion) in orAddresses:
+            version = 6
             if not ipVersion:  # `False` means IPv4; `True` means IPv6.
                 # See https://bugs.torproject.org/9380#comment:27
-                warnings.warn(FutureWarning(
-                    ("Got IPv4 address in 'a'/'or-address' line! "
-                     "Desriptor format may have changed!")))
-            self.orAddresses.append(tuple([address, port]))
+                warnings.warn(FutureWarning((
+                    "Got IPv4 address in 'a'/'or-address' line! Descriptor "
+                     "format may have changed!")))
+                version = 4
+
+            validatedAddress = isIPAddress(address, compressed=False)
+            if validatedAddress:
+                self.orAddresses.append( (validatedAddress, port, version,) )
+
+    @property
+    def allVanillaAddresses(self):
+        """Get all valid, non-PT address:port pairs for this bridge.
+
+        :rtype: list
+        :returns: All of this bridge's ORAddresses, as well as its ORPort IP
+            address and port.
+        """
+        addresses = self.orAddresses
+        # Add the default ORPort address:
+        addresses.append((self.address, self.orPort,))
+        return addresses
 
     def assertOK(self):
         """Perform some additional validation on this bridge's info.
@@ -696,6 +855,41 @@ class Bridge(object):
 
         if malformed:
             raise MalformedBridgeInfo('\n'.join(malformed))
+
+    def getBridgeLine(self, bridgeRequest, includeFingerprint=True,
+                      bridgePrefix=False):
+        """Return a valid :term:`Bridge Line` for a client to give to Tor
+        Launcher or paste directly into their ``torrc``.
+
+        This is a helper method to call either :meth:`_getTransportForRequest`
+        or :meth:`_getVanillaForRequest` depending on whether or not any
+        :class:`PluggableTransport`s were requested in the
+        :class:`bridgeRequest <bridgedb bridgerequest.BridgeRequestBase>`, and
+        then construct the :term:`Bridge Line` accordingly.
+
+        :type bridgeRequest: :class:`bridgedb.bridgerequest.BridgeRequestBase`
+        :param bridgeRequest: A ``BridgeRequest`` which stores all of the
+            client-specified options for which type of bridge they want to
+            receive.
+        :param bool includeFingerprint: If ``True``, include the
+            ``fingerprint`` of this :class:`Bridge` in the returned bridge
+            line.
+        :param bool bridgePrefix: if ``True``, prefix the :term:`Bridge Line`
+            with ``'Bridge '``.
+        """
+        if not bridgeRequest.isValid():
+            logging.info("Bridge request was not valid. Dropping request.")
+            return  # XXX raise error perhaps?
+
+        if bridgeRequest.transports:
+            pt = self._getTransportForRequest(bridgeRequest)
+            bridgeLine = pt.getTransportLine(includeFingerprint, bridgePrefix)
+        else:
+            addrport = self._getVanillaForRequest(bridgeRequest)
+            bridgeLine = self._constructBridgeLine(addrport,
+                                                   includeFingerprint,
+                                                   bridgePrefix)
+        return bridgeLine
 
     def getDescriptorLastPublished(self):
         """Get the timestamp for when this bridge's last known server
@@ -733,7 +927,19 @@ class Bridge(object):
         """
         return getattr(self.descriptors['networkstatus'], 'published', None)
 
-    def updateFromNetworkstatus(self, descriptor):
+    @property
+    def supportedTransportTypes(self):
+        """A deduplicated list of all the :data:`PluggableTranport.methodname`s
+        which this bridge supports.
+        """
+        supported = []
+
+        for transport in self.transports:
+            supported.append(transport.methodname)
+
+        return list(set(supported))
+
+    def updateFromNetworkStatus(self, descriptor):
         """Update this bridge's attributes from a parsed networkstatus
         descriptor.
 
