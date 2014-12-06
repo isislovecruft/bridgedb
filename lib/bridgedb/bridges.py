@@ -1295,3 +1295,34 @@ class Bridge(object):
                 return
 
         self.descriptors['extrainfo'] = descriptor
+
+        updatedTransports = []
+
+        for transport in self.transports:
+            for methodname, kitchenSink in descriptor.transport:
+                if transport.methodname == methodname:
+                    if transport.address == kitchenSink[0]:
+                        logging.info(
+                            "Updating %s pluggable transport for bridge %s." %
+                            (methodname, safelog.logSafely(self.fingerprint)))
+                        updatedTransports.append(transport)
+                        transport.updateFromStemTransport(self.fingerprint,
+                                                          methodname,
+                                                          kitchenSink)
+                    else:
+                        logging.info(
+                            ("Received new %s pluggable transport for bridge "
+                             "%s.") %
+                            (methodname, safelog.logSafely(self.fingerprint)))
+                        pt = PluggableTransport()
+                        pt.updateFromStemTransport(self.fingerprint,
+                                                   methodname,
+                                                   kitchenSink)
+                        updatedTransports.append(pt)
+                        self.transports.append(pt)
+
+        dead = set(self.transports).difference(set(updatedTransports))
+        logging.info("The following transports for bridge %s died: %s"
+                     % (self, ' '.join(dead)))
+        for died in dead:
+            self.transports.remove(died)
