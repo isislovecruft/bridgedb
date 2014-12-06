@@ -110,6 +110,158 @@ def is_valid_fingerprint(fp):
     else:
         return True
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 4),
+                      replacement='bridgedb.parse.descriptors.parseBridgeExtraInfoFiles')
+def parseExtraInfoFile(f):
+    """
+    parses lines in Bridges extra-info documents.
+    returns an object whose type corresponds to the
+    relevant set of extra-info lines.
+
+    presently supported lines and the accompanying type are:
+
+        { 'transport': PluggableTransport, }
+
+    'transport' lines (torspec.git/proposals/180-pluggable-transport.txt)
+
+        Bridges put the 'transport' lines in their extra-info documents.
+        the format is:
+
+            transport SP <methodname> SP <address:port> [SP arglist] NL
+    """
+
+    ID = None
+    for line in f:
+        line = line.strip()
+
+        argdict = {}
+
+        # do we need to skip 'opt' here?
+        # if line.startswith("opt "):
+        #     line = line[4:]
+
+        # get the bridge ID ?
+        if line.startswith("extra-info "): #XXX: get the router ID
+            line = line[11:]
+            (nickname, ID) = line.split()
+            logging.debug("  Parsed Nickname: %s", nickname)
+            if isValidFingerprint(ID):
+                logging.debug("  Parsed fingerprint: %s", ID)
+                ID = fromHex(ID)
+            else:
+                logging.debug("  Parsed invalid fingerprint: %s", ID)
+
+        # get the transport line
+        if ID and line.startswith("transport "):
+            fields = line[10:].split()
+
+            if len(fields) >= 3:
+                argdict = {}
+                # PT argumentss are comma-separated in the extrainfo
+                # descriptors. While there *shouldn't* be anything after them
+                # that was separated by a space (and hence would wind up being
+                # in a different `field`), if there was we'll join it to the
+                # rest of the PT arguments with a comma so that they are
+                # parsed as if they were PT arguments as well:
+                allargs = ','.join(fields[2:])
+                for arg in allargs.split(','):
+                    try:
+                        k, v = arg.split('=')
+                    except ValueError:
+                        logging.warn("  Couldn't parse K=V from PT arg: %r" % arg)
+                    else:
+                        logging.debug("  Parsed PT Argument: %s: %s" % (k, v))
+                        argdict[k] = v
+
+            # get the required fields, method name and address
+            if len(fields) >= 2:
+                # get the method name
+                # Method names must be C identifiers
+                for regex in [re_ipv4, re_ipv6]:
+                    try:
+                        method_name = re.match('[_a-zA-Z][_a-zA-Z0-9]*',fields[0]).group()
+                        m = regex.match(fields[1])
+                        address  = ipaddr.IPAddress(m.group(1))
+                        port = int(m.group(2))
+                        logging.debug("  Parsed Transport: %s %s:%d"
+                                      % (method_name, address, port))
+                        yield ID, method_name, address, port, argdict
+                    except (IndexError, ValueError, AttributeError):
+                        # skip this line
+                        continue
+
+        # end of descriptor is defined how?
+        if ID and line.startswith("router-signature"):
+            ID = None
+
+@deprecate.deprecated(Version('bridgedb', 0, 2, 4),
+                      replacement='bridgedb.parse.descriptors.parseNetworkStatusFile')
+def parseStatusFile(networkstatusFile):
+    """Parse entries in a bridge networkstatus file.
+
+    :type networkstatusFile: A file-like object.
+    :param networkstatusFile: A file containing `@type bridge-networkstatus` documents.
+    """
+    (nickname, ID, descDigest, timestamp,
+     ORaddr, ORport, dirport, addr, portlist) = (None for x in xrange(9))
+    running = stable = False
+    parsedORAddressLines = 0
+    or_addresses = {}
+
+    for line in networkstatusFile:
+        line = line.strip()
+        if line.startswith("opt "):
+            line = line[4:]
+
+        if line.startswith("r "):
+            (nickname, ID, descDigest, timestamp,
+             ORaddr, ORport, dirport) = networkstatus.parseRLine(line)
+            hexID = toHex(ID)
+            logging.debug("Parsed networkstatus line:")
+            logging.debug("  Nickname:   %s" % nickname)
+            logging.debug("  Identity:   %s" % hexID)
+            if descDigest:
+                descDigest = toHex(descDigest)
+                logging.debug("  Descriptor: {0}".format(descDigest))
+                logging.debug("  Timestamp:  {0}".format(timestamp))
+                logging.debug("  ORAddress:  {0}".format(ORaddr))
+                logging.debug("  ORport:     {0}".format(ORport))
+                logging.debug("  dirport:    {0}".format(dirport))
+
+        elif ID and line.startswith("a "):
+            try:
+                addr, portlist = networkstatus.parseALine(line, toHex(ID))
+            except networkstatus.NetworkstatusParsingError as error:
+                logging.error(error)
+            else:
+                if (addr is not None) and (portlist is not None):
+                    try:
+                        or_addresses[addr].add(portlist)
+                    except (KeyError, AttributeError):
+                        or_addresses[addr] = portlist
+                    parsedORAddressLines += 1
+
+        elif ID and timestamp and line.startswith("s "):
+            running, stable = networkstatus.parseSLine(line)
+            logging.debug("Bridges.parseStatusFile(): "
+                          "yielding %s nickname=%s descDigest=%s "
+                          "running=%s stable=%s oraddr=%s orport=%s "
+                          "oraddrs=%s ts=%s"
+                          % (hexID, nickname, descDigest, running,
+                             stable, ORaddr, ORport, or_addresses,
+                             timestamp))
+            yield (ID, nickname, descDigest, running, stable,
+                   ipaddr.IPAddress(ORaddr), ORport,
+                   or_addresses, timestamp)
+
+            (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport,
+             addr, portlist, hexID) = (None for x in xrange(10))
+            running = stable = False
+            or_addresses = {}
+
+    logging.debug("Total ORAddress lines parsed from '%s': %d"
+                  % (networkstatusFile.name, parsedORAddressLines))
+
 
 @deprecate.deprecated(
     Version('bridgedb', 0, 0, 1),
