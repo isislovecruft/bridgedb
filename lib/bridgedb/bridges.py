@@ -240,7 +240,7 @@ class PluggableTransport(object):
         try:
             # Coerce the port to be an integer:
             self.port = int(self.port)
-        except TypeError:
+        except (TypeError, ValueError):
             raise MalformedPluggableTransport(
                 ("Cannot create PluggableTransport with port type: %s.")
                 % type(self.port))
