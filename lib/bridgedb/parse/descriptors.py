@@ -204,7 +204,7 @@ def deduplicate(descriptors):
 
     return nonDuplicates
 
-def parseBridgeExtraInfoFiles(*filenames, **kwargs):
+def parseExtraInfoFiles(*filenames, **kwargs):
     """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
 
     .. warning:: This function will *not* check that the ``router-signature``

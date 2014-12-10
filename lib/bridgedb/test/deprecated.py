@@ -111,7 +111,7 @@ def is_valid_fingerprint(fp):
         return True
 
 @deprecate.deprecated(Version('bridgedb', 0, 2, 4),
-                      replacement='bridgedb.parse.descriptors.parseBridgeExtraInfoFiles')
+                      replacement='bridgedb.parse.descriptors.parseExtraInfoFiles')
 def parseExtraInfoFile(f):
     """
     parses lines in Bridges extra-info documents.
