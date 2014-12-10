@@ -218,7 +218,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.address, self.expectedIPBridge0)
         self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_return_type(self):
+    def test_parse_descriptors_parseNetworkStatusFile_return_type(self):
         """``b.p.descriptors.parseNetworkStatusFile`` should return a dict."""
         # Write the descriptor to a file for testing. This is necessary
         # because the function opens the networkstatus file to read it.
@@ -227,7 +227,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         routers = descriptors.parseNetworkStatusFile(descFile)
         self.assertIsInstance(routers, list)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_has_RouterStatusEntryV2(self):
+    def test_parse_descriptors_parseNetworkStatusFile_has_RouterStatusEntryV2(self):
         """The items in the dict returned from
         ``b.p.descriptors.parseNetworkStatusFile`` should be
         ``RouterStatusEntryV2``s.
@@ -240,7 +240,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         bridge = routers[0]
         self.assertIsInstance(bridge, RouterStatusEntryV3)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_one_file(self):
+    def test_parse_descriptors_parseNetworkStatusFile_one_file(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with one bridge
         networkstatus descriptor.
         """
@@ -253,7 +253,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertEqual(bridge.address, self.expectedIPBridge0)
         self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_two_files(self):
+    def test_parse_descriptors_parseNetworkStatusFile_two_files(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with two bridge
         networkstatus descriptors.
         """
@@ -270,7 +270,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertIn(bridge.address, expectedIPs)
         self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_with_annotations(self):
+    def test_parse_descriptors_parseNetworkStatusFile_with_annotations(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with some document
         headers before the first 'r'-line.
         """
@@ -289,7 +289,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertIn(bridge.address, expectedIPs)
         self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
 
-    def test_parse_descriptors_parseBridgeNetworkStatusFile_with_annotations_no_skipping(self):
+    def test_parse_descriptors_parseNetworkStatusFile_with_annotations_no_skipping(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with some
         document headers before the first 'r'-line, but without skipping said
         annotations.
