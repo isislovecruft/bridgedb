@@ -208,8 +208,8 @@ class ParseDescriptorsTests(unittest.TestCase):
                 fh.flush()
         return descFilename
 
-    def test_parse_descriptors_parseBridgeDescriptorsFile(self):
-        """Test for ``b.p.descriptors.parseBridgeDescriptorsFile``."""
+    def test_parse_descriptors_parseServerDescriptorsFile(self):
+        """Test for ``b.p.descriptors.parseServerDescriptorsFile``."""
         descFile = io.BytesIO(BRIDGE_SERVER_DESCRIPTOR)
         routers = descriptors.parseServerDescriptorsFile(descFile)
         self.assertIsInstance(routers, list)
