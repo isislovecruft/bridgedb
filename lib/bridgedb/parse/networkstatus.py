@@ -39,6 +39,8 @@ from twisted.python.log import showwarning
 from bridgedb.parse import addr
 from bridgedb.parse import parseUnpaddedBase64
 from bridgedb.parse import InvalidBase64
+from bridgedb.parse.nickname import InvalidRouterNickname
+from bridgedb.parse.nickname import isValidRouterNickname
 
 
 class NetworkstatusParsingError(Exception):
