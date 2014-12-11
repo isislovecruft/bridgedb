@@ -28,6 +28,7 @@ from bridgedb import safelog
 from bridgedb import bridgerequest
 from bridgedb.crypto import removePKCS1Padding
 from bridgedb.parse.addr import isIPAddress
+from bridgedb.parse.addr import isIPv4
 from bridgedb.parse.addr import isIPv6
 from bridgedb.parse.addr import isValidIP
 from bridgedb.parse.addr import PortList
@@ -887,7 +888,10 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         addresses = self.orAddresses
         # Add the default ORPort address:
-        addresses.append((self.address, self.orPort,))
+        if isIPv4(self.address):
+            addresses.append((self.address, self.orPort, 4))
+        elif isIPv6(self.address):
+            addresses.append((self.address, self.orPort, 6))
         return addresses
 
     def assertOK(self):
@@ -916,11 +920,13 @@ class Bridge(BridgeBackwardsCompatibility):
             malformed.append("Invalid ORPort address: '%s'" % self.address)
         if not (1 <= self.orPort <= 65535):
             malformed.append("Invalid ORPort port: '%d'" % self.orPort)
-        for (address, port) in self.orAddresses:
+        for (address, port, version) in self.orAddresses:
             if not isValidIP(address):
                 malformed.append("Invalid ORAddress address: '%s'" % address)
             if not (1 <= port <= 65535):
                 malformed.append("Invalid ORAddress port: '%d'" % port)
+            if not version in (4, 6):
+                malformed.append("Invalid ORAddress IP version: %r" % version)
 
         if malformed:
             raise MalformedBridgeInfo('\n'.join(malformed))
