@@ -1192,7 +1192,7 @@ class Bridge(BridgeBackwardsCompatibility):
         # These fields are *only* found in the networkstatus document:
         self.descriptorDigest = descriptor.digest
         self.flags.update(descriptor.flags)
-        self.bandwidth = descriptor.bandwith
+        self.bandwidth = descriptor.bandwidth
 
         # These fields are also found in the server-descriptor. We will prefer
         # to use the information taken later from the server-descriptor
@@ -1246,7 +1246,7 @@ class Bridge(BridgeBackwardsCompatibility):
 
         self.bandwidthAverage = descriptor.average_bandwidth
         self.bandwidthBurst = descriptor.burst_bandwidth
-        self.bandwidthObserved = descriptor.bandwidth_observed
+        self.bandwidthObserved = descriptor.observed_bandwidth
 
         self.contact = descriptor.contact
         self.family = descriptor.family
