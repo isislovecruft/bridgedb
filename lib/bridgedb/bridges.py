@@ -621,7 +621,7 @@ class Bridge(BridgeBackwardsCompatibility):
         self.bandwidth = None
         self.bandwidthAverage = None
         self.bandwidthBurst = None
-        self.bandwidthObserverd = None
+        self.bandwidthObserved = None
 
         self.contact = None
         self.family = None
