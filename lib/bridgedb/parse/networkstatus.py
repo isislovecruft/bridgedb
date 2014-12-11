@@ -47,25 +47,6 @@ class NetworkstatusParsingError(Exception):
 class InvalidNetworkstatusRouterIdentity(ValueError):
     """The ID field of a networkstatus document 'r'-line is invalid."""
 
-class InvalidRouterNickname(ValueError):
-    """Router nickname doesn't follow tor-spec."""
-
-
-def isValidRouterNickname(nickname):
-    """Determine if a router's given nickname meets the specification.
-
-    :param string nickname: An OR's nickname.
-    """
-    ALPHANUMERIC = string.letters + string.digits
-
-    if not (1 <= len(nickname) <= 19):
-        raise InvalidRouterNickname(
-            "Nicknames must be between 1 and 19 characters: %r" % nickname)
-    for letter in nickname:
-        if not letter in ALPHANUMERIC:
-            raise InvalidRouterNickname(
-                "Nicknames must only use [A-Za-z0-9]: %r" % nickname)
-    return True
 
 def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
