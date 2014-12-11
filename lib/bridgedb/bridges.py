@@ -35,6 +35,7 @@ from bridgedb.parse.addr import PortList
 from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
+from bridgedb.parse.nickname import isValidRouterNickname
 
 
 class PluggableTransportUnavailable(Exception):
@@ -386,7 +387,7 @@ class BridgeBase(object):
 
     def __init__(self):
         self._fingerprint = None
-        self.nickname = None
+        self._nickname = None
         self.address = None
         self.orPort = None
         self.socksPort = 0  # Bridges should always have ``SOCKSPort`` and
@@ -424,6 +425,29 @@ class BridgeBase(object):
         """Reset this Bridge's fingerprint."""
         self._fingerprint = None
         
+    @property
+    def nickname(self):
+        """Get this Bridge's nickname.
+
+        :rtype: str
+        :returns: The Bridge's nickname.
+        """
+        return self._nickname
+
+    @nickname.setter
+    def nickname(self, value):
+        """Set this Bridge's nickname to **value**.
+
+        :param str value: The nickname of this Bridge.
+        """
+        if isValidRouterNickname(value):
+            self._nickname = value
+
+    @nickname.deleter
+    def nickname(self, value):
+        """Reset this Bridge's nickname."""
+        self._nickname = None
+
 
 class BridgeBackwardsCompatibility(BridgeBase):
     """Backwards compatibility methods for the old Bridge class."""
