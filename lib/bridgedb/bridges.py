@@ -385,7 +385,7 @@ class BridgeBase(object):
     """The base class for all bridge implementations."""
 
     def __init__(self):
-        self.fingerprint = None
+        self._fingerprint = None
         self.nickname = None
         self.address = None
         self.orPort = None
@@ -394,6 +394,35 @@ class BridgeBase(object):
         self.orAddresses = []
         self.transports = []
         self.flags = Flags()
+
+    @property
+    def fingerprint(self):
+        """Get this Bridge's fingerprint.
+
+        :rtype: str
+        :returns: A 40-character hexadecimal formatted string representation
+            of the SHA-1 hash digest of the public half of this Bridge's
+            identity key.
+        """
+        return self._fingerprint
+
+    @fingerprint.setter
+    def fingerprint(self, value):
+        """Set this Bridge's fingerprint to **value**.
+
+        .. info: The purported fingerprint will be checked for specification
+            conformity with
+            :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+
+        :param str value: The fingerprint for this Bridge.
+        """
+        if isValidFingerprint(value):
+            self._fingerprint = value
+
+    @fingerprint.deleter
+    def fingerprint(self):
+        """Reset this Bridge's fingerprint."""
+        self._fingerprint = None
         
 
 class BridgeBackwardsCompatibility(BridgeBase):
