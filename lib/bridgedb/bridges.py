@@ -1253,7 +1253,7 @@ class Bridge(BridgeBackwardsCompatibility):
         self.os = descriptor.operating_system
         self.uptime = descriptor.uptime
 
-        self.extrainfoDigest = descriptor.extrainfoDigest
+        self.extrainfoDigest = descriptor.extra_info_digest
 
     def _verifyExtraInfoSignature(self, descriptor):
         """Verify the signature on the contents of this :class:`Bridge`'s
