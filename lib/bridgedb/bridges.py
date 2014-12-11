@@ -1221,14 +1221,12 @@ class Bridge(BridgeBackwardsCompatibility):
         :type descriptor:
             :api:`stem.descriptor.server_descriptor.RelayDescriptor`
         :param descriptor:
+        :raises MalformedBridgeInfo: If this Bridge has no corresponding
+            networkstatus entry, or its **descriptor** digest didn't match the
+            expected digest (from the networkstatus entry).
         """
+        self._checkServerDescriptor(descriptor)
         self.descriptors['server'] = descriptor
-
-        try:
-            self._checkServerDescriptor(descriptor)
-        except ValueError as error:
-            logging.warn(error)
-            # XXX should we throw away this descriptor?
 
         # Replace the values which we harvested from the networkstatus
         # descriptor, because that one isn't signed with the bridge's identity
