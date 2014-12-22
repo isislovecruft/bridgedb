@@ -22,6 +22,7 @@ import random
 import bridgedb.Storage
 import bridgedb.Bucket
 
+from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse import networkstatus
@@ -409,11 +410,11 @@ class BridgeRing(BridgeHolder):
         """
         for tp, val, _, subring in self.subrings:
             if tp == 'port':
-                if val == bridge.orport:
+                if val == bridge.orPort:
                     subring.insert(bridge)
             else:
                 assert tp == 'flag' and val == 'stable'
-                if val == 'stable' and bridge.stable:
+                if val == 'stable' and bridge.flags.stable:
                     subring.insert(bridge)
 
         ident = bridge.getID()
@@ -423,7 +424,7 @@ class BridgeRing(BridgeHolder):
             self.isSorted = False
         self.bridges[pos] = bridge
         self.bridgesByID[ident] = bridge
-        logging.debug("Adding %s to %s" % (bridge.ip, self.name))
+        logging.debug("Adding %s to %s" % (bridge.address, self.name))
 
     def _sort(self):
         """Helper: put the keys in sorted order."""
@@ -592,7 +593,7 @@ class UnallocatedHolder(BridgeHolder):
         self.fingerprints = []
 
     def insert(self, bridge):
-        logging.debug("Leaving %s unallocated", bridge.getConfigLine(True))
+        logging.debug("Leaving %s unallocated", bridge.fingerprint)
         if not bridge.fingerprint in self.fingerprints:
             self.fingerprints.append(bridge.fingerprint)
 
@@ -670,10 +671,12 @@ class BridgeSplitter(BridgeHolder):
 
         for s in self.statsHolders:
             s.insert(bridge)
-        if not bridge.running:
+
+        # The bridge must be running to insert it:
+        if not bridge.flags.running:
             return
 
-        bridgeID = bridge.getID()
+        bridgeID = bridge.fingerprint
 
         # Determine which ring to put this bridge in if we haven't seen it
         # before.
@@ -753,7 +756,8 @@ class FilteredBridgeSplitter(BridgeHolder):
         :type bridge: :class:`~bridgedb.Bridges.Bridge`
         :param bridge: The bridge to add.
         """
-        if not bridge.running:
+        # The bridge must be running to insert it:
+        if not bridge.flags.running:
             logging.warn(
                 "Skipping hashring insertion for non-running bridge: '%s'"
                 % logSafely(bridge.fingerprint))
@@ -879,8 +883,7 @@ class FilteredBridgeSplitter(BridgeHolder):
                         desc.append(g.description)
 
             # add transports
-            logging.debug("%s supports %d transports" % (toHex(b.getID()),
-                                                         len(b.transports)))
+            logging.debug("%s supports %d transports" % (b, len(b.transports)))
             for transport in b.transports:
                 desc.append("transport=%s"%(transport.methodname))
 
