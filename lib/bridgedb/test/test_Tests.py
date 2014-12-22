@@ -97,6 +97,8 @@ def monkeypatchTests():
                      deprecated.is_valid_fingerprint)
     patcher.addPatch(Tests.bridgedb.Bridges, 'PluggableTransport',
                      deprecated.PluggableTransport)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'Bridge',
+                     deprecated.Bridge)
     return patcher
 
 
