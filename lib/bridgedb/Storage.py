@@ -175,14 +175,15 @@ class Database(object):
             # Update last_seen, address, port and (possibly) distributor.
             cur.execute("UPDATE Bridges SET address = ?, or_port = ?, "
                         "distributor = ?, last_seen = ? WHERE id = ?",
-                        (str(bridge.ip), bridge.orport, ring, timeToStr(seenAt), i))
+                        (str(bridge.address), bridge.orPort, ring,
+                         timeToStr(seenAt), i))
             return ring
         else:
             # Insert it.
             cur.execute("INSERT INTO Bridges (hex_key, address, or_port, "
                         "distributor, first_seen, last_seen) "
                         "VALUES (?, ?, ?, ?, ?, ?)",
-                        (h, str(bridge.ip), bridge.orport, setRing, t, t))
+                        (h, str(bridge.address), bridge.orPort, setRing, t, t))
             return setRing
 
     def cleanEmailedBridges(self, expireBefore):
