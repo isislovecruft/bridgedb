@@ -460,9 +460,9 @@ class SQLStorageTests(unittest.TestCase):
         t = time.time()
         cur = self.cur
 
-        k1 = "aaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbb"
-        k2 = "abababababababababababababababababababab"
-        k3 = "cccccccccccccccccccccccccccccccccccccccc"
+        k1 = "AAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBB"
+        k2 = "ABABABABABABABABABABABABABABABABABABABAB"
+        k3 = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
         b1 = B("serv1", "1.2.3.4", 999, fingerprint=k1)
         b1_v2 = B("serv1", "1.2.3.5", 9099, fingerprint=k1)
         b2 = B("serv2", "2.3.4.5", 9990, fingerprint=k2)
