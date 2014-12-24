@@ -1449,6 +1449,21 @@ class Bridge(BridgeBackwardsCompatibility):
     def updateFromExtraInfoDescriptor(self, descriptor, verify=True):
         """Update this bridge's information from an extrainfo descriptor.
 
+        Stem's
+        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
+        parses extrainfo ``transport`` lines into a dictionary with the
+        following structure::
+
+            {u'obfs2': (u'34.230.223.87', 37339, []),
+             u'obfs3': (u'34.230.223.87', 37338, []),
+             u'obfs4': (u'34.230.223.87', 37341, [
+                 (u'iat-mode=0,'
+                  u'node-id=2a79f14120945873482b7823caabe2fcde848722,'
+                  u'public-key=0a5b046d07f6f971b7776de682f57c5b9cdc8fa060db7ef59de82e721c8098f4')]),
+             u'scramblesuit': (u'34.230.223.87', 37340, [
+                 u'password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'])}
+
+
         .. todo:: The ``transport`` attribute of Stem's
             ``BridgeExtraInfoDescriptor`` class is a dictionary that uses the
             Pluggable Transport's eype as the keys. Meaning that if a bridge
@@ -1473,36 +1488,54 @@ class Bridge(BridgeBackwardsCompatibility):
 
         self.descriptors['extrainfo'] = descriptor
 
-        updatedTransports = []
+        oldTransports = self.transports[:]
 
-        for transport in self.transports:
-            for methodname, kitchenSink in descriptor.transport:
-                if transport.methodname == methodname:
-                    if transport.address == kitchenSink[0]:
-                        logging.info(
-                            "Updating %s pluggable transport for bridge %s." %
-                            (methodname, safelog.logSafely(self.fingerprint)))
-                        updatedTransports.append(transport)
-                        transport.updateFromStemTransport(self.fingerprint,
-                                                          methodname,
-                                                          kitchenSink)
-                    else:
-                        logging.info(
-                            ("Received new %s pluggable transport for bridge "
-                             "%s.") %
-                            (methodname, safelog.logSafely(self.fingerprint)))
-                        pt = PluggableTransport()
-                        pt.updateFromStemTransport(self.fingerprint,
-                                                   methodname,
-                                                   kitchenSink)
-                        updatedTransports.append(pt)
-                        self.transports.append(pt)
+        for methodname, (address, port, args) in descriptor.transport.items():
+            updated = False
+            # See if we already know about this transport. If so, update its
+            # info; otherwise, add a new transport below.
+            for pt in self.transports:
+                if pt.methodname == methodname:
 
-        dead = set(self.transports).difference(set(updatedTransports))
-        logging.info("The following transports for bridge %s died: %s"
-                     % (self, ' '.join(dead)))
-        for died in dead:
-            self.transports.remove(died)
+                    logging.info("Found old %s transport for %s... Updating..."
+                                 % (methodname, self))
+
+                    if not (address == str(pt.address)) and (port == pt.port):
+                        logging.info(("Address/port for %s transport for "
+                                      "%s changed: old=%s:%s new=%s:%s")
+                                     % (methodname, self, pt.address, pt.port,
+                                        address, port))
+
+                    oldTransports.remove(pt)
+                    pt.updateFromStemTransport(str(self.fingerprint),
+                                               methodname,
+                                               (address, port, args,))
+                    updated = True
+                    break
+
+            if updated:
+                continue
+            else:
+                # We didn't update it. It must be a new transport for this
+                # bridges that we're hearing about for the first time, so add
+                # it:
+                logging.info(
+                    "Received new %s pluggable transport for bridge %s."
+                    % (methodname, safelog.logSafely(self.fingerprint)))
+                transport = PluggableTransport()
+                transport.updateFromStemTransport(str(self.fingerprint),
+                                                  methodname,
+                                                  (address, port, args,))
+                self.transports.append(transport)
+
+        # These are the pluggable transports which we knew about before, which
+        # however were not updated in this descriptor, ergo the bridge must
+        # not have them any more:
+        for pt in oldTransports:
+            logging.info("Removing dead transport for bridge %s: %s %s:%s %s" %
+                         (self, pt.methodname, pt.address, pt.port, pt.arguments))
+            self.transports.remove(pt)
+
 
     # Bridge Stability (`#5482 <https://bugs.torproject.org>`_) properties.
     @property
