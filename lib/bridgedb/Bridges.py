@@ -706,6 +706,7 @@ class BridgeSplitter(BridgeHolder):
         for name,ring in self.ringsByName.iteritems():
             ring.dumpAssignments(f, "%s %s" % (description, name))
 
+
 class FilteredBridgeSplitter(BridgeHolder):
     """A configurable BridgeHolder that filters bridges into subrings.
 
