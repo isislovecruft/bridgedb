@@ -28,10 +28,16 @@ from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
 from bridgedb.bridges import InvalidPluggableTransportIP
+from bridgedb.bridges import MalformedBridgeInfo
 from bridgedb.bridges import MalformedPluggableTransport
+from bridgedb.bridges import MissingServerDescriptorDigest
+from bridgedb.bridges import ServerDescriptorDigestMismatch
+from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import PluggableTransport
+from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
 from bridgedb.configure import Conf
+from bridgedb.parse import descriptors
 from bridgedb.parse import options
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.schedule import toUnixSeconds
@@ -103,91 +109,72 @@ def load(state, splitter, clear=False):
     logging.info("Loading bridges...")
 
     bridges = {}
-    status = {}
-    addresses = {}
     timestamps = {}
-    bridges = {}
-    desc_digests = {}
-    ei_digests = {}
 
-    logging.info("Opening network status file: %s" % state.STATUS_FILE)
-    f = open(state.STATUS_FILE, 'r')
-    for (ID, nickname, desc_digest, running, stable,
-         ORaddr, ORport, or_addresses,
-         timestamp) in Bridges.parseStatusFile(f):
-        bridge = Bridges.Bridge(nickname, ORaddr, ORport, id_digest=ID,
-                                or_addresses=or_addresses)
-        bridge.assertOK()
-        bridge.setStatus(running, stable)
-        bridge.setDescriptorDigest(desc_digest)
-        bridges[ID] = bridge
+    logging.info("Opening networkstatus file: %s" % state.STATUS_FILE)
+    networkstatuses = descriptors.parseNetworkStatusFile(state.STATUS_FILE)
+    logging.debug("Closing networkstatus file: %s" % state.STATUS_FILE)
 
-        if ID in timestamps.keys():
-            timestamps[ID].append(timestamp)
+    logging.info("Processing networkstatus descriptors...")
+    for router in networkstatuses:
+        bridge = Bridge()
+        bridge.updateFromNetworkStatus(router)
+        bridge.flags.update(router.flags)
+
+        try:
+            bridge.assertOK()
+        except MalformedBridgeInfo as error:
+            logging.warn(str(error))
         else:
-            timestamps[ID] = [timestamp]
-    logging.debug("Closing network status file")
-    f.close()
+            bridges[bridge.fingerprint] = bridge
 
-    for fname in state.BRIDGE_FILES:
-        logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
-        f = open(fname, 'r')
-        desc_digests.update(Bridges.getDescriptorDigests(f))
-        if state.COLLECT_TIMESTAMPS:
-            for bridge in bridges.values():
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                           "Adding/updating timestamps in BridgeHistory for "\
-                           "'%s' in database: %s"
-                           % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                           bridge, timestamp)
-        logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
-        f.close()
+    for filename in state.BRIDGE_FILES:
+        logging.info("Opening bridge-server-descriptor file: '%s'" % filename)
+        serverdescriptors = descriptors.parseServerDescriptorsFile(filename)
+        logging.debug("Closing bridge-server-descriptor file: '%s'" % filename)
 
-    for ID in bridges.keys():
-        bridge = bridges[ID]
-        if bridge.desc_digest in desc_digests:
-            bridge.setVerified()
-            bridge.setExtraInfoDigest(desc_digests[bridge.desc_digest])
-        # We attempt to insert all bridges. If the bridge is not
-        # running, then it is skipped during the insertion process.
-        splitter.insert(bridge)
-
-    # read pluggable transports from extra-info document
-    # XXX: should read from networkstatus after bridge-authority
-    # does a reachability test
-    for filename in state.EXTRA_INFO_FILES:
-        logging.info("Opening extra-info file: '%s'" % filename)
-        f = open(filename, 'r')
-        for transport in Bridges.parseExtraInfoFile(f):
-            ID, method_name, address, port, argdict = transport
+        for router in serverdescriptors:
             try:
-                if bridges[ID].running:
-                    logging.info("Adding %s transport to running bridge"
-                                 % method_name)
-                    try:
-                        bridgePT = PluggableTransport(Bridges.toHex(ID),
-                                                      method_name, address,
-                                                      port, argdict)
-                    except (InvalidPluggableTransportIP,
-                            MalformedPluggableTransport) as error:
-                        logging.warn(error)
-                    else:
-                        bridges[ID].transports.append(bridgePT)
-                        if not bridgePT in bridges[ID].transports:
-                            logging.critical(
-                                "Added a transport, but it disappeared!",
-                                "\tTransport: %r" % bridgePT)
-            except KeyError as error:
-                logging.error("Could not find bridge with fingerprint '%s'."
-                              % Bridges.toHex(ID))
-        logging.debug("Closing extra-info file: '%s'" % filename)
-        f.close()
+                bridges[router.fingerprint].updateFromServerDescriptor(router)
+            except KeyError:
+                logging.warn(
+                    ("Received server descriptor for bridge '%s' which wasn't "
+                     "in the networkstatus!") % router.fingerprint)
+                continue
+            except (ServerDescriptorWithoutNetworkstatus,
+                    MissingServerDescriptorDigest,
+                    ServerDescriptorDigestMismatch) as error:
+                logging.warn(str(error))
+                # Reject any routers whose server descriptors didn't pass
+                # :meth:`~bridges.Bridge._checkServerDescriptor`, i.e. those
+                # bridges who don't have corresponding networkstatus
+                # documents, or whose server descriptor digests don't check
+                # out:
+                bridges.pop(router.fingerprint)
+                continue
 
+            if state.COLLECT_TIMESTAMPS:
+                # Update timestamps from server descriptors, not from network
+                # status descriptors (because networkstatus documents and
+                # descriptors aren't authenticated in any way):
+                if bridge.fingerprint in timestamps.keys():
+                    timestamps[bridge.fingerprint].append(router.published)
+                else:
+                    timestamps[bridge.fingerprint] = [router.published]
+
+    extrainfos = descriptors.parseExtraInfoFiles(*state.EXTRA_INFO_FILES)
+    for fingerprint, router in extrainfos.items():
+        try:
+            bridges[fingerprint].updateFromExtraInfoDescriptor(router)
+        except MalformedBridgeInfo as error:
+            logging.warn(str(error))
+        except KeyError as error:
+            logging.warn(("Received extrainfo descriptor for bridge '%s', "
+                          "but could not find bridge with that fingerprint.")
+                         % router.fingerprint)
+
+    # XXX TODO refactor the next block according with new parsers for OONI
+    # bridge-reachability reports:
     if state.COUNTRY_BLOCK_FILE:
         logging.info("Opening Blocking Countries file %s"
                      % state.COUNTRY_BLOCK_FILE)
@@ -205,6 +192,15 @@ def load(state, splitter, clear=False):
                         bridges[ID].blockingCountries[addrport] = set(cc)
         logging.debug("Closing blocking-countries document")
         f.close()
+
+    inserted = 0
+    logging.info("Inserting %d bridges into splitter..." % len(bridges))
+    for fingerprint, bridge in bridges.items():
+        # We attempt to insert all bridges. If the bridge is not running, then
+        # it is skipped during the insertion process.
+        splitter.insert(bridge)
+        inserted += 1
+    logging.info("Done inserting %d bridges into splitter." % inserted)
 
     if state.COLLECT_TIMESTAMPS:
         reactor.callInThread(updateBridgeHistory, bridges, timestamps)
