@@ -685,6 +685,8 @@ class BridgeSplitter(BridgeHolder):
         pos = bisect.bisect_right(self.pValues, n) - 1
         assert 0 <= pos < len(self.rings)
         ringname = self.rings[pos]
+        logging.info("%s placing bridge %s into hashring %s (via n=%s, pos=%s)."
+                     % (self.__class__.__name__, bridge, ringname, n, pos))
 
         validRings = self.rings + self.pseudoRings
 
@@ -828,6 +830,9 @@ class FilteredBridgeSplitter(BridgeHolder):
         #
         # I suppose since it contains memory addresses, it *is* technically
         # likely to be a unique string, but it is messy.
+
+        logging.debug("Adding '%s' subring to %s..."
+                      % (ringname, self.__class__.__name__))
 
         if not isinstance(subring, BridgeHolder):
             logging.fatal("%s hashring can't add invalid subring: %r"
