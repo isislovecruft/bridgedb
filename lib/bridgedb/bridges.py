@@ -799,18 +799,19 @@ class Bridge(BridgeBackwardsCompatibility):
             :data:`nickname```.$``:data:`fingerprint`.
         """
         nickname = self.nickname if self.nickname else 'Unnamed'
-        separator = '.$'
+        prefix = '$'
+        separator = "~"
         fingerprint = self.fingerprint
 
         if safelog.safe_logging:
-            separator = '.$$'
+            prefix = '$$'
             if fingerprint:
-                fingerprint = hashlib.sha1(fingerprint).hexdigest()
+                fingerprint = hashlib.sha1(fingerprint).hexdigest().upper()
 
         if not fingerprint:
             fingerprint = '0' * 40
 
-        return nickname + separator + fingerprint
+        return prefix + fingerprint + separator + nickname
 
     def _checkServerDescriptor(self, descriptor):
         # If we're parsing the server-descriptor, require a networkstatus
