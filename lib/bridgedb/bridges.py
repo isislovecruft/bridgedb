@@ -285,8 +285,7 @@ class PluggableTransport(BridgeAddressBase):
         # parameters, or use the ``updateFromStemTransport()`` method, we'll
         # only use the ``_runChecks()`` method now if we were initialised with
         # parameters:
-        if (self.fingerprint or self.address or self.port or
-            self.methodname or self.arguments):
+        if (fingerprint or address or port or methodname or arguments):
             self._runChecks()
 
     def _parseArgumentsIntoDict(self, argumentList):
