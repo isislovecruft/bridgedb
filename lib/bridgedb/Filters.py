@@ -74,23 +74,34 @@ def filterBridgesByIP6(bridge):
 setattr(filterBridgesByIP6, "description", "ip=6")
 
 def filterBridgesByTransport(methodname, addressClass=None):
-    if addressClass is None: addressClass = IPv4Address
-    assert (addressClass) in (IPv4Address, IPv6Address)
+    if not isinstance(addressClass, (IPv6Address, IPv4Address)):
+        addressClass = IPv4Address
+
     ruleset = frozenset([methodname, addressClass])
     try:
         return funcs[ruleset]
     except KeyError:
-        def f(bridge):
+
+        def _filterByTransport(bridge):
             for transport in bridge.transports:
-                # ignore method name case
-                if isinstance(transport.address, addressClass) and \
-                transport.methodname.lower() == methodname.lower(): return True
+                if isinstance(transport.address, addressClass):
+                    # ignore method name case
+                    if transport.methodname.lower() == methodname.lower():
+                        return True
+                    else:
+                        logging.debug(("Transport methodname '%s' doesn't match "
+                                       "requested methodname: '%s'.")
+                                      % (transport.methodname, methodname))
+                else:
+                    logging.debug(("Transport %s has incorrect address version "
+                                   "(%s).") % (transport, addressClass))
             return False
-        f.__name__ = "filterBridgesByTransport(%s,%s)" % (methodname,
-                addressClass)
-        setattr(f, "description", "transport=%s"%methodname)
-        funcs[ruleset] = f
-        return f
+
+        _filterByTransport.__name__ = ("filterBridgesByTransport(%s,%s)"
+                                       % (methodname, addressClass))
+        setattr(_filterByTransport, "description", "transport=%s" % methodname)
+        funcs[ruleset] = _filterByTransport
+        return _filterByTransport
 
 def filterBridgesByNotBlockedIn(countryCode, addressClass=None, methodname=None):
     """ if at least one address:port of the selected addressClass and
