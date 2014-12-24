@@ -67,7 +67,7 @@ class BridgeIntegrationTests(unittest.TestCase):
         self.nickname = 'unnamed'
         self.ip = ipaddr.IPAddress('127.0.0.1')
         self.orport = '9001'
-        self.fingerprint = 'a1cc8dfef1fa11af9c40af1054df9daf45250556'
+        self.fingerprint = 'A1CC8DFEF1FA11AF9C40AF1054DF9DAF45250556'
         self.id_digest = a2b_hex(self.fingerprint)
         self.or_addresses = {ipaddr.IPAddress('6.6.6.6'): PortList(6666),
                              ipaddr.IPAddress('42.1.42.1'): PortList(443)}
