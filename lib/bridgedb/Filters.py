@@ -73,22 +73,6 @@ def filterBridgesByIP6(bridge):
     return False
 setattr(filterBridgesByIP6, "description", "ip=6")
 
-def filterBridgesByOnlyIP4(bridge):
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv6Address:
-            return False
-    if type(k) is IPv4Address:
-        return True
-    return False
-
-def filterBridgesByOnlyIP6(bridge):
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv4Address:
-            return False
-    if type(k) is IPv6Address:
-        return True
-    return False
-
 def filterBridgesByTransport(methodname, addressClass=None):
     if addressClass is None: addressClass = IPv4Address
     assert (addressClass) in (IPv4Address, IPv6Address)

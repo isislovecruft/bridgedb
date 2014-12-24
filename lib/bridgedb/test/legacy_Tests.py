@@ -29,8 +29,6 @@ import ipaddr
 
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByOnlyIP4
-from bridgedb.Filters import filterBridgesByOnlyIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 
@@ -376,7 +374,7 @@ class IPBridgeDistTests(unittest.TestCase):
 
         for i in xrange(5):
             b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[
-                filterBridgesByOnlyIP4, filterBridgesByOnlyIP6])
+                filterBridgesByIP4, filterBridgesByIP6])
             assert len(b) == 0
 
     def testDistWithFilterBlockedCountries(self):
