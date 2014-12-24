@@ -51,7 +51,7 @@ def filterBridgesByRules(rules):
 
 def filterBridgesByIP4(bridge):
     try:
-        if IPv4Address(bridge.ip): return True
+        if IPv4Address(bridge.address): return True
     except ValueError:
         pass
 
@@ -63,7 +63,7 @@ setattr(filterBridgesByIP4, "description", "ip=4")
 
 def filterBridgesByIP6(bridge):
     try:
-        if IPv6Address(bridge.ip): return True
+        if IPv6Address(bridge.address): return True
     except ValueError:
         pass
 
