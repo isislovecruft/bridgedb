@@ -118,8 +118,10 @@ class Flags(object):
         self.stable = 'Stable' in flags
         self.valid = 'Valid' in flags
 
-        if self.fast or self.guard or self.running or self.stable or self.valid:
-            logging.debug("Parsed Flags: %s" % ' '.join(flags))
+        if not self.running:
+            logging.debug("Bridge doesn't have the Running flag.")
+        if not self.stable:
+            logging.debug("Bridge doesn't have the Stable flag.")
 
 
 class PluggableTransport(object):
