@@ -312,6 +312,9 @@ To create a bunch of fake bridge descriptors to test BridgeDB, do::
 
       bridgedb mock [-n NUMBER_OF_DESCRIPTORS]
 
+Note that you will need to install ``leekspin`` in order to run the
+``bridgedb mock``. See HACKING.md for details.
+
 And finally, to run the test suites, do::
 
       make coverage
