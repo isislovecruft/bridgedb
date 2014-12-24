@@ -55,8 +55,8 @@ def filterBridgesByIP4(bridge):
     except ValueError:
         pass
 
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv4Address:
+    for address, port, version in bridge.allVanillaAddresses:
+        if version == 4:
             return True
     return False
 setattr(filterBridgesByIP4, "description", "ip=4")
@@ -67,8 +67,8 @@ def filterBridgesByIP6(bridge):
     except ValueError:
         pass
 
-    for k in bridge.or_addresses.keys():
-        if type(k) is IPv6Address:
+    for address, port, version in bridge.allVanillaAddresses:
+        if version == 6:
             return True
     return False
 setattr(filterBridgesByIP6, "description", "ip=6")
