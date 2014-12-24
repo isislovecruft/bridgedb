@@ -124,7 +124,82 @@ class Flags(object):
             logging.debug("Bridge doesn't have the Stable flag.")
 
 
-class PluggableTransport(object):
+class BridgeAddressBase(object):
+    """A base class for describing one of a :class:`Bridge`'s or a
+    :class:`PluggableTransport`'s location, including its identity key
+    fingerprint and IP address.
+
+    :type fingerprint: str
+    :ivar fingerprint: The uppercased, hexadecimal fingerprint of the identity
+        key of the parent bridge running this pluggable transport instance,
+        i.e. the main ORPort bridge whose ``@type bridge-server-descriptor``
+        contains a hash digest for a ``@type bridge-extrainfo-document``, the
+        latter of which contains the parameter of this pluggable transport in
+        its ``transport`` line.
+
+    :type address: ``ipaddr.IPv4Address`` or ``ipaddr.IPv6Address``
+    :ivar address: The IP address of :class:`Bridge` or one of its
+        :class:`PluggableTransport`s.
+    """
+
+    def __init__(self):
+        self._fingerprint = None
+        self._address = None
+
+    @property
+    def fingerprint(self):
+        """Get this Bridge's fingerprint.
+
+        :rtype: str
+        :returns: A 40-character hexadecimal formatted string representation
+            of the SHA-1 hash digest of the public half of this Bridge's
+            identity key.
+        """
+        return self._fingerprint
+
+    @fingerprint.setter
+    def fingerprint(self, value):
+        """Set this Bridge's fingerprint to **value**.
+
+        .. info: The purported fingerprint will be checked for specification
+            conformity with
+            :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+
+        :param str value: The fingerprint for this Bridge.
+        """
+        if value and isValidFingerprint(value):
+            self._fingerprint = value.upper()
+
+    @fingerprint.deleter
+    def fingerprint(self):
+        """Reset this Bridge's fingerprint."""
+        self._fingerprint = None
+
+    @property
+    def address(self):
+        """Get this bridge's address.
+
+        :rtype: :class:`~ipaddr.IPv4Address` or :class:`~ipaddr.IPv6Address`
+        :returns: The bridge's address.
+        """
+        return self._address
+
+    @address.setter
+    def address(self, value):
+        """Set this Bridge's address.
+
+        :param value: The main ORPort IP address of this bridge.
+        """
+        if value and isValidIP(value): # XXX only conditionally set _address?
+            self._address = isIPAddress(value, compressed=False)
+
+    @address.deleter
+    def address(self):
+        """Reset this Bridge's address to ``None``."""
+        self._address = None
+
+
+class PluggableTransport(BridgeAddressBase):
     """A single instance of a Pluggable Transport (PT) offered by a
     :class:`Bridge`.
 
@@ -194,6 +269,11 @@ class PluggableTransport(object):
             which must be distributed to the client out-of-band. See
             :data:`arguments`.
         """
+        super(PluggableTransport, self).__init__()
+        self._port = None
+        self._methodname = None
+        self._arguments = None
+
         self.fingerprint = fingerprint
         self.address = address
         self.port = port
@@ -248,48 +328,57 @@ class PluggableTransport(object):
 
         We currently check that:
 
-          1. The :data:`fingerprint` is valid, according to
-             :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
-
-          2. The :data:`address` is valid, according to
-             :func:`~bridgedb.parse.addr.isValidIP`.
-
-          3. The :data:`port` is an integer, and that it is between the values
+          1. The :data:`port` is an integer, and that it is between the values
               of ``0`` and ``65535`` (inclusive).
 
-          4. The :data:`arguments` is a dictionary.
+          2. The :data:`arguments` is a dictionary.
 
         :raises MalformedPluggableTransport: if any of the above checks fails.
         """
-        if not isValidFingerprint(self.fingerprint):
+        if not self.fingerprint:
             raise MalformedPluggableTransport(
-                ("Cannot create PluggableTransport with bad Bridge "
-                 "fingerprint: %r.") % self.fingerprint)
+                ("Cannot create %s without owning Bridge fingerprint!")
+                % self.__class__.__name__)
 
-        valid = isValidIP(self.address)
-        if not valid:
+        if not self.address:
             raise InvalidPluggableTransportIP(
                 ("Cannot create PluggableTransport with address '%s'. "
                  "type(address)=%s.") % (self.address, type(self.address)))
-        self.address = ipaddr.IPAddress(self.address)
 
-        try:
-            # Coerce the port to be an integer:
-            self.port = int(self.port)
-        except (TypeError, ValueError):
+        if not self.port:
             raise MalformedPluggableTransport(
-                ("Cannot create PluggableTransport with port type: %s.")
-                % type(self.port))
-        else:
-            if not (0 <= self.port <= 65535):
-                raise MalformedPluggableTransport(
-                    ("Cannot create PluggableTransport with out-of-range port:"
-                     " %r.") % self.port)
+                ("Cannot create PluggableTransport without a valid port."))
 
         if not isinstance(self.arguments, dict):
             raise MalformedPluggableTransport(
                 ("Cannot create PluggableTransport with arguments type: %s")
                 % type(self.arguments))
+
+    @property
+    def port(self):
+        """Get the port number which this ``PluggableTransport`` is listening
+        for incoming client connections on.
+
+        :rtype: int or None
+        :returns: The port (as an int), if it is known and valid; otherwise,
+            returns ``None``.
+        """
+        return self._port
+
+    @port.setter
+    def port(self, value):
+        """Store the port number which this ``PluggableTransport`` is listening
+        for incoming client connections on.
+
+        :param int value: The transport's port.
+        """
+        if isinstance(value, int) and (0 <= value <= 65535):
+            self._port = value
+
+    @port.deleter
+    def port(self):
+        """Reset this ``PluggableTransport``'s port to ``None``."""
+        self._port = None
 
     def getTransportLine(self, includeFingerprint=True, bridgePrefix=False):
         """Get a Bridge Line for this :class:`PluggableTransport`.
@@ -376,57 +465,26 @@ class PluggableTransport(object):
             ``transport`` line in the bridge's extrainfo descriptor, which
             Stem puts into the 3-tuples shown in the example above.
         """
-        self.fingerprint = fingerprint
-        self.methodname = methodname
+        self.fingerprint = str(fingerprint)
+        self.methodname = str(methodname)
         self.address = kitchenSink[0]
-        self.port = kitchenSink[1]
+        self.port = int(kitchenSink[1])
         self.arguments = self._parseArgumentsIntoDict(kitchenSink[2])
         self._runChecks()
 
 
-class BridgeBase(object):
+class BridgeBase(BridgeAddressBase):
     """The base class for all bridge implementations."""
 
     def __init__(self):
-        self._fingerprint = None
         self._nickname = None
-        self.address = None
-        self.orPort = None
+        self._orPort = None
         self.socksPort = 0  # Bridges should always have ``SOCKSPort`` and
         self.dirPort = 0    # ``DirPort`` set to ``0``
         self.orAddresses = []
         self.transports = []
         self.flags = Flags()
 
-    @property
-    def fingerprint(self):
-        """Get this Bridge's fingerprint.
-
-        :rtype: str
-        :returns: A 40-character hexadecimal formatted string representation
-            of the SHA-1 hash digest of the public half of this Bridge's
-            identity key.
-        """
-        return self._fingerprint
-
-    @fingerprint.setter
-    def fingerprint(self, value):
-        """Set this Bridge's fingerprint to **value**.
-
-        .. info: The purported fingerprint will be checked for specification
-            conformity with
-            :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
-
-        :param str value: The fingerprint for this Bridge.
-        """
-        if isValidFingerprint(value):
-            self._fingerprint = value
-
-    @fingerprint.deleter
-    def fingerprint(self):
-        """Reset this Bridge's fingerprint."""
-        self._fingerprint = None
-        
     @property
     def nickname(self):
         """Get this Bridge's nickname.
@@ -449,6 +507,29 @@ class BridgeBase(object):
     def nickname(self, value):
         """Reset this Bridge's nickname."""
         self._nickname = None
+
+    @property
+    def orPort(self):
+        """Get this bridge's ORPort.
+
+        :rtype: int
+        :returns: This Bridge's default ORPort.
+        """
+        return self._orPort
+
+    @orPort.setter
+    def orPort(self, value):
+        """Set this Bridge's ORPort.
+
+        :param int value: The Bridge's ORPort.
+        """
+        if isinstance(value, int) and (0 <= value <= 65535):
+            self._orPort = value
+
+    @orPort.deleter
+    def orPort(self):
+        """Reset this Bridge's ORPort."""
+        self._orPort = None
 
 
 class BridgeBackwardsCompatibility(BridgeBase):
@@ -487,12 +568,10 @@ class BridgeBackwardsCompatibility(BridgeBase):
         """Functionality for maintaining backwards compatibility with the older
         version of this class (see :class:`bridgedb.test.deprecated.Bridge`).
         """
-        if nickname:
-            self.nickname = nickname  # XXX check nickname spec conformity?
+        self.nickname = nickname
+        self.orPort = orPort
         if address:
-            self.address = address  # XXX check validip?
-        if orPort:
-            self.orPort = orPort  # XXX check validity?
+            self.address = address
 
         if idDigest:
             if not fingerprint:
@@ -662,10 +741,6 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         super(Bridge, self).__init__(*args, **kwargs)
 
-        self.fingerprint = None
-        self.nickname = None
-        self.address = None
-        self.orPort = None
         self.socksPort = 0  # Bridges should always have ``SOCKSPort`` and
         self.dirPort = 0    # ``DirPort`` set to ``0``
         self.orAddresses = []
