@@ -312,13 +312,14 @@ class PluggableTransport(BridgeAddressBase):
         allArguments = ','.join(argumentList)
 
         for arg in allArguments.split(','):
-            try:
-                key, value = arg.split('=')
-            except ValueError:
-                logging.warn("  Couldn't parse K=V from PT arg: %r" % arg)
-            else:
-                logging.debug("  Parsed PT Argument: %s: %s" % (key, value))
-                argDict[key] = value
+            if arg:  # It might be an empty string
+                try:
+                    key, value = arg.split('=')
+                except ValueError:
+                    logging.warn("  Couldn't parse K=V from PT arg: %r" % arg)
+                else:
+                    logging.debug("  Parsed PT Argument: %s: %s" % (key, value))
+                    argDict[key] = value
 
         return argDict
 
