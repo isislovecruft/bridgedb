@@ -34,11 +34,49 @@ from bridgedb.configure import loadConfig
 from bridgedb.configure import Conf
 from bridgedb.parse import options
 from bridgedb.parse.addr import isIPAddress
+from bridgedb.schedule import toUnixSeconds
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Storage
 
+
+def updateBridgeHistory(bridges, timestamps):
+    """Process all the timestamps and update the bridge stability statistics in
+    the database.
+
+    .. warning: This function is extremely expensive, and will keep getting
+        more and more expensive, on a linearithmic scale, every time it is
+        called. Blame the :mod:`bridgedb.Stability` module.
+
+    :param dict bridges: All bridges from the descriptors, parsed into
+        :class:`bridgedb.bridges.Bridge`s.
+    :param dict timestamps: A dictionary whose keys are bridge fingerprints,
+        and whose values are lists of integers, each integer being a timestamp
+        (in seconds since Unix Epoch) for when a descriptor for that bridge
+        was published.
+    :rtype: dict
+    :returns: The original **timestamps**, but which each list of integers
+        (re)sorted.
+    """
+    logging.debug("Beginning bridge stability calculations")
+    sortedTimestamps = {}
+
+    for fingerprint, stamps in timestamps.items()[:]:
+        stamps.sort()
+        bridge = bridges[fingerprint]
+        for timestamp in stamps:
+            logging.debug(
+                ("Adding/updating timestamps in BridgeHistory for %s in "
+                 "database: %s") % (fingerprint, timestamp))
+            timestamp = toUnixSeconds(timestamp.timetuple())
+            bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+        # Replace the timestamps so the next sort is (hopefully) less
+        # expensive:
+        sortedTimestamps[fingerprint] = stamps
+
+    logging.debug("Stability calculations complete")
+    return sortedTimestamps
 
 def load(state, splitter, clear=False):
     """Read and parse all descriptors, and load into a bridge splitter.
@@ -168,30 +206,10 @@ def load(state, splitter, clear=False):
         logging.debug("Closing blocking-countries document")
         f.close()
 
-    def updateBridgeHistory(bridges, timestamps):
-        if not hasattr(state, 'config'):
-            logging.info("updateBridgeHistory(): Config file not set "\
-                "in State file.")
-            return
-        if state.COLLECT_TIMESTAMPS:
-            logging.debug("Beginning bridge stability calculations")
-            for bridge in bridges.values():
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                            "Updating BridgeHistory timestamps for %s: %s"
-                            % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                            bridge, timestamp)
-            logging.debug("Stability calculations complete")
+    if state.COLLECT_TIMESTAMPS:
+        reactor.callInThread(updateBridgeHistory, bridges, timestamps)
 
-    reactor.callInThread(updateBridgeHistory, bridges, timestamps)
-
-    bridges = None
     state.save()
-    return
 
 def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
