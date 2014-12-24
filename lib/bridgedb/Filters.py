@@ -10,21 +10,31 @@ funcs = {}
 def filterAssignBridgesToRing(hmac, numRings, assignedRing):
     #XXX: ruleset should have a key unique to this function
     # ruleset ensures that the same 
+    logging.debug("Creating a filter for assigning bridges to hashrings...")
     ruleset = frozenset([hmac, numRings, assignedRing]) 
+    logging.debug("Filter created: %s" % ruleset)
+
     try: 
         return funcs[ruleset]
     except KeyError:
-        def f(bridge):
-            digest = hmac(bridge.getID())
+        def _assignBridgesToRing(bridge):
+            digest = hmac(bridge.fingerprint)
             pos = long( digest[:8], 16 )
             which = pos % numRings
-            if which == assignedRing: return True
-            return False
-        f.__name__ = "filterAssignBridgesToRing(%s, %s, %s)" % (hmac, numRings,
-                                                                 assignedRing)
-        setattr(f, "description", "ring=%d" % assignedRing)
-        funcs[ruleset] = f
-        return f
+
+            if which == assignedRing:
+                return True
+            else:
+                logging.debug(("Bridge %s has calculated assignment %d; not "
+                               "in correct ring %d.")
+                              % (bridge, which, assignedRing))
+                return False
+
+        _assignBridgesToRing.__name__ = ("filterAssignBridgesToRing(%s, %s, %s)"
+                                         % (hmac, numRings, assignedRing))
+        setattr(_assignBridgesToRing, "description", "ring=%d" % assignedRing)
+        funcs[ruleset] = _assignBridgesToRing
+        return _assignBridgesToRing
 
 def filterBridgesByRules(rules):
     ruleset = frozenset(rules)
