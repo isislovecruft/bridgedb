@@ -468,7 +468,12 @@ class PluggableTransport(BridgeAddressBase):
         self.fingerprint = str(fingerprint)
         self.methodname = str(methodname)
         self.address = kitchenSink[0]
-        self.port = int(kitchenSink[1])
+
+        port = kitchenSink[1]
+        if port == 'anyport':  # IDK. Stem, WTF?
+            port = 0
+
+        self.port = int(port)
         self.arguments = self._parseArgumentsIntoDict(kitchenSink[2])
         self._runChecks()
 
