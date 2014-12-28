@@ -503,10 +503,13 @@ class BridgeBase(BridgeAddressBase):
     def nickname(self, value):
         """Set this Bridge's nickname to **value**.
 
+        .. note:: We don't need to call
+            :func:`bridgedb.parse.nickname.isValidRouterNickname() since Stem
+            will check nickname specification conformity.
+
         :param str value: The nickname of this Bridge.
         """
-        if isValidRouterNickname(value):
-            self._nickname = value
+        self._nickname = value
 
     @nickname.deleter
     def nickname(self, value):
