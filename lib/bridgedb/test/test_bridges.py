@@ -398,10 +398,22 @@ class FlagsTests(unittest.TestCase):
         self.flags.valid = False
         self.assertFalse(self.flags.valid, "The Valid flag should be False")
 
-    def test_update(self):
+    def test_update_Fast_Stable(self):
         """Test changing flags with the update() method."""
         self.flags.update(["Fast", "Stable"])
         self.assertTrue(self.flags.fast)
+        self.assertTrue(self.flags.stable)
+
+    def test_update_Fast(self):
+        """Test changing flags with the update() method."""
+        self.flags.update(["Fast"])
+        self.assertTrue(self.flags.fast)
+        self.assertFalse(self.flags.stable)
+
+    def test_update_Stable(self):
+        """Test changing flags with the update() method."""
+        self.flags.update(["Stable"])
+        self.assertFalse(self.flags.fast)
         self.assertTrue(self.flags.stable)
 
 
