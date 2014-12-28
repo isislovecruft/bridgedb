@@ -265,6 +265,7 @@ class BridgeIntegrationTests(unittest.TestCase):
                                 id_digest=self.id_digest,
                                 or_addresses=self.or_addresses)
         bridgeLine = bridge.getConfigLine(includeFingerprint=True)
+        self.assertIsNotNone(bridgeLine)
         self.assertSubstring(self.fingerprint, bridgeLine)
         ip = bridgeLine.split(':')[0]
         self.assertTrue(ipaddr.IPAddress(ip))
