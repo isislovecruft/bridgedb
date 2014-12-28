@@ -470,6 +470,18 @@ class PluggableTransportTests(unittest.TestCase):
         pt = bridges.PluggableTransport()
         self.assertIsInstance(pt, bridges.PluggableTransport)
 
+    def test_PluggableTransport_port_del(self):
+        """The del method for the port property should reset the port to None.
+        """
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "1.2.3.4", 443,
+                                        {'sharedsecret': 'foobar'})
+        self.assertEqual(pt.port, 443)
+
+        del(pt.port)
+        self.assertIsNone(pt.port)
+        self.assertIsNone(pt._port)
+
     def test_PluggableTransport_parseArgumentsIntoDict_valid_list(self):
         """Parsing a valid list of PT args should return a dictionary."""
         pt = bridges.PluggableTransport()
