@@ -627,6 +627,18 @@ class PluggableTransportTests(unittest.TestCase):
             ("password=unicorns sharedsecret=foobar" in bridgeLine) or
             ("sharedsecret=foobar password=unicorns" in bridgeLine))
 
+    def test_PluggableTransport_getTransportLine_IPv6(self):
+        """The address portion of a bridge line with an IPv6 address should
+        have square brackets around it.
+        """
+        pt = bridges.PluggableTransport(self.fingerprint,
+                                        "voltronPT", "2006:42::1234", 443,
+                                        {'sharedsecret': 'foobar',
+                                         'password': 'unicorns'})
+        bridgeLine = pt.getTransportLine()
+        self.assertEqual(pt.address.version, 6)
+        self.assertIn("[2006:42::1234]:443", bridgeLine)
+
 
 class BridgeBackwardsCompatibilityTests(unittest.TestCase):
     """Tests for :class:`bridgedb.bridges.BridgeBackwardsCompatibility`."""
