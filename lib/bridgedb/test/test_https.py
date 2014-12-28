@@ -35,7 +35,7 @@ from twisted.trial.unittest import SkipTest
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
 
-HTTPS_ROOT = 'https://127.0.0.1:6789'
+HTTP_ROOT = 'http://127.0.0.1:6788'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'
 
 
@@ -56,18 +56,18 @@ class HTTPTests(unittest.TestCase):
         self.br = mechanize.Browser()
         # prevents 'HTTP Error 403: request disallowed by robots.txt'
         self.br.set_handle_robots(False)
-        self.br.open(HTTPS_ROOT)
+        self.br.open(HTTP_ROOT)
 
         # -------------- Home/Root  page
         self.assertTrue(self.br.viewing_html())
-        self.assertEquals(self.br.response().geturl(), HTTPS_ROOT)
+        self.assertEquals(self.br.response().geturl(), HTTP_ROOT)
         self.assertEquals(self.br.title(), "BridgeDB")
         return self.br
 
     def goToOptionsPage(self):
         # check that we are on the root page
         self.assertTrue(self.br.viewing_html())
-        self.assertEquals(self.br.response().geturl(), HTTPS_ROOT)
+        self.assertEquals(self.br.response().geturl(), HTTP_ROOT)
 
         # follow the link with the word 'bridges' in it.
         # Could also use: text='bridges'
@@ -75,12 +75,12 @@ class HTTPTests(unittest.TestCase):
         self.br.follow_link(text_regex='bridges')
 
         # ------------- Options
-        self.assertEquals(self.br.response().geturl(), HTTPS_ROOT + "/options")
+        self.assertEquals(self.br.response().geturl(), HTTP_ROOT + "/options")
         return self.br
 
     def submitOptions(self, transport, ipv6, captchaResponse):
         # check that we are on the options page
-        self.assertEquals(self.br.response().geturl(), HTTPS_ROOT + "/options")
+        self.assertEquals(self.br.response().geturl(), HTTP_ROOT + "/options")
 
         # At this point, we'd like to be able to set some values in
         # the 'advancedOptions' form. Unfortunately the HTML form
@@ -97,7 +97,7 @@ class HTTPTests(unittest.TestCase):
         self.br.submit()
 
         # ------------- Captcha
-        EXPECTED_URL = HTTPS_ROOT + "/bridges?transport=%s" % transport
+        EXPECTED_URL = HTTP_ROOT + "/bridges?transport=%s" % transport
         if ipv6:
             EXPECTED_URL += "&ipv6=yes"
         self.assertEquals(self.br.response().geturl(), EXPECTED_URL)
@@ -148,8 +148,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -166,8 +170,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -184,8 +192,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -202,8 +214,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -229,8 +245,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -260,8 +280,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -293,8 +317,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
@@ -326,8 +354,12 @@ class HTTPTests(unittest.TestCase):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
                 raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
 
         self.openBrowser()
         self.goToOptionsPage()
