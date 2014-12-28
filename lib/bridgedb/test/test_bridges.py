@@ -15,6 +15,7 @@ from binascii import a2b_hex
 import ipaddr
 import io
 import hashlib
+import os
 import warnings
 
 from twisted.trial import unittest
@@ -22,11 +23,88 @@ from twisted.trial import unittest
 from bridgedb import bridges
 from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.bridgerequest import BridgeRequestBase
+from bridgedb.parse import descriptors
 from bridgedb.parse.addr import PortList
+from bridgedb.parse.nickname import InvalidRouterNickname
+
 
 # Don't print "WARNING:root: Couldn't parse K=V from PT arg: ''" a bunch of
 # times while running the tests.
 warnings.filterwarnings("ignore", ".*Couldn't parse K=V from PT arg.*", Warning)
+
+
+BRIDGE_NETWORKSTATUS = '''\
+r FourfoldQuirked LDIlxIBTMQJeIR9Lblv0XDM/3Sw c4EVu2rO/iD/DJYBX/Ll38DGQWI 2014-12-22 21:51:27 179.178.155.140 36489 0
+a [6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488
+s Fast Guard Running Stable Valid
+w Bandwidth=1585163
+p reject 1-65535
+'''
+
+BRIDGE_SERVER_DESCRIPTOR = '''\
+@purpose bridge
+router FourfoldQuirked 179.178.155.140 36489 0 0
+or-address [6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488
+platform Tor 0.2.3.24-rc on Linux
+opt protocols Link 1 2 Circuit 1
+published 2014-12-22 21:51:27
+opt fingerprint 2C32 25C4 8053 3102 5E21 1F4B 6E5B F45C 333F DD2C
+uptime 33200687
+bandwidth 1866688205 2110169275 1623207134
+opt extra-info-digest 4497E81715D958105C6A39D348163AD8F3080FB2
+onion-key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBANKicvIGWp9WGKOJV8Fs3YKdTDrgxlggzyKgkW+MZWEPQ9lLcrmXqBdW
+nVK5EABByHnnxJfk+sm+6yDYxY/lFVL1SEP84pAK1Z21f4+grNlwox1DLyntXDdz
+BCZuRszuBYK3ncsk+ePQeUzRKQ/GZt9s/oy0IjtNbAoAoq7DKUVzAgMBAAE=
+-----END RSA PUBLIC KEY-----
+signing-key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBALnJK7A9aZIp2ry9ruVYzm4VfaXzNHdTcvkXTrETu/jLXsosEwj9viSe
+Ry3W/uctbjzdwlIY0ZBUuV20q9bh+/c7Q0T8LOHBZouOy+nhFOUX+Q5YCG9cRnY0
+hBebYTzyplh0tT8xyYwcS8y6esL+gjVDLo6Og3QPhWRFQ4CyCic9AgMBAAE=
+-----END RSA PUBLIC KEY-----
+contact Somebody <somebody@example.com>
+ntor-onion-key aVmfOm9C046wM8ktGnpfBHSNj1Jm30M/m2P7W3a7Xn8
+reject *:*
+router-signature
+-----BEGIN SIGNATURE-----
+nxml4rTyTrj8dHcsFt2B4ACz2AN5CuZ2t5UF1BtXUpuzHmqVlg7imy8Cp2xIwoDa
+4uv/tTG32macauVnMHt0hSbtBF5nHfxU9G1T/XzdtL+KD8REDGky4allXnmvF6In
+rFtSn2OeZewvi8oYPmVYKgzHL6tzZxs2Sn/bOTj5sRw=
+-----END SIGNATURE-----
+'''
+
+BRIDGE_EXTRAINFO = '''\
+extra-info FourfoldQuirked 2C3225C4805331025E211F4B6E5BF45C333FDD2C
+published 2014-12-22 21:51:27
+write-history 2014-12-22 21:51:27 (900 s) 3188736,2226176,2866176
+read-history 2014-12-22 21:51:27 (900 s) 3891200,2483200,2698240
+dirreq-write-history 2014-12-22 21:51:27 (900 s) 1024,0,2048
+dirreq-read-history 2014-12-22 21:51:27 (900 s) 0,0,0
+geoip-db-digest 51AE9611B53880B2BCF9C71E735D73F33FAD2DFE
+geoip6-db-digest 26B0D55B20BEB496A3ADE7C6FDD866F5A81027F7
+dirreq-stats-end 2014-12-22 21:51:27 (86400 s)
+dirreq-v3-ips
+dirreq-v3-reqs
+dirreq-v3-resp ok=16,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
+transport obfs3 179.178.155.140:36490
+transport obfs2 179.178.155.140:36491
+transport scramblesuit 179.178.155.140:36492 password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
+transport obfs4 179.178.155.140:36493 iat-mode=0,node-id=25293f2761d658cc70c19515861842d712751bdc,public-key=02d20bbd7e394ad5999a4cebabac9619732c343a4cac99470c03e23ba2bdc2bc
+bridge-stats-end 2014-12-22 21:51:27 (86400 s)
+bridge-ips ca=8
+bridge-ip-versions v4=8,v6=0
+bridge-ip-transports <OR>=8
+router-signature
+-----BEGIN SIGNATURE-----
+cn4+8pQwCMPnHcp1s8wm7ZYsnd9AXJH6ysNlvQ63jsPCG9JdE5E8BwCThEgUccJI
+XILT4o+SveEQUG72R4bENsKxqV4rRNh1g6CNAbYhAITqrU9B+jImDgrBBW+XWT5K
+78ECRPn6Y4KsxFb0TIn7ddv9QjApyBJNIDMihH80Yng=
+-----END SIGNATURE-----
+'''
 
 
 class BridgeIntegrationTests(unittest.TestCase):
@@ -488,3 +566,331 @@ class PluggableTransportTests(unittest.TestCase):
         self.assertTrue(
             ("password=unicorns sharedsecret=foobar" in bridgeLine) or
             ("sharedsecret=foobar password=unicorns" in bridgeLine))
+
+
+class BridgeBackwardsCompatibilityTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.bridges.BridgeBackwardsCompatibility`."""
+
+    def setUp(self):
+        self.nickname = "RouterNickname"
+        self.address = "23.23.23.23"
+        self.orPort = 9001
+        self.fingerprint = "0123456789ABCDEF0123456789ABCDEF01234567"
+        self.orAddresses = {"2006:42::123F": PortList(443, 9001, 1337),
+                            "2006:42::123E": PortList(9001, 993)}
+
+    def test_BridgeBackwardsCompatibility_init_with_PortList(self):
+        """Test initialisation with the usual number of valid arguments and
+        PortLists for the orAddresses.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            self.nickname,
+            self.address,
+            self.orPort,
+            self.fingerprint,
+            self.orAddresses)
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+
+    def test_BridgeBackwardsCompatibility_init_without_PortList(self):
+        """Test initialisation with the usual number of valid arguments and
+        integers for the orAddresses' ports.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            self.nickname,
+            self.address,
+            self.orPort,
+            self.fingerprint,
+            {"2006:42::123F": 443,
+             "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+
+    def test_BridgeBackwardsCompatibility_init_without_address(self):
+        """Test initialisation without an IP address."""
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            orport=self.orPort,
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+
+    def test_BridgeBackwardsCompatibility_init_invalid_orAddresses_address(self):
+        """Test initialisation with an invalid ORAddress."""
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport=self.orPort,
+            fingerprint=self.fingerprint,
+            or_addresses={"10.1.2.3": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertEqual(len(bridge.orAddresses), 1)
+
+    def test_BridgeBackwardsCompatibility_init_invalid_orAddresses_port(self):
+        """Test initialisation with an invalid ORPort."""
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport=self.orPort,
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": "anyport"})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertEqual(len(bridge.orAddresses), 1)
+
+    def test_BridgeBackwardsCompatibility_setStatus_running(self):
+        """Using setStatus() to set the Running flag should set Bridge.running
+        and Bridge.flags.running to True.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport="anyport",
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertFalse(bridge.running)
+        self.assertFalse(bridge.flags.running)
+
+        bridge.setStatus(running=True)
+        self.assertTrue(bridge.running)
+        self.assertTrue(bridge.flags.running)
+
+    def test_BridgeBackwardsCompatibility_setStatus_running(self):
+        """Using setStatus() to set the Running and Stable flags should set
+        Bridge.running, Bridge.flags.running, Bridge.stable, and
+        Bridge.flags.stable.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport="anyport",
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertFalse(bridge.running)
+        self.assertFalse(bridge.flags.running)
+        self.assertFalse(bridge.stable)
+        self.assertFalse(bridge.flags.stable)
+
+        bridge.setStatus(running=True, stable=True)
+        self.assertTrue(bridge.running)
+        self.assertTrue(bridge.flags.running)
+        self.assertTrue(bridge.stable)
+        self.assertTrue(bridge.flags.stable)
+
+
+class BridgeTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.bridges.Bridge`."""
+
+    def _writeDescriptorFiles(self):
+        with open(self._networkstatusFile, 'w') as fh:
+            fh.write(BRIDGE_NETWORKSTATUS)
+            fh.flush()
+
+        with open(self._serverDescriptorFile, 'w') as fh:
+            fh.write(BRIDGE_SERVER_DESCRIPTOR)
+            fh.flush()
+
+        with open(self._extrainfoFile, 'w') as fh:
+            fh.write(BRIDGE_EXTRAINFO)
+            fh.flush()
+
+    def setUp(self):
+        def _cwd(filename):
+            return os.path.sep.join([os.getcwd(), filename])
+
+        self._networkstatusFile = _cwd('BridgeTests-networkstatus-bridges')
+        self._serverDescriptorFile = _cwd('BridgeTests-bridge-descriptors')
+        self._extrainfoFile = _cwd('BridgeTests-cached-extrainfo')
+
+        self._writeDescriptorFiles()
+
+        self.networkstatus = descriptors.parseNetworkStatusFile(
+            self._networkstatusFile)[0]
+        self.serverdescriptor = descriptors.parseServerDescriptorsFile(
+            self._serverDescriptorFile)[0]
+        self.extrainfo = descriptors.parseExtraInfoFiles(
+            self._extrainfoFile).values()[0]
+
+        self.bridge = bridges.Bridge()
+
+    def tearDown(self):
+        """Reset safelogging to its default (disabled) state, due to
+        test_Bridge_str_with_safelogging changing it.
+        """
+        bridges.safelog.safe_logging = False
+
+    def test_Bridge_nickname_del(self):
+        """The del method for the nickname property should reset the nickname
+        to None.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.assertEqual(self.bridge.nickname, "FourfoldQuirked")
+
+        del(self.bridge.nickname)
+        self.assertIsNone(self.bridge.nickname)
+        self.assertIsNone(self.bridge._nickname)
+
+    def test_Bridge_nickname_invalid(self):
+        """The del method for the nickname property should reset the nickname
+        to None.
+        """
+        # Create a networkstatus descriptor with an invalid nickname:
+        filename = self._networkstatusFile + "-invalid"
+        fh = open(filename, 'w')
+        invalid = BRIDGE_NETWORKSTATUS.replace(
+            "FourfoldQuirked",
+            "ThisRouterNicknameContainsWayMoreThanNineteenBytes")
+        fh.seek(0)
+        fh.write(invalid)
+        fh.flush()
+        fh.close()
+
+        self.assertRaises(InvalidRouterNickname,
+                          descriptors.parseNetworkStatusFile,
+                          filename)
+
+    def test_Bridge_orport_del(self):
+        """The del method for the orPort property should reset the orPort
+        to None.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.assertEqual(self.bridge.orPort, 36489)
+
+        del(self.bridge.orPort)
+        self.assertIsNone(self.bridge.orPort)
+        self.assertIsNone(self.bridge._orPort)
+
+    def test_Bridge_str_without_safelogging(self):
+        """The str() method of a Bridge should return an identifier for the
+        Bridge, which should be different if safelogging is enabled.
+        """
+        bridges.safelog.safe_logging = False
+
+        bridge = bridges.Bridge()
+        bridge.updateFromNetworkStatus(self.networkstatus)
+
+        identifier = str(bridge)
+        self.assertEqual(identifier,
+                         ''.join(['$', bridge.fingerprint,
+                                  '~', bridge.nickname]))
+
+    def test_Bridge_str_with_safelogging(self):
+        """The str() method of a Bridge should return an identifier for the
+        Bridge, which should be different if safelogging is enabled.
+        """
+        bridges.safelog.safe_logging = True
+
+        bridge = bridges.Bridge()
+        bridge.updateFromNetworkStatus(self.networkstatus)
+
+        identifier = str(bridge)
+        self.assertEqual(
+            identifier,
+            ''.join(['$$',
+                     hashlib.sha1(bridge.fingerprint).hexdigest().upper(),
+                     '~', bridge.nickname]))
+
+    def test_Bridge_str_without_fingerprint(self):
+        """The str() method of a Bridge should return an identifier for the
+        Bridge, which should be different if the fingerprint is unknown.
+        """
+        bridge = bridges.Bridge()
+        bridge.updateFromNetworkStatus(self.networkstatus)
+        del(bridge.fingerprint)
+
+        identifier = str(bridge)
+        self.assertEqual(identifier,
+                         ''.join(['$', '0'*40,
+                                  '~', bridge.nickname]))
+
+    def test_Bridge_updateFromServerDescriptor(self):
+        """ """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+
+    def test_Bridge_updateFromServerDescriptor_no_networkstatus(self):
+        """Parsing a server descriptor for a bridge which wasn't included in
+        the networkstatus document from the BridgeAuthority should raise a
+        ServerDescriptorWithoutNetworkstatus exception.
+        """
+        self.assertRaises(bridges.ServerDescriptorWithoutNetworkstatus,
+                          self.bridge.updateFromServerDescriptor,
+                          self.serverdescriptor)
+
+    def test_Bridge_updateFromExtraInfoDescriptor(self):
+        """Bridge.updateFromExtraInfoDescriptor() should add the expected
+        number of pluggable transports.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+        self.assertEqual(self.bridge.bandwidthObserved, None)
+        self.assertEqual(len(self.bridge.transports), 0)
+
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+        self.assertEqual(self.bridge.bandwidthObserved, 1623207134)
+        self.assertEqual(len(self.bridge.transports), 0)
+
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+        self.assertEqual(self.bridge.bandwidthObserved, 1623207134)
+        self.assertEqual(len(self.bridge.transports), 4)
+
+    def test_Bridge_descriptorDigest(self):
+        """Parsing a networkstatus descriptor should result in
+        Bridge.descriptorDigest being set.
+        """
+        realdigest = "738115BB6ACEFE20FF0C96015FF2E5DFC0C64162"
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.assertEqual(self.bridge.descriptorDigest, realdigest)
+
+    def test_Bridge_checkServerDescriptor(self):
+        """Parsing a server descriptor when the bridge's networkstatus document
+        didn't have a digest of the server descriptor should raise a
+        MissingServerDescriptorDigest.
+        """
+        # Create a networkstatus descriptor without a server descriptor digest:
+        filename = self._networkstatusFile + "-missing-digest"
+        fh = open(filename, 'w')
+        invalid = BRIDGE_NETWORKSTATUS.replace("c4EVu2rO/iD/DJYBX/Ll38DGQWI", "foo")
+        fh.seek(0)
+        fh.write(invalid)
+        fh.flush()
+        fh.close()
+
+        realdigest = "738115BB6ACEFE20FF0C96015FF2E5DFC0C64162"
+
+        #networkstatus = descriptors.parseNetworkStatusFile(filename)
+        #self.bridge.updateFromNetworkStatus(networkstatus[0])
+        #self.assertRaises(bridges.MissingServerDescriptorDigest,
+        #                  self.bridge.updateFromNetworkStatus,
+        #                  networkstatus[0])
+
+    def test_Bridge_checkServerDescriptor_digest_mismatch(self):
+        """Parsing a server descriptor whose digest doesn't match the one given
+        in the bridge's networkstatus document should raise a
+        ServerDescriptorDigestMismatch.
+        """
+        # Create a networkstatus descriptor without a server descriptor digest:
+        filename = self._networkstatusFile + "-mismatched-digest"
+        fh = open(filename, 'w')
+        invalid = BRIDGE_NETWORKSTATUS.replace("c4EVu2rO/iD/DJYBX/Ll38DGQWI",
+                                               "c4EVu2r1/iD/DJYBX/Ll38DGQWI")
+        fh.seek(0)
+        fh.write(invalid)
+        fh.flush()
+        fh.close()
+
+        realdigest = "738115BB6ACEFE20FF0C96015FF2E5DFC0C64162"
+        networkstatus = descriptors.parseNetworkStatusFile(filename)
+        self.bridge.updateFromNetworkStatus(networkstatus[0])
+        #self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        self.assertRaises(bridges.ServerDescriptorDigestMismatch,
+                          self.bridge.updateFromServerDescriptor,
+                          self.serverdescriptor)
