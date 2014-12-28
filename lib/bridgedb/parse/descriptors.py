@@ -25,6 +25,7 @@ from stem.descriptor.router_status_entry import _parse_file as _parseNSFile
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
 
 from bridgedb import safelog
+from bridgedb.parse.nickname import InvalidRouterNickname
 
 
 class DescriptorWarning(Warning):
@@ -85,6 +86,9 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
     :param descriptorClass: A class (probably from
         :api:`stem.descriptors.router_status_entry`) which Stem will parse
         each descriptor it reads from **filename** into.
+    :raises InvalidRouterNickname: if one of the routers in the networkstatus
+        file had a nickname which does not conform to Tor's nickname
+        specification.
     :raises ValueError: if the contents of a descriptor are malformed and
         **validate** is ``True``.
     :raises IOError: if the file at **filename** can't be read.
@@ -103,7 +107,15 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
         logging.debug("Skipping %d bytes of networkstatus file." % position)
         fh.seek(position)
         document = _parseNSFile(fh, validate, entry_class=descriptorClass)
-        routers.extend(list(document))
+
+        try:
+            routers.extend(list(document))
+        except ValueError as error:
+            if "nickname isn't valid" in str(error):
+                raise InvalidRouterNickname(str(error))
+            else:
+                raise ValueError(str(error))
+
     logging.info("Closed networkstatus file: %s" % filename)
 
     return routers
