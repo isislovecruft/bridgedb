@@ -417,6 +417,41 @@ class FlagsTests(unittest.TestCase):
         self.assertTrue(self.flags.stable)
 
 
+class BridgeAddressBaseTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.bridges.BridgeAddressBase`."""
+
+    def setUp(self):
+        self.fingerprint = '2C3225C4805331025E211F4B6E5BF45C333FDD2C'
+        self.bab = bridges.BridgeAddressBase()
+
+    def test_BridgeAddressBase_init(self):
+        """The BridgeAddressBase's _address and _fingerprint should be None."""
+        self.assertIsNone(self.bab._address)
+        self.assertIsNone(self.bab._fingerprint)
+
+    def test_BridgeAddressBase_fingerprint_del(self):
+        """The del method for the fingerprint property should reset the
+        fingerprint to None.
+        """
+        self.bab.fingerprint = self.fingerprint
+        self.assertEqual(self.bab.fingerprint, self.fingerprint)
+
+        del(self.bab.fingerprint)
+        self.assertIsNone(self.bab.fingerprint)
+        self.assertIsNone(self.bab._fingerprint)
+
+    def test_BridgeAddressBase_address_del(self):
+        """The del method for the address property should reset the
+        address to None.
+        """
+        self.bab.address = '11.12.13.14'
+        self.assertEqual(self.bab.address, ipaddr.IPv4Address('11.12.13.14'))
+
+        del(self.bab.address)
+        self.assertIsNone(self.bab.address)
+        self.assertIsNone(self.bab._address)
+
+
 class PluggableTransportTests(unittest.TestCase):
     """Tests for :class:`bridgedb.bridges.PluggableTransport."""
 
