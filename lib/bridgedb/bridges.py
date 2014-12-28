@@ -512,7 +512,7 @@ class BridgeBase(BridgeAddressBase):
         self._nickname = value
 
     @nickname.deleter
-    def nickname(self, value):
+    def nickname(self):
         """Reset this Bridge's nickname."""
         self._nickname = None
 
