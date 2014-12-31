@@ -1038,31 +1038,21 @@ class Bridge(BridgeBackwardsCompatibility):
 
         We require that:
 
-          1. This bridge's :data:`fingerprint` is valid, accoring to
-             :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+          1. Any IP addresses contained in :data:`orAddresses` are valid,
+             according to :func:`~bridgedb.parse.addr.isValidIP`.
 
-          2. This bridge's :data:`address` and any IP addresses contained in
-             :data:`orAddresses` are valid, according to
-             :func:`~bridgedb.parse.addr.isValidIP`.
-
-          3. The :data:`orPort` and any ports in :data:`orAddresses` are
-             between ``1`` and ``65535`` (inclusive).
+          3. Any ports in :data:`orAddresses` are between ``1`` and ``65535``
+             (inclusive).
 
         :raises MalformedBridgeInfo: if something was found to be malformed or
             invalid.
         """
         malformed = []
 
-        if not isValidFingerprint(self.fingerprint):
-            malformed.append("Invalid fingerprint: '%s'" % self.fingerprint)
-        if not isValidIP(self.address):
-            malformed.append("Invalid ORPort address: '%s'" % self.address)
-        if not (1 <= self.orPort <= 65535):
-            malformed.append("Invalid ORPort port: '%d'" % self.orPort)
         for (address, port, version) in self.orAddresses:
             if not isValidIP(address):
                 malformed.append("Invalid ORAddress address: '%s'" % address)
-            if not (1 <= port <= 65535):
+            if not (0 <= port <= 65535):
                 malformed.append("Invalid ORAddress port: '%d'" % port)
             if not version in (4, 6):
                 malformed.append("Invalid ORAddress IP version: %r" % version)
