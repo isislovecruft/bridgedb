@@ -675,8 +675,12 @@ class WebResourceBridges(resource.Resource):
         else:
             ip = request.getClientIP()
 
-        # Record what country the client is in.
-        countryCode = bridgedb.geo.getCountryCode(IPAddress(ip))
+        # Look up the country code of the input IP
+        if isIPAddress(ip):
+            countryCode = bridgedb.geo.getCountryCode(IPAddress(ip))
+        else:
+            logging.warn("Invalid IP detected; skipping country lookup.")
+            countryCode = None
 
         # XXX separate function again
         format = request.args.get("format", None)
@@ -785,6 +789,7 @@ class WebResourceBridges(resource.Resource):
                 rendered = replaceErrorPage(err)
 
         return rendered
+
 
 class WebRoot(resource.Resource):
     """The parent resource of all other documents hosted by the webserver."""

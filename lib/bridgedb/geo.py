@@ -16,7 +16,6 @@ and geoip-database packages.
 import logging
 from os.path import isfile
 
-from bridgedb.safelog import logSafely
 from ipaddr import IPv4Address, IPv6Address
 
 # IPv4 database
@@ -37,16 +36,18 @@ try:
 except Exception as err:  # pragma: no cover
     logging.warn("Error while loading geoip module: %r" % err)
     geoip = None
+    geoipv6 = None
 
 def getCountryCode(IPAddr):
-    """Returns the two-letter country code of a given IP address.
+    """Return the two-letter country code of a given IP address.
 
     :param IPAddr: (:class:`ipaddr.IPAddress`) An IPv4 OR IPv6 address.
     """
+
     ip = None
     version = None
     try:
-        ip = IPAddr.exploded
+        ip = IPAddr.compressed
         version = IPAddr.version
     except AttributeError as err:
         logging.warn("Wrong type passed to getCountryCode. Offending call:"
@@ -55,11 +56,17 @@ def getCountryCode(IPAddr):
 
     # GeoIP has two databases: one for IPv4 addresses, and one for IPv6
     # addresses. This will ensure we use the correct one.
-    db = None    
-    if version == 4:
-        db = geoip
+    db = None
+    # First, make sure we loaded GeoIP properly.
+    if None in (geoip, geoipv6):
+        logging.warn("GeoIP databases failed to load; could not look up"\
+                     " country code.")
+        return None
     else:
-        db = geoipv6
+        if version == 4:
+            db = geoip
+        else:
+            db = geoipv6
 
     # Look up the country code of the address.
     countryCode = db.country_code_by_addr(ip)
