@@ -750,7 +750,7 @@ class WebResourceBridges(resource.Resource):
                                                        self.nBridgesToGive,
                                                        countryCode,
                                                        bridgeFilterRules=rules)
-            bridgeLines = "".join("  %s\n" % b.getConfigLine(
+            bridgeLines = "".join("%s\n" % b.getConfigLine(
                 includeFingerprint=self.includeFingerprints,
                 addressClass=addressClass,
                 transport=transport,
