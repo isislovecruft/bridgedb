@@ -3,23 +3,36 @@
 <%inherit file="base.html"/>
 <%page args="strings, rtl=False, lang='en', answer=0, **kwargs"/>
 
-<div class="container-fluid"
-     style="width: 98%; align: center; margin: auto;">
-  <div class="container-fluid"
-       style="padding: 2%">
-    <h2>${_(strings.BRIDGES[0])}</h2>
   </div>
 </div>
 
+<div class="container-narrow">
+  <div class="container-fluid">
+
 % if answer:
-<div class="container-fluid" style="width: 98%; align: center; margin: auto;">
-<div class="container-fluid" style="padding: 1px">
-<div class="bridge-lines">
-${answer}
-</div>
-</div>
-</div>
-<br \>
+    <div class="container-fluid"
+         style="width: 98%; align: center; margin: auto;">
+      <div class="container-fluid"
+           style="padding: 2%">
+        <h2>${_(strings.BRIDGES[0])}</h2>
+      </div>
+    </div>
+
+    <div class="container-fluid"
+         style="width: auto; align: center; margin: auto;
+                position: relative; left: 0%;"
+         onclick="selectText('bridgelines')">
+      <div class="row" id="bridgesrow1">
+        <div class="col col-lg-12">
+          <div class="bridge-lines" id="bridgelines">
+${answer.replace("\n", "<br />")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <br />
 
 <div class="container-fluid"
      style="width: 100%; align: center; margin: auto;">
