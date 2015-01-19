@@ -87,19 +87,23 @@ ${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
 <hr>
 
 <div class="footer">
-  <p>&copy; The Tor Project</p>
   <p>
-    <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">${_("Report a Bug")}</a>
-    &middot
-    <a href="https://gitweb.torproject.org/bridgedb.git">${_("Source Code")}</a>
-    &middot
+    <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">
+      <i class="icon icon-large icon-bug">&nbsp;${_("Report a Bug")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="https://gitweb.torproject.org/bridgedb.git">
+      <i class="icon icon-large icon-code">&nbsp;${_("Source Code")}</i></a>
+    &nbsp; &middot; &nbsp;
     <a href="https://gitweb.torproject.org/bridgedb.git/blob/HEAD:/CHANGELOG">
-        ${_("Changelog")}</a>
-    &middot
-    <a href="mailto:help@rt.torproject.org">${_("Contact")}</a>
-    &middot
-    <a href="../keys">${_("Public Keys")}</a>
+      <i class="icon icon-large icon-rocket">&nbsp;${_("Changelog")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="mailto:help@rt.torproject.org">
+      <i class="icon icon-large icon-envelope">&nbsp;${_("Contact")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="../keys"><i class="icon icon-large icon-key">&nbsp;${_("Public Keys")}</i></a>
   </p>
+  <br />
+  <p>&copy; The Tor Project</p>
 </div>
 
 </div> <!-- /container -->
