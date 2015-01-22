@@ -539,7 +539,15 @@ class WebResourceBridgesTests(unittest.TestCase):
         soup = BeautifulSoup(page)
         well = soup.find('div', {'class': 'bridge-lines'})
         content = well.renderContents().strip()
-        bridges = [b.strip() for b in content.splitlines()]
+        lines = content.splitlines()
+
+        bridges = []
+        for line in lines:
+            bridgelines = line.split('<br />')
+            for bridge in bridgelines:
+                if bridge:  # It still could be an empty string at this point
+                    bridges.append(bridge)
+
         return bridges
 
     def test_render_GET_vanilla(self):
