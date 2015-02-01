@@ -16,6 +16,14 @@
 import cStringIO
 import logging
 
+try:
+    import qrcode
+except ImportError:
+    qrcode = False
+    logging.warn("Could not import Python qrcode module.")
+    logging.debug(("You'll need the qrcode Python module for this to "
+                   "work. On Debian-based systems, this should be in the "
+                   "python-qrcode package."))
 
 def generateQR(bridgelines, imageFormat=u'JPEG'):
     """Generate a QRCode for the client's bridge lines.
@@ -31,8 +39,10 @@ def generateQR(bridgelines, imageFormat=u'JPEG'):
     if not bridgelines:
         return
 
+    if not qrcode:
+        logging.info("Not creating QRCode for bridgelines; no qrcode module.")
+
     try:
-        import qrcode
 
         qr = qrcode.QRCode()
         qr.add_data(bridgelines)
@@ -45,11 +55,6 @@ def generateQR(bridgelines, imageFormat=u'JPEG'):
         
         return imgstr
 
-    except ImportError as error:
-        logging.error(str(error))
-        logging.debug(("You'll need the qrcode Python module for this to "
-                       "work. On Debian-based systems, this should be in the "
-                       "python-qrcode package."))
     except KeyError as error:
         logging.error(str(error))
         logging.debug(("It seems python-imaging doesn't understand how to "
