@@ -25,13 +25,15 @@ except ImportError:
                    "work. On Debian-based systems, this should be in the "
                    "python-qrcode package."))
 
-def generateQR(bridgelines, imageFormat=u'JPEG'):
+
+def generateQR(bridgelines, imageFormat=u'JPEG', bridgeSchema=False):
     """Generate a QRCode for the client's bridge lines.
 
     :param str bridgelines: The Bridge Lines which we are distributing to the
         client.
+    :param bool bridgeSchema: If ``True``, prepend ``'bridge://'`` to the
+        beginning of each bridge line before QR encoding.
     :rtype: str or ``None``
-
     :returns: The generated QRCode, as a string.
     """
     logging.debug("Attempting to encode bridge lines into a QRCode...")
@@ -43,16 +45,26 @@ def generateQR(bridgelines, imageFormat=u'JPEG'):
         logging.info("Not creating QRCode for bridgelines; no qrcode module.")
 
     try:
+        if bridgeSchema:
+            # See https://bugs.torproject.org/12639 for why bridge:// is used.
+            # (Hopefully, Orbot will pick up the ACTION_VIEW intent.)
+            schema = 'bridge://'
+            prefixed = []
+            for line in bridgelines.strip().split('\n'):
+                prefixed.append(schema + line)
+            bridgelines = '\n'.join(prefixed)
+
+        logging.debug("QR encoding bridge lines: %s" % bridgelines)
 
         qr = qrcode.QRCode()
         qr.add_data(bridgelines)
+
         buf = cStringIO.StringIO()
         img = qr.make_image().resize([350, 350])
         img.save(buf, imageFormat)
         buf.seek(0)
+
         imgstr = buf.read()
-        logging.debug("Got QRCode image string.")
-        
         return imgstr
 
     except KeyError as error:
@@ -62,3 +74,4 @@ def generateQR(bridgelines, imageFormat=u'JPEG'):
     except Exception as error:
         logging.error(("There was an error while attempting to generate the "
                        "QRCode: %s") % str(error))
+
