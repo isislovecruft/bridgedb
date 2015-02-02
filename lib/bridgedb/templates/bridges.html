@@ -1,7 +1,7 @@
 ## -*- coding: utf-8 -*-
 
 <%inherit file="base.html"/>
-<%page args="strings, rtl=False, lang='en', answer=0, **kwargs"/>
+<%page args="strings, rtl=False, lang='en', answer=0, qrcode=0, **kwargs"/>
 
   </div>
 </div>
@@ -26,6 +26,20 @@
         range.selectNodeContents(text);
         selection.removeAllRanges();
         selection.addRange(range);
+      }
+    } catch (e) {
+      window.alert(e);
+    }
+  }
+
+  function displayOrHide(element) {
+    try {
+      e = document.getElementById(element);
+
+      if (e.style.display === 'none') {
+        document.getElementById(element).style.display = 'block';
+      } else if (e.style.display === 'block') {
+        document.getElementById(element).style.display = 'none';
       }
     } catch (e) {
       window.alert(e);
@@ -66,6 +80,50 @@ ${answer.replace("\n", "<br />")}
                 title="Select all bridge lines">
           <i class="icon icon-2x icon-paste"></i> &nbsp; ${_("""Select All""")}
         </button>
+% if qrcode:
+        <a class="btn btn-primary" type="button" id="qrcodebtn"
+           href="${qrcode}" title="Show QRCode for bridge lines"
+           onclick="displayOrHide('qrcode')">
+          <i class="icon icon-2x icon-qrcode"></i> &nbsp; ${_("""Show QRCode""")}
+        </a>
+% endif
+      </div>
+
+      <div class="modal" id="qrcode" style="display: none;">
+        <div class="modal-dialog modal-sm" style="width: 400px;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" aria-hidden="true"
+                      onclick="displayOrHide('qrcode')">
+                &times;
+              </button>
+              <h4 class="modal-title">${_("""QRCode for your bridge lines""")}</h4>
+            </div>
+            <div class="modal-body">
+% if qrcode:
+              <p style="text-align: center;">
+                <img width="350" height="350"
+                     title="QRCode for your bridge lines from BridgeDB"
+                     src="${qrcode}" />
+              </p>
+% else:
+              <p class="text-danger">
+## TRANSLATORS: Please translate this into some silly way to say
+##              "There was a problem!" in your language. For example,
+##              for Italian, you might translate this into "Mama mia!",
+##              or for French: "Sacrebleu!". :)
+${_("""Uh oh, spaghettios!""")}
+${_("""It seems there was an error getting your QRCode.""")}
+                <i class="icon icon-frown"></i>
+              </p>
+% endif
+              <p>
+${_("""This QRCode contains your bridge lines. Scan it with a QRCode """ \
+    """reader to copy your bridge lines onto mobile and other devices.""")}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -133,6 +191,10 @@ ${_("""Uh oh, spaghettios!""")}
 <script type="text/javascript">
   // Make the 'Select All' button clickable:
   document.getElementById('selectbtn').className = "btn btn-primary";
+
+  // Remove the href attribute which opens the QRCode image as a data URL if
+  // JS is disabled:
+  document.getElementById('qrcodebtn').removeAttribute('href');
 </script>
 
 <hr />

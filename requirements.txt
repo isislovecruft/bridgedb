@@ -7,5 +7,7 @@ pycrypto==2.6.1
 pyOpenSSL==0.14
 pygeoip==0.2.7
 pygpgme==0.3
+pillow>=2.6.1
+qrcode==5.0.1
 recaptcha-client==1.0.6
 zope.interface==3.6.1
