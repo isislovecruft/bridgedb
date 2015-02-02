@@ -119,4 +119,5 @@ div.bridge-lines {
     border-radius: 6px 6px 6px 6px;
     box-shadow: none;
     -moz-box-sizing: border-box;
+    cursor: copy;
 }
