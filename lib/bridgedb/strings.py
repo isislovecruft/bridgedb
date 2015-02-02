@@ -162,11 +162,13 @@ EMAIL_COMMANDS = {
 #:
 #:   1. The PT is in a widely accepted, usable state for most Tor users.
 #:   2. The PT is currently publicly deployed *en masse*".
+#:   3. The PT is included within the transports which Tor Browser offers in
+#:      the stable releases.
 #:
 CURRENT_TRANSPORTS = [
     "obfs2",
     "obfs3",
-    #"obfs4",
+    "obfs4",
     "scramblesuit",
     "fte",
 ]
