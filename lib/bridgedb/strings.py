@@ -164,7 +164,7 @@ EMAIL_COMMANDS = {
 #:   2. The PT is currently publicly deployed *en masse*".
 #:
 CURRENT_TRANSPORTS = [
-    "obfs2",
+    #"obfs2",
     "obfs3",
     #"obfs4",
     "scramblesuit",
