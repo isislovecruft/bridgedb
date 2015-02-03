@@ -188,18 +188,6 @@ class HTTPTests(unittest.TestCase):
         self.openBrowser()
         self.assertRaises(mechanize.HTTPError, self.br.open, page)
 
-    def test_get_obfs2_ipv4(self):
-        self.openBrowser()
-        self.goToOptionsPage()
-
-        PT = 'obfs2'
-        soup = self.submitOptions(transport=PT, ipv6=False,
-                                  captchaResponse=CAPTCHA_RESPONSE)
-        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
-        for bridge in bridges:
-            pt = bridge[0]
-            self.assertEquals(PT, pt)
-
     def test_get_obfs3_ipv4(self):
         self.openBrowser()
         self.goToOptionsPage()
