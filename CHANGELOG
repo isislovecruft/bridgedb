@@ -1,7 +1,67 @@
-Changes in version 0.2.4 - 2014-08-XXX
+Changes in version 0.2.4 - 2015-02-03
+
+        * HOTFIXES a UnicodeDecodeError resulting from patches for #12627.
+        https://bugs.torproject.org/12627
+
         * FIXES #9874 https://bugs.torproject.org/9874
         BridgeDB now has integration tests for all bridge distributors.
         Thanks to trygve for the patches.
+
+        * FIXES #12871 https://bugs.torproject.org/12871
+        Bridge Buckets now work, even if the code for calculating Bridge
+        stability is disabled.
+        Thanks to Matt Finkel for the patches.
+
+        * FIXES part of #12029 https://bugs.torproject.org/12029
+        Major sections of the bridgedb.Bridges module, which holds
+        BridgeDB's main data structures for storing and parsing Bridges,
+        have been refactored in preparation for upcoming changes to use
+        Stem's parsers (see #9380 https://bugs.torproject.org/9380)
+
+        * FIXES #12932 https://bugs.torproject.org/12932
+        Arguments for Pluggable Transports in the bridge lines which
+        BridgeDB distributes to users are now properly
+        space-separated. This issue was affecting the deployment of the
+        obfs4 PT (see #12130 https://bugs.torproject.org/12130).
+
+        * FIXES #13123 https://bugs.torproject.org/13123
+        Previously, there were two additional whitespace characters at the
+        beginning of bridge lines handed out by BridgeDB's HTTPS
+        distributor, which would be annoying copy+pasted into TorLauncher
+        and torrcs, etc.  These are now gone.
+
+        * FIXES #12664 https://bugs.torproject.org/12664
+        Previously, for the bridge lines handed out by BridgeDB's HTTPS
+        distributor, the newlines were not properly pasted when a user
+        would copy+paste the lines. This is now fixed. Additionally, there
+        is now a "Select All" button (JS must be enabled) to select all
+        text for the bridge lines, to attempt to reduce user copy+paste
+        errors.  If the display area which contains the bridge lines is
+        clicked, and JS is enabled, it has the same effect as clicking the
+        "Select All" button.
+
+        * FIXES #14064 https://bugs.torproject.org/14064
+        The bridge lines handed out by BridgeDB's HTTPS distributor are
+        now displayed with a horizontal scrollbar if they are too long to
+        fit into the display area.
+
+        * FIXES #11345 https://bugs.torproject.org/11345
+        BridgeDB now supports giving users QRCodes for their bridge lines,
+        to facilitate getting bridges into Tails and onto mobile devices.
+
+        * FIXES #12130 https://bugs.torproject.org/12130
+        BridgeDB's distributors now have options to distribute obfs4 bridges.
+
+And includes the following general changes:
+        * CHANGES the integration tests based on Mechanize to only run on
+        CI servers, not locally on developers laptops, since it requires
+        the running BridgeDB test/staging instance to offer a plaintext
+        HTTP interface. See commit 24acf6a72.
+        https://gitweb.torproject.org/bridgedb.git/commit/?id=24acf6a72931c602631c97dbbeb582c22cf446cb
+
+        * ADDS better installation instructions in README.rst for
+        developers who wish to test their changes to BridgeDB.
+        Thanks to Alden Page for the patch.
 
 
 Changes in version 0.2.3 - 2014-07-26
@@ -39,7 +99,7 @@ Changes in version 0.2.3 - 2014-07-26
         speed up this process, so sometimes BridgeDB's UI falls back to
         English when it doesn't have new enough translations files. Sorry!
 
-And include the following general changes:
+And includes the following general changes:
 
         * UPDATE translation: Chinese - Taiwan (zh_TW)
                 THANKS TO danfong.
