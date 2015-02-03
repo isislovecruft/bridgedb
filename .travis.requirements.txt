@@ -1,3 +1,27 @@
+# This is a pip requirements.txt file for running BridgeDB and BridgeDB's test
+# suites on Travis CI infrastructure. See https://travis-ci.org/ and the
+# .travis.yml file for more info.
+#
+# Please note that there may be additional dependencies not listed here but
+# specified with their version numbers in .travis.yml in order to submit test
+# runs which use multiple different dependency versions.
+#------------------------------------------------------------------------------
+#
+# To run install these dependencies and run the tests, do:
+#
+#     $ pip install -r .test.requirements.txt
+#     $ make coverage
+#
+#------------------------------------------------------------------------------
+coverage==3.7.1
+coveralls==0.4.2
+leekspin==1.1.3
+mechanize==0.2.5
+pep8==1.5.7
+# pylint must be pinned until pylint bug #203 is fixed. See
+# https://bitbucket.org/logilab/pylint/issue/203/importing-namespace-packages-crashes#comment-11013783
+pylint==1.1.0
+sure==1.2.2
 Babel==0.9.6
 BeautifulSoup==3.2.1
 Mako==0.8.1

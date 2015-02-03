@@ -14,6 +14,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import errno
 import os
 
 from functools import wraps
@@ -64,6 +65,51 @@ def fileCheckDecorator(func):
                         "Couldn't find new %s file: %r. Original: %r"
                         % (str(description), dst, src))
     return wrapper
+
+def processExists(pid):
+    """Test if the process with **pid** exists.
+
+    :param int pid: An integer specifying the process ID.
+    :raises: OSError, if ``OSError.errno`` wasn't an expected errno (according
+        to the "ERRORS" section from ``man 2 kill``).
+    :rtype: bool
+    :returns: ``True`` if a process with **pid** exists, ``False`` otherwise.
+    """
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:  # ESRCH: No such process
+            return False
+        if err.errno == errno.EPERM:  # EPERM: Operation not permitted
+            # If we're not allowed to signal the process, then there exists a
+            # process that we don't have permissions to access.
+            return True
+        else:
+            raise
+    else:
+        return True
+
+def getBridgeDBPID(pidfile="bridgedb.pid"):
+    """Read the ``bridgedb.pid`` file in **rundir**, if it exists, to get the
+    PID.
+
+    :param str pidfile: The path to the BridgeDB pidfile.
+    :rtype: int
+    :returns: The process ID, if available, otherwise ``0``.
+    """
+    fh = None
+    try:
+        fh = open(pidfile)
+    except (IOError, OSError) as err:
+        print(err)
+        pid = 0
+    else:
+        pid = int(fh.read())
+
+    if fh:
+        fh.close()
+
+    return pid
 
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A

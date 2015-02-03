@@ -12,8 +12,25 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Classes for parsing and storing information about requests for bridges
+"""
+.. py:module:: bridgedb.email.request
+    :synopsis: Classes for parsing and storing information about requests for
+               bridges which are sent to the email distributor.
+
+bridgedb.email.request
+======================
+
+Classes for parsing and storing information about requests for bridges
 which are sent to the email distributor.
+
+::
+
+  bridgedb.email.request
+   | |_ determineBridgeRequestOptions - Figure out which filters to apply, or
+   |                                    offer help.
+   |_ EmailBridgeRequest - A request for bridges which was received through
+                           the email distributor.
+..
 """
 
 from __future__ import print_function

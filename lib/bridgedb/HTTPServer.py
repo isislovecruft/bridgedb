@@ -49,6 +49,7 @@ from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.parse import headers
+from bridgedb.qrcodes import generateQR
 from bridgedb.safelog import logSafely
 
 
@@ -750,7 +751,7 @@ class WebResourceBridges(resource.Resource):
                                                        self.nBridgesToGive,
                                                        countryCode,
                                                        bridgeFilterRules=rules)
-            bridgeLines = "".join("  %s\n" % b.getConfigLine(
+            bridgeLines = "".join("%s\n" % b.getConfigLine(
                 includeFingerprint=self.includeFingerprints,
                 addressClass=addressClass,
                 transport=transport,
@@ -785,6 +786,11 @@ class WebResourceBridges(resource.Resource):
             rendered = bridgeLines
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
+            qrcode = None
+            qrjpeg = generateQR(bridgeLines)
+
+            if qrjpeg:
+                qrcode = 'data:image/jpeg;base64,%s' % base64.b64encode(qrjpeg)
             try:
                 langs = translations.getLocaleFromHTTPRequest(request)
                 rtl = translations.usingRTLLang(langs)
@@ -792,7 +798,8 @@ class WebResourceBridges(resource.Resource):
                 rendered = template.render(strings,
                                            rtl=rtl,
                                            lang=langs[0],
-                                           answer=bridgeLines)
+                                           answer=bridgeLines,
+                                           qrcode=qrcode)
             except Exception as err:
                 rendered = replaceErrorPage(err)
 

@@ -1,4 +1,10 @@
-Changes in version 0.2.3 - 2014-07-XXX
+Changes in version 0.2.4 - 2014-08-XXX
+        * FIXES #9874 https://bugs.torproject.org/9874
+        BridgeDB now has integration tests for all bridge distributors.
+        Thanks to trygve for the patches.
+
+
+Changes in version 0.2.3 - 2014-07-26
 
         * FIXES #5463 https://bugs.torproject.org/5463
         XXX

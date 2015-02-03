@@ -10,7 +10,16 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Templates for formatting emails sent out by the email distributor."""
+"""
+.. py:module:: bridgedb.email.templates
+    :synopsis: Templates for formatting emails sent out by the email
+               distributor.
+
+bridgedb.email.templates
+========================
+
+Templates for formatting emails sent out by the email distributor.
+"""
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -26,6 +35,9 @@ from bridgedb.HTTPServer import TEMPLATE_DIR
 
 
 def addCommands(template):
+    """Add some text telling a client about supported email command, as well as
+    which Pluggable Transports are currently available.
+    """
     # Tell them about the various email commands:
     cmdlist = []
     cmdlist.append(template.gettext(strings.EMAIL_MISC_TEXT.get(3)))
@@ -87,6 +99,12 @@ def addBridgeAnswer(template, answer):
     return bridgeLines
 
 def addHowto(template):
+    """Add help text on how to add bridges to Tor Browser.
+
+    :type template: ``gettext.NullTranslation`` or ``gettext.GNUTranslation``
+    :param template: A gettext translations instance, optionally with fallback
+        languages set.
+    """
     howToTBB  = template.gettext(strings.HOWTO_TBB[1]) % strings.EMAIL_SPRINTF["HOWTO_TBB1"]
     howToTBB += u'\n\n'
     howToTBB += template.gettext(strings.HOWTO_TBB[2])
@@ -101,15 +119,23 @@ def addHowto(template):
     return howToTBB
 
 def addFooter(template, clientAddress=None):
-    """Add a footer.
+    """Add a footer::
 
-     --
-     <3 BridgeDB
-    ________________________________________________________________________
-    Public Keys: https://bridges.torproject.org/keys
+        --
+        <3 BridgeDB
+       ________________________________________________________________________
+       Public Keys: https://bridges.torproject.org/keys
 
-    This email was generated with rainbows, unicorns, and sparkles
-    for alice@example.com on Friday, 09 May, 2014 at 18:59:39.
+       This email was generated with rainbows, unicorns, and sparkles
+       for alice@example.com on Friday, 09 May, 2014 at 18:59:39.
+
+
+    :type template: ``gettext.NullTranslation`` or ``gettext.GNUTranslation``
+    :param template: A gettext translations instance, optionally with fallback
+        languages set.
+    :type clientAddress: :api:`twisted.mail.smtp.Address`
+    :param clientAddress: The client's email address which should be in the
+        ``To:`` header of the response email.
     """
     now = datetime.utcnow()
     clientAddr = clientAddress.addrstr

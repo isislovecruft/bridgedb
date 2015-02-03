@@ -121,7 +121,7 @@ def parseOptions():
         print(uerr.message)
         print(options.getUsage())
         sys.exit(1)
-    except Exception as error:
+    except Exception as error:  # pragma: no cover
         exc, value, tb = sys.exc_info()
         print("Unhandled Error: %s" % error.message)
         print(traceback.format_exc(tb))
@@ -204,7 +204,7 @@ class BaseOptions(usage.Options):
                 gRundir = os.getcwdu()
         setRundir(gRundir)
 
-        if not os.path.isdir(gRundir):
+        if not os.path.isdir(gRundir):  # pragma: no cover
             raise usage.UsageError(
                 "Could not change to runtime directory: `%s'" % gRundir)
 
@@ -214,14 +214,15 @@ class BaseOptions(usage.Options):
             gConfig = config
 
             if not os.path.isabs(gConfig):
-                if gConfig.startswith('.'): # also covers '..'
+                # startswith('.') will handle other relative paths, i.e. '..'
+                if gConfig.startswith('.'):  # pragma: no cover
                     gConfig = os.path.abspath(os.path.expanduser(gConfig))
                 else:
                     gConfig = os.path.join(gRundir, gConfig)
         setConfig(gConfig)
 
         gConfig = getConfig()
-        if not os.path.isfile(gConfig):
+        if not os.path.isfile(gConfig):  # pragma: no cover
             raise usage.UsageError(
                 "Specified config file `%s' doesn't exist!" % gConfig)
 

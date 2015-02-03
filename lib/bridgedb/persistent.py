@@ -24,6 +24,7 @@ from twisted.python.reflect import safe_repr
 from twisted.spread import jelly
 
 from bridgedb import Filters, Bridges, Dist
+from bridgedb.configure import Conf
 #from bridgedb.proxy import ProxySet
 
 _state = None
@@ -75,15 +76,6 @@ def load(stateCls=None):
     else:
         loaded = cls.load()
         return loaded
-
-
-class Conf(object):
-    """A configuration object.  Holds unvalidated attributes."""
-    def __init__(self, **attrs):
-        for key, value in attrs.items():
-            if key == key.upper():
-                if not key.startswith('__'):
-                    self.__dict__[key] = value
 
 
 class State(jelly.Jellyable):
@@ -235,7 +227,7 @@ class State(jelly.Jellyable):
         """Take a new config, compare it to the last one, and update settings.
 
         Given a ``config`` object created from the configuration file, compare
-        it to the last :class:`~bridgedb.Main.Conf` that was stored, and apply
+        it to the last :class:`~bridgedb.configure.Conf` that was stored, and apply
         any settings which were changed to be attributes of the :class:`State`
         instance.
         """
@@ -249,7 +241,7 @@ class State(jelly.Jellyable):
                 #
                 # Be sure, when updating settings while parsing the config
                 # file, to assign the new settings as attributes of the
-                # :class:`bridgedb.Main.Conf` instance.
+                # :class:`bridgedb.configure.Conf` instance.
                 if value != self.config.__dict__[key]:
                     setattr(self, key, value)
                     updated.append(key)

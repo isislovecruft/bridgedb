@@ -14,7 +14,6 @@
 
 <!-- Le styles -->
 <link rel="stylesheet" href="/assets/css/main.css">
-<link rel="stylesheet" href="/assets/css/font-awesome.min.css">
 <!--[if IE 7]>
   <link rel="stylesheet" href="/assets/css/font-awesome-ie7.min.css">
 <![endif]-->
@@ -32,7 +31,11 @@ span {
 % endif
 
 </head>
-<body>
+<body style="background: url(/assets/tor-roots-blue.svg);
+             background-repeat: no-repeat;
+             background-attachment: scroll;
+             background-position: 2% 100px;
+             background-size: 23%;">
   <div class="container-narrow">
     <div class="masthead">
       <div class="nav nav-tabs">
@@ -45,12 +48,6 @@ span {
           </li>
         </ul>
       </div>
-      <p style="float: left; text-align: left;
-                margin-left: -23%; margin-bottom: -30%;">
-        <a href="https://www.torproject.org">
-          <img src="/assets/tor-roots-blue.svg"
-               height="23%" width="23%"/></a>
-      </p>
     </div>
 
 
@@ -87,19 +84,23 @@ ${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
 <hr>
 
 <div class="footer">
-  <p>&copy; The Tor Project</p>
   <p>
-    <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">${_("Report a Bug")}</a>
-    &middot
-    <a href="https://gitweb.torproject.org/bridgedb.git">${_("Source Code")}</a>
-    &middot
+    <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">
+      <i class="icon icon-large icon-bug">&nbsp;${_("Report a Bug")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="https://gitweb.torproject.org/bridgedb.git">
+      <i class="icon icon-large icon-code">&nbsp;${_("Source Code")}</i></a>
+    &nbsp; &middot; &nbsp;
     <a href="https://gitweb.torproject.org/bridgedb.git/blob/HEAD:/CHANGELOG">
-        ${_("Changelog")}</a>
-    &middot
-    <a href="mailto:help@rt.torproject.org">${_("Contact")}</a>
-    &middot
-    <a href="../keys">${_("Public Keys")}</a>
+      <i class="icon icon-large icon-rocket">&nbsp;${_("Changelog")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="mailto:help@rt.torproject.org">
+      <i class="icon icon-large icon-envelope">&nbsp;${_("Contact")}</i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="../keys"><i class="icon icon-large icon-key">&nbsp;${_("Public Keys")}</i></a>
   </p>
+  <br />
+  <p>&copy; The Tor Project</p>
 </div>
 
 </div> <!-- /container -->

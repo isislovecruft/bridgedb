@@ -1,7 +1,7 @@
-bridgedb.email.dkim
--------------------
+bridgedb.configure
+----------------------
 
-.. automodule:: bridgedb.email.dkim
+.. automodule:: bridgedb.configure
     :members:
     :undoc-members:
     :private-members:

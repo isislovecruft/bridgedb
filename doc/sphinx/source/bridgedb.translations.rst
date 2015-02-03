@@ -1,7 +1,7 @@
-bridgedb.email.request
+bridgedb.translations
 ----------------------
 
-.. automodule:: bridgedb.email.request
+.. automodule:: bridgedb.translations
     :members:
     :undoc-members:
     :private-members:

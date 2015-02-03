@@ -13,7 +13,35 @@
 #_____________________________________________________________________________
 
 
-"""Servers which interface with clients and distribute bridges over SMTP."""
+"""
+.. py:module:: bridgedb.email.server
+    :synopsis: Servers which interface with clients and distribute bridges
+               over SMTP.
+
+bridgedb.email.server
+=====================
+
+Servers which interface with clients and distribute bridges over SMTP.
+
+::
+
+  bridgedb.email.server
+   | |_ addServer - Set up a SMTP server which listens on the configured
+   |                EMAIL_PORT for incoming connections, and responds as
+   |                necessary to requests for bridges.
+   |
+   |_ MailServerContext - Helper object that holds information used by the
+   |                      email subsystem.
+   |_ SMTPMessage - Plugs into Twisted Mail and receives an incoming message.
+   |_ SMTPIncomingDelivery - Plugs into SMTPIncomingServerFactory and handles
+   |                         SMTP commands for incoming connections.
+   |_ SMTPIncomingDeliveryFactory - Factory for SMTPIncomingDeliverys.
+   |_ SMTPIncomingServerFactory - Plugs into twisted.mail.smtp.SMTPFactory;
+                                  creates a new SMTPMessageDelivery, which
+                                  handles response email automation, whenever
+                                  we get a incoming connection on the SMTP port.
+..
+"""
 
 from __future__ import unicode_literals
 
@@ -54,7 +82,7 @@ class MailServerContext(object):
     :ivar str smtpServer: The IP address to use for outgoing SMTP.
     :ivar str smtpFromAddr: Use this address in the raw SMTP ``MAIL FROM``
         line for outgoing mail. (default: ``bridges@torproject.org``)
-    :ivar str fromAddr: Use this address in the email :header:`From:`
+    :ivar str fromAddr: Use this address in the email ``From:``
         line for outgoing mail. (default: ``bridges@torproject.org``)
     :ivar int nBridges: The number of bridges to send for each email.
     :ivar list blacklist: A list of blacklisted email addresses, taken from
@@ -71,12 +99,12 @@ class MailServerContext(object):
         """Create a context for storing configs for email bridge distribution.
 
         :type config: :class:`bridgedb.persistent.Conf`
-        :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`.
+        :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
         :param distributor: The distributor will handle getting the correct
             bridges (or none) for a client for us.
-        :type schedule: :class:`bridgedb.schedule.ScheduledInterval`.
+        :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
         :param schedule: An interval-based scheduler, used to help the
-            :ivar:`distributor` know if we should give bridges to a client.
+            :data:`distributor` know if we should give bridges to a client.
         """
         self.config = config
         self.distributor = distributor
@@ -129,20 +157,23 @@ class MailServerContext(object):
 class SMTPMessage(object):
     """Plugs into the Twisted Mail and receives an incoming message.
 
-    :ivar list lines: A list of lines from an incoming email message.
-    :ivar int nBytes: The number of bytes received thus far.
-    :ivar bool ignoring: If ``True``, we're ignoring the rest of this message
-        because it exceeded :ivar:`MailServerContext.maximumSize`.
-    :ivar canonicalFromSMTP: See :meth:`SMTPAutoresponder.runChecks`.
-    :ivar canonicalFromEmail: See :meth:`SMTPAutoresponder.runChecks`.
-    :ivar canonicalDomainRules: See :meth:`SMTPAutoresponder.runChecks`.
-    :type message: :api:`twisted.mail.smtp.rfc822.Message` or ``None``
-    :ivar message: The incoming email message.
-    :type responder: :class:`autoresponder.SMTPAutoresponder`
-    :ivar responder: A parser and checker for the incoming :ivar:`message`. If
-        it decides to do so, it will build a
-        :meth:`~autoresponder.SMTPAutoresponder.reply` email and
-        :meth:`~autoresponder.SMTPAutoresponder.send` it.
+    :var list lines: A list of lines from an incoming email message.
+    :var int nBytes: The number of bytes received thus far.
+    :var bool ignoring: If ``True``, we're ignoring the rest of this message
+        because it exceeded :data:`MailServerContext.maximumSize`.
+    :var canonicalFromSMTP: See
+        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+    :var canonicalFromEmail: See
+        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+    :var canonicalDomainRules: See
+        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+    :var message: (:api:`twisted.mail.smtp.rfc822.Message` or ``None``) The
+        incoming email message.
+    :var responder: A :class:`~bridgedb.email.autoresponder.SMTPAutoresponder`
+        which parses and checks the incoming :data:`message`. If it decides to
+        do so, it will build a
+        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.reply` email
+        and :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.send` it.
     """
     implements(smtp.IMessage)
 
@@ -192,7 +223,7 @@ class SMTPMessage(object):
                 logging.exception(error)
 
     def eomReceived(self):
-        """Tell the :ivar:`responder` to reply when we receive an EOM."""
+        """Tell the :data:`responder` to reply when we receive an EOM."""
         if not self.ignoring:
             self.message = self.getIncomingMessage()
             self.responder.reply()
@@ -203,7 +234,7 @@ class SMTPMessage(object):
         pass
 
     def getIncomingMessage(self):
-        """Create and parse an :rfc:`2822` message object for all :ivar:`lines`
+        """Create and parse an :rfc:`2822` message object for all :data:`lines`
         received thus far.
 
         :rtype: :api:`twisted.mail.smtp.rfc822.Message`
@@ -221,13 +252,13 @@ class SMTPIncomingDelivery(smtp.SMTP):
     for incoming connections.
 
     :type context: :class:`MailServerContext`
-    :ivar context: A context containing SMTP/Email configuration settings.
-    :ivar deferred: A :api:`deferred <twisted.internet.defer.Deferred>` which
+    :var context: A context containing SMTP/Email configuration settings.
+    :var deferred: A :api:`deferred <twisted.internet.defer.Deferred>` which
         will be returned when :meth:`reply` is called. Additional callbacks
         may be set on this deferred in order to schedule additional actions
         when the response is being sent.
     :type fromCanonicalSMTP: str or ``None``
-    :ivar fromCanonicalSMTP: If set, this is the canonicalized domain name of
+    :var fromCanonicalSMTP: If set, this is the canonicalized domain name of
        the address we received from incoming connection's ``MAIL FROM:``.
     """
     implements(smtp.IMessageDelivery)
@@ -238,7 +269,7 @@ class SMTPIncomingDelivery(smtp.SMTP):
 
     @classmethod
     def setContext(cls, context):
-        """Set our :ivar:`context` to a new :class:`MailServerContext."""
+        """Set our :data:`context` to a new :class:`MailServerContext`."""
         cls.context = context
 
     def receivedHeader(self, helo, origin, recipients):
@@ -262,15 +293,15 @@ class SMTPIncomingDelivery(smtp.SMTP):
 
         This is done at the SMTP layer. Meaning that if a Postfix or other
         email server is proxying emails from the outside world to BridgeDB,
-        the :api:`origin.domain <twisted.email.smtp.Address.domain` will be
+        the :api:`origin.domain <twisted.email.smtp.Address.domain>` will be
         set to the local hostname. Therefore, if the SMTP ``MAIL FROM:``
         domain name is our own hostname (as returned from
         :func:`socket.gethostname`) or our own FQDN, allow the connection.
 
         Otherwise, if the ``MAIL FROM:`` domain has a canonical domain in our
-        mapping (taken from :ivar:`context.canon <MailServerContext.canon>`, which
-        is taken in turn from the ``EMAIL_DOMAIN_MAP``), then our
-        :ivar:`fromCanonicalSMTP` is set to that domain.
+        mapping (taken from our :data:`context.canon`, which is taken in turn
+        from the ``EMAIL_DOMAIN_MAP``), then our :data:`fromCanonicalSMTP` is
+        set to that domain.
 
         :type helo: tuple
         :param helo: The lines received during SMTP client HELO.
@@ -354,7 +385,7 @@ class SMTPIncomingDelivery(smtp.SMTP):
 
 
 class SMTPIncomingDeliveryFactory(object):
-    """Factory for :class:`SMTPIncomingDelivery`s.
+    """Factory for :class:`SMTPIncomingDelivery` s.
 
     This class is used to distinguish between different messages delivered
     over the same connection. This can be used to optimize delivery of a
@@ -362,8 +393,8 @@ class SMTPIncomingDeliveryFactory(object):
     :api:`IMessageDelivery <twisted.mail.smtp.IMessageDelivery>` implementors
     due to their lack of information.
 
-    :ivar context: A :class:`MailServerContext` for storing configuration settings.
-    :ivar delivery: A :class:`SMTPIncomingDelivery` to deliver incoming
+    :var context: A :class:`MailServerContext` for storing configuration settings.
+    :var delivery: A :class:`SMTPIncomingDelivery` to deliver incoming
         SMTP messages to.
     """
     implements(smtp.IMessageDeliveryFactory)
@@ -376,7 +407,7 @@ class SMTPIncomingDeliveryFactory(object):
 
     @classmethod
     def setContext(cls, context):
-        """Set our :ivar:`context` and the context for our :ivar:`delivery`."""
+        """Set our :data:`context` and the context for our :data:`delivery`."""
         cls.context = context
         cls.delivery.setContext(cls.context)
 
@@ -387,11 +418,11 @@ class SMTPIncomingDeliveryFactory(object):
 
 class SMTPIncomingServerFactory(smtp.SMTPFactory):
     """Plugs into :api:`twisted.mail.smtp.SMTPFactory`; creates a new
-    :class:`SMTPMessageDelivery`, which handles response email automation,
-    whenever we get a incoming connection on the SMTP port.
+    :class:`SMTPIncomingDeliveryFactory`, which handles response email
+    automation whenever we get a incoming connection on the SMTP port.
 
-    .. warning:: My :ivar:`context` isn't an OpenSSL context, as is used for
-        the :api:`twisted.mail.smtp.ESMTPSender`
+    .. warning:: My :data:`context` isn't an OpenSSL context, as is used for
+        the :api:`twisted.mail.smtp.ESMTPSender`.
 
     :ivar context: A :class:`MailServerContext` for storing configuration settings.
     :ivar deliveryFactory: A :class:`SMTPIncomingDeliveryFactory` for
@@ -413,7 +444,7 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
 
     @classmethod
     def setContext(cls, context):
-        """Set :ivar:`context` and :ivar:`deliveryFactory`.context."""
+        """Set :data:`context` and :data:`deliveryFactory`.context."""
         cls.context = context
         cls.deliveryFactory.setContext(cls.context)
 
@@ -429,7 +460,7 @@ def addServer(config, distributor, schedule):
     """Set up a SMTP server which listens on the configured ``EMAIL_PORT`` for
     incoming connections, and responds as necessary to requests for bridges.
 
-    :type config: :class:`bridgedb.persistent.Conf`
+    :type config: :class:`bridgedb.configure.Conf`
     :param config: A configuration object.
     :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
     :param dist: A distributor which will handle database interactions, and
