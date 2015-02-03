@@ -144,28 +144,6 @@ class HTTPTests(unittest.TestCase):
                                   % (fieldsPerBridge, bridge))
         return bridges
 
-    def test_get_obfs2_ipv4(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
-        self.openBrowser()
-        self.goToOptionsPage()
-
-        PT = 'obfs2'
-        soup = self.submitOptions(transport=PT, ipv6=False,
-                                  captchaResponse=CAPTCHA_RESPONSE)
-        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=3)
-        for bridge in bridges:
-            pt = bridge[0]
-            self.assertEquals(PT, pt)
-
     def test_get_obfs3_ipv4(self):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
