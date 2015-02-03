@@ -1,17 +1,17 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
-# Isis Lovecruft <isis@torproject.org>, 2014.
+# Isis Lovecruft <isis@torproject.org>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: bridgedb 0.2.2-84-ge798a44\n"
+"Project-Id-Version: bridgedb 0.2.4-3-ge333d91\n"
 "Report-Msgid-Bugs-To: "
 "'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords"
 "=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-07-26 02:11+0000\n"
-"PO-Revision-Date: 2014-07-26 02:11+0000\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-02-03 03:24+0000\n"
 "Last-Translator: Isis Lovecruft <isis@torproject.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -30,7 +30,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
 msgstr ""
 
@@ -73,7 +73,7 @@ msgstr ""
 msgid "Hello, friend!"
 msgstr ""
 
-#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
 msgid "Public Keys"
 msgstr ""
 
@@ -261,35 +261,57 @@ msgstr ""
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:92
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:94
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:97
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr ""
 
-#: lib/bridgedb/templates/base.html:99
+#: lib/bridgedb/templates/base.html:98
 msgid "Contact"
+msgstr ""
+
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr ""
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr ""
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
 msgstr ""
 
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115 lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr ""
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr ""
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy "
+"your bridge lines onto mobile and other devices."
+msgstr ""
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr ""
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid " Perhaps you should try %s going back %s and choosing a different bridge type!"
 msgstr ""
@@ -348,7 +370,7 @@ msgstr ""
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr ""
@@ -356,7 +378,7 @@ msgstr ""
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr ""
