@@ -184,22 +184,6 @@ def load(state, splitter, clear=False):
     state.save()
     return
 
-def loadProxyList(cfg):
-    ipset = {}
-    for fname in cfg.PROXY_LIST_FILES:
-        f = open(fname, 'r')
-        for line in f:
-            line = line.strip()
-            if line.startswith("#"):
-                continue
-            elif isIPAddress(line):
-                ipset[line] = True
-            elif line:
-                logging.info("Skipping line %r in %s: not an IP.",
-                             line, fname)
-        f.close()
-    return ipset
-
 def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
     return True
