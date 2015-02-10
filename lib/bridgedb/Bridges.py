@@ -64,7 +64,8 @@ def is_valid_ip(ip):
 
     :param str ip: A string representing an IPv4 or IPv6 address.
     """
-
+    logging.warn(PendingDeprecationWarning(
+        "Bridges.is_valid_ip() is replaced with parse.isIPAddress()"))
     # ipaddr does not treat "1.2" as a synonym for "0.0.1.2"
     try:
         ipaddr.IPAddress(ip)

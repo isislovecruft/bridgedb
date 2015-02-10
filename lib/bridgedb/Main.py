@@ -19,15 +19,18 @@ import logging
 import gettext
 
 from twisted.internet import reactor
+from twisted.internet import task
 
 from bridgedb import crypto
 from bridgedb import persistent
+from bridgedb import proxy
 from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
 from bridgedb.configure import loadConfig
 from bridgedb.configure import Conf
 from bridgedb.parse import options
+from bridgedb.parse.addr import isIPAddress
 
 import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
@@ -189,7 +192,7 @@ def loadProxyList(cfg):
             line = line.strip()
             if line.startswith("#"):
                 continue
-            elif Bridges.is_valid_ip(line):
+            elif isIPAddress(line):
                 ipset[line] = True
             elif line:
                 logging.info("Skipping line %r in %s: not an IP.",
@@ -218,15 +221,6 @@ def _handleSIGUSR1(*args):
     logging.info("Dumping bridge assignments to files...")
     reactor.callInThread(runner.doDumpBridges, cfg)
 
-
-class ProxyCategory:
-    def __init__(self):
-        self.ipset = {}
-    def contains(self, ip):
-        return self.ipset.has_key(ip)
-    def replaceProxyList(self, ipset):
-        self.ipset = ipset
-
 def replaceBridgeRings(current, replacement):
     """Replace the current thing with the new one"""
     current.splitter = replacement.splitter
@@ -238,7 +232,7 @@ def createBridgeRings(cfg, proxyList, key):
     :param cfg: The current configuration, including any in-memory
                 settings (i.e. settings whose values were not obtained from the
                 config file, but were set via a function somewhere)
-    :type proxyList: :class:`ProxyCategory`
+    :type proxyList: :class:`~bridgedb.proxy.ProxySet`
     :param proxyList: The container for the IP addresses of any currently
                       known open proxies.
     :param bytes key: Splitter master key
@@ -261,7 +255,7 @@ def createBridgeRings(cfg, proxyList, key):
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
         categories = []
-        if proxyList.ipset:
+        if proxyList:
             logging.debug("Adding proxyList to HTTPS Distributor categories.")
             categories.append(proxyList)
         logging.debug("HTTPS Distributor categories: '%s'" % categories)
@@ -349,8 +343,9 @@ def startup(options):
     key = crypto.getKey(config.MASTER_KEY_FILE)
 
     # Get a proxy list.
-    proxyList = ProxyCategory()
-    proxyList.replaceProxyList(loadProxyList(config))
+    proxyList = proxy.ProxySet()
+    for proxyfile in config.PROXY_LIST_FILES:
+        proxy.loadProxiesFromFile(proxyfile, proxyList)
 
     emailDistributor = ipDistributor = None
 
@@ -377,7 +372,7 @@ def startup(options):
         :type splitter: A :class:`bridgedb.Bridges.BridgeHolder`
         :ivar splitter: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
-        :type proxyList: :class:`ProxyCategory`
+        :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
              known open proxies.
         :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.
@@ -418,8 +413,10 @@ def startup(options):
 
         state = persistent.load()
         logging.info("Bridges loaded: %d" % len(splitter))
+
         logging.debug("Replacing the list of open proxies...")
-        state.proxyList.replaceProxyList(loadProxyList(cfg))
+        for proxyfile in cfg.PROXY_LIST_FILES:
+            proxy.loadProxiesFromFile(proxyfile, state.proxyList, removeStale=True)
 
         if emailDistributorTmp is not None:
             emailDistributorTmp.prepopulateRings() # create default rings
@@ -496,6 +493,26 @@ def startup(options):
         #emailSchedule = schedule.ScheduledInterval("day", 1)
         emailSchedule = schedule.Unscheduled()
         addSMTPServer(config, emailDistributor, emailSchedule)
+
+    tasks = {}
+
+    # Setup all our repeating tasks:
+    if config.TASKS['GET_TOR_EXIT_LIST']:
+        tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
+            proxy.downloadTorExits,
+            proxyList,
+            config.SERVER_PUBLIC_EXTERNAL_IP)
+
+    # Schedule all configured repeating tasks:
+    for name, seconds in config.TASKS.items():
+        if seconds:
+            try:
+                tasks[name].start(abs(seconds))
+            except KeyError:
+                logging.info("Task %s is disabled and will not run." % name)
+            else:
+                logging.info("Scheduled task %s to run every %s seconds."
+                             % (name, seconds))
 
     # Actually run the servers.
     try:

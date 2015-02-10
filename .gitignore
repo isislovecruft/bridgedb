@@ -101,3 +101,6 @@ _trial_temp.lock
 
 # default captcha cache directory:
 captchas/*
+
+# ignore any downloaded exit-list files:
+*exit-list*
