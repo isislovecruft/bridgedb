@@ -164,6 +164,7 @@ class ProxySet(MutableSet):
         ip = isIPAddress(ip)
         if ip:
             if self._proxies.isdisjoint(set(ip)):
+                logging.debug("Adding %s to proxy list %r..." % (ip, self))
                 self._proxies.add(ip)
                 self._proxydict[ip] = tag if tag else time.time()
                 return True
