@@ -43,6 +43,7 @@ def generateQR(bridgelines, imageFormat=u'JPEG', bridgeSchema=False):
 
     if not qrcode:
         logging.info("Not creating QRCode for bridgelines; no qrcode module.")
+        return
 
     try:
         if bridgeSchema:
