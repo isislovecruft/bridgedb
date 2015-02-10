@@ -41,7 +41,7 @@ env:
 matrix:
   include:
     - python: "2.7"
-      env: TWISTED_VERSION=14.0.0 PYOPENSSL_VERSION=0.14
+      env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
   allow_failures:
     - python: "pypy"
   fast_finish: true
