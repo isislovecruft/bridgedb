@@ -71,8 +71,7 @@ def generateQR(bridgelines, imageFormat=u'JPEG', bridgeSchema=False):
     except KeyError as error:
         logging.error(str(error))
         logging.debug(("It seems python-imaging doesn't understand how to "
-                       "save in the %s format.") % imgFormat)
+                       "save in the %s format.") % imageFormat)
     except Exception as error:
         logging.error(("There was an error while attempting to generate the "
                        "QRCode: %s") % str(error))
-
