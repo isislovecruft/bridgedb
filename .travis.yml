@@ -26,6 +26,15 @@ addons:
     - bridges.torproject.org
 
 env:
+  global:
+    # Fixes Travis-CI issue #1748, which was causing non-deterministic CI test failures,
+    # particularly in the lib/bridgedb/test/test_https.py integration tests which use
+    # the Python mechanize module to test the HTTPS server.
+    # See https://github.com/travis-ci/travis-ci/issues/1748
+    #     https://travis-ci.org/isislovecruft/bridgedb/jobs/50169439#L1763
+    #     https://stackoverflow.com/questions/2192323/what-is-the-python-egg-cache-python-egg-cache
+    #     https://github.com/pypa/virtualenv/issues/459
+    - PYTHON_EGG_CACHE="${HOME}/.python-eggs-$(echo $RANDOM$PPID$RANDOM | sha256sum | cut -d ' ' -f 1)"
   matrix:
     - TWISTED_VERSION=13.2.0 PYOPENSSL_VERSION=0.13.1
 
@@ -39,6 +48,7 @@ matrix:
 
 before_install:
   - sudo apt-get update
+  - mkdir $PYTHON_EGG_CACHE
 
 install:
   - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools
