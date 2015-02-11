@@ -547,65 +547,7 @@ class SQLStorageTests(unittest.TestCase):
         db.cleanWarnedEmails(t+200)
         self.assertEquals(db.getWarnedEmail("def@example.com"), False)
 
-class ParseDescFileTests(unittest.TestCase):
-    def testSimpleDesc(self):
-        test = ""
-
-        for i in range(100):
-            test+= "".join(simpleDesc % (randomIP(), randomPort()))
-            test+=gettimestamp()
-            test+="router-signature\n"
-
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100)
-
-        for b in bs:
-            b.assertOK()
-
-    def testSingleOrAddress(self):
-        test = ""
-
-        for i in range(100):
-            test+= simpleDesc % (randomIP(), randomPort())
-            test+= orAddress % (randomIP(),randomPort())
-            test+=gettimestamp()
-            test+= "router-signature\n"
-
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100)
-
-        for b in bs:
-            b.assertOK()
-
-    def testMultipleOrAddress(self):
-        test = ""
-        for i in range(100):
-            test+= simpleDesc % (randomIPString(), randomPort())
-            for i in xrange(8):
-                test+= orAddress % (randomIPString(),randomPortSpec())
-            test+=gettimestamp()
-            test+= "router-signature\n"
-
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100)
-
-        for b in bs:
-            b.assertOK()
-
-    def testConvolutedOrAddress(self):
-        test = ""
-        for i in range(100):
-            test+= simpleDesc % (randomIPString(), randomPort())
-            for i in xrange(8):
-                test+= orAddress % (randomIPString(),randomPortSpec())
-            test+=gettimestamp()
-            test+= "router-signature\n"
-
-        bs = [b for b in bridgedb.Bridges.parseDescFile(test.split('\n'))]
-        self.assertEquals(len(bs), 100)
-
-        for b in bs:
-            b.assertOK()
+class ParseCountryBlockFileTests(unittest.TestCase):
 
     def testParseCountryBlockFile(self):
         simpleBlock = "%s:%s %s\n"
@@ -765,7 +707,7 @@ def testSuite():
     loader = unittest.TestLoader()
 
     for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  ParseDescFileTests, BridgeStabilityTests]:
+                  ParseCountryBlockFileTests, BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
 
     for module in [ bridgedb.Bridges,

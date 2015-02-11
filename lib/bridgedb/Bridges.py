@@ -41,62 +41,6 @@ ID_LEN = 20  # XXX Only used in commented out line in Storage.py
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
-
-def parseDescFile(f, bridge_purpose='bridge'):
-    """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
-       for every entry whose purpose matches bridge_purpose.
-       This Generator understands the new descriptor format described in 
-       186-multiple-orports.txt
-
-       The new specification provides for specifying multiple ORports as well
-       as supporting new address format for IPv6 addresses.
-
-       The router descriptor "or-address" may occur zero, one, or multiple times.
-       parseDescFile adds each ADDRESS:PORTSPEC to the Bridge.or_addresses list.
-
-       The "or-address" should not duplicate the address:port pair from the "router"
-       description. (Should we try to catch this case?)
-
-       A node may not list more than 8 or-address lines.
-         (should we try to enforce this too?)
-
-       Here is the new format:
-
-       or-address SP ADDRESS ":" PORTLIST NL
-       ADDRESS = IP6ADDR | IP4ADDR
-       IPV6ADDR = an ipv6 address, surrounded by square brackets.
-       IPV4ADDR = an ipv4 address, represented as a dotted quad.
-       PORTLIST = PORTSPEC | PORTSPEC "," PORTLIST
-       PORTSPEC = PORT
-       PORT = a number between 1 and 65535 inclusive.
-    """
-   
-    nickname = ip = orport = fingerprint = purpose = None
-    num_or_address_lines = 0
-    or_addresses = {}
-
-    for line in f:
-        line = line.strip()
-        if line.startswith("opt "):
-            line = line[4:]
-        if line.startswith("@purpose "):
-            items = line.split()
-            purpose = items[1]
-        elif line.startswith("router "):
-            items = line.split()
-            if len(items) >= 4:
-                nickname = items[1]
-                ip = items[2].strip('[]')
-                orport = int(items[3])
-        elif line.startswith("fingerprint "):
-            fingerprint = line[12:].replace(" ", "")
-        elif line.startswith("router-signature"):
-            purposeMatches = (purpose == bridge_purpose or bridge_purpose is None)
-            if purposeMatches and nickname and ip and orport and fingerprint:
-                yield (nickname, ipaddr.IPAddress(ip), orport, fingerprint)
-            nickname = ip = orport = fingerprint = purpose = None 
-
-
 re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
 re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
 
