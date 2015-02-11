@@ -131,7 +131,7 @@ class HTTPTests(unittest.TestCase):
         self.assertTrue(soup, "Could not find <div class='bridge-lines'>!")
 
         for portion in soup:
-            bridge_lines = portion.text.strip().split('\n')
+            bridge_lines = portion.text.strip().split('<br></br>')
             for bridge_line in bridge_lines:
                 fields = bridge_line.split()
                 bridges.append(fields)
