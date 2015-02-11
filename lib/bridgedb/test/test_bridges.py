@@ -134,7 +134,6 @@ class BridgeIntegrationTests(unittest.TestCase):
     test_getConfigLine_vanilla_withoutFingerprint   test_integration_getConfigLine_vanilla_withoutFingerprint
     test_getConfigLine_vanilla_withFingerprint      test_integration_getConfigLine_vanilla_withFingerprint
     test_getConfigLine_scramblesuit_withFingeprint  test_integration_getConfigLine_scramblesuit_withFingerprint
-    test_getExtraInfoDigests                        test_integration_getExtraInfoDigests
     test_splitterBridgeInsertion                    test_integration_splitterBridgeInsertion
     ==============================================  ========================
     ..
@@ -285,29 +284,6 @@ class BridgeIntegrationTests(unittest.TestCase):
         self.assertEqual("scramblesuit 42.42.42.42:4242 %s %s"
                          % (self.fingerprint, ptArgsList),
                          bridgeLine)
-
-    def test_integration_getExtraInfoDigests(self):
-        raise unittest.SkipTest(
-            ("The functions getDescriptorDigests() and getExtraInfoDigests() "
-             "have not been refactored into the new bridgedb.bridges module "
-             "because it's not clear yet if they're necessary. Skip these "
-             "tests for now."))
-
-        sha1hash = hashlib.sha1()
-
-        test = "Many words and line all together\n"
-        test += "extra info is nothing like weather\n"
-        test += "it's certain to come, like the key in a hum\n"
-        test += "but sometimes without a transport and rum\n"
-        content = test
-        sha1hash.update(test)
-        digest = sha1hash.hexdigest()
-        test += "-----BEGIN SIGNATURE-----\n"
-        test += "But the rum can't save the world like you\n"
-        test += "-----END SIGNATURE-----\n"
-        digests = bridges.getExtraInfoDigests(io.StringIO(test))
-        self.failUnlessIn(digest, digests)
-        self.failUnlessEqual(content, digests[digest].read())
 
     def test_integration_splitterBridgeInsertion(self):
         key = "Testing-Bridges-To-Rings"

@@ -42,37 +42,6 @@ DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
 
-def getExtraInfoDigests(doc):
-    """Return the SHA-1 hash hexdigests of all extra-info documents
-
-    :param File doc: A string containing the contents of one
-                      or more bridge extra-info documents concatenated
-                      together.
-    :returns: A dict indexed by the SHA-1 hexdigest of the bridge
-              extra-info doc, equivalent to that which was published
-              on the 'extra-info-digest' line of the bridge's
-              descriptor. The value is the bridge's extra-info document
-              digest, or None, if not provided.
-    """
-    if not doc: return None
-
-    documents = {}
-    sha1hash = hashlib.sha1()
-    document_content = ''
-
-    for line in doc:
-        if line != '-----BEGIN SIGNATURE-----\n':
-            sha1hash.update(line)
-            document_content += line
-        else:
-            digest = sha1hash.hexdigest().lower()
-            documents[digest] = StringIO(document_content)
-            while line != '-----END SIGNATURE-----\n':
-                line = next(doc)
-            sha1hash = hashlib.sha1()
-            document_content = ''
-    return documents
-
 def parseDescFile(f, bridge_purpose='bridge'):
     """Generator. Parses a cached-descriptors file 'f' and yeilds a Bridge object
        for every entry whose purpose matches bridge_purpose.
