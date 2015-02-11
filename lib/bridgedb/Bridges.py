@@ -25,7 +25,6 @@ import bridgedb.Bucket
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
-from bridgedb.parse import networkstatus
 from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.fingerprint import isValidFingerprint

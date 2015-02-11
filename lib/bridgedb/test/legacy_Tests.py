@@ -35,7 +35,7 @@ from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.Stability import BridgeHistory
 
 from bridgedb.parse import addr
-from bridgedb.parse import networkstatus
+from bridgedb.test import deprecated_networkstatus as networkstatus
 
 from math import log
 

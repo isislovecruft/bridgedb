@@ -11,6 +11,11 @@
 
 """Parsers for bridge networkstatus descriptors.
 
+THIS ENTIRE MODULE WAS DEPRECATED (AS PART OF #9380_) AND WAS REPLACED WITH
+THE CORRESPONDING FUNCTIONS IN :mod:`bridgedb.parse.descriptors`.
+
+.. #9380: https://bugs.torproject.org/9380
+
 .. py:module:: bridgedb.parse.networkstatus
    :synopsis: Parsers for ``@type bridge-network-status`` descriptors_.
 .. _descriptors: https://metrics.torproject.org/formats.html#descriptortypes
@@ -34,7 +39,9 @@ import string
 import time
 import warnings
 
+from twisted.python import deprecate
 from twisted.python.log import showwarning
+from twisted.python.versions import Version
 
 from bridgedb.parse import addr
 from bridgedb.parse import parseUnpaddedBase64
@@ -43,13 +50,16 @@ from bridgedb.parse.nickname import InvalidRouterNickname
 from bridgedb.parse.nickname import isValidRouterNickname
 
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 5))
 class NetworkstatusParsingError(Exception):
     """Unable to parse networkstatus document line."""
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 5))
 class InvalidNetworkstatusRouterIdentity(ValueError):
     """The ID field of a networkstatus document 'r'-line is invalid."""
 
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 5))
 def parseRLine(line):
     """Parse an 'r'-line from a networkstatus document.
 
@@ -133,6 +143,7 @@ def parseRLine(line):
     finally:
         return (nickname, ID, descDigest, timestamp, ORaddr, ORport, dirport)
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 5))
 def parseALine(line, fingerprint=None):
     """Parse an 'a'-line of a bridge networkstatus document.
 
@@ -208,6 +219,7 @@ def parseALine(line, fingerprint=None):
     finally:
         return (ip, portlist)
 
+@deprecate.deprecated(Version('bridgedb', 0, 2, 5))
 def parseSLine(line):
     """Parse an 's'-line from a bridge networkstatus document.
 
