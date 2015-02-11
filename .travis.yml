@@ -56,6 +56,7 @@ matrix:
 before_install:
   - sudo apt-get update
   - mkdir $PYTHON_EGG_CACHE
+  - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
   - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools
