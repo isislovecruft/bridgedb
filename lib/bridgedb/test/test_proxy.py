@@ -14,6 +14,7 @@
 import sure
 
 from twisted.internet import defer
+from twisted.internet import reactor
 from twisted.trial import unittest
 
 from bridgedb import proxy
@@ -210,12 +211,22 @@ class LoadProxiesFromFileIntegrationTests(unittest.TestCase):
 class DownloadTorExitsTests(unittest.TestCase):
     """Tests for `~bridgedb.proxy.downloadTorExits()`."""
 
+    def setUp(self):
+        self.protocol = MockExitListProtocol
+        self.proxyList = proxy.ProxySet()
+
+    def tearDown(self):
+        """Cleanup method after each ``test_*`` method runs; removes all
+        selectable readers and writers from the reactor.
+        """
+        reactor.removeAll()
+
     def test_proxy_downloadTorExits(self):
-        proxyList = proxy.ProxySet()
-        d = proxy.downloadTorExits(proxyList,
-                                   'OurIPWouldGoHere',
-                                   protocol=MockExitListProtocol)
-        self.assertIsInstance(d, defer.Deferred)
+        def do_test():
+            return proxy.downloadTorExits(self.proxyList,
+                                          'OurIPWouldGoHere',
+                                          protocol=self.protocol)
+        d = do_test()
 
 
 class ProxySetUnittests(unittest.TestCase):
