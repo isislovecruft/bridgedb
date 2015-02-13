@@ -1041,8 +1041,16 @@ class Bridge(BridgeBackwardsCompatibility):
           1. Any IP addresses contained in :data:`orAddresses` are valid,
              according to :func:`~bridgedb.parse.addr.isValidIP`.
 
-          3. Any ports in :data:`orAddresses` are between ``1`` and ``65535``
+          2. Any ports in :data:`orAddresses` are between ``1`` and ``65535``
              (inclusive).
+
+          3. All IP version numbers given in :data:`orAddresses` are either
+             ``4`` or ``6``.
+
+        .. todo:: This should probably be reimplemented as a property that
+            automatically sanitises the values for each ORAddress, as is done
+            for :property:`bridgedb.bridges.BridgeAddressBase.address` and
+            :property:`bridgedb.bridges.BridgeBase.orPort`.
 
         :raises MalformedBridgeInfo: if something was found to be malformed or
             invalid.
