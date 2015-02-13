@@ -920,3 +920,23 @@ class BridgeTests(unittest.TestCase):
         self.assertRaises(bridges.ServerDescriptorDigestMismatch,
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
+
+    def test_Bridge_assertOK(self):
+        """If all orAddresses are okay, then assertOK() should return None."""
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        self.assertIsNone(self.bridge.assertOK())
+
+    def test_Bridge_assertOK_all_bad_values(self):
+        """If an orAddress has an IP address of 999.999.999.999 and a port of
+        -1 and claims to be IPv5, then everything about it is bad and it should
+        fail all the checks in assertOK(), then a MalformedBridgeInfo should be
+        raised.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        # All values are bad (even though IPv5 is a thing):
+        self.bridge.orAddresses.append(('999.999.999.999', -1, 5))
+        self.assertRaises(bridges.MalformedBridgeInfo, self.bridge.assertOK)
