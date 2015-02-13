@@ -867,6 +867,57 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.bridge.bandwidthObserved, 1623207134)
         self.assertEqual(len(self.bridge.transports), 4)
 
+    def test_Bridge_updateFromExtraInfoDescriptor_pt_changed_args(self):
+        """Calling updateFromExtraInfoDescriptor() with a descriptor which
+        includes different PT args for a known bridge with a known pluggable
+        transport should update that transport.
+
+        scramblesuit 179.178.155.140:36492 password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertEqual(len(self.bridge.transports), 4)
+
+        for pt in self.bridge.transports:
+            if pt.methodname == 'scramblesuit':
+                self.assertEqual(pt.address, ipaddr.IPv4Address('179.178.155.140'))
+                self.assertEqual(pt.port, 36492)
+
+        # Change the args of scramblesuit transport in the extrainfo descriptor:
+        transportline = self.extrainfo.transport['scramblesuit']
+        self.extrainfo.transport['scramblesuit'] = (transportline[0],
+                                                    transportline[1],
+                                                    ['password=PASSWORD'])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        for pt in self.bridge.transports:
+            if pt.methodname == 'scramblesuit':
+                self.assertEqual(pt.address, ipaddr.IPv4Address('179.178.155.140'))
+                self.assertEqual(pt.port, 36492)
+                self.assertEqual(pt.arguments['password'], 'PASSWORD')
+
+    def test_Bridge_updateFromExtraInfoDescriptor_pt_died(self):
+        """Calling updateFromExtraInfoDescriptor() with a descriptor which
+        doesn't include a previously-known transport should remove that
+        transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertEqual(len(self.bridge.transports), 4)
+
+        # Remove the obfs3 transport from the extrainfo descriptor:
+        self.extrainfo.transport.pop('obfs3')
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertEqual(len(self.bridge.transports), 3)
+
+        for pt in self.bridge.transports:
+            self.failIfEqual(pt.methodname, 'obfs3')
+
     def test_Bridge_descriptorDigest(self):
         """Parsing a networkstatus descriptor should result in
         Bridge.descriptorDigest being set.
