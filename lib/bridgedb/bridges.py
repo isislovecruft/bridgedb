@@ -1522,7 +1522,7 @@ class Bridge(BridgeBackwardsCompatibility):
                 # it:
                 logging.info(
                     "Received new %s pluggable transport for bridge %s."
-                    % (methodname, safelog.logSafely(self.fingerprint)))
+                    % (methodname, self))
                 transport = PluggableTransport()
                 transport.updateFromStemTransport(str(self.fingerprint),
                                                   methodname,
