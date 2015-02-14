@@ -839,6 +839,30 @@ class BridgeTests(unittest.TestCase):
                          ''.join(['$', '0'*40,
                                   '~', bridge.nickname]))
 
+    def test_Bridge_updateFromNetworkStatus_IPv4_ORAddress(self):
+        """Calling updateFromNetworkStatus() with a descriptor which has an
+        IPv4 address as an additional ORAddress should result in a
+        FutureWarning before continuing parsing.
+        """
+        # Add an additional IPv4 ORAddress:
+        ns = BRIDGE_NETWORKSTATUS.replace(
+            'a [6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488',
+            'a [6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488\na 123.34.56.78:36488')
+        self._writeNetworkstatus(ns)
+        self._parseAllDescriptorFiles()
+
+        self.assertWarns(
+            FutureWarning,
+            "Got IPv4 address in 'a'/'or-address' line! Descriptor format may have changed!",
+            bridges.__file__,  # filename
+            self.bridge.updateFromNetworkStatus,
+            self.networkstatus)
+
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+        self.assertIn((ipaddr.IPAddress('123.34.56.78'), 36488, 4),
+                      self.bridge.allVanillaAddresses)
+
     def test_Bridge_updateFromServerDescriptor(self):
         """ """
         self.bridge.updateFromNetworkStatus(self.networkstatus)
