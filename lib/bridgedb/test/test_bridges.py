@@ -12,6 +12,7 @@
 
 from binascii import a2b_hex
 
+import datetime
 import ipaddr
 import io
 import hashlib
@@ -1261,3 +1262,39 @@ class BridgeTests(unittest.TestCase):
         self.assertIsNotNone(line)
         self.assertIn('179.178.155.140:36489', line)
         self.assertNotIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
+    def test_Bridge_getNetworkstatusLastPublished(self):
+        """Calling getNetworkstatusLastPublished() should tell us the last
+        published time of the Bridge's server-descriptor.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+
+        published = self.bridge.getNetworkstatusLastPublished()
+        self.assertIsNotNone(published)
+        self.assertIsInstance(published, datetime.datetime)
+        self.assertEqual(str(published), '2014-12-22 21:51:27')
+
+    def test_Bridge_getDescriptorLastPublished(self):
+        """Calling getDescriptorLastPublished() should tell us the last
+        published time of the Bridge's server-descriptor.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        published = self.bridge.getDescriptorLastPublished()
+        self.assertIsNotNone(published)
+        self.assertIsInstance(published, datetime.datetime)
+        self.assertEqual(str(published), '2014-12-22 21:51:27')
+
+    def test_Bridge_getExtrainfoLastPublished(self):
+        """Calling getNetworkstatusLastPublished() should tell us the last
+        published time of the Bridge's server-descriptor.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        published = self.bridge.getExtrainfoLastPublished()
+        self.assertIsNotNone(published)
+        self.assertIsInstance(published, datetime.datetime)
+        self.assertEqual(str(published), '2014-12-22 21:51:27')
