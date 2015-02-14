@@ -860,8 +860,6 @@ class Bridge(BridgeBackwardsCompatibility):
             line.
         :param bool bridgePrefix: if ``True``, prefix the :term:`Bridge Line`
             with ``'Bridge '``.
-        :raises MalformedBridgeInfo: if the **addrport** didn't turn out to be
-            a 2-tuple containing ``(ipaddress, port)``.
         :rtype: string
         :returns: A bridge line suitable for adding into a ``torrc`` file or
             Tor Launcher.
@@ -869,11 +867,7 @@ class Bridge(BridgeBackwardsCompatibility):
         if not addrport:
             return
 
-        try:
-            address, port, version = addrport
-        except (TypeError, ValueError):
-            raise MalformedBridgeInfo("Can't process addrport: %r" % addrport)
-
+        address, port, version = addrport
         bridgeLine = []
 
         if bridgePrefix:
@@ -883,8 +877,6 @@ class Bridge(BridgeBackwardsCompatibility):
             bridgeLine.append("%s:%d" % (str(address), port))
         elif version == 6:
             bridgeLine.append("[%s]:%d" % (str(address), port))
-        else:
-            raise MalformedBridgeInfo("IP version must be 4 or 6")
 
         if includeFingerprint:
             bridgeLine.append("%s" % self.fingerprint)
