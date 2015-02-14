@@ -270,6 +270,22 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertIn(bridge.address, expectedIPs)
         self.assertEqual(bridge.fingerprint, self.expectedFprBridge0)
 
+    def test_parse_descriptors_parseNetworkStatusFile_bad_nickname(self):
+        """``b.p.descriptors.parseNetworkStatusFile`` with a bridge
+        networkstatus descriptor which has a nickname that is too long should
+        raise InvalidRouterNickname.
+        """
+        unparseable = BRIDGE_NETWORKSTATUS_0.replace(
+            'MiserLandfalls',
+            'MiserLandfallsWaterfallsSnowfallsAvalanche')
+        # Write the descriptor to a file for testing. This is necessary
+        # because the function opens the networkstatus file to read it.
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   unparseable)
+        self.assertRaises(descriptors.InvalidRouterNickname,
+                          descriptors.parseNetworkStatusFile,
+                          descFile)
+
     def test_parse_descriptors_parseNetworkStatusFile_with_annotations(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with some document
         headers before the first 'r'-line.
