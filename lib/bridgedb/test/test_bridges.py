@@ -1080,3 +1080,160 @@ class BridgeTests(unittest.TestCase):
         # All values are bad (even though IPv5 is a thing):
         self.bridge.orAddresses.append(('999.999.999.999', -1, 5))
         self.assertRaises(bridges.MalformedBridgeInfo, self.bridge.assertOK)
+
+    def test_Bridge_getBridgeLine_request_valid(self):
+        """Calling getBridgeLine with a valid request should return a bridge
+        line.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNotNone(line)
+        self.assertIn('179.178.155.140:36489', line)
+        self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
+    def test_Bridge_getBridgeLine_request_invalid(self):
+        """Calling getBridgeLine with an invalid request should return None."""
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(False)
+
+        self.assertIsNone(self.bridge.getBridgeLine(request))
+
+    def test_Bridge_getBridgeLine_no_vanilla_addresses(self):
+        """Calling getBridgeLine() on a Bridge without any vanilla addresses
+        should return None.
+        """
+        request = BridgeRequestBase()
+        request.isValid(True)
+
+        self.assertIsNone(self.bridge.getBridgeLine(request))
+
+    def test_Bridge_getBridgeLine_request_without_block_in_IR(self):
+        """Calling getBridgeLine() with a valid request for bridges not blocked
+        in Iran should return a bridge line.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withoutBlockInCountry('IR')
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNotNone(line)
+        self.assertIn('179.178.155.140:36489', line)
+        self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
+    def test_Bridge_getBridgeLine_IPv6(self):
+        """Calling getBridgeLine() with a valid request for IPv6 bridges
+        should return a bridge line.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withIPv6()
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNotNone(line)
+        self.assertTrue(
+            line.startswith('[6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488'))
+        self.assertNotIn('179.178.155.140:36493', line)
+        self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
+    def test_Bridge_getBridgeLine_obfs4(self):
+        """ """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withPluggableTransportType('obfs4')
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNotNone(line)
+        self.assertIn('179.178.155.140:36493', line)
+        self.assertTrue(line.startswith('obfs4'))
+        self.assertIn('iat-mode', line)
+        self.assertIn('public-key', line)
+        self.assertIn('node-id', line)
+
+    def test_Bridge_getBridgeLine_obfs3_IPv6(self):
+        """Calling getBridgeLine() with a request for IPv6 obfs3 bridges (when
+        the Bridge doesn't have any) should raise a
+        PluggableTransportUnavailable exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withIPv6()
+        request.withPluggableTransportType('obfs3')
+
+        self.assertRaises(bridges.PluggableTransportUnavailable,
+                          self.bridge.getBridgeLine,
+                          request)
+
+    def test_Bridge_getBridgeLine_googlygooglybegone(self):
+        """Calling getBridgeLine() with a request for an unknown PT should
+        raise a PluggableTransportUnavailable exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withPluggableTransportType('googlygooglybegone')
+
+        self.assertRaises(bridges.PluggableTransportUnavailable,
+                          self.bridge.getBridgeLine,
+                          request)
+
+    def test_Bridge_getBridgeLine_bridge_prefix(self):
+        """Calling getBridgeLine() with bridgePrefix=True should prefix the
+        returned bridge line with 'Bridge '.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        line = self.bridge.getBridgeLine(request, bridgePrefix=True)
+
+        self.assertIsNotNone(line)
+        self.assertIn('179.178.155.140:36489', line)
+        self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+        self.assertTrue(line.startswith('Bridge'))
+
+    def test_Bridge_getBridgeLine_no_include_fingerprint(self):
+        """Calling getBridgeLine() with includeFingerprint=False should return
+        a bridge line without a fingerprint.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        line = self.bridge.getBridgeLine(request, includeFingerprint=False)
+
+        self.assertIsNotNone(line)
+        self.assertIn('179.178.155.140:36489', line)
+        self.assertNotIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
