@@ -17,6 +17,7 @@ import hashlib
 import ipaddr
 import logging
 import os
+import warnings
 
 from Crypto.Util import asn1
 from Crypto.Util.number import bytes_to_long
