@@ -1037,6 +1037,18 @@ class BridgeTests(unittest.TestCase):
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
 
+    def test_Bridge_checkServerDescriptor_digest_mismatch(self):
+        """Parsing a server descriptor when the corresponding networkstatus
+        descriptor didn't include a server bridge.descriptorDigest should raise
+        a MissingServerDescriptorDigest exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+
+        self.bridge.descriptorDigest = None
+        self.assertRaises(bridges.MissingServerDescriptorDigest,
+                          self.bridge._checkServerDescriptor,
+                          self.serverdescriptor)
+
     def test_Bridge_assertOK(self):
         """If all orAddresses are okay, then assertOK() should return None."""
         self.bridge.updateFromNetworkStatus(self.networkstatus)
