@@ -482,6 +482,8 @@ class BridgeBase(BridgeAddressBase):
     """The base class for all bridge implementations."""
 
     def __init__(self):
+        super(BridgeBase, self).__init__()
+
         self._nickname = None
         self._orPort = None
         self.socksPort = 0  # Bridges should always have ``SOCKSPort`` and
