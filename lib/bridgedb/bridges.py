@@ -829,6 +829,7 @@ class Bridge(BridgeBackwardsCompatibility):
         self.software = None
         self.os = None
         self.uptime = None
+        self.bridgeIPs = None
 
         self.onionKey = None
         self.ntorOnionKey = None
@@ -1534,6 +1535,7 @@ class Bridge(BridgeBackwardsCompatibility):
                 return
 
         self.descriptors['extrainfo'] = descriptor
+        self.bridgeIPs = descriptor.bridge_ips
 
         oldTransports = self.transports[:]
 
