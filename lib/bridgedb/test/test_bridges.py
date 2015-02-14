@@ -904,6 +904,34 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(len(self.bridge.transports), 0)
         self.assertIsNone(self.bridge.descriptors['extrainfo'])
 
+    def test_Bridge_updateFromExtraInfoDescriptor_pt_changed_port(self):
+        """Calling updateFromExtraInfoDescriptor() with a descriptor which
+        includes a different port for a known bridge with a known pluggable
+        transport should update that transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertEqual(len(self.bridge.transports), 4)
+
+        for pt in self.bridge.transports:
+            if pt.methodname == 'obfs4':
+                self.assertEqual(pt.address, ipaddr.IPv4Address('179.178.155.140'))
+                self.assertEqual(pt.port, 36493)
+
+        # Change the port of obfs4 transport in the extrainfo descriptor:
+        transportline = self.extrainfo.transport['obfs4']
+        self.extrainfo.transport['obfs4'] = (transportline[0],
+                                             31337,
+                                             transportline[2])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        for pt in self.bridge.transports:
+            if pt.methodname == 'obfs4':
+                self.assertEqual(pt.address, ipaddr.IPv4Address('179.178.155.140'))
+                self.assertEqual(pt.port, 31337)
+
     def test_Bridge_updateFromExtraInfoDescriptor_pt_changed_args(self):
         """Calling updateFromExtraInfoDescriptor() with a descriptor which
         includes different PT args for a known bridge with a known pluggable
