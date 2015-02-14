@@ -735,43 +735,61 @@ class BridgeBackwardsCompatibility(BridgeBase):
 class Bridge(BridgeBackwardsCompatibility):
     """A single bridge, and all the information we have for it.
 
-    :type fingerprint: str or None
-    :ivar fingerprint:
+    :type fingerprint: str or ``None``
+    :ivar fingerprint: This ``Bridge``'s fingerprint, in lowercased
+        hexadecimal format.
 
-    :type nickname: str or None
-    :ivar nickname:
+    :type nickname: str or ``None``
+    :ivar nickname: This ``Bridge``'s router nickname.
 
-    :ivar orPort: int or None
-    :ivar orPort:
-
-    :ivar socksPort: int
-    :ivar socksPort:
+    :type socksPort: int
+    :ivar socksPort: This ``Bridge``'s SOCKSPort. Should always be ``0``.
 
     :type dirPort: int
-    :ivar dirPort:
+    :ivar dirPort: This ``Bridge``'s DirPort. Should always be ``0``.
 
     :type orAddresses: list
-    :ivar orAddresses:
+    :ivar orAddresses: A list of 3-tuples in the form::
+            (ADDRESS, PORT, IP_VERSION)
+        where:
+            * ADDRESS is an :class:`ipaddr.IPAddress`,
+            * PORT is an ``int``,
+            * IP_VERSION is either ``4`` or ``6``.
 
     :type transports: list
-    :ivar transports:
+    :ivar transports: A list of :class:`PluggableTransport`s, one for each
+        transport that this :class:`Bridge` currently supports.
 
     :type flags: :class:`~bridgedb.bridges.Flags`
-    :ivar flags:
+    :ivar flags: All flags assigned by the BridgeAuthority to this
+        :class:`Bridge`.
 
     :type hibernating: bool
-    :ivar hibernating:
+    :ivar hibernating: ``True`` if this :class:`Bridge` is hibernating and not
+        currently serving clients (e.g. if the Bridge hit its configured
+        ``RelayBandwidthLimit``); ``False`` otherwise.
 
-    :type contact: str or None
-    :ivar contact: The contact information for the this bridge's operator.
+    :type _blockedIn: dict
+    :ivar _blockedIn: A dictionary of ``ADDRESS:PORT`` pairs to lists of
+        lowercased, two-letter country codes (e.g. ``"us"``, ``"gb"``,
+        ``"cn"``, etc.) which that ``ADDRESS:PORT`` pair is blocked in.
 
-    :type platform: str or None
+    :type contact: str or ``None``
+    :ivar contact: The contact information for the this Bridge's operator.
+
+    :type family: set or ``None``
+    :ivar family: The fingerprints of other Bridges related to this one.
+
+    :type platform: str or ``None``
     :ivar platform: The ``platform`` line taken from the
         ``@type bridge-server-descriptor``, e.g.
         ``'Tor 0.2.5.4-alpha on Linux'``.
 
-    :type family: set or None
-    :ivar family: The fingerprints of other bridges related to this one.
+    :type software: :api:`stem.version.Version` or ``None``
+    :ivar software: The OR version portion of the ``platform`` line.
+
+    :type os: str or None
+    :ivar os: The OS portion of the ``platform`` line.
     """
     #: (bool) If ``True``, check that the signature of the bridge's
     #: ``@type bridge-server-descriptor`` is valid and that the signature was
