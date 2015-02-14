@@ -706,18 +706,33 @@ class BridgeBackwardsCompatibilityTests(unittest.TestCase):
 class BridgeTests(unittest.TestCase):
     """Tests for :class:`bridgedb.bridges.Bridge`."""
 
-    def _writeDescriptorFiles(self):
+    def _parseAllDescriptorFiles(self):
+        self.networkstatus = descriptors.parseNetworkStatusFile(
+            self._networkstatusFile)[0]
+        self.serverdescriptor = descriptors.parseServerDescriptorsFile(
+            self._serverDescriptorFile)[0]
+        self.extrainfo = descriptors.parseExtraInfoFiles(
+            self._extrainfoFile).values()[0]
+
+    def _writeNetworkstatus(self, networkstatus):
         with open(self._networkstatusFile, 'w') as fh:
-            fh.write(BRIDGE_NETWORKSTATUS)
+            fh.write(networkstatus)
             fh.flush()
 
+    def _writeServerdesc(self, serverdesc):
         with open(self._serverDescriptorFile, 'w') as fh:
-            fh.write(BRIDGE_SERVER_DESCRIPTOR)
+            fh.write(serverdesc)
             fh.flush()
 
+    def _writeExtrainfo(self, extrainfo):
         with open(self._extrainfoFile, 'w') as fh:
-            fh.write(BRIDGE_EXTRAINFO)
+            fh.write(extrainfo)
             fh.flush()
+
+    def _writeDescriptorFiles(self, networkstatus, serverdesc, extrainfo):
+        self._writeNetworkstatus(networkstatus)
+        self._writeServerdesc(serverdesc)
+        self._writeExtrainfo(extrainfo)
 
     def setUp(self):
         def _cwd(filename):
@@ -727,14 +742,10 @@ class BridgeTests(unittest.TestCase):
         self._serverDescriptorFile = _cwd('BridgeTests-bridge-descriptors')
         self._extrainfoFile = _cwd('BridgeTests-cached-extrainfo')
 
-        self._writeDescriptorFiles()
-
-        self.networkstatus = descriptors.parseNetworkStatusFile(
-            self._networkstatusFile)[0]
-        self.serverdescriptor = descriptors.parseServerDescriptorsFile(
-            self._serverDescriptorFile)[0]
-        self.extrainfo = descriptors.parseExtraInfoFiles(
-            self._extrainfoFile).values()[0]
+        self._writeDescriptorFiles(BRIDGE_NETWORKSTATUS,
+                                   BRIDGE_SERVER_DESCRIPTOR,
+                                   BRIDGE_EXTRAINFO)
+        self._parseAllDescriptorFiles()
 
         self.bridge = bridges.Bridge()
 
@@ -874,6 +885,24 @@ class BridgeTests(unittest.TestCase):
                          '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
         self.assertEqual(self.bridge.bandwidthObserved, 1623207134)
         self.assertEqual(len(self.bridge.transports), 4)
+
+    def test_Bridge_updateFromExtraInfoDescriptor_bad_signature_changed(self):
+        """Calling updateFromExtraInfoDescriptor() with a descriptor which
+        has a bad signature should not continue to process the descriptor.
+        """
+        # Make the signature uppercased
+        BEGIN_SIG = '-----BEGIN SIGNATURE-----'
+        doc, sig = BRIDGE_EXTRAINFO.split(BEGIN_SIG)
+        ei = BEGIN_SIG.join([doc, sig.upper()])
+        self._writeExtrainfo(ei)
+        self._parseAllDescriptorFiles()
+
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertEqual(len(self.bridge.transports), 0)
+        self.assertIsNone(self.bridge.descriptors['extrainfo'])
 
     def test_Bridge_updateFromExtraInfoDescriptor_pt_changed_args(self):
         """Calling updateFromExtraInfoDescriptor() with a descriptor which
