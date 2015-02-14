@@ -1298,3 +1298,48 @@ class BridgeTests(unittest.TestCase):
         self.assertIsNotNone(published)
         self.assertIsInstance(published, datetime.datetime)
         self.assertEqual(str(published), '2014-12-22 21:51:27')
+
+    def test_Bridge_isBlockedIn_IS(self):
+        """Calling isBlockedIn('IS') should return False when the bridge isn't
+        blocked in Iceland.
+        """
+        self.assertFalse(self.bridge.isBlockedIn('IS'))
+
+    def test_Bridge_setBlockedIn_CN_obfs2(self):
+        """Calling setBlockedIn('CN', 'obfs2') should mark all obfs2 transports
+        of the bridge as being blocked in CN.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.bridge.setBlockedIn('CN', methodname='obfs2')
+        self.assertTrue(self.bridge.isBlockedIn('CN'))
+
+    def test_Bridge_setBlockedIn_IR_address(self):
+        """Calling setBlockedIn('IR', address) should mark all matching
+        addresses of the bridge as being blocked in IR.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.bridge.setBlockedIn('IR', address='179.178.155.140')
+        self.assertTrue(self.bridge.isBlockedIn('ir'))
+        self.assertFalse(self.bridge.isBlockedIn('cn'))
+
+    def test_Bridge_setBlockedIn_GB_address_port(self):
+        """Calling setBlockedIn('GB', address, port) should mark all matching
+        addresses:port pairs of the bridge as being blocked in GB.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        # Should block the obfs4 bridge:
+        self.bridge.setBlockedIn('GB', address='179.178.155.140', port=36493)
+        self.assertTrue(self.bridge.isBlockedIn('GB'))
+        self.assertTrue(self.bridge.isBlockedIn('gb'))
+        self.assertTrue(self.bridge.transportIsBlockedIn('GB', 'obfs4'))
+        self.assertTrue(self.bridge.addressIsBlockedIn('GB', '179.178.155.140', 36493))
+        self.assertFalse(self.bridge.addressIsBlockedIn('gb', '179.178.155.140', 36488))
