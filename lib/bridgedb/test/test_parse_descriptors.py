@@ -526,6 +526,56 @@ class ParseDescriptorsTests(unittest.TestCase):
         self.assertIn("2B5DA67FBA13A6449DE625673B7AE9E3AA7DF75F", routers.keys(),
                       "The 'parseable' descriptor wasn't returned by the parser.")
 
+    def test_parse_descriptors_parseExtraInfoFiles_bad_signature_footer(self):
+        """Calling parseExtraInfoFiles() with a descriptor which has a
+        signature with a bad "-----END SIGNATURE-----" footer should return
+        zero parsed descriptors.
+        """
+        unparseable = BRIDGE_EXTRA_INFO_DESCRIPTOR.replace(
+            '-----END SIGNATURE-----',
+            '-----END SIGNATURE FOR REALZ-----')
+        # This must be a "real" file or _copyUnparseableDescriptorFile() will
+        # raise an AttributeError saying:
+        # '_io.BytesIO' object has no attribute 'rpartition'"
+        descFileOne = self.writeTestDescriptorsToFile(
+            "bad-signature-footer", unparseable)
+        routers = descriptors.parseExtraInfoFiles(descFileOne)
+
+        self.assertEqual(len(routers), 0)
+
+    def test_parse_descriptors_parseExtraInfoFiles_missing_signature(self):
+        """Calling parseExtraInfoFiles() with a descriptor which is
+        missing the signature should return zero parsed descriptors.
+        """
+        # Remove the signature
+        BEGIN_SIG = '-----BEGIN SIGNATURE-----'
+        unparseable, _ = BRIDGE_EXTRA_INFO_DESCRIPTOR.split(BEGIN_SIG)
+        # This must be a "real" file or _copyUnparseableDescriptorFile() will
+        # raise an AttributeError saying:
+        # '_io.BytesIO' object has no attribute 'rpartition'"
+        descFileOne = self.writeTestDescriptorsToFile(
+            "missing-signature", unparseable)
+        routers = descriptors.parseExtraInfoFiles(descFileOne)
+
+        self.assertEqual(len(routers), 0)
+
+    def test_parse_descriptors_parseExtraInfoFiles_bad_signature_too_short(self):
+        """Calling _verifyExtraInfoSignature() with a descriptor which has a
+        bad signature should raise an InvalidExtraInfoSignature exception.
+        """
+        # Truncate the signature to 50 bytes
+        BEGIN_SIG = '-----BEGIN SIGNATURE-----'
+        doc, sig = BRIDGE_EXTRA_INFO_DESCRIPTOR.split(BEGIN_SIG)
+        unparseable = BEGIN_SIG.join([doc, sig[:50]])
+        # This must be a "real" file or _copyUnparseableDescriptorFile() will
+        # raise an AttributeError saying:
+        # '_io.BytesIO' object has no attribute 'rpartition'"
+        descFileOne = self.writeTestDescriptorsToFile(
+            "truncated-signature", unparseable)
+        routers = descriptors.parseExtraInfoFiles(descFileOne)
+
+        self.assertEqual(len(routers), 0)
+
     def test_parse_descriptors_parseExtraInfoFiles_unparseable_BytesIO(self):
         """Test parsing three extrainfo descriptors: one is a valid descriptor,
         one is an older duplicate, and one is unparseable (it has a bad
