@@ -1274,12 +1274,7 @@ class Bridge(BridgeBackwardsCompatibility):
         """A deduplicated list of all the :data:`PluggableTranport.methodname`s
         which this bridge supports.
         """
-        supported = []
-
-        for transport in self.transports:
-            supported.append(transport.methodname)
-
-        return list(set(supported))
+        return list(set([pt.methodname for pt in self.transports]))
 
     def updateFromNetworkStatus(self, descriptor):
         """Update this bridge's attributes from a parsed networkstatus
