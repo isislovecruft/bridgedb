@@ -845,6 +845,14 @@ class BridgeTests(unittest.TestCase):
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
 
+    def test_Bridge_verifyExtraInfoSignature_good_signature(self):
+        """Calling _verifyExtraInfoSignature() with a descriptor which has a
+        good signature should return None.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.assertIsNone(self.bridge._verifyExtraInfoSignature(self.extrainfo))
+
     def test_Bridge_updateFromExtraInfoDescriptor(self):
         """Bridge.updateFromExtraInfoDescriptor() should add the expected
         number of pluggable transports.
