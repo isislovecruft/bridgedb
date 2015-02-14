@@ -286,6 +286,18 @@ class ParseDescriptorsTests(unittest.TestCase):
                           descriptors.parseNetworkStatusFile,
                           descFile)
 
+    def test_parse_descriptors_parseNetworkStatusFile_IPv6_ORAddress(self):
+        """A Bridge can't have its primary ORAddress be IPv6 without raising
+        a ValueError.
+        """
+        unparseable = BRIDGE_NETWORKSTATUS_0.replace(
+            '2.215.61.223', '[2837:fcd2:387b:e376:34c:1ec7:11ff:1686]')
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   unparseable)
+        self.assertRaises(ValueError,
+                          descriptors.parseNetworkStatusFile,
+                          descFile)
+
     def test_parse_descriptors_parseNetworkStatusFile_with_annotations(self):
         """Test ``b.p.descriptors.parseNetworkStatusFile`` with some document
         headers before the first 'r'-line.
