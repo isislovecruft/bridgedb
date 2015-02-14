@@ -1013,7 +1013,7 @@ class BridgeTests(unittest.TestCase):
         #                  self.bridge.updateFromNetworkStatus,
         #                  networkstatus[0])
 
-    def test_Bridge_checkServerDescriptor_digest_mismatch(self):
+    def test_Bridge_checkServerDescriptor_digest_mismatch_ns(self):
         """Parsing a server descriptor whose digest doesn't match the one given
         in the bridge's networkstatus document should raise a
         ServerDescriptorDigestMismatch.
@@ -1037,7 +1037,19 @@ class BridgeTests(unittest.TestCase):
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
 
-    def test_Bridge_checkServerDescriptor_digest_mismatch(self):
+    def test_Bridge_checkServerDescriptor_digest_mismatch_sd(self):
+        """Parsing a server descriptor when the corresponding networkstatus
+        descriptor didn't include a server bridge.descriptorDigest that matches
+        should raise a ServerDescriptorDigestMismatch exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+
+        self.bridge.descriptorDigest = 'deadbeef'
+        self.assertRaises(bridges.ServerDescriptorDigestMismatch,
+                          self.bridge._checkServerDescriptor,
+                          self.serverdescriptor)
+
+    def test_Bridge_checkServerDescriptor_digest_missing(self):
         """Parsing a server descriptor when the corresponding networkstatus
         descriptor didn't include a server bridge.descriptorDigest should raise
         a MissingServerDescriptorDigest exception.
