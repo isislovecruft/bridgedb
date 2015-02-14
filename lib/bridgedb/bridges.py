@@ -691,6 +691,46 @@ class BridgeBackwardsCompatibility(BridgeBase):
         bridgeLine = self.getBridgeLine(bridgeRequest, includeFingerprint)
         return bridgeLine
 
+    # Bridge Stability (`#5482 <https://bugs.torproject.org>`_) properties.
+    @property
+    def familiar(self):
+        """A bridge is "familiar" if 1/8 of all active bridges have appeared
+        more recently than it, or if it has been around for a Weighted Time of
+        eight days.
+        """
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).familiar
+
+    @property
+    def wfu(self):
+        """Weighted Fractional Uptime"""
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
+
+    @property
+    def weightedTime(self):
+        """Weighted Time"""
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).weightedTime
+
+    @property
+    def wmtbac(self):
+        """Weighted Mean Time Between Address Change"""
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).wmtbac
+
+    @property
+    def tosa(self):
+        """The Time On Same Address (TOSA)"""
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).tosa
+
+    @property
+    def weightedUptime(self):
+        """Weighted Uptime"""
+        with bridgedb.Storage.getDB() as db:  # pragma: no cover
+            return db.getBridgeHistory(self.fingerprint).weightedUptime
+
 
 class Bridge(BridgeBackwardsCompatibility):
     """A single bridge, and all the information we have for it.
@@ -1524,44 +1564,3 @@ class Bridge(BridgeBackwardsCompatibility):
             logging.info("Removing dead transport for bridge %s: %s %s:%s %s" %
                          (self, pt.methodname, pt.address, pt.port, pt.arguments))
             self.transports.remove(pt)
-
-
-    # Bridge Stability (`#5482 <https://bugs.torproject.org>`_) properties.
-    @property
-    def familiar(self):
-        """A bridge is "familiar" if 1/8 of all active bridges have appeared
-        more recently than it, or if it has been around for a Weighted Time of
-        eight days.
-        """
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).familiar
-
-    @property
-    def wfu(self):
-        """Weighted Fractional Uptime"""
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).weightedFractionalUptime
-
-    @property
-    def weightedTime(self):
-        """Weighted Time"""
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).weightedTime
-
-    @property
-    def wmtbac(self):
-        """Weighted Mean Time Between Address Change"""
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).wmtbac
-
-    @property
-    def tosa(self):
-        """The Time On Same Address (TOSA)"""
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).tosa
-
-    @property
-    def weightedUptime(self):
-        """Weighted Uptime"""
-        with bridgedb.Storage.getDB() as db:
-            return db.getBridgeHistory(self.fingerprint).weightedUptime
