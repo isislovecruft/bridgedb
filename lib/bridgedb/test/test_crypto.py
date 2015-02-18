@@ -14,6 +14,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
 import gpgme
 import io
 import logging
@@ -84,6 +85,66 @@ class GetKeyTests(unittest.TestCase):
                          key (in hex): %s
                          SEKRIT_KEY (in hex): %s"""
                          % (key.encode('hex'), SEKRIT_KEY.encode('hex')))
+
+
+class RemovePKCS1PaddingTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.crypto.removePKCS1Padding`."""
+
+    def setUp(self):
+        """This blob *is* actually a correctly formed PKCS#1 padded signature
+        on the descriptor::
+
+        @purpose bridge
+        router ExhalesPeppier 118.16.116.176 35665 0 0
+        or-address [eef2:d52a:cf1b:552f:375d:f8d0:a72b:e794]:35664
+        platform Tor 0.2.4.5-alpha on Linux
+        protocols Link 1 2 Circuit 1
+        published 2014-11-03 21:21:43
+        fingerprint FA04 5CFF AB95 BA20 C994 FE28 9B23 583E F80F 34DA
+        uptime 10327748
+        bandwidth 2247108152 2540209215 1954007088
+        extra-info-digest 571BF23D8F24F052483C1333EBAE9B91E4A6F422
+        onion-key
+        -----BEGIN RSA PUBLIC KEY-----
+        MIGJAoGBAK7+a033aUqc97SWFVGFwR3ybQ0jG1HTPtsv2/fUfZPwCaf21ly4zIvH
+        9uNhtkcPH2p55X+n5M7OUaQawOzbwL4tSR9SLy9bGuZdWLbhu2GHQWmDkAB7BtHp
+        UC+uGTN3jvQXEG2xlzpb+lOVUVNXLhL5kFmAXxL+iwN4TeEv/iCnAgMBAAE=
+        -----END RSA PUBLIC KEY-----
+        signing-key
+        -----BEGIN RSA PUBLIC KEY-----
+        MIGJAoGBANxmgJ6S3rBAGcvQu2tWBaHByJxeJkdGbxID2b8cITPaNmcl72e3Kd44
+        GGIkoKhkX0SAO+i2U+Q41u/DPEBWLxhpl9GAFJZ10dcT18lL36yaK6FRDOcF9jx9
+        0A023/kwXd7QQDWqP7Fso+141bzit6ENvNmE1mvEeIoAR+EpJB1tAgMBAAE=
+        -----END RSA PUBLIC KEY-----
+        contact Somebody <somebody@example.com>
+        ntor-onion-key 0Mfi/Af7zLmdNdrmJyPbZxPJe7TZU/hV4Z865g3g+k4
+        reject *:*
+        router-signature
+        -----BEGIN SIGNATURE-----
+        PsGGIP+V9ZXWIHjK943CMAPem3kFbO9kt9rvrPhd64u0f7ytB/qZGaOg1IEWki1I
+        f6ZNjrthxicm3vnEUdhpRsyn7MUFiQmqLjBfqdzh0GyfrtU5HHr7CBV3tuhgVhik
+        uY1kPNo1C8wkmuy31H3V7NXj+etZuzZN66qL3BiQwa8=
+        -----END SIGNATURE-----
+
+        However, for the blob to be valid it would need to be converted from
+        base64-decoded bytes to a long, then raised by the power of the public
+        exponent within the ASN.1 DER decoded signing-key (mod that key's
+        public modulus), then re-converted back into bytes before attempting
+        to remove the PKCS#1 padding. (See
+        :meth:`bridedb.bridges.Bridge._verifyExtraInfoSignature`.)
+        """
+        blob = ('PsGGIP+V9ZXWIHjK943CMAPem3kFbO9kt9rvrPhd64u0f7ytB/qZGaOg1IEWk'
+                'i1If6ZNjrthxicm3vnEUdhpRsyn7MUFiQmqLjBfqdzh0GyfrtU5HHr7CBV3tu'
+                'hgVhikuY1kPNo1C8wkmuy31H3V7NXj+etZuzZN66qL3BiQwa8=')
+        self.blob = base64.b64decode(blob)
+
+    def test_crypto_removePKCS1Padding_bad_padding(self):
+        """removePKCS1Padding() with a blob with a bad PKCS#1 identifier mark
+        should raise PKCS1PaddingError.
+        """
+        self.assertRaises(crypto.PKCS1PaddingError,
+                          crypto.removePKCS1Padding,
+                          self.blob)
 
 
 class LessCrypticGPGMEErrorTests(unittest.TestCase):
