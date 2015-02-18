@@ -23,6 +23,7 @@ bridgedb.parse.nicknames
 ..
 """
 
+import logging
 import string
 
 
