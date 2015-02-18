@@ -260,8 +260,12 @@ class ScheduledInterval(Unscheduled):
 
         if self.intervalPeriod == 'month':
             date = fromUnixSeconds(seconds)
+            year = date.year
             months = date.month + self.intervalCount
-            return toUnixSeconds((date.year, months, 1, 0, 0, 0))
+            if months > 12:
+                year = date.year + 1
+                months = months - 12
+            return toUnixSeconds((year, months, 1, 0, 0, 0))
         elif self.intervalPeriod == 'day':
             return seconds + (86400 * self.intervalCount)
         elif self.intervalPeriod == 'hour':

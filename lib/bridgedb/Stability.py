@@ -143,7 +143,7 @@ def addOrUpdateBridgeHistory(bridge, timestamp):
             lastSeenWithThisAddressAndPort = timestamp * long(1000)
     
             bhe = BridgeHistory(
-                    bridge.fingerprint, bridge.ip, bridge.orport,
+                    bridge.fingerprint, bridge.address, bridge.orPort,
                     0,#weightedUptime
                     0,#weightedTime
                     0,#weightedRunLength
