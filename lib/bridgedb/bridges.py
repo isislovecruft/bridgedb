@@ -25,6 +25,7 @@ from Crypto.Util.number import long_to_bytes
 
 import bridgedb.Storage
 
+from bridgedb import geo
 from bridgedb import safelog
 from bridgedb import bridgerequest
 from bridgedb.crypto import removePKCS1Padding
@@ -141,11 +142,15 @@ class BridgeAddressBase(object):
     :type address: ``ipaddr.IPv4Address`` or ``ipaddr.IPv6Address``
     :ivar address: The IP address of :class:`Bridge` or one of its
         :class:`PluggableTransport`s.
+
+    :type country: str
+    :ivar country: The two-letter GeoIP country code of the :ivar:`address`.
     """
 
     def __init__(self):
         self._fingerprint = None
         self._address = None
+        self._country = None
 
     @property
     def fingerprint(self):
@@ -198,6 +203,18 @@ class BridgeAddressBase(object):
     def address(self):
         """Reset this Bridge's address to ``None``."""
         self._address = None
+
+    @property
+    def country(self):
+        """Get the two-letter GeoIP country code for the :ivar:`address`.
+
+        :rtype: str or ``None``
+        :returns: If :ivar:`address` is set, this returns a two-letter country
+            code for the geolocated region that :ivar:`address` is within;
+            otherwise, returns ``None``.
+        """
+        if self.address:
+            return geo.getCountryCode(self.address)
 
 
 class PluggableTransport(BridgeAddressBase):

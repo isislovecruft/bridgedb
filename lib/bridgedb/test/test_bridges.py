@@ -406,6 +406,18 @@ class BridgeAddressBaseTests(unittest.TestCase):
         self.assertIsNone(self.bab.address)
         self.assertIsNone(self.bab._address)
 
+    def test_BridgeAddressBase_country(self):
+        """The getter method for the country property should get the
+        address's geoIP country code.
+        """
+        self.bab.address = '11.12.13.14'
+        self.assertEqual(self.bab.address, ipaddr.IPv4Address('11.12.13.14'))
+
+        cc = self.bab.country
+        self.assertIsNotNone(cc)
+        self.assertIsInstance(cc, basestring)
+        self.assertEqual(len(cc), 2)
+
 
 class PluggableTransportTests(unittest.TestCase):
     """Tests for :class:`bridgedb.bridges.PluggableTransport."""
