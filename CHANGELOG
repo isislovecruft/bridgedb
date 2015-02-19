@@ -1,3 +1,56 @@
+Changes in version 0.3.0 - XXX
+
+        * FIXES #2895 https://bugs.torproject.org/2895
+        BridgeDB no longer assumes that any extrainfo descriptor files are
+        in chronological order.
+
+        * FIXES #4405 https://bugs.torproject.org/4405
+        BridgeDB now has a built-in timer mechanism for scheduling
+        cronjobesque events. This is now used to routinely download and
+        parse the list of Tor exit relays in a completely asynchronous
+        manner.
+
+        * FIXES #9380 https://bugs.torproject.org/9380
+        BridgeDB now uses Stem (https://stem.torproject.org) for its
+        parsers, and has better classes for parsing and storing
+        information on Bridges and their Pluggable Transports.
+        Additionally, all of BridgeDB's parses and the new
+        Bridge/PluggableTransport classes all have 100% unittest and
+        integration test coverage.
+
+        * FIXES #11216 https://bugs.torproject.org/11216
+        BridgeDB no longer parses any extrainfo descriptor files
+        cumulatively. Before, a Bridge which had a descriptor in
+        cached-extrainfo and in cached-extrainfo.new and supported obfs3,
+        obfs4, and scramblesuit transports would be parsed twice,
+        resulting in the Bridge having six transports. This is no longer
+        the case.
+
+        * HOTFIXES an issue with non-deterministic unittest failures in
+        the Mechanize-based integrations tests in
+        lib/bridgedb/test/test_https.py. hotfix/0.2.4-mechanize-tags
+
+        * FIXES #12872 https://bugs.torproject.org/12872
+        BridgeDB now has geolocational information for Bridges, telling it
+        which country each Bridge's primary ORAddress is within, as well
+        as geolocational information for each PluggableTransport address.
+        Thanks to Alden S. Page for the patches.
+
+And includes the following general changes:
+        * CHANGES BridgeDB's continuous integration infrastructure to run
+        tests for:
+                - Twisted-13.2.0 (Debian Wheezy version),
+                - Twisted-14.0.2 (Debian Jessie version), and
+                - Twisted-15.0.0 (latest and greatest)
+        As well as testing both:
+                - pyOpenSSL-0.13.1 (Debian Wheezy version), and
+                - pyOpenSSL-0.14 (Debian Jessie version).
+        See https://travis-ci.org/isislovecruft/bridgedb/builds
+
+        * FIXES an issue with the $PYTHON_EGG_CACHE directory being group
+        writable on Travis-CI build machines.
+
+
 Changes in version 0.2.4 - 2015-02-03
 
         * HOTFIXES a UnicodeDecodeError resulting from patches for #12627.
