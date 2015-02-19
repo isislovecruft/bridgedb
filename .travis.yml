@@ -59,7 +59,7 @@ before_install:
   - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
-  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools
+  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools libgeoip-dev geoip-database
   - pip install -q --no-use-wheel -r .travis.requirements.txt
   - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
   - make install
