@@ -24,7 +24,7 @@ GEOIP_DBFILE = '/usr/share/GeoIP/GeoIP.dat'
 GEOIPv6_DBFILE = '/usr/share/GeoIP/GeoIPv6.dat'
 try:
     # Make sure we have the database before trying to import the module:
-    if not (isfile(GEOIP_DBFILE) and isfile(GEOIPv6_DBFILE)):
+    if not (isfile(GEOIP_DBFILE) and isfile(GEOIPv6_DBFILE)):  # pragma: no cover
         raise EnvironmentError("Could not find %r. On Debian-based systems, "\
                                "please install the geoip-database package."
                                % GEOIP_DBFILE)
