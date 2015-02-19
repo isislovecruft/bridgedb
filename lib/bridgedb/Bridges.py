@@ -21,7 +21,6 @@ import random
 
 import bridgedb.Storage
 import bridgedb.Bucket
-import bridgedb.geo
 
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
