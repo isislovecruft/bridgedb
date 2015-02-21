@@ -42,10 +42,10 @@ from bridgedb.parse import options
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.schedule import toUnixSeconds
 
-import bridgedb.Bridges as Bridges
-import bridgedb.Dist as Dist
 import bridgedb.Storage
 
+from bridgedb import Bridges
+from bridgedb import Dist
 from bridgedb.Stability import addOrUpdateBridgeHistory
 
 
