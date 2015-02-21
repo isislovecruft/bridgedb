@@ -46,6 +46,8 @@ import bridgedb.Bridges as Bridges
 import bridgedb.Dist as Dist
 import bridgedb.Storage
 
+from bridgedb.Stability import addOrUpdateBridgeHistory
+
 
 def updateBridgeHistory(bridges, timestamps):
     """Process all the timestamps and update the bridge stability statistics in
@@ -76,7 +78,7 @@ def updateBridgeHistory(bridges, timestamps):
                 ("Adding/updating timestamps in BridgeHistory for %s in "
                  "database: %s") % (fingerprint, timestamp))
             timestamp = toUnixSeconds(timestamp.timetuple())
-            bridgedb.Stability.addOrUpdateBridgeHistory(bridge, timestamp)
+            addOrUpdateBridgeHistory(bridge, timestamp)
         # Replace the timestamps so the next sort is (hopefully) less
         # expensive:
         sortedTimestamps[fingerprint] = stamps
