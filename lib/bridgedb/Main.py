@@ -177,7 +177,7 @@ def load(state, splitter, clear=False):
 
     # XXX TODO refactor the next block according with new parsers for OONI
     # bridge-reachability reports:
-    if state.COUNTRY_BLOCK_FILE:
+    if state.COUNTRY_BLOCK_FILE:  # pragma: no cover
         logging.info("Opening Blocking Countries file %s"
                      % state.COUNTRY_BLOCK_FILE)
         f = open(state.COUNTRY_BLOCK_FILE)
