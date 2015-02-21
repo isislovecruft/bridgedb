@@ -249,7 +249,6 @@ def createBridgeRings(cfg, proxyList, key):
     :returns: A BridgeSplitter splitter, an IPBasedDistributor or None,
               and an EmailBasedDistributor or None.
     """
-
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
     splitter = Bridges.BridgeSplitter(crypto.getHMAC(key, "Splitter-Key"))
