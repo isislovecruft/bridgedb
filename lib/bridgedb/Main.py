@@ -300,7 +300,7 @@ def createBridgeRings(cfg, proxyList, key):
 
     return splitter, emailDistributor, ipDistributor
 
-def run(options):
+def run(options, reactor=reactor):
     """This is BridgeDB's main entry point and main runtime loop.
 
     Given the parsed commandline options, this function handles locating the
@@ -312,6 +312,11 @@ def run(options):
         options given in the commandline we were called with.
     :type state: :class:`bridgedb.persistent.State`
     :ivar state: A persistent state object which holds config changes.
+    :param reactor: An implementer of
+        :api:`twisted.internet.interfaces.IReactorCore`. This parameter is
+        mainly for testing; the default
+        :api:`twisted.internet.epollreactor.EPollReactor` is fine for normal
+        application runs.
     """
     # Change to the directory where we're supposed to run. This must be done
     # before parsing the config file, otherwise there will need to be two
@@ -494,43 +499,45 @@ def run(options):
     signal.signal(signal.SIGHUP, _handleSIGHUP)
     signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
-    # And actually load it to start parsing. Get back our distributors.
-    emailDistributor, ipDistributor = reload(False)
+    if reactor:
+        # And actually load it to start parsing. Get back our distributors.
+        emailDistributor, ipDistributor = reload(False)
 
-    # Configure all servers:
-    if config.HTTPS_DIST and config.HTTPS_SHARE:
-        #webSchedule = schedule.ScheduledInterval("day", 2)
-        webSchedule = schedule.Unscheduled()
-        HTTPServer.addWebServer(config, ipDistributor, webSchedule)
-    if config.EMAIL_DIST and config.EMAIL_SHARE:
-        #emailSchedule = schedule.ScheduledInterval("day", 1)
-        emailSchedule = schedule.Unscheduled()
-        addSMTPServer(config, emailDistributor, emailSchedule)
+        # Configure all servers:
+        if config.HTTPS_DIST and config.HTTPS_SHARE:
+            #webSchedule = schedule.ScheduledInterval("day", 2)
+            webSchedule = schedule.Unscheduled()
+            HTTPServer.addWebServer(config, ipDistributor, webSchedule)
+        if config.EMAIL_DIST and config.EMAIL_SHARE:
+            #emailSchedule = schedule.ScheduledInterval("day", 1)
+            emailSchedule = schedule.Unscheduled()
+            addSMTPServer(config, emailDistributor, emailSchedule)
 
-    tasks = {}
+        tasks = {}
 
-    # Setup all our repeating tasks:
-    if config.TASKS['GET_TOR_EXIT_LIST']:
-        tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
-            proxy.downloadTorExits,
-            proxyList,
-            config.SERVER_PUBLIC_EXTERNAL_IP)
+        # Setup all our repeating tasks:
+        if config.TASKS['GET_TOR_EXIT_LIST']:
+            tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
+                proxy.downloadTorExits,
+                proxyList,
+                config.SERVER_PUBLIC_EXTERNAL_IP)
 
-    # Schedule all configured repeating tasks:
-    for name, seconds in config.TASKS.items():
-        if seconds:
-            try:
-                tasks[name].start(abs(seconds))
-            except KeyError:
-                logging.info("Task %s is disabled and will not run." % name)
-            else:
-                logging.info("Scheduled task %s to run every %s seconds."
-                             % (name, seconds))
+        # Schedule all configured repeating tasks:
+        for name, seconds in config.TASKS.items():
+            if seconds:
+                try:
+                    tasks[name].start(abs(seconds))
+                except KeyError:
+                    logging.info("Task %s is disabled and will not run." % name)
+                else:
+                    logging.info("Scheduled task %s to run every %s seconds."
+                                 % (name, seconds))
 
     # Actually run the servers.
     try:
-        logging.info("Starting reactors.")
-        reactor.run()
+        if reactor and not reactor.running:
+            logging.info("Starting reactors.")
+            reactor.run()
     except KeyboardInterrupt:
         logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
