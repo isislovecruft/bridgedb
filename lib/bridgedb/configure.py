@@ -104,7 +104,8 @@ def loadConfig(configFile=None, configCls=None):
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
                  "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE",
                  "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
-                 "GIMP_CAPTCHA_RSA_KEYFILE"]:
+                 "GIMP_CAPTCHA_RSA_KEYFILE", "EMAIL_GPG_HOMEDIR",
+                 "EMAIL_GPG_PASSPHRASE_FILE"]:
         setting = getattr(config, attr, None)
         if setting is None:
             setattr(config, attr, setting)
