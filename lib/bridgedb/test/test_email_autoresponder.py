@@ -37,7 +37,7 @@ class CreateResponseBodyTests(unittest.TestCase):
     def _moveGPGTestKeyfile(self):
         here          = os.getcwd()
         topDir        = here.rstrip('_trial_temp')
-        self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
+        self.gpgFile  = os.path.join(topDir, '.gnupg', 'TESTING.subkeys.sec')
         self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
         shutil.copy(self.gpgFile, self.gpgMoved)
 
