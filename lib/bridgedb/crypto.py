@@ -72,7 +72,7 @@ DIGESTMOD = hashlib.sha1
 NEW_BUFFER_INTERFACE = False
 try:
     io.BytesIO(buffer('test'))
-except TypeError:
+except TypeError:  # pragma: no cover
     logging.warn(
         "This Python version is too old! "\
         "It doesn't support new-style buffer interfaces: "\
