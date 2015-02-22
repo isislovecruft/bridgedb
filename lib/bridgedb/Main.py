@@ -198,10 +198,17 @@ def load(state, splitter, clear=False):
     inserted = 0
     logging.info("Inserting %d bridges into splitter..." % len(bridges))
     for fingerprint, bridge in bridges.items():
-        # We attempt to insert all bridges. If the bridge is not running, then
-        # it is skipped during the insertion process.
-        splitter.insert(bridge)
-        inserted += 1
+        # Skip insertion of bridges which are geolocated to be in one of the
+        # NO_DISTRIBUTION_COUNTRIES, a.k.a. the countries we don't distribute
+        # bridges from:
+        if bridge.country in state.NO_DISTRIBUTION_COUNTRIES:
+            logging.warn("Not distributing Bridge %s %s:%s in country %s!" %
+                         (bridge, bridge.address, bridge.orPort, bridge.country))
+        else:
+            # If the bridge is not running, then it is skipped during the
+            # insertion process.
+            splitter.insert(bridge)
+            inserted += 1
     logging.info("Done inserting %d bridges into splitter." % inserted)
 
     if state.COLLECT_TIMESTAMPS:
