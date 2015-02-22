@@ -17,10 +17,6 @@ coverage==3.7.1
 coveralls==0.4.2
 leekspin==1.1.4
 mechanize==0.2.5
-pep8==1.5.7
-# pylint must be pinned until pylint bug #203 is fixed. See
-# https://bitbucket.org/logilab/pylint/issue/203/importing-namespace-packages-crashes#comment-11013783
-pylint==1.1.0
 sure==1.2.2
 Babel==0.9.6
 BeautifulSoup==3.2.1
