@@ -24,6 +24,7 @@ import shutil
 
 import OpenSSL
 
+
 from twisted.internet import defer
 from twisted.trial import unittest
 from twisted.test.proto_helpers import StringTransport
@@ -33,6 +34,7 @@ from bridgedb import crypto
 from bridgedb import txrecaptcha
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
+from bridgedb.test.email_helpers import _createConfig
 
 
 logging.disable(50)
@@ -85,6 +87,143 @@ class GetKeyTests(unittest.TestCase):
                          key (in hex): %s
                          SEKRIT_KEY (in hex): %s"""
                          % (key.encode('hex'), SEKRIT_KEY.encode('hex')))
+
+
+class InitializeGnuPGTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.crypto.initializeGnupG`."""
+
+    def _moveGnuPGHomedir(self):
+        """Move the .gnupg/ directory from the top-level of this repo to the
+        current working directory.
+
+        :rtype: str
+        :returns: The full path to the new gnupg home directory.
+        """
+        here         = os.getcwd()
+        topDir       = here.rstrip('_trial_temp')
+        gnupghome    = os.path.join(topDir, '.gnupg')
+        gnupghomeNew = os.path.join(here, '.gnupg')
+
+        if os.path.isdir(gnupghomeNew):
+            shutil.rmtree(gnupghomeNew)
+
+        shutil.copytree(gnupghome, gnupghomeNew)
+
+        return gnupghomeNew
+
+    def _writePassphraseToFile(self, passphrase, filename):
+        """Write **passphrase** to the file at **filename**.
+
+        :param str passphrase: The GnuPG passphase.
+        :param str filename: The file to write the passphrase to.
+        """
+        fh = open(filename, 'w')
+        fh.write(passphrase)
+        fh.flush()
+        fh.close()
+
+    def setUp(self):
+        """Create a config object and setup our gnupg home directory."""
+        self.config = _createConfig()
+        self.gnupghome = self._moveGnuPGHomedir()
+        self.config.EMAIL_GPG_HOMEDIR = self.gnupghome
+
+        self.passphraseFile = 'gpg-passphrase-file'
+        self._writePassphraseToFile('sekrit', self.passphraseFile)
+
+    def test_crypto_initializeGnuPG(self):
+        """crypto.initializeGnuPG() should return a 2-tuple with a gpg object
+        and a signing function.
+        """
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_disabled(self):
+        """When EMAIL_GPG_SIGNING_ENABLED=False, crypto.initializeGnuPG()
+        should return a 2-tuple of None.
+        """
+        self.config.EMAIL_GPG_SIGNING_ENABLED = False
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_no_secrets(self):
+        """When the secring.gpg is missing, crypto.initializeGnuPG() should
+        return a 2-tuple of None.
+        """
+        secring = os.path.join(self.gnupghome, 'secring.gpg')
+        if os.path.isfile(secring):
+            os.remove(secring)
+
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_no_publics(self):
+        """When the pubring.gpg is missing, crypto.initializeGnuPG() should
+        return a 2-tuple of None.
+        """
+        pubring = os.path.join(self.gnupghome, 'pubring.gpg')
+        if os.path.isfile(pubring):
+            os.remove(pubring)
+
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_with_passphrase(self):
+        """crypto.initializeGnuPG() should initialize correctly when a
+        passphrase is given but no passphrase is needed.
+        """
+        self.config.EMAIL_GPG_PASSPHRASE = 'password'
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_with_passphrase_file(self):
+        """crypto.initializeGnuPG() should initialize correctly when a
+        passphrase file is given but no passphrase is needed.
+        """
+        self.config.EMAIL_GPG_PASSPHRASE_FILE = self.passphraseFile
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_missing_passphrase_file(self):
+        """crypto.initializeGnuPG() should initialize correctly if a passphrase
+        file is given but that file is missing (when no passphrase is actually
+        necessary).
+        """
+        self.config.EMAIL_GPG_PASSPHRASE_FILE = self.passphraseFile
+        os.remove(self.passphraseFile)
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_signingFunc(self):
+        """crypto.initializeGnuPG() should return a signing function which
+        produces OpenPGP signatures.
+        """
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+        sig = signfunc("This is a test of the public broadcasting system.")
+        print(sig)
+        self.assertIsNotNone(sig)
+        self.assertTrue(sig.startswith('-----BEGIN PGP SIGNED MESSAGE-----'))
+
+    def test_crypto_initializeGnuPG_nonexistent_default_key(self):
+        """When the key specified by EMAIL_GPG_PRIMARY_KEY_FINGERPRINT doesn't
+        exist in the keyrings, crypto.initializeGnuPG() should return a 2-tuple
+        of None.
+        """
+        self.config.EMAIL_GPG_PRIMARY_KEY_FINGERPRINT = 'A' * 40
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
 
 
 class RemovePKCS1PaddingTests(unittest.TestCase):
