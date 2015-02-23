@@ -59,7 +59,7 @@ before_install:
   - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
-  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools libgeoip-dev geoip-database
+  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 python-dev python-setuptools libgeoip-dev geoip-database
   - pip install -q --no-use-wheel -r .travis.requirements.txt
   - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
   - make install
@@ -67,7 +67,7 @@ install:
 # Start a BridgeDB instance before running the tests:
 before_script:
   - mkdir run
-  - cp -R -t run bridgedb.conf captchas gnupghome
+  - cp -R -t run bridgedb.conf captchas .gnupg
   # Add '127.0.0.1' to EMAIL_DOMAINS in bridgedb.conf. This should ONLY be
   # done on testing servers, never on production servers.
   - sed -r -i -e "s/(EMAIL_DOMAINS)(.*)(])/\1\2\, '127.0.0.1']/" run/bridgedb.conf

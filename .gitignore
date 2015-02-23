@@ -85,9 +85,6 @@ run/*
 # (the "supported" variable is supposed to be rewritten at install time)
 lib/bridgedb/_langs.py
 
-# ignore any changes to our GnuPG directory:
-gnupghome/*
-
 # ignore persistent state files
 *bridgedb.state*
 

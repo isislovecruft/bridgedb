@@ -15,7 +15,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import base64
-import gpgme
 import io
 import logging
 import math
@@ -33,6 +32,7 @@ from bridgedb import crypto
 from bridgedb import txrecaptcha
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
+from bridgedb.test.email_helpers import _createConfig
 
 
 logging.disable(50)
@@ -85,6 +85,143 @@ class GetKeyTests(unittest.TestCase):
                          key (in hex): %s
                          SEKRIT_KEY (in hex): %s"""
                          % (key.encode('hex'), SEKRIT_KEY.encode('hex')))
+
+
+class InitializeGnuPGTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.crypto.initializeGnupG`."""
+
+    def _moveGnuPGHomedir(self):
+        """Move the .gnupg/ directory from the top-level of this repo to the
+        current working directory.
+
+        :rtype: str
+        :returns: The full path to the new gnupg home directory.
+        """
+        here         = os.getcwd()
+        topDir       = here.rstrip('_trial_temp')
+        gnupghome    = os.path.join(topDir, '.gnupg')
+        gnupghomeNew = os.path.join(here, '.gnupg')
+
+        if os.path.isdir(gnupghomeNew):
+            shutil.rmtree(gnupghomeNew)
+
+        shutil.copytree(gnupghome, gnupghomeNew)
+
+        return gnupghomeNew
+
+    def _writePassphraseToFile(self, passphrase, filename):
+        """Write **passphrase** to the file at **filename**.
+
+        :param str passphrase: The GnuPG passphase.
+        :param str filename: The file to write the passphrase to.
+        """
+        fh = open(filename, 'w')
+        fh.write(passphrase)
+        fh.flush()
+        fh.close()
+
+    def setUp(self):
+        """Create a config object and setup our gnupg home directory."""
+        self.config = _createConfig()
+        self.gnupghome = self._moveGnuPGHomedir()
+        self.config.EMAIL_GPG_HOMEDIR = self.gnupghome
+
+        self.passphraseFile = 'gpg-passphrase-file'
+        self._writePassphraseToFile('sekrit', self.passphraseFile)
+
+    def test_crypto_initializeGnuPG(self):
+        """crypto.initializeGnuPG() should return a 2-tuple with a gpg object
+        and a signing function.
+        """
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_disabled(self):
+        """When EMAIL_GPG_SIGNING_ENABLED=False, crypto.initializeGnuPG()
+        should return a 2-tuple of None.
+        """
+        self.config.EMAIL_GPG_SIGNING_ENABLED = False
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_no_secrets(self):
+        """When the secring.gpg is missing, crypto.initializeGnuPG() should
+        return a 2-tuple of None.
+        """
+        secring = os.path.join(self.gnupghome, 'secring.gpg')
+        if os.path.isfile(secring):
+            os.remove(secring)
+
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_no_publics(self):
+        """When the pubring.gpg is missing, crypto.initializeGnuPG() should
+        return a 2-tuple of None.
+        """
+        pubring = os.path.join(self.gnupghome, 'pubring.gpg')
+        if os.path.isfile(pubring):
+            os.remove(pubring)
+
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
+
+    def test_crypto_initializeGnuPG_with_passphrase(self):
+        """crypto.initializeGnuPG() should initialize correctly when a
+        passphrase is given but no passphrase is needed.
+        """
+        self.config.EMAIL_GPG_PASSPHRASE = 'password'
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_with_passphrase_file(self):
+        """crypto.initializeGnuPG() should initialize correctly when a
+        passphrase file is given but no passphrase is needed.
+        """
+        self.config.EMAIL_GPG_PASSPHRASE_FILE = self.passphraseFile
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_missing_passphrase_file(self):
+        """crypto.initializeGnuPG() should initialize correctly if a passphrase
+        file is given but that file is missing (when no passphrase is actually
+        necessary).
+        """
+        self.config.EMAIL_GPG_PASSPHRASE_FILE = self.passphraseFile
+        os.remove(self.passphraseFile)
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+    def test_crypto_initializeGnuPG_signingFunc(self):
+        """crypto.initializeGnuPG() should return a signing function which
+        produces OpenPGP signatures.
+        """
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNotNone(gpg)
+        self.assertIsNotNone(signfunc)
+
+        sig = signfunc("This is a test of the public broadcasting system.")
+        print(sig)
+        self.assertIsNotNone(sig)
+        self.assertTrue(sig.startswith('-----BEGIN PGP SIGNED MESSAGE-----'))
+
+    def test_crypto_initializeGnuPG_nonexistent_default_key(self):
+        """When the key specified by EMAIL_GPG_PRIMARY_KEY_FINGERPRINT doesn't
+        exist in the keyrings, crypto.initializeGnuPG() should return a 2-tuple
+        of None.
+        """
+        self.config.EMAIL_GPG_PRIMARY_KEY_FINGERPRINT = 'A' * 40
+        gpg, signfunc = crypto.initializeGnuPG(self.config)
+        self.assertIsNone(gpg)
+        self.assertIsNone(signfunc)
 
 
 class RemovePKCS1PaddingTests(unittest.TestCase):
@@ -145,143 +282,6 @@ class RemovePKCS1PaddingTests(unittest.TestCase):
         self.assertRaises(crypto.PKCS1PaddingError,
                           crypto.removePKCS1Padding,
                           self.blob)
-
-
-class LessCrypticGPGMEErrorTests(unittest.TestCase):
-    """Unittests for :class:`bridgedb.crypto.LessCrypticGPGMEError`."""
-
-    def test_error1(self):
-        """libgpgme will raise an error when given an io.StringIO for the
-        message or sigfile.
-        """
-        message = io.StringIO(unicode(self.id()))
-        sigfile = io.StringIO()
-
-        lessCryptic = None
-        ctx = gpgme.Context()
-
-        try:
-            ctx.sign(message, sigfile)
-        except gpgme.GpgmeError as error:
-            lessCryptic = crypto.LessCrypticGPGMEError(error)
-
-        self.assertTrue('Invalid argument' in lessCryptic.message)
-
-    def test_noGpgmeErrorArgs(self):
-        """A gpgme.GpgmeError() without error code args should result in a
-        'Could not get error code from gpgme.GpgmeError!' message.
-        """
-        error = gpgme.GpgmeError()
-        lessCryptic = crypto.LessCrypticGPGMEError(error)
-        self.assertEqual(lessCryptic.message,
-                         'Could not get error code from gpgme.GpgmeError!')
-
-    def test_unknownErrorSource(self):
-        """A gpgme.GpgmeError() without a recognisable error source should say
-        that the error source is 'UNKNOWN'.
-        """
-        msg = "These numbers make more sense than libgpgme's error codes."
-        error = gpgme.GpgmeError(math.pi, math.e, msg)
-        lessCryptic = crypto.LessCrypticGPGMEError(error)
-        self.assertSubstring('UNKNOWN', lessCryptic.message)
-        self.assertSubstring(msg, lessCryptic.message)
-
-    def test_unknownErrorCode(self):
-        """A gpgme.GpgmeError() without a recognisable error code should say
-        that the error code is 'UNKNOWN'.
-        """
-        msg = "These numbers make more sense than libgpgme's error codes."
-        error = gpgme.GpgmeError(math.pi, math.e, msg)
-        lessCryptic = crypto.LessCrypticGPGMEError(error)
-        self.assertSubstring('UNKNOWN', lessCryptic.message)
-        self.assertSubstring(msg, lessCryptic.message)
-
-
-class GPGContextTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.crypto.getGPGContext`."""
-
-    timeout = 15
-
-    @fileCheckDecorator
-    def doCopyFile(self, src, dst, description=None):
-        shutil.copy(src, dst)
-
-    def removeRundir(self):
-        """Remove the rundir from the _trial_tmp directory."""
-        if os.path.isdir(self.runDir):
-            shutil.rmtree(self.runDir)
-
-    def makeBadKey(self):
-        """Make a bad keyfile and set its path in our config."""
-        keyfile = os.path.join(self.runDir, 'badkey.asc')
-        with open(keyfile, 'w') as badkey:
-            badkey.write(str('NO PASARAN, DEATH CAKES!'))
-            badkey.flush()
-        self.setKey(keyfile)
-
-    def enableSigning(self, enable=True):
-        """Enable or disable the config setting for email signing."""
-        setattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED', enable)
-
-    def setKey(self, keyfile=''):
-        """Set the config keyfile path to **keyfile**."""
-        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY', keyfile)
-
-    def setUp(self):
-        here          = os.getcwd()
-        topDir        = here.rstrip('_trial_temp')
-        self.runDir   = os.path.join(here, 'rundir')
-        self.gpgFile  = os.path.join(topDir, 'gnupghome', 'TESTING.subkeys.sec')
-        self.gpgExpr  = os.path.join(topDir, 'gnupghome',
-                                     'TESTING.subkeys.sec.EXPIRED-2013-09-11')
-
-        if not os.path.isdir(self.runDir):
-            os.makedirs(self.runDir)
-
-        self.config = Conf()
-        self.enableSigning()
-        self.addCleanup(self.enableSigning)
-        self.addCleanup(self.removeRundir)
-
-    def test_getGPGContext_good_keyfile(self):
-        """Test EmailServer.getGPGContext() with a good key filename."""
-        self.setKey(self.gpgFile)
-        ctx = crypto.getGPGContext(self.config)
-        self.assertIsInstance(ctx, gpgme.Context)
-
-    def test_getGPGContext_missing_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.setKey('missing-keyfile.asc')
-        ctx = crypto.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-    def test_getGPGContext_bad_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.makeBadKey()
-        ctx = crypto.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-    def test_getGPGContext_expired_keyfile(self):
-        """getGPGContext() with an expired key should return None."""
-        self.setKey(self.gpgExpr)
-        ctx = crypto.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-    def test_getGPGContext_signing_disabled(self):
-        """getGPGContext() with signing disabled should return None."""
-        self.setKey(self.gpgFile)
-        self.enableSigning(False)
-        ctx = crypto.getGPGContext(self.config)
-        self.assertIsNone(ctx)
-
-    def test_getGPGContext_config_signing_missing(self):
-        """getGPGContext() with a missing/unset 'EMAIL_GPG_SIGNING_ENABLED'
-        config line should return None.
-        """
-        self.setKey(self.gpgFile)
-        delattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED')
-        ctx = crypto.getGPGContext(self.config)
-        self.assertIsNone(ctx)
 
 
 class SSLVerifyingContextFactoryTests(unittest.TestCase,
@@ -364,66 +364,3 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
         contextFactory = crypto.SSLVerifyingContextFactory(self.url)
         self.assertIsInstance(contextFactory.getContext(),
                               OpenSSL.SSL.Context)
-
-
-class GetGPGContextTest(unittest.TestCase):
-    """Unittests for :func:`bridgedb.crypto.getGPGContext`."""
-
-    timeout = 15
-
-    @fileCheckDecorator
-    def doCopyFile(self, src, dst, description=None):
-        shutil.copy(src, dst)
-
-    def removeRundir(self):
-        if os.path.isdir(self.runDir):
-            shutil.rmtree(self.runDir)
-
-    def makeBadKey(self):
-        self.setKey(self.badKeyfile)
-
-    def setKey(self, keyfile=''):
-        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY', keyfile)
-
-    def setUp(self):
-        here          = os.getcwd()
-        topDir        = here.rstrip('_trial_temp')
-        self.runDir   = os.path.join(here, 'rundir')
-        self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
-        self.gpgFile  = os.path.join(topDir, 'gnupghome',
-                                     'TESTING.subkeys.sec')
-
-        if not os.path.isdir(self.runDir):
-            os.makedirs(self.runDir)
-
-        self.badKeyfile = os.path.join(here, 'badkey.asc')
-        with open(self.badKeyfile, 'w') as badkey:
-            badkey.write('NO PASARAN, DEATH CAKES!')
-            badkey.flush()
-
-        self.doCopyFile(self.gpgFile, self.gpgMoved, "GnuPG test keyfile")
-
-        self.config = Conf()
-        setattr(self.config, 'EMAIL_GPG_SIGNING_ENABLED', True)
-        setattr(self.config, 'EMAIL_GPG_SIGNING_KEY',
-                'gnupghome/TESTING.subkeys.sec')
-
-        self.addCleanup(self.removeRundir)
-
-    def test_getGPGContext_good_keyfile(self):
-        """Test EmailServer.getGPGContext() with a good key filename."""
-        self.setKey(self.gpgMoved)
-        ctx = crypto.getGPGContext(self.config)
-        self.assertIsInstance(ctx, crypto.gpgme.Context)
-
-    def test_getGPGContext_missing_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.setKey('missing-keyfile.asc')
-        ctx = crypto.getGPGContext(self.config)
-        self.assertTrue(ctx is None)
-
-    def test_getGPGContext_bad_keyfile(self):
-        """Test EmailServer.getGPGContext() with a missing key filename."""
-        self.makeBadKey()
-        ctx = crypto.getGPGContext(self.config)
-        self.assertTrue(ctx is None)

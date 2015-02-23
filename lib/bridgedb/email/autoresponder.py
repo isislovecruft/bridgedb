@@ -46,7 +46,6 @@ from twisted.mail import smtp
 from twisted.python import failure
 
 from bridgedb import safelog
-from bridgedb.crypto import gpgSignMessage
 from bridgedb.crypto import NEW_BUFFER_INTERFACE
 from bridgedb.Dist import EmailRequestedHelp
 from bridgedb.Dist import EmailRequestedKey
@@ -129,7 +128,7 @@ def createResponseBody(lines, context, client, lang='en'):
         return templates.buildAnswerMessage(translator, client, answer)
 
 def generateResponse(fromAddress, client, body, subject=None,
-                     messageID=None, gpgContext=None):
+                     messageID=None, gpgSignFunc=None):
     """Create a :class:`EmailResponse`, which acts like an in-memory
     ``io.StringIO`` file, by creating and writing all headers and the email
     body into the file-like ``EmailResponse.mailfile``.
@@ -140,21 +139,21 @@ def generateResponse(fromAddress, client, body, subject=None,
     :param client: The client's email address which should be in the
         ``'To:'`` header of the response email.
     :param str subject: The string to write to the ``Subject:'`` header.
-    :param str body: The body of the email. If a **gpgContext** is also given,
-        and that ``Context`` has email signing configured, then
-        :meth:`EmailResponse.writeBody` will generate and include any
-        ascii-armored OpenPGP signatures in the **body**.
+    :param str body: The body of the email. If a **gpgSignFunc** is also
+        given, then :meth:`EmailResponse.writeBody` will generate and include
+        an ascii-armored OpenPGP signature in the **body**.
     :type messageID: None or str
     :param messageID: The :rfc:`2822` specifier for the ``'Message-ID:'``
         header, if including one is desirable.
-    :type gpgContext: None or ``gpgme.Context``
-    :param gpgContext: A pre-configured GPGME context. See
-        :func:`~bridgedb.crypto.getGPGContext`.
+    :type gpgSignFunc: ``None`` or callable
+    :param gpgSignFunc: A function for signing messages.  See
+        :func:`bridgedb.crypto.initializeGnuPG` for obtaining a pre-configured
+        **gpgSignFunc**.
     :returns: An :class:`EmailResponse` which contains the entire email. To
         obtain the contents of the email, including all headers, simply use
         :meth:`EmailResponse.readContents`.
     """
-    response = EmailResponse(gpgContext)
+    response = EmailResponse(gpgSignFunc)
     response.to = client
     response.writeHeaders(fromAddress.encode('utf-8'), str(client), subject,
                           inReplyTo=messageID)
@@ -196,21 +195,18 @@ class EmailResponse(object):
     _buff = buffer if NEW_BUFFER_INTERFACE else unicode
     mailfile = io.BytesIO if NEW_BUFFER_INTERFACE else io.StringIO
 
-    def __init__(self, gpgContext=None):
+    def __init__(self, gpgSignFunc=None):
         """Create a response to an email we have recieved.
 
         This class deals with correctly formatting text for the response email
         headers and the response body into an instance of :data:`mailfile`.
 
-        :type gpgContext: None or ``gpgme.Context``
-        :param gpgContext: A pre-configured GPGME context. See
-            :meth:`bridgedb.crypto.getGPGContext` for obtaining a
-            pre-configured **gpgContext**. If given, and the ``Context`` has
-            been configured to sign emails, then a response email body string
-            given to :meth:`writeBody` will be signed before being written
-            into the ``mailfile``.
+        :type gpgSignFunc: ``None`` or callable
+        :param gpgSignFunc: A function for signing messages.  See
+            :func:`bridgedb.crypto.initializeGnuPG` for obtaining a
+            pre-configured **gpgSignFunc**.
         """
-        self.gpgContext = gpgContext
+        self.gpgSign = gpgSignFunc
         self.mailfile = self.mailfile()
         self.delimiter = '\n'
         self.closed = False
@@ -349,16 +345,19 @@ class EmailResponse(object):
     def writeBody(self, body):
         """Write the response body into the :cvar:`mailfile`.
 
-        If ``EmailResponse.gpgContext`` is set, and signing is configured, the
+        If ``EmailResponse.gpgSignFunc`` is set, and signing is configured, the
         **body** will be automatically signed before writing its contents into
         the ``mailfile``.
 
         :param str body: The body of the response email.
         """
         logging.info("Writing email body...")
-        if self.gpgContext:
+        if self.gpgSign:
             logging.info("Attempting to sign email...")
-            body, _ = gpgSignMessage(self.gpgContext, body)
+            sig = self.gpgSign(body)
+            if sig:
+                body = sig
+                print("Signed email body:\n%s" % body) # XXX
         self.writelines(body)
 
 
@@ -428,7 +427,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         subject = self.incoming.message.getheader("Subject", None)
         response = generateResponse(recipient, client,
                                     body, subject, messageID,
-                                    self.incoming.context.gpgContext)
+                                    self.incoming.context.gpgSignFunc)
         return response
 
     def getMailTo(self):
