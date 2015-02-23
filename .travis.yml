@@ -75,7 +75,7 @@ before_script:
   - sed -r -i -e "s/(EMAIL_SMTP_PORT = )([1-9]{2,5})/\12525/" run/bridgedb.conf
   # Enable plaintext HTTP distribution, otherwise the mechanize-based tests in
   # test_https.py will fail with CERTIFICATE_VERIFY_FAILED because urllib2
-  # won't recognize ourt self-signed certificate:
+  # won't recognize our self-signed certificate:
   - sed -r -i -e "s/(HTTP_UNENCRYPTED_BIND_IP = )(None)/\1'127.0.0.1'/" run/bridgedb.conf
   - sed -r -i -e "s/(HTTP_UNENCRYPTED_PORT = )(None)/\16788/" run/bridgedb.conf
   - leekspin -n 100
