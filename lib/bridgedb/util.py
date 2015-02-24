@@ -62,7 +62,7 @@ def _getRotatingFileHandler(filename, mode='a', maxBytes=1000000, backupCount=0,
     os.chown(filename, uid, gid)
     try:
         os.chmod(filename, os.ST_WRITE | os.ST_APPEND)
-    except AttributeError:
+    except AttributeError:  # pragma: no cover
         logging.error("""
     XXX FIXME: Travis chokes on `os.ST_WRITE` saying that the module doesn't
                have that attribute, for some reason:

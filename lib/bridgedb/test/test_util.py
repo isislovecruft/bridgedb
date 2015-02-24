@@ -15,6 +15,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import logging
 import os
 
 from twisted.mail.smtp import Address
@@ -42,6 +43,15 @@ class MiscLoggingUtilTests(unittest.TestCase):
         self.assertIsInstance(logHandlers, list)
         self.assertEqual(len(logHandlers), 1)
         self.assertTrue('console' not in logHandlers)
+
+    def test_getLogHandlers_disable_logfile(self):
+        """util._getLogHandlers() should return ['console'] if stderr logging
+        is disabled.
+        """
+        logHandlers = util._getLogHandlers(logToFile=False)
+        self.assertIsInstance(logHandlers, list)
+        self.assertEqual(len(logHandlers), 1)
+        self.assertTrue('rotating' not in logHandlers)
 
     def test_getRotatingFileHandler(self):
         """_getRotatingFileHandler() should create a file with 0600
@@ -100,3 +110,35 @@ class LevenshteinDistanceTests(unittest.TestCase):
         fuzzyMatch = 4
         distance = util.levenshteinDistance(email1.local, email2.local)
         self.assertLessEqual(distance, fuzzyMatch)
+
+
+class JustifiedLogFormatterTests(unittest.TestCase):
+    """Unittests for :class:`bridgedb.util.JustifiedLogFormatter`."""
+
+    def setUp(self):
+        # name, level, path, lineno, message, args, exc_info
+        self.record = logging.LogRecord('name', logging.INFO, '/foo/bar/baz',
+                                        12345, 'This is a message', None, None)
+
+    def test_util_JustifiedLogFormatter(self):
+        formatter = util.JustifiedLogFormatter()
+        self.assertIsInstance(formatter, logging.Formatter)
+
+    def test_util_JustifiedLogFormatter_logThreads(self):
+        formatter = util.JustifiedLogFormatter(logThreads=True)
+        self.assertIsInstance(formatter, logging.Formatter)
+
+    def test_util_JustifiedLogFormatter_formatCallingFuncName(self):
+        formatter = util.JustifiedLogFormatter()
+        record = formatter._formatCallingFuncName(self.record)
+        self.assertIsInstance(formatter, logging.Formatter)
+        self.assertIsInstance(record, logging.LogRecord)
+
+    def test_util_JustifiedLogFormatter_format(self):
+        formatter = util.JustifiedLogFormatter()
+        formatted = formatter.format(self.record)
+        self.assertIsInstance(formatter, logging.Formatter)
+        self.assertIsInstance(formatted, basestring)
+        self.assertNotEqual(formatted, '')
+        self.assertTrue('INFO' in formatted)
+        self.assertTrue('This is a message' in formatted)
