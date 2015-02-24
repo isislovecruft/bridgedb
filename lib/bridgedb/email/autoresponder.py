@@ -357,7 +357,6 @@ class EmailResponse(object):
             sig = self.gpgSign(body)
             if sig:
                 body = sig
-                print("Signed email body:\n%s" % body) # XXX
         self.writelines(body)
 
 
