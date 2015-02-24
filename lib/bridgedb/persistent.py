@@ -17,7 +17,7 @@ import os.path
 
 try:
     import cPickle as pickle
-except (ImportError, NameError):
+except (ImportError, NameError):  # pragma: no cover
     import pickle
 
 from twisted.python.reflect import safe_repr
@@ -148,7 +148,7 @@ class State(jelly.Jellyable):
                 fh.close()
             os.unlink(self._statefile)
             self._statefile = None
-        except (IOError, OSError) as error:
+        except (IOError, OSError) as error:  # pragma: no cover
             logging.error("There was an error deleting the statefile: '%s'"
                           % self._statefile)
 
@@ -178,7 +178,7 @@ class State(jelly.Jellyable):
                 fh = statefile
             else:
                 raise TypeError("Nothing worked.")
-        except (IOError, OSError) as error:
+        except (IOError, OSError) as error:  # pragma: no cover
             err += "There was an error reading statefile "
             err += "'{0}':\n{1}".format(statefile, error)
         except (AttributeError, TypeError) as error:
@@ -208,10 +208,9 @@ class State(jelly.Jellyable):
 
         try:
             fh = open(statefile, 'w')
-        except MissingState as error:
-            err += error.message
-        except (IOError, OSError) as error:
-            err += "Error writing state file to '%s': %s" % (statefile, error)
+        except (IOError, OSError) as error:  # pragma: no cover
+            logging.warn("Error writing state file to '%s': %s"
+                         % (statefile, error))
         else:
             try:
                 pickle.dump(jelly.jelly(self), fh)

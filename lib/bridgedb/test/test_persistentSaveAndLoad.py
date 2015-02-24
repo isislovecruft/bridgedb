@@ -67,6 +67,45 @@ class StateSaveAndLoadTests(unittest.TestCase):
         if savedStatefile:
             self.assertTrue(os.path.isfile(str(savedStatefile)))
 
+    def test_init_with_STATEFILE(self):
+        config = self.config
+        setattr(config, 'STATEFILE', '~/foo.state')
+        state = persistent.State(**config.__dict__)
+        self.loadedStateAssertions(state)
+        statefile = state.statefile
+        self.assertTrue(statefile.endswith('foo.state'))
+
+    def test_init_without_config(self):
+        state = persistent.State(None)
+        self.loadedStateAssertions(state)
+
+    def test_init_with_config(self):
+        state = persistent.State(self.config)
+        self.loadedStateAssertions(state)
+
+    def test_get_statefile(self):
+        statefile = self.state._get_statefile()
+        self.assertIsInstance(statefile, basestring)
+
+    def test_set_statefile(self):
+        self.state._set_statefile('~/bar.state')
+        statefile = self.state._get_statefile()
+        self.assertIsInstance(statefile, basestring)
+
+    def test_set_statefile_new_dir(self):
+        config = self.config
+        setattr(config, 'STATEFILE', 'statefiles/foo.state')
+        state = persistent.State(**config.__dict__)
+        self.loadedStateAssertions(state)
+        statefile = state.statefile
+        self.assertTrue(statefile.endswith('foo.state'))
+
+    def test_del_statefile(self):
+        self.state._set_statefile('baz.state')
+        self.state._del_statefile()
+        statefile = self.state._get_statefile()
+        self.assertIsNone(statefile)
+
     def test_save(self):
         self.state.save()
         self.savedStateAssertions()
@@ -93,5 +132,32 @@ class StateSaveAndLoadTests(unittest.TestCase):
 
     def test_load(self):
         self.state.save()
-        loadedState = persistent.load()     
+        loadedState = persistent.load()
         self.loadedStateAssertions(loadedState)
+
+    def test_load_with_state(self):
+        loadedState = persistent.load(self.state)
+        self.loadedStateAssertions(loadedState)
+
+    def test_load_with_None(self):
+        persistent._setState(None)
+        self.assertRaises(persistent.MissingState,
+                          persistent.load, None)
+
+    def test_load_with_statefile(self):
+        self.assertRaises(persistent.MissingState,
+                          self.state.load, 'quux.state')
+
+    def test_load_with_statefile_opened(self):
+        fh = open('quux.state', 'w+')
+        self.assertRaises(persistent.MissingState, self.state.load, fh)
+        fh.close()
+
+    def test_load_with_statefile_object(self):
+        self.assertRaises(persistent.MissingState, self.state.load, object)
+
+    def test_load_without_statefile(self):
+        persistent._setState(None)
+        self.state.statefile = None
+        self.assertRaises(persistent.MissingState,
+                          persistent.load)
