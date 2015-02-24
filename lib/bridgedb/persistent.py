@@ -124,11 +124,7 @@ class State(jelly.Jellyable):
 
         :param string statefile: The filename of the statefile.
         """
-        if filename.startswith('~'):
-            filename = os.path.expanduser(filename)
-        if not os.path.isabs(filename):
-            filename = os.path.abspath(filename)
-
+        filename = os.path.abspath(os.path.expanduser(filename))
         logging.debug("Setting statefile to '%s'" % filename)
         self._statefile = filename
 
