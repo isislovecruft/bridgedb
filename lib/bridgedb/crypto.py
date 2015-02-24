@@ -48,6 +48,7 @@ import io
 import logging
 import os
 import re
+import struct
 import urllib
 
 import OpenSSL
@@ -87,6 +88,78 @@ class PKCS1PaddingError(Exception):
 class RSAKeyGenerationError(Exception):
     """Raised when there was an error creating an RSA keypair."""
 
+
+def bytesToLong(bites):
+    """Convert a byte string to a long integer.
+
+    >>> from bridgedb.crypto import bytesToLong
+    >>> bytesToLong('\x059')
+    1337L
+    >>> bytesToLong('I\x96\x02\xd2')
+    1234567890L
+    >>> bytesToLong('\x00\x00\x00\x00I\x96\x02\xd2')
+    1234567890L
+    >>> bytesToLong('\xabT\xa9\x8c\xeb\x1f\n\xd2')
+    12345678901234567890L
+
+    :param bytes bites: The byte string to convert.
+    :rtype: long
+    """
+    length = len(bites)
+    if length % 4:
+        extra = (4 - length % 4)
+        bites = b'\000' * extra + bites
+        length = length + extra
+
+    acc = 0L
+    for index in range(0, length, 4):
+        acc = (acc << 32) + struct.unpack(b'>I', bites[index:index+4])[0]
+
+    return acc
+
+def longToBytes(number, blocksize=0):
+    """Convert a long integer to a byte string.
+
+    >>> from bridgedb.crypto import longToBytes
+    >>> longToBytes(1337L)
+    '\x059'
+    >>> longToBytes(1234567890L)
+    'I\x96\x02\xd2'
+    >>> longToBytes(1234567890L, blocksize=8)
+    '\x00\x00\x00\x00I\x96\x02\xd2'
+    >>> longToBytes(12345678901234567890L)
+    '\xabT\xa9\x8c\xeb\x1f\n\xd2'
+
+    :param int number: The long integer to convert.
+    :param int blocksize: If **blocksize** is given and greater than zero, pad
+        the front of the byte string with binary zeros so that the length is a
+        multiple of **blocksize**.
+    :rtype: bytes
+    """
+    bites = b''
+    number = long(number)
+
+    # Convert the number to a byte string
+    while number > 0:
+        bites = struct.pack(b'>I', number & 0xffffffffL) + bites
+        number = number >> 32
+
+    # Strip off any leading zeros
+    for index in range(len(bites)):
+        if bites[index] != b'\000'[0]:
+            break
+    else:
+        # Only happens when number == 0:
+        bites = b'\000'
+        index = 0
+    bites = bites[index:]
+
+    # Add back some padding bytes.  This could be done more efficiently
+    # w.r.t. the de-padding being done above, but sigh...
+    if blocksize > 0 and len(bites) % blocksize:
+        bites = (blocksize - len(bites) % blocksize) * b'\000' + bites
+
+    return bytes(bites)
 
 def writeKeyToFile(key, filename):
     """Write **key** to **filename**, with ``0400`` permissions.

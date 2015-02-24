@@ -19,9 +19,6 @@ import logging
 import os
 import warnings
 
-from Crypto.Util.number import bytes_to_long
-from Crypto.Util.number import long_to_bytes
-
 import pyasn1
 
 import bridgedb.Storage
@@ -29,6 +26,8 @@ import bridgedb.Storage
 from bridgedb import geo
 from bridgedb import safelog
 from bridgedb import bridgerequest
+from bridgedb.crypto import bytesToLong
+from bridgedb.crypto import longToBytes
 from bridgedb.crypto import removePKCS1Padding
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.parse.addr import isIPv4
@@ -1506,13 +1505,13 @@ class Bridge(BridgeBackwardsCompatibility):
             signatureDecoded = base64.b64decode(signature)
 
             # Convert the signature to a long:
-            signatureLong = bytes_to_long(signatureDecoded)
+            signatureLong = bytesToLong(signatureDecoded)
 
             # Decrypt the long signature with the modulus and public exponent:
             decryptedInt = pow(signatureLong, publicExponent, modulus)
 
             # Then convert it back to a byte array:
-            decryptedBytes = long_to_bytes(decryptedInt, BLOCKSIZE)
+            decryptedBytes = longToBytes(decryptedInt, BLOCKSIZE)
 
             # Remove the PKCS#1 padding from the signature:
             unpadded = removePKCS1Padding(decryptedBytes)
