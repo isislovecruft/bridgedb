@@ -19,9 +19,10 @@ import logging
 import os
 import warnings
 
-from Crypto.Util import asn1
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.number import long_to_bytes
+
+import pyasn1
 
 import bridgedb.Storage
 
@@ -1483,19 +1484,16 @@ class Bridge(BridgeBackwardsCompatibility):
         signature = signature.strip()
 
         try:
-            # Get the ASN.1 sequence:
-            sequence = asn1.DerSequence()
-
             key = self.signingKey
             key = key.strip(TOR_SIGNING_KEY_HEADER)
             key = key.strip(TOR_SIGNING_KEY_FOOTER)
             key = key.replace('\n', '')
             key = base64.b64decode(key)
 
-            sequence.decode(key)
-
-            modulus = sequence[0]
-            publicExponent = sequence[1]
+            # Get the ASN.1 sequence:
+            sequence = pyasn1.codec.der.decoder.decode(key)[0]
+            modulus = int(sequence.getComponentByPosition(0))
+            publicExponent = int(sequence.getComponentByPosition(1))
 
             # The public exponent of RSA signing-keys should always be 65537,
             # but we're not going to turn them down if they want to use a
