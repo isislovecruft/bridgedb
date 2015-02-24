@@ -80,12 +80,6 @@ except TypeError:  # pragma: no cover
 else:
     NEW_BUFFER_INTERFACE = True
 
-#: Settings for the GPGME Context and `Crypto Engine`_.
-#: .. _`Crypto Engine`:
-#:      http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
-GPGME_CONTEXT_HOMEDIR = '.gnupg'
-GPGME_CONTEXT_BINARY = which('gpg2') or which('gpg')  # These will be lists
-
 
 class PKCS1PaddingError(Exception):
     """Raised when there is a problem adding or removing PKCS#1 padding."""
