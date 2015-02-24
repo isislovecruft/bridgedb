@@ -88,7 +88,7 @@ class StateSaveAndLoadTests(unittest.TestCase):
         self.assertIsInstance(statefile, basestring)
 
     def test_set_statefile(self):
-        self.state._set_statefile('~/bar.state')
+        self.state._set_statefile('bar.state')
         statefile = self.state._get_statefile()
         self.assertIsInstance(statefile, basestring)
 
