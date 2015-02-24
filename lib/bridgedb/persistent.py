@@ -100,7 +100,7 @@ class State(jelly.Jellyable):
         self.key = None
 
         if 'STATEFILE' in kwargs:
-            self.statefile(kwargs['STATEFILE'])
+            self.statefile = kwargs['STATEFILE']
 
         for key, value in kwargs.items():
             self.__dict__[key] = value
