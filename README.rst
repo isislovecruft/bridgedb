@@ -78,7 +78,7 @@ Dependencies and installation
 BridgeDB requires the following OS-level dependencies:
 
 -  python>=2.7
--  python-dev
+-  python-dev (or pypy-dev, if using PyPy_)
 -  build-essential
 -  gnupg (preferrably, gnupg2)
 -  OpenSSL>=1.0.1g
@@ -95,6 +95,7 @@ As well as any Python dependencies in the ``requirements.txt`` file.
     suites, building BridgeDB's developer documentation, etc. Read on for more
     info if you wish to enable addition features.
 
+.. _PyPy: http://pypy.org/
 
 ------------------
 Deploying BridgeDB

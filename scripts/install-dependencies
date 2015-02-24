@@ -1,15 +1,30 @@
 #!/usr/bin/env bash
 
-set -x --
+#set -x --
 
 SUDO=
 APT_GET=$(which apt-get)
 APT_FLAGS='-q --no-install-suggests --no-install-recommends'
 PIP=$(which pip)
 PIP_FLAGS='--no-use-wheel'
-DEPENDS="build-essential openssl sqlite3 python-dev python-setuptools"
+DEPENDS="build-essential openssl sqlite3 python-setuptools"
 DEPENDS="${DEPENDS} libgeoip-dev geoip-database libjpeg-dev"
 HERE=$(dirname $0)
+
+PYTHON_IMPLEMENTATION=`python -c '
+import sys
+try:
+    import __pypy__
+except:
+    sys.stdout.write(sys.subversion[0])
+else:
+    sys.stdout.write("pypy")'`
+
+if [ "$PYTHON_IMPLEMENTATION" == "pypy" ] ; then
+    DEPENDS="${DEPENDS} pypy-dev"
+else
+    DEPENDS="${DEPENDS} python-dev"
+fi
 
 if [ "$EUID" != "0" ] ; then SUDO=$(which sudo); fi
 # pip is pre-installed on Travis-CI machines in their Python environment, so
@@ -23,12 +38,17 @@ fi
     
 MISSING=""
 for dep in $DEPENDS ; do
-    if ! test "$(dpkg -l $dep | grep \"ii  $dep\")" ; then
+    if { dpkg -l $dep | grep "ii  $dep" ; } 2>&1 >/dev/null ; then
+        printf "" # not missing
+    else
         MISSING="${MISSING} $dep"
     fi
 done
 
-$SUDO $APT_GET install ${APT_FLAGS} ${MISSING}
+if test -n "$MISSING" ; then
+    printf "Running \"sudo apt-get install %s %s\"...\n" "${APT_FLAGS}" "${MISSING}"
+    $SUDO $APT_GET install ${APT_FLAGS} ${MISSING}
+fi
 
 # When running on Travis, be sure that environment variables are passed from
 # .travis.yml to this script:
@@ -36,5 +56,6 @@ if [ "$TRAVIS" == "true" ] ; then
     $PIP install $PIP_FLAGS -r "$HERE/../.travis.requirements.txt"
     $PIP install $PIP_FLAGS "Twisted==$TWISTED_VERSION" "pyOpenSSL==$PYOPENSSL_VERSION"
 else
+    printf "Running \"pip install %s -r %s\"...\n" "${PIP_FLAGS}" "${HERE}/../requirements.txt"
     $PIP install $PIP_FLAGS -r "$HERE/../requirements.txt"
 fi
