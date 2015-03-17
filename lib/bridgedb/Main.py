@@ -184,17 +184,25 @@ def load(state, splitter, clear=False):
 def loadProxyList(cfg):
     ipset = {}
     for fname in cfg.PROXY_LIST_FILES:
-        f = open(fname, 'r')
-        for line in f:
-            line = line.strip()
-            if line.startswith("#"):
-                continue
-            elif Bridges.is_valid_ip(line):
-                ipset[line] = True
-            elif line:
-                logging.info("Skipping line %r in %s: not an IP.",
-                             line, fname)
-        f.close()
+        f = None
+        try:
+            f = open(fname, 'r')
+        except Exception as error:
+            logging.warn("Error while reading proxy list %r: %s"
+                         % (fname, str(error)))
+        else:
+            if f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("#"):
+                        continue
+                    elif Bridges.is_valid_ip(line):
+                        ipset[line] = True
+                    elif line:
+                        logging.info("Skipping line %r in %s: not an IP.",
+                                     line, fname)
+                f.close()
+
     return ipset
 
 def _reloadFn(*args):
