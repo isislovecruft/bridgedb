@@ -82,18 +82,21 @@ def loadProxiesFromFile(filename, proxySet=None, removeStale=False):
     if proxySet:
         oldProxySet = proxySet.copy()
 
-    with open(filename, 'r') as proxyFile:
-        for line in proxyFile.readlines():
-            line = line.strip()
-            if proxySet:
-                # ProxySet.add() will validate the IP address
-                if proxySet.add(line, tag=filename):
-                    logging.info("Added %s to the proxy list." % line)
-                    addresses.append(line)
-            else:
-                ip = isIPAddress(line)
-                if ip:
-                    addresses.append(ip)
+    try:
+        with open(filename, 'r') as proxyFile:
+            for line in proxyFile.readlines():
+                line = line.strip()
+                if proxySet:
+                    # ProxySet.add() will validate the IP address
+                    if proxySet.add(line, tag=filename):
+                        logging.info("Added %s to the proxy list." % line)
+                        addresses.append(line)
+                else:
+                    ip = isIPAddress(line)
+                    if ip:
+                        addresses.append(ip)
+    except Exception as error:
+        logging.warn("Error while reading a proxy list file: %s" % str(error))
 
     if proxySet:
         stale = list(oldProxySet.difference(addresses))
