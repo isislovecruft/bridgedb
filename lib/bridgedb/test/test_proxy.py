@@ -476,6 +476,20 @@ class ProxySetUnittests(unittest.TestCase):
         """ProxySet.issubset() on a subset should return True."""
         self.assertTrue(self.proxyList.issuperset(set(self.proxies[:1])))
 
+    def test_ProxySet_intersection(self):
+        """ProxySet.intersection() should return the combination of two
+        disjoint sets.
+        """
+        raise unittest.SkipTest(
+            ("FIXME: bridgedb.proxy.ProxySet.intersection() is broken and "
+             "always returns an empty set()."))
+
+        a = self.proxies
+        a.extend(self.moarProxies)
+        a = set(a)
+        b = self.proxyList.intersection(set(self.moarProxies))
+        self.assertItemsEqual(a, b)
+
     def test_ProxySet_remove(self):
         """ProxySet.remove() should subtract proxies which were already added
         to the set.
