@@ -3,24 +3,25 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
 # Ahmad Gharbeia <gharbeia@gmail.com>, 2014
 # allamiro <allamiro@gmail.com>, 2011
+# Ash <ali.shatrieh@gmail.com>, 2014
 # Mohamed El-Feky <elfeky.m@gmail.com>, 2014
 # AnonymousLady <farah.jaza@hotmail.com>, 2014
 # 0xidz <ghoucine@gmail.com>, 2014
 # محمد الحرقان <malham1@gmail.com>, 2011
 # Sherief Alaa <sheriefalaa.w@gmail.com>, 2013-2014
 # Sherief Alaa <sheriefalaa.w@gmail.com>, 2013
+# Valetudinarian <themcnx@gmail.com>, 2014
 # محمد الحرقان <malham1@gmail.com>, 2011
 # محيي الدين <tx99h4@hotmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-26 02:05+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2014-07-26 02:11+0000\n"
+"PO-Revision-Date: 2014-11-20 07:20+0000\n"
+"Last-Translator: Ash <ali.shatrieh@gmail.com>\n"
 "Language-Team: Arabic (http://www.transifex.com/projects/p/torproject/language/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -83,7 +84,7 @@ msgstr "مرحبا، %s "
 msgid "Hello, friend!"
 msgstr "مرحبا ,صديقي!"
 
-#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
 msgid "Public Keys"
 msgstr "مفاتيح عامة"
 
@@ -152,7 +153,7 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
 "%s, %s or %s."
-msgstr "وكطريقة أخري للحصول علي bridges هو ان ترسل بريد الكتروني إلي %s. يرجى ملاحظة أنه يجب إرسال البريد الإلكتروني باستخدام عنوان من أحد مزودي خدمات البريد الإلكتروني التاليين: %s, %s او %s."
+msgstr "طريقة أخرى للحصول على جسور عبر إرسال بريد إلكتروني إلى %s. يرجى ملاحظة أنّه يجب ارسال البريد الإلكتروني مع استعمال إحدى العناوين البريدية التالية: %s أو %s أو %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
@@ -264,19 +265,19 @@ msgstr "أطلب Pluggable Transport بـ TYPE"
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "احصل على نسخة من مفتاح GnuPG العام الخاص بـBridgeDB"
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:92
 msgid "Report a Bug"
 msgstr "ابلغ عن خطأ بالبرنامج"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:94
 msgid "Source Code"
 msgstr "كود البرنامج"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:97
 msgid "Changelog"
 msgstr "التغييرات"
 
-#: lib/bridgedb/templates/base.html:98
+#: lib/bridgedb/templates/base.html:99
 msgid "Contact"
 msgstr "اتصل بنا"
 
