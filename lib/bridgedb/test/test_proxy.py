@@ -157,6 +157,11 @@ class LoadProxiesFromFileIntegrationTests(unittest.TestCase):
         proxies = proxy.loadProxiesFromFile(self.fn0)
         self.assertEqual(len(proxies), 3)
 
+    def test_proxy_loadProxiesFromFile_1_file_missing(self):
+        """Test loading proxies from one file that doesn't exist."""
+        proxies = proxy.loadProxiesFromFile('%s-missing' % self.__class__.__name__)
+        self.assertEqual(len(proxies), 0)
+
     def test_proxy_loadProxiesFromFile_1_file_and_proxyset(self):
         """Test loading proxies from one file."""
         proxyList = proxy.ProxySet(['1.1.1.1'])
