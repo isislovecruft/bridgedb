@@ -1,0 +1,357 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2014 'The Tor Project, Inc.'
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# git12a <git12@openmailbox.org>, 2015
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
+"POT-Creation-Date: 2014-07-26 02:11+0000\n"
+"PO-Revision-Date: 2015-02-13 10:18+0000\n"
+"Last-Translator: git12a <git12@openmailbox.org>\n"
+"Language-Team: Tamil (http://www.transifex.com/projects/p/torproject/language/ta/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: ta\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+#. any string (regardless of capitalization and/or punctuation):
+#. "BridgeDB"
+#. "pluggable transport"
+#. "pluggable transports"
+#. "obfs2"
+#. "obfs3"
+#. "scramblesuit"
+#. "fteproxy"
+#. "Tor"
+#. "Tor Browser"
+#: lib/bridgedb/HTTPServer.py:121
+msgid "Sorry! Something went wrong with your request."
+msgstr "மன்னிக்கவும்! உங்கள் வேண்டுகோளிற்கு ஏதோஒரு  தவறு நேர்ந்துள்ளது."
+
+#: lib/bridgedb/strings.py:18
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[ இது ஒரு தானியங்கி செய்தி; தயவு செய்து பதில் அனுப்ப வேண்டாம்.]"
+
+#: lib/bridgedb/strings.py:20
+msgid "Here are your bridges:"
+msgstr "இதோ உங்கள் bridges:"
+
+#: lib/bridgedb/strings.py:22
+#, python-format
+msgid ""
+"You have exceeded the rate limit. Please slow down! The minimum time between\n"
+"emails is %s hours. All further emails during this time period will be ignored."
+msgstr "நீங்கள் வீத வரம்பு மீறி விட்டீர்கள். தயவு செய்து மெதுவடையவும்! மின்னஞ்சல்களின் இடையே குறைந்தபட்ச நேரம் %s மணிகள். இந்த நேரத்தினுள் அனைத்து மின்னஞ்சல்களும்  நிராகரிக்கப்படும்."
+
+#: lib/bridgedb/strings.py:25
+msgid ""
+"COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"
+msgstr "கட்டளைகள்: (பல விருப்பங்களை குறிப்பிட கட்டளைகளை ஒரேசமயத்தில் ஒன்றியினைகவும்)"
+
+#. TRANSLATORS: Please DO NOT translate the word "BridgeDB".
+#: lib/bridgedb/strings.py:28
+msgid "Welcome to BridgeDB!"
+msgstr "BridgeDB-யினுள் நல்வரவு"
+
+#. TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
+#: lib/bridgedb/strings.py:30
+msgid "Currently supported transport TYPEs:"
+msgstr "தற்போது ஆதரவு உள்ள Transport TYPE-கள் "
+
+#: lib/bridgedb/strings.py:31
+#, python-format
+msgid "Hey, %s!"
+msgstr "ஹே, %s!"
+
+#: lib/bridgedb/strings.py:32
+msgid "Hello, friend!"
+msgstr "ஹலோ, தோழா!"
+
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
+msgid "Public Keys"
+msgstr "பொது சாவிகள்"
+
+#. TRANSLATORS: This string will end up saying something like:
+#. "This email was generated with rainbows, unicorns, and sparkles
+#. for alice@example.com on Friday, 09 May, 2014 at 18:59:39."
+#: lib/bridgedb/strings.py:37
+#, python-format
+msgid ""
+"This email was generated with rainbows, unicorns, and sparkles\n"
+"for %s on %s at %s."
+msgstr "இந்த மின்னஞ்சல் வானவில், யூனிகார்ன்கள் மற்றும் சிறுதீப்பொறிகள் கொண்டு \n%s -காக  %s அன்று %s நேரத்தில் உருவாக்கப்பட்டது."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#. TRANSLATORS: Please DO NOT translate "Tor Network".
+#: lib/bridgedb/strings.py:47
+#, python-format
+msgid ""
+"BridgeDB can provide bridges with several %stypes of Pluggable Transports%s,\n"
+"which can help obfuscate your connections to the Tor Network, making it more\n"
+"difficult for anyone watching your internet traffic to determine that you are\n"
+"using Tor.\n"
+"\n"
+msgstr "BridgeDB-யால் %sபலவகையான Pluggable Transports%s bridge-களை தரமுடியும்,\nஇவை உங்கள் Tor Network இணைப்புகளை விளங்காதவண்ணம் ஆக்கவுதவி, உங்களின் \nஇணைய போக்குவரத்தை கண்கானிப்பவருக்கு நீங்கள் Tor பயன்படுத்துகிறீர்கள் எனக்கன்டறிய மேலும்\nகடினம் ஆக்கும்.\n\n"
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#: lib/bridgedb/strings.py:54
+msgid ""
+"Some bridges with IPv6 addresses are also available, though some Pluggable\n"
+"Transports aren't IPv6 compatible.\n"
+"\n"
+msgstr "சில IPv6 முகவரிக்கொண்ட bridge-களும் உள்ளன, எனினும் சில Pluggable\nTransports-கள் IPv6 உடன் பொருந்தக்கூடிவது இல்லை.\n\n"
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring,
+#. regular, or unexciting". Like vanilla ice cream. It refers to bridges
+#. which do not have Pluggable Transports, and only speak the regular,
+#. boring Tor protocol. Translate it as you see fit. Have fun with it.
+#: lib/bridgedb/strings.py:63
+#, python-format
+msgid ""
+"Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any\n"
+"Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
+"help to circumvent internet censorship in many cases.\n"
+"\n"
+msgstr "கூடுதலாக, BridgeDB-யினுள் ஏராளமான பழையமுறை bridge-கள் \n%s Pluggable Transports வசதியில்லாமல் உள்ளது %s உணர்ச்சி ஊட்டுகிறவாறு இல்லாவிட்டாலும், \nஇவையால் பல சந்தர்ப்பங்களில் இனைய தணிக்கையை கடக்க உதவும்.\n\n"
+
+#: lib/bridgedb/strings.py:76
+msgid "What are bridges?"
+msgstr "Bridges என்றால் என்ன?"
+
+#: lib/bridgedb/strings.py:77
+#, python-format
+msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
+msgstr "%s Bridge-கள் %s எனும் Tor Relay-கள் தணிக்கையை கடக்க  உதவும்"
+
+#: lib/bridgedb/strings.py:82
+msgid "I need an alternative way of getting bridges!"
+msgstr "எனக்கு Bridge-களை பெறுவதற்கு ஓர் மாற்று வழி வேண்டும்"
+
+#: lib/bridgedb/strings.py:83
+#, python-format
+msgid ""
+"Another way to get bridges is to send an email to %s. Please note that you must\n"
+"send the email using an address from one of the following email providers:\n"
+"%s, %s or %s."
+msgstr "Bridge-களை பெறுவதற்கு ஓர் மாற்றுவழி %s முகவரிக்கு   ஒரு மின்னஞ்சல் அனுப்பலாம்.\nதயவு செய்யது கவனிக்கவும், நீங்கள் கட்டாயமாக கீழ்கண்ட மின்னஞ்சல் சேவைகளின் முகவரியிலிருந்து மட்டுமே மின்னஞ்சல் அனுப்பலாம் :\n%s, %s or %s."
+
+#: lib/bridgedb/strings.py:90
+msgid "My bridges don't work! I need help!"
+msgstr "என் Bridge-கள் வேலை செய்யவில்லை! எனக்கு உதவி தேவை!"
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:92
+#, python-format
+msgid "If your Tor doesn't work, you should email %s."
+msgstr "உங்கள் Tor வேலை செய்யவில்லை எனில், நீங்கள் %s தொடர்புகொள்க  "
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:96
+msgid ""
+"Try including as much info about your case as you can, including the list of\n"
+"bridges and Pluggable Transports you tried to use, your Tor Browser version,\n"
+"and any messages which Tor gave out, etc."
+msgstr "உங்கள் வழக்கு குறித்து அதிகபட்ச தகவல்களை சேருங்கள், இதில் நீங்கள் பயன்படுத்த முயற்சித்த bridges\nமற்றும் Pluggable Transports, தங்களின் Tor Browser பதிப்பு எண் ஆகியவை அடங்கும், மற்றும் Tor\nகூரியதகவல்கள் போன்றவற்றையும் சேர்க்கவும்."
+
+#: lib/bridgedb/strings.py:103
+msgid "Here are your bridge lines:"
+msgstr "இதோ உங்கள் bridge வரிசைகள்: "
+
+#: lib/bridgedb/strings.py:104
+msgid "Get Bridges!"
+msgstr "Bridge-களை பெறுக!"
+
+#: lib/bridgedb/strings.py:108
+msgid "Please select options for bridge type:"
+msgstr "Bridge வகை விருப்பங்களை தேர்ந்தெடுக்கவும்:"
+
+#: lib/bridgedb/strings.py:109
+msgid "Do you need IPv6 addresses?"
+msgstr "உங்களுக்கு IPv6 முகவரிகள் வேண்டுமா?"
+
+#: lib/bridgedb/strings.py:110
+#, python-format
+msgid "Do you need a %s?"
+msgstr "உங்களுக்கு ஒரு %s தேவையா?"
+
+#: lib/bridgedb/strings.py:114
+msgid "Your browser is not displaying images properly."
+msgstr " தங்களின் browser படங்களை சரியாக காட்டவில்லை."
+
+#: lib/bridgedb/strings.py:115
+msgid "Enter the characters from the image above..."
+msgstr "மேலே உள்ள படத்தில் இருக்கும் எழுத்துக்கள் உள்ளிடவும்..."
+
+#: lib/bridgedb/strings.py:119
+msgid "How to start using your bridges"
+msgstr "தங்களின் bridge-களை பயன்படுத்த தொடங்குவது எப்படி"
+
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#: lib/bridgedb/strings.py:121
+#, python-format
+msgid ""
+"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
+"Browser download page %s to start Tor Browser."
+msgstr "Bridge-களை Tor Browser-னுள் உள்ளிட, %s Tor Browser பதிவிறக்க பக்கத்தில் %s உள்ள வழிமுறைகளை பின்பற்றி Tor Browser-ஐ தொடக்கம் செய்யவும். "
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:125
+msgid ""
+"When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
+"the wizard until it asks:"
+msgstr "'Tor நெட்வொர்க் அமைப்புகள்' உரையாடல் மேல்தோன்றும் பொழுது, 'கட்டமைக்க' கிளிக்செய்து \nவழிகாட்டியை அது கேட்கும்வரை பின்பற்றவும்:"
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:129
+msgid ""
+"Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
+"to the Tor network?"
+msgstr "உங்களின் இணைய சேவை வழங்கும் (ISP) நிறுவனம் Tor நெட்வொர்கை தடுக்கிறதா அல்லது \nவேறுவழியில் தணிக்கை செய்கிறதா? "
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:133
+msgid ""
+"Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
+"paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
+"you should be good to go! If you experience trouble, try clicking the 'Help'\n"
+"button in the 'Tor Network Settings' wizard for further assistance."
+msgstr "'ஆம்' தேர்ந்தெடுத்து பின்னர் 'அடுத்து' கிளிக் செய்யவும். தங்களின் புதிய bridge-களை கட்டமைக்க, \nவரிசைகளை வாக்கியம் உள்ளீtடு பெட்டியில் நகல்எடுத்து  பேஸ்ட் செய்யவும். இறுதியாக, 'இணைக்க' கிளிக் \nசெய்தவுடன், நீங்கள் செல்ல தயார்! நீங்கள் பிரச்சினையை சந்தித்தால், 'Tor நெட்வொர்க் அமைப்புகள்' \nவழிகாட்டியில் உள்ள 'உதவி' பொத்தானை  கிளிக் செய்து மேலும் உதவி பெறவும்."
+
+#: lib/bridgedb/strings.py:141
+msgid "Displays this message."
+msgstr "இந்த செய்தியை காட்டவும் "
+
+#. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
+#. same non-Pluggable Transport bridges described above as being
+#. "plain-ol'-vanilla" bridges.
+#: lib/bridgedb/strings.py:145
+msgid "Request vanilla bridges."
+msgstr "பழையமுறையான bridge-களை விண்ணப்பிக்கவும்."
+
+#: lib/bridgedb/strings.py:146
+msgid "Request IPv6 bridges."
+msgstr "IPv6 bridge-களை விண்ணப்பிக்கவும்."
+
+#. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
+#: lib/bridgedb/strings.py:148
+msgid "Request a Pluggable Transport by TYPE."
+msgstr "Pluggable Transport bridge-களை TYPE வகையில் விண்ணப்பிக்கவும்."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "GnuPG".
+#: lib/bridgedb/strings.py:151
+msgid "Get a copy of BridgeDB's public GnuPG key."
+msgstr " BridgeDB-யுடைய பொது GnuPG சாவியின் ஒரு நகலை பெறவும்."
+
+#: lib/bridgedb/templates/base.html:92
+msgid "Report a Bug"
+msgstr "ஒரு பிழையை அறிக்கைசெய்க"
+
+#: lib/bridgedb/templates/base.html:94
+msgid "Source Code"
+msgstr "மூல தொகுப்பு"
+
+#: lib/bridgedb/templates/base.html:97
+msgid "Changelog"
+msgstr "மாற்றம்குறிக்கும் கோப்பு"
+
+#: lib/bridgedb/templates/base.html:99
+msgid "Contact"
+msgstr "தொடர்பு கொள்"
+
+#. TRANSLATORS: Please translate this into some silly way to say
+#. "There was a problem!" in your language. For example,
+#. for Italian, you might translate this into "Mama mia!",
+#. or for French: "Sacrebleu!". :)
+#: lib/bridgedb/templates/bridges.html:66
+msgid "Uh oh, spaghettios!"
+msgstr " ஹோ, பிரச்சனை!"
+
+#: lib/bridgedb/templates/bridges.html:72
+msgid "There currently aren't any bridges available..."
+msgstr "தற்சமயம் Bridge-கள் யேதும் இல்லை..."
+
+#: lib/bridgedb/templates/bridges.html:73
+#, python-format
+msgid ""
+" Perhaps you should try %s going back %s and choosing a different bridge "
+"type!"
+msgstr "ஒருவேளை நீங்கள் %s முயற்சிக்க பின்னே சென்று %s வேறொரு வகை தேர்வு செய்யலாம்!"
+
+#: lib/bridgedb/templates/index.html:11
+#, python-format
+msgid "Step %s1%s"
+msgstr "அடி %s1%s"
+
+#: lib/bridgedb/templates/index.html:13
+#, python-format
+msgid "Download %s Tor Browser %s"
+msgstr "பதிவிறக்கவும் %s Tor Browser %s"
+
+#: lib/bridgedb/templates/index.html:25
+#, python-format
+msgid "Step %s2%s"
+msgstr "அடி %s2%s"
+
+#: lib/bridgedb/templates/index.html:27
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "%s Bridge-களை %s பெறுக"
+
+#: lib/bridgedb/templates/index.html:36
+#, python-format
+msgid "Step %s3%s"
+msgstr "அடி %s3%s"
+
+#: lib/bridgedb/templates/index.html:38
+#, python-format
+msgid "Now %s add the bridges to Tor Browser %s"
+msgstr "இப்பொழுது %s bridge-களை Tor Browser-உள் %s சேர்க்கவும்"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. (These are used to insert HTML5 underlining tags, to mark accesskeys
+#. for disabled users.)
+#: lib/bridgedb/templates/options.html:38
+#, python-format
+msgid "%sJ%sust give me bridges!"
+msgstr "%sநே%sரயடியாக bridge-களை கொடுக்கவும்!"
+
+#: lib/bridgedb/templates/options.html:52
+msgid "Advanced Options"
+msgstr "மேம்பட்ட விருப்பங்கள்"
+
+#: lib/bridgedb/templates/options.html:88
+msgid "No"
+msgstr "இல்லை"
+
+#: lib/bridgedb/templates/options.html:89
+msgid "none"
+msgstr "எதுவுமில்லை"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+#: lib/bridgedb/templates/options.html:130
+#, python-format
+msgid "%sY%ses!"
+msgstr "%sஆ%sம்!"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Please do NOT translate the word "bridge"!
+#: lib/bridgedb/templates/options.html:154
+#, python-format
+msgid "%sG%set Bridges"
+msgstr "%sபெ%sருக Bridge-களை"
