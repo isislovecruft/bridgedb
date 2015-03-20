@@ -1,13 +1,13 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
 # arashaalaei <aalaeiarash@gmail.com>, 2011
 # signal89 <ali.faraji90@gmail.com>, 2014
 # ardeshir, 2013
-# Gilberto, 2014
+# Gilberto, 2014-2015
+# johnholzer <johnholtzer123@gmail.com>, 2014
 # Mohammad Hossein <desmati@gmail.com>, 2014
 # perspolis <rezarms@yahoo.com>, 2011
 # Setareh <setareh.salehee@gmail.com>, 2014
@@ -15,9 +15,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-26 01:58+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-02-17 22:11+0000\n"
+"Last-Translator: Gilberto\n"
 "Language-Team: Persian (http://www.transifex.com/projects/p/torproject/language/fa/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,7 +37,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
 msgstr "متاسف هستیم، در رابطه با درخواست شما خطایی رخ داده است."
 
@@ -132,12 +132,12 @@ msgstr "همچنین BridgeDB شامل تعداد زیادی پل های ابت�
 
 #: lib/bridgedb/strings.py:76
 msgid "What are bridges?"
-msgstr "bridge ها چه هستند؟"
+msgstr "پل ها چه هستند؟"
 
 #: lib/bridgedb/strings.py:77
 #, python-format
 msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
-msgstr "%s پل ها %s هستند بازپخش کننده تور که کمک می کنند به شما برای دور زدن سانسور."
+msgstr "%s پل ها %s هستند بازپخش کننده های تور هستند که به شما برای دور زدن سانسورکمک می کنند ."
 
 #: lib/bridgedb/strings.py:82
 msgid "I need an alternative way of getting bridges!"
@@ -149,11 +149,11 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
 "%s, %s or %s."
-msgstr "یک راه دیگر برای دریافت پل ها ارسال ایمیل به آدرس %s است. توجه کنید ایمیلی که ارسال می کنید، حتماً از طریق یکی از شرکت های زیر باشد:\n%s, %s یا %s"
+msgstr "یک طریق دیگری که میتوانید پلها را بگیرید, از طریق فزستادن یک ایمیل به %s  میباشد. لطفا دقت فر مایید که شما باید ایمیل خود را حتما از یکی از فراهمکنند گان ایمیلی زیر بفرستیذ:    %s   %s  و یا  %s  ."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
-msgstr "به کمک احتیاج دارم! bridge های من کار نمی‌کنند!"
+msgstr "به کمک احتیاج دارم! پل های من کار نمی‌کنند!"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
 #: lib/bridgedb/strings.py:92
@@ -261,15 +261,15 @@ msgstr "درخواست یک روش Transport جایگزین براساس TYPE"
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "دریافت یک کپی از کلید عمومی BridgeDB"
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr "گزارش یک باگ"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr "کد منبع"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr "لیست تغییرات"
 
@@ -277,19 +277,42 @@ msgstr "لیست تغییرات"
 msgid "Contact"
 msgstr "تماس"
 
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "انتخاب همه"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "نمایش QRCode"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "QRCode برای خطوط پل خود"
+
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr "اوه اوه، کنسرو اسپاگتی!"
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "به نظر می رسد یک خطا در گرفتن QRCode شما وجود دارد."
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "این QRCode شامل خطوط پل خود. اسکن آن را با یک خواننده QRCode برای کپی خطوط پل خود بر روی تلفن همراه و دستگاه های دیگر."
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr "در حال حاضر هیچ پل ی در دسترس نیست"
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid ""
 " Perhaps you should try %s going back %s and choosing a different bridge "
@@ -314,7 +337,7 @@ msgstr "مرحله %s2%s"
 #: lib/bridgedb/templates/index.html:27
 #, python-format
 msgid "Get %s bridges %s"
-msgstr "دریافت %sbridge ها  %s"
+msgstr "دریافت %s پل‌ ها  %s"
 
 #: lib/bridgedb/templates/index.html:36
 #, python-format
@@ -350,7 +373,7 @@ msgstr "هیچ"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr "%sب%sله!"
@@ -358,7 +381,7 @@ msgstr "%sب%sله!"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr "%sد%sریافت پل‌ها"
