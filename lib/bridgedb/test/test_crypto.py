@@ -283,6 +283,14 @@ class RemovePKCS1PaddingTests(unittest.TestCase):
                           crypto.removePKCS1Padding,
                           self.blob)
 
+    def test_crypto_removePKCS1Padding_missing_padding(self):
+        """removePKCS1Padding() with a blob with a missing PKCS#1 identifier
+        mark should raise PKCS1PaddingError.
+        """
+        self.assertRaises(crypto.PKCS1PaddingError,
+                          crypto.removePKCS1Padding,
+                          b'\x99' + self.blob)
+
 
 class SSLVerifyingContextFactoryTests(unittest.TestCase,
                                       txtagent.FakeReactorAndConnectMixin):
