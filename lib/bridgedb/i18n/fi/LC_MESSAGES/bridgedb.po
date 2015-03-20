@@ -1,20 +1,22 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
-# karvjorm <karvonen.jorma@gmail.com>, 2014
+# Jorma Karvonen <karvonen.jorma@gmail.com>, 2015
+# Jorma Karvonen <karvonen.jorma@gmail.com>, 2014
+# Spacha <miikasikala96@gmail.com>, 2015
 # Ossi Kallunki <ossikallunki@gmail.com>, 2013
+# Sami Kuusisto <sami@6sto.com>, 2014
 # viljaminojonen <Viljami.Nojonen@live.com>, 2014
 # Finland355 <ville.ehrukainen2@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-26 01:58+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-03-03 18:01+0000\n"
+"Last-Translator: Jorma Karvonen <karvonen.jorma@gmail.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/projects/p/torproject/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,7 +36,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
 msgstr "Pyyntösi epäonnistui jostain syystä."
 
@@ -51,7 +53,7 @@ msgstr "Tässä ovat sinun siltasi."
 msgid ""
 "You have exceeded the rate limit. Please slow down! The minimum time between\n"
 "emails is %s hours. All further emails during this time period will be ignored."
-msgstr "Olet ylittänyt nopeusrajan. Hidasta hiukan! Minimiaika viestien välillä on %s tunnissa. Kaikki lisäviestit tämän ajan jälkeen ohitetaan."
+msgstr "Olet ylittänyt nopeusrajan. Hidasta hiukan! Minimiaika viestien välillä on %s tunnissa. Kaikki lisäviestit tämän ajan kuluessa ohitetaan."
 
 #: lib/bridgedb/strings.py:25
 msgid ""
@@ -125,7 +127,7 @@ msgid ""
 "Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
 "help to circumvent internet censorship in many cases.\n"
 "\n"
-msgstr "Lisäksi BridgeDB:llä on useita tavallisia siltoja %s ilman mitään irrotettavia\nPluggable Transports %s-siirtoja, jotka eivät ehkä kuulosta herkullisilta, mutta\nne voivat silti auttaa kiertämään internet-sensuuria monissa tapauksissa.\n"
+msgstr "Lisäksi BridgeDB:llä on useita tavallisia siltoja %s ilman mitään irrotettavia\nPluggable Transports %s-siirtoja, jotka eivät ehkä kuulosta herkullisilta, mutta\nne voivat silti auttaa monissa tapauksissa kiertämään internet-sensuuria.\n"
 
 #: lib/bridgedb/strings.py:76
 msgid "What are bridges?"
@@ -150,7 +152,7 @@ msgstr "Toinen tapa siltojen hankkimiseen on lähettää sähköpostia osoittees
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
-msgstr "Siltani ei toimi! Tarvitsen apua!"
+msgstr "Siltani eivät toimi! Tarvitsen apua!"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
 #: lib/bridgedb/strings.py:92
@@ -182,7 +184,7 @@ msgstr "Valitse valitsimet siltatyypille:"
 
 #: lib/bridgedb/strings.py:109
 msgid "Do you need IPv6 addresses?"
-msgstr "Tarvitsetko IPv6 osoitteita?"
+msgstr "Tarvitsetko IPv6-osoitteita?"
 
 #: lib/bridgedb/strings.py:110
 #, python-format
@@ -258,15 +260,15 @@ msgstr "Pyydä TYPE-tyyppistä irrotettavaa Pluggable Transport-siirtoa."
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Hae kopio BridgeDB:n julkisesta GnuPG-avaimesta."
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr "Ilmoita ohjelmointivirheestä"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr "Lähdekoodi"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr "Muutosloki"
 
@@ -274,19 +276,42 @@ msgstr "Muutosloki"
 msgid "Contact"
 msgstr "Yhteystieto"
 
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "Valitse kaikki"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "Näytä QR-koodi"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "Siltariviesi QR-koodi"
+
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr "Jossain on pulma!"
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "Tapahtui virhe QR-koodia noudettassa."
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "Tämä QR-koodi sisältää siltarivisi. Skannaa se QR-koodinlukijalla kopioidaksesi siltarivit matkapuhelimeesi ja muihin laitteisiin."
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr "Tällä hetkellä ei ole yhtään siltaa saatavilla..."
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid ""
 " Perhaps you should try %s going back %s and choosing a different bridge "
@@ -347,7 +372,7 @@ msgstr "ei mitään"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr "%sK%syllä!"
@@ -355,7 +380,7 @@ msgstr "%sK%syllä!"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr "%sH%sae sillat"
