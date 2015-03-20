@@ -18,6 +18,18 @@ Changes in version 0.3.0 - XXX
         Bridge/PluggableTransport classes all have 100% unittest and
         integration test coverage.
 
+        * FIXES #10385 https://bugs.torproject.org/10385
+        BridgeDB now uses python-gnupg (https://pypi.python.org/gnupg)
+        instead of GPGME (libgpgme11 and pygpgme). Previously, when using
+        GPGME, BridgeDB was unable to sign emails with a subkey whose
+        master private key was not present, causing all signing to be
+        broken. Additionally, GPGME tried to access and modify the
+        BridgeDB users $HOME directory, and GPGME would also try to create
+        signatures with encryption-only subkeys, and try to
+        encrypt/decrypt with signing-only subkeys. All of these issues are
+        no more, because the writhing tangled mass of bugs known ad GPGME
+        is gone for good.
+
         * FIXES #11216 https://bugs.torproject.org/11216
         BridgeDB no longer parses any extrainfo descriptor files
         cumulatively. Before, a Bridge which had a descriptor in
@@ -30,11 +42,20 @@ Changes in version 0.3.0 - XXX
         the Mechanize-based integrations tests in
         lib/bridgedb/test/test_https.py. hotfix/0.2.4-mechanize-tags
 
+        * FIXES #12843 https://bugs.torproject.org/12843
+        BridgeDB will no longer distribute bridges which it believes are
+        located in Iran or Syria.
+
         * FIXES #12872 https://bugs.torproject.org/12872
         BridgeDB now has geolocational information for Bridges, telling it
         which country each Bridge's primary ORAddress is within, as well
         as geolocational information for each PluggableTransport address.
         Thanks to Alden S. Page for the patches.
+
+        * FIXES #15155 https://bugs.torproject.org/15155
+        The instructions for obtaining a copy of Tor Browser should now be
+        more clear.
+        Thanks to Jens Kubieziel, Nick Mathewson, and Peter Palfrader.
 
 And includes the following general changes:
         * CHANGES BridgeDB's continuous integration infrastructure to run
@@ -50,6 +71,145 @@ And includes the following general changes:
         * FIXES an issue with the $PYTHON_EGG_CACHE directory being group
         writable on Travis-CI build machines.
 
+        * UPDATE English (en_US) translations.
+
+        * UPDATE English (en) translations.
+
+        * ADD Tamil (ta) translations.
+          Thanks to git12a.
+
+        * ADD Albanian (sq) translations.
+          Thanks to Bujar Tafili.
+
+        * ADD Slovenian (sl_SI) translations.
+          Thanks to Dušan, marko, and Nwolfy.
+
+        * ADD Slovak (sk_SK) translations.
+          Thanks to once.
+
+        * ADD Esperanto (eo) translations.
+          Thanks to identity, Rico Chan, and trio.
+
+        * ADD Bulgarian (bg) translations.
+          Thanks to aramaic.
+
+        * ADD Azerbaijani (az) translations.
+          Thanks to E.
+
+        * UPDATE Chinese (zh_TW) translations.
+          Thanks to LNDDYL.
+
+        * UPDATE Chinese (zh_CN) translations.
+          Thanks to Wu Ming Shi and YF.
+
+        * UPDATE Ukranian (uk) translations.
+          Thanks to Eugene ghostishev, LinuxChata, Oleksii Golub, and
+        Андрій Бандура.
+
+        * UPDATE Turkish (tr) translations.
+          Thanks to eromytsatiffird, Emir Sarı, Idil Yuksel, ozkansib,
+        Volkan Gezer, and zeki.
+
+        * UPDATE Swedish (sv) translations.
+          Thanks to Anders Jensen-Urstad, Emil Johansson, GabSeb, ph AA, phst,
+        and leveebreaks.
+
+        * UPDATE Slovak (sk) translations.
+          Thanks to elo, FooBar, Michal Slovák, Roman 'Kaktuxista' Benji, and
+        StefanH.
+
+        * UPDATE Russian (ru) translations.
+          Thanks to Andrey Yoker Ogurchikov, Evgrafov Denis, foo,
+        joshuaridney, Oleg, Sergey Briskin, Valid Olov, and Vitaliy Grishenko.
+
+        * UPDATE Romanian (ro) translations.
+          Thanks to Isus Satanescu, laura berindei, and clopotel.
+
+        * UPDATE Portuguese (pt_BR) translations.
+          Thanks to João Paulo S.S.
+
+        * UPDATE Portuguese (pt) translations.
+          Thanks to alfalb.as, André Monteiro, kagazz, Manuela Silva,
+        alfalb_mansil, Andrew_Melim, Pedro Albuquerque, Sérgio Marques, and
+        TiagoJMMC.
+
+        * UPDATE Polish (pl) translations.
+          Thanks to Aron, JerBen, bogdrozd, Dawid, Rikson, Krzysztof Łojowski,
+        oirpos, and seb.
+
+        * UPDATE Dutch (nl) translations.
+          Thanks to Adriaan Callaerts, Ann Boen, Cleveridge, Dick,
+        Johann Behrens, Shondoit Walker, Marco Brohet, guryman, Marco
+        Brohet, Tom Becht, Tonko Mulder, math1985, and BBLN.
+
+        * UPDATE Norwegian Bokmål (nb) translations.
+          Thanks to Allan Nordhøy, Harald, lateralus, Per Thorsheim,
+        and thor574.
+
+        * UPDATE Latvian (lv) translations.
+          Thanks to Ojārs Balcers and ThePirateDuck.
+
+        * UPDATE Khmer (km) translations.
+          Thanks to Seng Sutha, Sokhem Khoem, and Sok Sophea.
+
+        * UPDATE Japanese (ja) translations.
+          Thanks to brt, ABE Tsunehiko, タカハシ, Masaki Saito, and
+        藤前　甲.
+
+        * UPDATE Italian (it) translations.
+          Thanks to fetidyoo, Francesca Ciceri, HostFat, ironbishop, and
+        Jacob Appelbaum.
+
+        * UPDATE Hungarian (hu) translations.
+          Thanks to Blackywantscookies, Lajos Pasztor, Cerbo, and vargaviktor.
+
+        * UPDATE Croatian (hr) translations.
+          Thanks to Ana B, Armando Vega, skiddiep, Tomislav Siroglavić,
+        and gogo.
+
+        * UPDATE French (fr_CA) translations.
+          Thanks to Lunar, mehditaileb, Onizuka, and yahoe.001.
+
+        * UPDATE French (fr) translations.
+          Thanks to apaddlingduck, fayçal fatihi, Boubou, Cryptie,
+        Frisson Reynald, hpatte, Lucas Leroy, Lunar, Onizuka, and mehditaileb.
+
+        * UPDATE Finnish (fi) translations.
+          Thanks to Jorma Karvonen, Spacha, Ossi Kallunki, Sami Kuusisto,
+        viljaminojonen, and Finland355.
+
+        * UPDATE Farsi (fa) translations.
+          Thanks to arashaalaei, signal89, ardeshir, Gilberto, johnholzer,
+        Mohammad Hossein, perspolis, and Setareh.
+
+        * UPDATE Spanish (es) translations.
+          Thanks to dark_yoshi, toypurina, BL, NinjaTuna, Noel Torres,
+        Paola Falcon, strel, and Jonis.
+
+        * UPDATE English (en_GB) translations.
+          Thanks to Andi Chandler, Richard Shaylor, and ronnietse.
+
+        * UPDATE Greek (el) translations.
+          Thanks to Adrian Pappas, andromeas, oahanx, isv31, and kotkotkot.
+
+        * UPDATE German (de) translations.
+          Thanks to trantor, Ettore Atalan, unknwon_anonymous, konstibae,
+        Locke, Tobias Bannert, qbi, Sebastian, and debakel.
+
+        * UPDATE Danish (da) translations.
+          Thanks to Christian Villum, David Nielsen, OliverMller, torebjornson,
+        Thomas Pryds, and Tore Bjørnson.
+
+        * UPDATE Czech (cs) translations.
+          Thanks to A5h8d0wf0x, Adam Slovacek, Elisa, Sanky, Jiří Vírava,
+        mxsedlacek, and Radek Bensch.
+
+        * UPDATE Catalan (ca) translations.
+          Thanks to Albert, Assumpta Anglada, Eloi García i Fargas, Humbert,
+        and laia_.
+
+        * UPDATE Arabic (ar) translations.
+          Thanks to Ash and Valetudinarian.
 
 Changes in version 0.2.4 - 2015-02-03
 
