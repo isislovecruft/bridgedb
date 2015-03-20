@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
 # Seng Sutha <sutha@open.org.kh>, 2014
 # Sokhem Khoem <sokhem@open.org.kh>, 2014
 # Sok Sophea <sksophea@gmail.com>, 2014
@@ -12,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-27 02:03+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2014-07-26 02:11+0000\n"
+"PO-Revision-Date: 2014-10-15 17:11+0000\n"
+"Last-Translator: Sokhem Khoem <sokhem@open.org.kh>\n"
 "Language-Team: Khmer (http://www.transifex.com/projects/p/torproject/language/km/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -77,7 +76,7 @@ msgstr "ហេ, %s!"
 msgid "Hello, friend!"
 msgstr "សួស្ដី, មិត្តភ័ក្ដិ!"
 
-#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
 msgid "Public Keys"
 msgstr "សោ​សាធារណៈ"
 
@@ -146,7 +145,7 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
 "%s, %s or %s."
-msgstr "Another way to get bridges is to send an email to %s. Please note that you must\nsend the email using an address from one of the following email providers:\n%s, %s or %s."
+msgstr "វិធីមួយ​ទៀត​ដើម្បីទទួល bridges គឺ​ត្រូវ​ផ្ញើ​អ៊ីមែល​ទៅ %s ។ សូម​ចំណាំ​ថា អ្នកត្រូវ​តែ​ផ្ញើ​អ៊ីមែល​ដោយ​ប្រើអាសយដ្ឋាន​ពី​ក្រុមហ៊ុន​ផ្ដល់អ៊ីមែល​មួយ​ក្នុង​ចំណោម​ក្រុមហ៊ុន​ខាង​ក្រោម៖\n%s, %s ឬ %s ។"
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
@@ -258,19 +257,19 @@ msgstr "ស្នើ​ការ​ផ្ទេរ​ដែល​អាច​ដ
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Get a copy of BridgeDB's public GnuPG key."
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:92
 msgid "Report a Bug"
 msgstr "របាយការណ៍​កំហុស"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:94
 msgid "Source Code"
 msgstr "កូដ​ប្រភព"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:97
 msgid "Changelog"
 msgstr "Changelog"
 
-#: lib/bridgedb/templates/base.html:98
+#: lib/bridgedb/templates/base.html:99
 msgid "Contact"
 msgstr "ទំនាក់ទំនង"
 
