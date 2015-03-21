@@ -66,6 +66,10 @@ instructions for getting extra Bridges.
 Maintainer Setup
 ================
 
+If you'd like to hack on BridgeDB, you might wish to read BridgeDB's
+`developer documentation <https://pythonhosted.org/bridgedb/>`__.  The rest of
+this document mainly concerns mainenance and installation instructions.
+
 -----------------------------
 Dependencies and installation
 -----------------------------
