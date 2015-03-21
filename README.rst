@@ -181,7 +181,7 @@ branch.
 
 -  To extract all strings from BridgeDB's source::
 
-         python setup.py extract_messages --input-dirs ./lib/bridgedb/templates
+         python setup.py extract_messages
 
    A .pot file will be created in ./i18n/templates/bridgedb.pot
 
