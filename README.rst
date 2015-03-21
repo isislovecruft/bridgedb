@@ -254,14 +254,27 @@ To enable using a local cache of CAPTCHAs, set the following options::
 GnuPG email signing:
 --------------------
 
-Add these two options to your bridgedb.conf::
+In your ``bridgedb.conf`` file, make sure that::
 
-      EMAIL_GPG_SIGNING_ENABLED
-      EMAIL_GPG_SIGNING_KEY
+      EMAIL_GPG_SIGNING_ENABLED = True
 
-The former may be either True or False, and the latter must point to the
-ascii-armored private key file. The keyfile must not be passphrase
-protected.
+and edit the following option to add the full fingerprint of the GnuPG key
+that should be used to by BridgeDB to sign outgoing emails::
+
+      EMAIL_GPG_PRIMARY_KEY_FINGERPRINT
+
+The key specified by ``EMAIL_GPG_PRIMARY_KEY_FINGERPRINT`` can be a master
+key, or a subkey (with or without the private portions of its corresponding
+master key), but it **must** be inside the ``secring.gpg`` and ``pubring.gpg``
+keyrings inside the directory specified in the ``bridgedb.conf`` option::
+
+      EMAIL_GPG_HOMEDIR
+
+If the key has requires a passphrase for signing, you'll also need to set
+either of::
+
+      EMAIL_GPG_PASSPHRASE
+      EMAIL_GPG_PASSPHRASE_FILE
 
 
 ----------------------------------------------------------
