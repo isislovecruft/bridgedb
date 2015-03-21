@@ -146,12 +146,10 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
                         offset1=0, offset2=0, memo=None):
     """Compute the Levenstein Distance between two strings.
 
-    The `Levenshtein String Distance Algorithm`_ efficiently computes the
-    number of characters which must be changed in **s1** to make it
+    The `Levenshtein String Distance Algorithm
+    <https://en.wikipedia.org/wiki/Levenshtein_distance>` efficiently computes
+    the number of characters which must be changed in **s1** to make it
     identical to **s2**.
-
-    .. `Levenshtein String Distance Algorithm`:
-        https://en.wikipedia.org/wiki/Levenshtein_distance
 
     >>> levenshteinDistance('cat', 'cat')
     0

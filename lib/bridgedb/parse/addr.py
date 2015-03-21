@@ -224,6 +224,7 @@ def canonicalizeEmailDomain(domain, domainmap):
         example::
             EMAIL_DOMAIN_MAP = {'mail.google.com': 'gmail.com',
                                 'googlemail.com': 'gmail.com'}
+
     :raises UnsupportedDomain: if the domain portion of the email address is
         not within the map of alternate to canonical allowed domain names.
     :rtype: str
@@ -448,18 +449,24 @@ def normalizeEmail(emailaddr, domainmap, domainrules, ignorePlus=True):
         to their canonical domain names (in lowercase). This can be configured
         with the ``EMAIL_DOMAIN_MAP`` option in ``bridgedb.conf``, for
         example::
+
             EMAIL_DOMAIN_MAP = {'mail.google.com': 'gmail.com',
                                 'googlemail.com': 'gmail.com'}
+
     :param dict domainrules: A mapping of canonical permitted domain names to
         a list of rules which should be applied to processing them, for
         example::
+
             EMAIL_DOMAIN_RULES = {'gmail.com': ["ignore_dots", "dkim"]
+
         Currently, ``"ignore_dots"`` means that all ``"."`` characters will be
         removed from the local part of the validated email address.
+
     :param bool ignorePlus: If ``True``, assume that
         ``blackhole+kerr@torproject.org`` is an alias for
         ``blackhole@torproject.org``, and remove everything after the first
         ``'+'`` character.
+
     :raises UnsupportedDomain: if the email address originated from a domain
         that we do not explicitly support.
     :raises BadEmail: if the email address could not be parsed or validated.

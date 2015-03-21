@@ -94,7 +94,7 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
     :raises IOError: if the file at **filename** can't be read.
     :rtype: list
     :returns: A list of
-        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV#`s.
+        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV`s.
     """
     routers = []
 
@@ -127,11 +127,11 @@ def parseServerDescriptorsFile(filename, validate=True):
         bug in Leekspin, the fake descriptor generator, where Stem thinks the
         fingerprint doesn't match the key…
 
-    .. note:: We have to lie to Stem, pretending that these are ``@type
-        server-descriptor``s, **not** ``@type bridge-server-descriptor``s.
-        See ticket `#11257`_.
+    .. note:: We have to lie to Stem, pretending that these are
+        ``@type server-descriptor``s, **not**
+        ``@type bridge-server-descriptor``s. See ticket #`11257`_.
 
-    .. _`#11257`: https://trac.torproject.org/projects/tor/ticket/11257
+    .. _`11257`: https://bugs.torproject.org/11257
 
     :param str filename: The file to parse descriptors from.
     :param bool validate: Whether or not to validate descriptor
