@@ -355,6 +355,8 @@ def initializeGnuPG(config):
         logging.info("Test signature with GnuPG key %s okay:\n%s" % (primary, sig))
         return (gpg, gpgSignMessage)
 
+    return ret
+
 
 class SSLVerifyingContextFactory(ssl.CertificateOptions):
     """``OpenSSL.SSL.Context`` factory which does full certificate-chain and
