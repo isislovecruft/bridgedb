@@ -18,8 +18,6 @@ import os
 import shutil
 
 from stem import ProtocolError
-from stem.descriptor import extrainfo_descriptor
-from stem.descriptor import server_descriptor
 from stem.descriptor import parse_file
 from stem.descriptor.router_status_entry import _parse_file as _parseNSFile
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
