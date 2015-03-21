@@ -198,10 +198,14 @@ def deduplicate(descriptors):
             # ``platform`` line in its server-descriptor and tell whoever
             # wrote that code that they're probably (D)DOSing the Tor network.
             else:
-                raise DescriptorWarning(
-                    ("Duplicate descriptor with identical timestamp (%s) for "
-                     "router with fingerprint '%s'!")
-                    % (descriptor.published, fingerprint))
+                try:
+                    raise DescriptorWarning(
+                        ("Duplicate descriptor with identical timestamp (%s) "
+                         "for router with fingerprint '%s'!")
+                        % (descriptor.published, fingerprint))
+                # And just in case it does happen, catch the warning:
+                except DescriptorWarning as descwarn:
+                    logging.warn("DescriptorWarning: %s" % str(descwarn))
 
         # Hoorah! No duplicates! (yet...)
         else:

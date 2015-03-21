@@ -370,13 +370,14 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def test_parse_descriptors_deduplicate_identical_timestamps(self):
         """Parsing two descriptors for the same bridge with identical
-        timestamps should raise a ``b.p.descriptors.DescriptorWarning``.
+        timestamps should log a ``b.p.descriptors.DescriptorWarning``
+        and retain only one copy of the descriptor.
         """
         descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
-        self.assertRaises(descriptors.DescriptorWarning,
-                          descriptors.parseExtraInfoFiles,
-                          descFileOne, descFileTwo)
+        routers = descriptors.parseExtraInfoFiles(descFileOne, descFileTwo)
+
+        self.assertEqual(len(routers), 1)
 
     def test_parse_descriptors_parseExtraInfoFiles_two_files(self):
         """Test for ``b.p.descriptors.parseExtraInfoFiles`` with two
