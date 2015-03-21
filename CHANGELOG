@@ -42,6 +42,14 @@ Changes in version 0.3.0 - XXX
         the Mechanize-based integrations tests in
         lib/bridgedb/test/test_https.py. hotfix/0.2.4-mechanize-tags
 
+        * FIXES part of #12507 https://bugs.torproject.org/12507
+        BridgeDB now has semi-automated developer documentation builds at
+        https://pythonhosted.org/bridgedb/.
+
+        * FIXES #12805 https://bugs.torproject.org/12805
+        BridgeDB is now packaged on PyPI, in the hopes that someday other
+        organisations will be able to run their own BridgeDBs.
+
         * FIXES #12843 https://bugs.torproject.org/12843
         BridgeDB will no longer distribute bridges which it believes are
         located in Iran or Syria.
