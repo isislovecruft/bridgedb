@@ -291,24 +291,6 @@ blocked bridges from the responses it gives to clients requesting
 bridges.
 
 
-------------------------
-Updating the SQL schema:
-------------------------
-
-Make sure that SQLite3 is installed. (You should have installed it
-already during the setup and installation stage.) To update, do::
-
-      sqlite3 path/to/bridgedist.db.sqlite
-
-Enter the following commands at the ``sqlite>`` prompt::
-
-      CREATE TABLE BlockedBridges ( id INTEGER PRIMARY KEY NOT NULL, hex_key, blocking_country);
-      CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);
-      CREATE TABLE WarnedEmails ( email PRIMARY KEY NOT NULL, when_warned);
-      CREATE INDEX WarnedEmailsWasWarned on WarnedEmails ( email );
-      REPLACE INTO Config VALUES ( 'schema-version', 2 );
-
-
 ================
 Testing BridgeDB
 ================
