@@ -1,7 +1,7 @@
-bridgedb.Tests
---------------
+bridgedb.qrcodes
+----------------
 
-.. automodule:: bridgedb.Tests
+.. automodule:: bridgedb.qrcodes
     :members:
     :undoc-members:
     :private-members:

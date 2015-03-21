@@ -19,29 +19,47 @@ notifications:
 
 python:
   - "2.7"
-  - "pypy"
 
 addons:
   hosts:
     - bridges.torproject.org
 
 env:
+  global:
+    # Fixes Travis-CI issue #1748, which was causing non-deterministic CI test failures,
+    # particularly in the lib/bridgedb/test/test_https.py integration tests which use
+    # the Python mechanize module to test the HTTPS server.
+    # See https://github.com/travis-ci/travis-ci/issues/1748
+    #     https://travis-ci.org/isislovecruft/bridgedb/jobs/50169439#L1763
+    #     https://stackoverflow.com/questions/2192323/what-is-the-python-egg-cache-python-egg-cache
+    #     https://github.com/pypa/virtualenv/issues/459
+    - PYTHON_EGG_CACHE="${HOME}/.python-eggs-$(echo $RANDOM$PPID$RANDOM | sha256sum | cut -d ' ' -f 1)"
   matrix:
+    # Debian Wheezy
     - TWISTED_VERSION=13.2.0 PYOPENSSL_VERSION=0.13.1
+    # Debian Jessie
+    - TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
 
 matrix:
   include:
     - python: "2.7"
-      env: TWISTED_VERSION=14.0.0 PYOPENSSL_VERSION=0.14
-  allow_failures:
+      env: TWISTED_VERSION=15.0.0 PYOPENSSL_VERSION=0.14
     - python: "pypy"
+      env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+  allow_failures:
+    - python: "2.7"
+      env: TWISTED_VERSION=15.0.0 PYOPENSSL_VERSION=0.14
+    - python: "pypy"
+      env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
   fast_finish: true
 
 before_install:
   - sudo apt-get update
+  - mkdir $PYTHON_EGG_CACHE
+  - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
-  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 libgpgme11 libgpgme11-dev python-dev python-setuptools
+  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 python-dev python-setuptools libgeoip-dev geoip-database
   - pip install -q --no-use-wheel -r .travis.requirements.txt
   - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
   - make install
@@ -49,7 +67,7 @@ install:
 # Start a BridgeDB instance before running the tests:
 before_script:
   - mkdir run
-  - cp -R -t run bridgedb.conf captchas gnupghome
+  - cp -R -t run bridgedb.conf captchas .gnupg
   # Add '127.0.0.1' to EMAIL_DOMAINS in bridgedb.conf. This should ONLY be
   # done on testing servers, never on production servers.
   - sed -r -i -e "s/(EMAIL_DOMAINS)(.*)(])/\1\2\, '127.0.0.1']/" run/bridgedb.conf
@@ -57,7 +75,7 @@ before_script:
   - sed -r -i -e "s/(EMAIL_SMTP_PORT = )([1-9]{2,5})/\12525/" run/bridgedb.conf
   # Enable plaintext HTTP distribution, otherwise the mechanize-based tests in
   # test_https.py will fail with CERTIFICATE_VERIFY_FAILED because urllib2
-  # won't recognize ourt self-signed certificate:
+  # won't recognize our self-signed certificate:
   - sed -r -i -e "s/(HTTP_UNENCRYPTED_BIND_IP = )(None)/\1'127.0.0.1'/" run/bridgedb.conf
   - sed -r -i -e "s/(HTTP_UNENCRYPTED_PORT = )(None)/\16788/" run/bridgedb.conf
   - leekspin -n 100

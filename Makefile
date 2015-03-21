@@ -3,6 +3,7 @@
 .DEFAULT: install test
 
 TRIAL:=$(shell which trial)
+VERSION:=$(shell git describe)
 
 all:
 	python setup.py build
@@ -41,7 +42,10 @@ translations-template:
 	python setup.py extract_messages
 
 docs:
-	python setup.py build_sphinx
+	python setup.py build_sphinx --version "$(VERSION)"
+	cd build/sphinx/html && \
+		zip -r ../"$(VERSION)"-docs.zip ./ && \
+		echo "Your package documents are in build/sphinx/$(VERSION)-docs.zip"
 
 clean-docs:
 	-rm -rf build/sphinx

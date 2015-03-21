@@ -16,8 +16,37 @@
 
 from __future__ import print_function
 
+import logging
 import sys
+import os
 
+from twisted.python import procutils
+
+
+def find(filename):
+    """Find the executable ``filename``.
+
+    :param string filename: The executable to search for. Must be in the
+       effective user ID's $PATH.
+    :rtype: string
+     :returns: The location of the executable, if found. Otherwise, returns
+        None.
+    """
+    executable = None
+
+    logging.debug("Searching for installed '%s'..." % filename)
+    which = procutils.which(filename, os.X_OK)
+
+    if len(which) > 0:
+        for that in which:
+            if os.stat(that).st_uid == os.geteuid():
+                executable = that
+                break
+    if not executable:
+        return None
+
+    logging.debug("Found installed script at '%s'" % executable)
+    return executable
 
 def generateDescriptors(count=None, rundir=None):
     """Run a script which creates fake bridge descriptors for testing purposes.

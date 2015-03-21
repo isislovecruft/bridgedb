@@ -18,6 +18,7 @@ import signal
 import time
 
 from twisted.trial import unittest
+from twisted.trial.unittest import FailTest
 from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists

@@ -62,7 +62,7 @@ def _getRotatingFileHandler(filename, mode='a', maxBytes=1000000, backupCount=0,
     os.chown(filename, uid, gid)
     try:
         os.chmod(filename, os.ST_WRITE | os.ST_APPEND)
-    except AttributeError:
+    except AttributeError:  # pragma: no cover
         logging.error("""
     XXX FIXME: Travis chokes on `os.ST_WRITE` saying that the module doesn't
                have that attribute, for some reason:
@@ -146,12 +146,10 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
                         offset1=0, offset2=0, memo=None):
     """Compute the Levenstein Distance between two strings.
 
-    The `Levenshtein String Distance Algorithm`_ efficiently computes the
-    number of characters which must be changed in **s1** to make it
+    The `Levenshtein String Distance Algorithm
+    <https://en.wikipedia.org/wiki/Levenshtein_distance>` efficiently computes
+    the number of characters which must be changed in **s1** to make it
     identical to **s2**.
-
-    .. `Levenshtein String Distance Algorithm`:
-        https://en.wikipedia.org/wiki/Levenshtein_distance
 
     >>> levenshteinDistance('cat', 'cat')
     0

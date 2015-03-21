@@ -1,23 +1,25 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
+# Andrey Yoker Ogurchikov <domovoy.yoker@gmail.com>, 2014
 # Evgrafov Denis <stereodenis@gmail.com>, 2014
 # Eugene, 2013
 # foo <im-infamous@yandex.ru>, 2014
+# joshua ridney <yachtcrew@mail.ru>, 2015
 # liquixis <liquixis@gmail.com>, 2012
+# Oleg, 2014
 # Sergey Briskin <sergey.briskin@gmail.com>, 2014
 # Valid Olov, 2014
-# Vitaliy Grishenko <vitolink@gmail.com>, 2014
+# Vitaliy Grishenko, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-26 02:03+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-02-16 10:42+0000\n"
+"Last-Translator: joshua ridney <yachtcrew@mail.ru>\n"
 "Language-Team: Russian (http://www.transifex.com/projects/p/torproject/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,7 +39,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
 msgstr "Извините! Возникла проблема с вашим запросом."
 
@@ -59,7 +61,7 @@ msgstr "Вы превысили установленный лимит. Пожа�
 #: lib/bridgedb/strings.py:25
 msgid ""
 "COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"
-msgstr "КОМАНДы: (комбинируйте команды, чтобы одновременно обозначить несколько опций)"
+msgstr "КОМАНДЫ: (комбинируйте команды, чтобы одновременно использовать несколько опций)"
 
 #. TRANSLATORS: Please DO NOT translate the word "BridgeDB".
 #: lib/bridgedb/strings.py:28
@@ -74,7 +76,7 @@ msgstr "Поддерживаемые типы транспорта - TYPEs:"
 #: lib/bridgedb/strings.py:31
 #, python-format
 msgid "Hey, %s!"
-msgstr "Эй, %s!"
+msgstr "Э-ге-гей, %s!"
 
 #: lib/bridgedb/strings.py:32
 msgid "Hello, friend!"
@@ -92,7 +94,7 @@ msgstr "Открытые ключи"
 msgid ""
 "This email was generated with rainbows, unicorns, and sparkles\n"
 "for %s on %s at %s."
-msgstr "Это электронное письмо было сгенерировано при помощи радуги, единорогов и искр\nдля %s в %s, в %s."
+msgstr "Это электронное письмо было сгенерировано при помощи радуги, единорогов и северного сияния\nдля %s в %s, в %s."
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
@@ -128,7 +130,7 @@ msgid ""
 "Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
 "help to circumvent internet censorship in many cases.\n"
 "\n"
-msgstr "Более того, BridgeDB содержит множество обычных мостов %s, не поддерживающих\nподключаемый транспорт %s, что может показаться не таким клёвым, но они во многих случаях\nмогут помочь обходить интернет цензуру.\n"
+msgstr "Более того, BridgeDB содержит множество обычных мостов %s, не поддерживающих\nподключаемый транспорт %s, что может показаться не таким клёвым, но они во многих случаях\nмогут помочь обходить интернет-цензуру.\n"
 
 #: lib/bridgedb/strings.py:76
 msgid "What are bridges?"
@@ -149,7 +151,7 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
 "%s, %s or %s."
-msgstr "Другим способом получения мостов является отправка электронного письма на адрес %s. Пожалуйста, обратите внимание на то, что вы должны \nотправить электронный запрос с использованием одного из перечисленных сервисов:\n%s, %s или %s."
+msgstr "Другим способом получения мостов является отправка электронного письма на адрес %s. Пожалуйста, обратите внимание на то, \nчто вы должны отправить электронный запрос с использованием одного из перечисленных сервисов: %s, %s или %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
@@ -261,15 +263,15 @@ msgstr "Запросить подключаемый транспорт по TYPE
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Получить копию открытого GnuPG ключа BridgeDB."
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr "Сообщить об ошибке"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr "Исходный код"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr "Лог изменений"
 
@@ -277,19 +279,42 @@ msgstr "Лог изменений"
 msgid "Contact"
 msgstr "Контакт"
 
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "Выбрать всё"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "Показать QR-код"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "QR-код для адресов ретрансляторов"
+
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr "Эх, что-то пошло не так!"
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "Похоже, произошла ошибка при получении QR-кода."
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "Этот QR-код содержит Ваши адреса ретрансляторов. Отсканируйте его устройством, считывающим QR-код, чтобы скопировать Ваши адреса рестрансляторов на мобильные и другие устройства"
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr "На данный момент нет доступных мостов..."
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid ""
 " Perhaps you should try %s going back %s and choosing a different bridge "
@@ -350,7 +375,7 @@ msgstr "нет"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr "%sД%sа! "
@@ -358,7 +383,7 @@ msgstr "%sД%sа! "
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr "%sП%sолучить мосты"

@@ -20,6 +20,7 @@ from zope.interface import Attribute
 from zope.interface import Interface
 
 from bridgedb import Filters
+from bridgedb.crypto import getHMACFunc
 
 
 class IRequestBridges(Interface):
@@ -36,6 +37,12 @@ class IRequestBridges(Interface):
         "not be blocked in these countries.")
     valid = Attribute(
         "A boolean. Should be ``True`` if the client's request was valid.")
+    client = Attribute(
+        "This should be some information unique to the client making the "
+        "request for bridges, such that we are able to HMAC this unique "
+        "data, via getHashringPlacement(), in order to place the client "
+        "into a hashring (determining which bridge addresses they get in "
+        "the request response).")
 
     def addFilter():
         """Add a filter to the list of ``filters``."""
@@ -47,6 +54,13 @@ class IRequestBridges(Interface):
         """Build the list of callables, ``filters``, according to the current
         contents of the lists of ``transports``, ``notBlockedIn``, and the
         ``addressClass``.
+        """
+
+    def getHashringPlacement():
+        """Use some unique parameters of the client making this request to
+        obtain a value which we can use to place them into one of the hashrings
+        with :class:`~bridgedb.bridges.Bridge`s in it, in order to give that
+        client different bridges than other clients.
         """
 
     def isValid():
@@ -80,10 +94,46 @@ class BridgeRequestBase(object):
         self.filters = list()
         self.transports = list()
         self.notBlockedIn = list()
+        #: This should be some information unique to the client making the
+        #: request for bridges, such that we are able to HMAC this unique data
+        #: in order to place the client into a hashring (determining which
+        #: bridge addresses they get in the request response). It defaults to
+        #: the string ``'default'``.
+        self.client = 'default'
         self.valid = False
 
-    def isValid(self):
-        pass
+    def getHashringPlacement(self, key, client=None):
+        """Create an HMAC of some **client** info using a **key**.
+
+        :param str key: The key to use for HMACing.
+        :param str client: Some (hopefully unique) information about the
+            client who is requesting bridges, such as an IP or email address.
+        :rtype: long
+        :returns: A long specifying index of the first node in a hashring to
+            be distributed to the client. This value should obviously be used
+            mod the number of nodes in the hashring.
+        """
+        if not client:
+            client = self.client
+
+        # Get an HMAC with the key of the client identifier:
+        digest = getHMACFunc(key)(client)
+        # Take the lower 8 bytes of the digest and convert to a long:
+        position = long(digest[:8], 16)
+        return position
+
+    def isValid(self, valid=None):
+        """Set or determine if this request was valid.
+
+        :type valid: None or bool
+        :param valid: If ``None``, get the current request validity. If
+            ``True`` or ``False``, set the request validity accordingly.
+        :rtype: bool
+        :returns: Whether or not this request is valid.
+        """
+        if isinstance(valid, bool):
+            self.valid = valid
+        return self.valid
 
     def withIPv4(self):
         self.addressClass = ipaddr.IPv4Address

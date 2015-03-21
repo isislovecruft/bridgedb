@@ -17,7 +17,7 @@ import os.path
 
 try:
     import cPickle as pickle
-except (ImportError, NameError):
+except (ImportError, NameError):  # pragma: no cover
     import pickle
 
 from twisted.python.reflect import safe_repr
@@ -100,7 +100,7 @@ class State(jelly.Jellyable):
         self.key = None
 
         if 'STATEFILE' in kwargs:
-            self.statefile(kwargs['STATEFILE'])
+            self.statefile = kwargs['STATEFILE']
 
         for key, value in kwargs.items():
             self.__dict__[key] = value
@@ -124,11 +124,7 @@ class State(jelly.Jellyable):
 
         :param string statefile: The filename of the statefile.
         """
-        if filename.startswith('~'):
-            filename = os.path.expanduser(filename)
-        if not os.path.isabs(filename):
-            filename = os.path.abspath(filename)
-
+        filename = os.path.abspath(os.path.expanduser(filename))
         logging.debug("Setting statefile to '%s'" % filename)
         self._statefile = filename
 
@@ -148,7 +144,7 @@ class State(jelly.Jellyable):
                 fh.close()
             os.unlink(self._statefile)
             self._statefile = None
-        except (IOError, OSError) as error:
+        except (IOError, OSError) as error:  # pragma: no cover
             logging.error("There was an error deleting the statefile: '%s'"
                           % self._statefile)
 
@@ -158,6 +154,7 @@ class State(jelly.Jellyable):
     def load(self, statefile=None):
         """Load a previously saved statefile.
 
+        :raises MissingState: If there was any error loading the **statefile**.
         :rtype: :class:`State` or None
         :returns: The state, loaded from :attr:`State.STATEFILE`, or None if
             an error occurred.
@@ -176,9 +173,7 @@ class State(jelly.Jellyable):
                 fh = open(statefile, 'r')
             elif not statefile.closed:
                 fh = statefile
-            else:
-                raise TypeError("Nothing worked.")
-        except (IOError, OSError) as error:
+        except (IOError, OSError) as error:  # pragma: no cover
             err += "There was an error reading statefile "
             err += "'{0}':\n{1}".format(statefile, error)
         except (AttributeError, TypeError) as error:
@@ -186,14 +181,19 @@ class State(jelly.Jellyable):
             err += "\n\t{0}\nstatefile type = '{1}'".format(
                 error.message, type(statefile))
         else:
-            status = pickle.load(fh)
-            quo = jelly.unjelly(status)
-            if fh is not None:
-                fh.close()
-            if quo:
-                return quo
+            try:
+                status = pickle.load(fh)
+            except EOFError:
+                err += "The statefile %s was empty." % fh.name
+            else:
+                quo = jelly.unjelly(status)
+                if fh is not None:
+                    fh.close()
+                if quo:
+                    return quo
 
-        raise MissingState(err)
+        if err:
+            raise MissingState(err)
 
     def save(self, statefile=None):
         """Save state as a pickled jelly to a file on disk."""
@@ -204,14 +204,11 @@ class State(jelly.Jellyable):
         logging.debug("Saving state to: \t'%s'" % statefile)
 
         fh = None
-        err = ''
-
         try:
             fh = open(statefile, 'w')
-        except MissingState as error:
-            err += error.message
-        except (IOError, OSError) as error:
-            err += "Error writing state file to '%s': %s" % (statefile, error)
+        except (IOError, OSError) as error:  # pragma: no cover
+            logging.warn("Error writing state file to '%s': %s"
+                         % (statefile, error))
         else:
             try:
                 pickle.dump(jelly.jelly(self), fh)

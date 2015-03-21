@@ -9,8 +9,9 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Class wrappers to adapt BridgeDB old unittests in :mod:`bridgedb.Tests` to
-be compatible with the newer :api:`twisted.trial` unittests in this directory.
+"""Class wrappers to adapt BridgeDB old unittests in :mod:`bridgedb.Tests`
+(now kept in :mod:`bridgedb.test.legacy_Tests`) to be compatible with the
+newer :api:`twisted.trial` unittests in this directory.
 """
 
 from __future__ import print_function
@@ -26,11 +27,11 @@ import warnings
 from twisted.python import monkey
 from twisted.trial import unittest
 
-from bridgedb import Tests
+from bridgedb.test import legacy_Tests as Tests
 from bridgedb.test import deprecated
 
 
-warnings.filterwarnings('ignore', module="bridgedb\.Tests")
+warnings.filterwarnings('ignore', module="bridgedb\.test\.legacy_Tests")
 pyunit = __import__('unittest')
 
 
@@ -94,6 +95,10 @@ def monkeypatchTests():
     patcher.addPatch(Tests.bridgedb.Bridges, 'fromHex', binascii.a2b_hex)
     patcher.addPatch(Tests.bridgedb.Bridges, 'is_valid_fingerprint',
                      deprecated.is_valid_fingerprint)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'PluggableTransport',
+                     deprecated.PluggableTransport)
+    patcher.addPatch(Tests.bridgedb.Bridges, 'Bridge',
+                     deprecated.Bridge)
     return patcher
 
 

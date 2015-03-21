@@ -34,11 +34,13 @@ def isValidFingerprint(fingerprint):
     :rtype: bool
     :returns: ``True`` if the **fingerprint** was valid, ``False`` otherwise.
     """
-    if len(fingerprint) == HEX_FINGERPRINT_LEN:
-        try:
-            fromHex(fingerprint)
-        except TypeError:
-            logging.debug("Invalid hex fingerprint: %r" % repr(fingerprint))
-        else:
-            return True
+    try:
+        if len(fingerprint) != HEX_FINGERPRINT_LEN:
+            raise ValueError("Fingerprint has incorrect length: %r"
+                             % repr(fingerprint))
+        fromHex(fingerprint)
+    except (TypeError, ValueError):
+        logging.debug("Invalid hex fingerprint: %r" % repr(fingerprint))
+    else:
+        return True
     return False

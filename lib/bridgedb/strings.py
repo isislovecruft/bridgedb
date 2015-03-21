@@ -119,8 +119,9 @@ HOWTO_TBB = {
     0: _("""How to start using your bridges"""),
     # TRANSLATORS: Please DO NOT translate "Tor Browser".
     1: _("""\
-To enter bridges into Tor Browser, follow the instructions on the %s Tor
-Browser download page %s to start Tor Browser."""),
+To enter bridges into Tor Browser, first go to the %s Tor Browser download
+page %s and then follow the instructions there for downloading and starting
+Tor Browser."""),
     # TRANSLATORS: Please DO NOT translate "Tor".
     2: _("""\
 When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow

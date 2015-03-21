@@ -27,6 +27,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(
 
 
 import bridgedb
+import bridgedb.bridgerequest
+import bridgedb.bridges
 import bridgedb.captcha
 import bridgedb.Bridges
 import bridgedb.Bucket
@@ -39,9 +41,12 @@ import bridgedb.email.request
 import bridgedb.email.server
 import bridgedb.email.templates
 import bridgedb.Filters
+import bridgedb.geo
 import bridgedb.HTTPServer
 import bridgedb.Main
 import bridgedb.persistent
+import bridgedb.proxy
+import bridgedb.qrcodes
 import bridgedb.runner
 import bridgedb.safelog
 import bridgedb.schedule
@@ -49,7 +54,7 @@ import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.strings
 import bridgedb.test
-import bridgedb.Tests
+import bridgedb.translations
 import bridgedb.txrecaptcha
 import bridgedb.util
 
@@ -121,7 +126,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'BridgeDB'
-copyright = u'2014, The Tor Project, Inc'
+
+from datetime import datetime
+copyright = u'%s, The Tor Project, Inc' % datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

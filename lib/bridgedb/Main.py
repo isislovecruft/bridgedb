@@ -19,20 +19,72 @@ import logging
 import gettext
 
 from twisted.internet import reactor
+from twisted.internet import task
 
 from bridgedb import crypto
 from bridgedb import persistent
+from bridgedb import proxy
 from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
+from bridgedb.bridges import InvalidPluggableTransportIP
+from bridgedb.bridges import MalformedBridgeInfo
+from bridgedb.bridges import MalformedPluggableTransport
+from bridgedb.bridges import MissingServerDescriptorDigest
+from bridgedb.bridges import ServerDescriptorDigestMismatch
+from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
+from bridgedb.bridges import PluggableTransport
+from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
 from bridgedb.configure import Conf
+from bridgedb.parse import descriptors
 from bridgedb.parse import options
+from bridgedb.parse.addr import isIPAddress
+from bridgedb.schedule import toUnixSeconds
 
-import bridgedb.Bridges as Bridges
-import bridgedb.Dist as Dist
 import bridgedb.Storage
 
+from bridgedb import Bridges
+from bridgedb import Dist
+from bridgedb.Stability import addOrUpdateBridgeHistory
+
+
+def updateBridgeHistory(bridges, timestamps):
+    """Process all the timestamps and update the bridge stability statistics in
+    the database.
+
+    .. warning: This function is extremely expensive, and will keep getting
+        more and more expensive, on a linearithmic scale, every time it is
+        called. Blame the :mod:`bridgedb.Stability` module.
+
+    :param dict bridges: All bridges from the descriptors, parsed into
+        :class:`bridgedb.bridges.Bridge`s.
+    :param dict timestamps: A dictionary whose keys are bridge fingerprints,
+        and whose values are lists of integers, each integer being a timestamp
+        (in seconds since Unix Epoch) for when a descriptor for that bridge
+        was published.
+    :rtype: dict
+    :returns: The original **timestamps**, but which each list of integers
+        (re)sorted.
+    """
+    logging.debug("Beginning bridge stability calculations")
+    sortedTimestamps = {}
+
+    for fingerprint, stamps in timestamps.items()[:]:
+        stamps.sort()
+        bridge = bridges[fingerprint]
+        for timestamp in stamps:
+            logging.debug(
+                ("Adding/updating timestamps in BridgeHistory for %s in "
+                 "database: %s") % (fingerprint, timestamp))
+            timestamp = toUnixSeconds(timestamp.timetuple())
+            addOrUpdateBridgeHistory(bridge, timestamp)
+        # Replace the timestamps so the next sort is (hopefully) less
+        # expensive:
+        sortedTimestamps[fingerprint] = stamps
+
+    logging.debug("Stability calculations complete")
+    return sortedTimestamps
 
 def load(state, splitter, clear=False):
     """Read and parse all descriptors, and load into a bridge splitter.
@@ -59,86 +111,73 @@ def load(state, splitter, clear=False):
     logging.info("Loading bridges...")
 
     bridges = {}
-    status = {}
-    addresses = {}
     timestamps = {}
-    bridges = {}
-    desc_digests = {}
-    ei_digests = {}
 
-    logging.info("Opening network status file: %s" % state.STATUS_FILE)
-    f = open(state.STATUS_FILE, 'r')
-    for (ID, nickname, desc_digest, running, stable,
-         ORaddr, ORport, or_addresses,
-         timestamp) in Bridges.parseStatusFile(f):
-        bridge = Bridges.Bridge(nickname, ORaddr, ORport, id_digest=ID,
-                                or_addresses=or_addresses)
-        bridge.assertOK()
-        bridge.setStatus(running, stable)
-        bridge.setDescriptorDigest(desc_digest)
-        bridges[ID] = bridge
+    logging.info("Opening networkstatus file: %s" % state.STATUS_FILE)
+    networkstatuses = descriptors.parseNetworkStatusFile(state.STATUS_FILE)
+    logging.debug("Closing networkstatus file: %s" % state.STATUS_FILE)
 
-        if ID in timestamps.keys():
-            timestamps[ID].append(timestamp)
+    logging.info("Processing networkstatus descriptors...")
+    for router in networkstatuses:
+        bridge = Bridge()
+        bridge.updateFromNetworkStatus(router)
+        bridge.flags.update(router.flags)
+
+        try:
+            bridge.assertOK()
+        except MalformedBridgeInfo as error:
+            logging.warn(str(error))
         else:
-            timestamps[ID] = [timestamp]
-    logging.debug("Closing network status file")
-    f.close()
+            bridges[bridge.fingerprint] = bridge
 
-    for fname in state.BRIDGE_FILES:
-        logging.info("Opening bridge-server-descriptor file: '%s'" % fname)
-        f = open(fname, 'r')
-        desc_digests.update(Bridges.getDescriptorDigests(f))
-        if state.COLLECT_TIMESTAMPS:
-            for bridge in bridges.values():
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                           "Adding/updating timestamps in BridgeHistory for "\
-                           "'%s' in database: %s"
-                           % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                           bridge, timestamp)
-        logging.debug("Closing bridge-server-descriptor file: '%s'" % fname)
-        f.close()
+    for filename in state.BRIDGE_FILES:
+        logging.info("Opening bridge-server-descriptor file: '%s'" % filename)
+        serverdescriptors = descriptors.parseServerDescriptorsFile(filename)
+        logging.debug("Closing bridge-server-descriptor file: '%s'" % filename)
 
-    for ID in bridges.keys():
-        bridge = bridges[ID]
-        if bridge.desc_digest in desc_digests:
-            bridge.setVerified()
-            bridge.setExtraInfoDigest(desc_digests[bridge.desc_digest])
-        # We attempt to insert all bridges. If the bridge is not
-        # running, then it is skipped during the insertion process.
-        splitter.insert(bridge)
-
-    # read pluggable transports from extra-info document
-    # XXX: should read from networkstatus after bridge-authority
-    # does a reachability test
-    for filename in state.EXTRA_INFO_FILES:
-        logging.info("Opening extra-info file: '%s'" % filename)
-        f = open(filename, 'r')
-        for transport in Bridges.parseExtraInfoFile(f):
-            ID, method_name, address, port, argdict = transport
+        for router in serverdescriptors:
             try:
-                if bridges[ID].running:
-                    logging.info("Adding %s transport to running bridge"
-                                 % method_name)
-                    bridgePT = Bridges.PluggableTransport(
-                        bridges[ID], method_name, address, port, argdict)
-                    bridges[ID].transports.append(bridgePT)
-                    if not bridgePT in bridges[ID].transports:
-                        logging.critical(
-                            "Added a transport, but it disappeared!",
-                            "\tTransport: %r" % bridgePT)
-            except KeyError as error:
-                logging.error("Could not find bridge with fingerprint '%s'."
-                              % Bridges.toHex(ID))
-        logging.debug("Closing extra-info file: '%s'" % filename)
-        f.close()
+                bridges[router.fingerprint].updateFromServerDescriptor(router)
+            except KeyError:
+                logging.warn(
+                    ("Received server descriptor for bridge '%s' which wasn't "
+                     "in the networkstatus!") % router.fingerprint)
+                continue
+            except (ServerDescriptorWithoutNetworkstatus,
+                    MissingServerDescriptorDigest,
+                    ServerDescriptorDigestMismatch) as error:
+                logging.warn(str(error))
+                # Reject any routers whose server descriptors didn't pass
+                # :meth:`~bridges.Bridge._checkServerDescriptor`, i.e. those
+                # bridges who don't have corresponding networkstatus
+                # documents, or whose server descriptor digests don't check
+                # out:
+                bridges.pop(router.fingerprint)
+                continue
 
-    if state.COUNTRY_BLOCK_FILE:
+            if state.COLLECT_TIMESTAMPS:
+                # Update timestamps from server descriptors, not from network
+                # status descriptors (because networkstatus documents and
+                # descriptors aren't authenticated in any way):
+                if bridge.fingerprint in timestamps.keys():
+                    timestamps[bridge.fingerprint].append(router.published)
+                else:
+                    timestamps[bridge.fingerprint] = [router.published]
+
+    extrainfos = descriptors.parseExtraInfoFiles(*state.EXTRA_INFO_FILES)
+    for fingerprint, router in extrainfos.items():
+        try:
+            bridges[fingerprint].updateFromExtraInfoDescriptor(router)
+        except MalformedBridgeInfo as error:
+            logging.warn(str(error))
+        except KeyError as error:
+            logging.warn(("Received extrainfo descriptor for bridge '%s', "
+                          "but could not find bridge with that fingerprint.")
+                         % router.fingerprint)
+
+    # XXX TODO refactor the next block according with new parsers for OONI
+    # bridge-reachability reports:
+    if state.COUNTRY_BLOCK_FILE:  # pragma: no cover
         logging.info("Opening Blocking Countries file %s"
                      % state.COUNTRY_BLOCK_FILE)
         f = open(state.COUNTRY_BLOCK_FILE)
@@ -156,46 +195,26 @@ def load(state, splitter, clear=False):
         logging.debug("Closing blocking-countries document")
         f.close()
 
-    def updateBridgeHistory(bridges, timestamps):
-        if not hasattr(state, 'config'):
-            logging.info("updateBridgeHistory(): Config file not set "\
-                "in State file.")
-            return
-        if state.COLLECT_TIMESTAMPS:
-            logging.debug("Beginning bridge stability calculations")
-            for bridge in bridges.values():
-                if bridge.getID() in timestamps.keys():
-                    ts = timestamps[bridge.getID()][:]
-                    ts.sort()
-                    for timestamp in ts:
-                        logging.debug(
-                            "Updating BridgeHistory timestamps for %s: %s"
-                            % (bridge.fingerprint, timestamp))
-                        bridgedb.Stability.addOrUpdateBridgeHistory(
-                            bridge, timestamp)
-            logging.debug("Stability calculations complete")
+    inserted = 0
+    logging.info("Inserting %d bridges into splitter..." % len(bridges))
+    for fingerprint, bridge in bridges.items():
+        # Skip insertion of bridges which are geolocated to be in one of the
+        # NO_DISTRIBUTION_COUNTRIES, a.k.a. the countries we don't distribute
+        # bridges from:
+        if bridge.country in state.NO_DISTRIBUTION_COUNTRIES:
+            logging.warn("Not distributing Bridge %s %s:%s in country %s!" %
+                         (bridge, bridge.address, bridge.orPort, bridge.country))
+        else:
+            # If the bridge is not running, then it is skipped during the
+            # insertion process.
+            splitter.insert(bridge)
+            inserted += 1
+    logging.info("Done inserting %d bridges into splitter." % inserted)
 
-    reactor.callInThread(updateBridgeHistory, bridges, timestamps)
+    if state.COLLECT_TIMESTAMPS:
+        reactor.callInThread(updateBridgeHistory, bridges, timestamps)
 
-    bridges = None
     state.save()
-    return
-
-def loadProxyList(cfg):
-    ipset = {}
-    for fname in cfg.PROXY_LIST_FILES:
-        f = open(fname, 'r')
-        for line in f:
-            line = line.strip()
-            if line.startswith("#"):
-                continue
-            elif Bridges.is_valid_ip(line):
-                ipset[line] = True
-            elif line:
-                logging.info("Skipping line %r in %s: not an IP.",
-                             line, fname)
-        f.close()
-    return ipset
 
 def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
@@ -218,15 +237,6 @@ def _handleSIGUSR1(*args):
     logging.info("Dumping bridge assignments to files...")
     reactor.callInThread(runner.doDumpBridges, cfg)
 
-
-class ProxyCategory:
-    def __init__(self):
-        self.ipset = {}
-    def contains(self, ip):
-        return self.ipset.has_key(ip)
-    def replaceProxyList(self, ipset):
-        self.ipset = ipset
-
 def replaceBridgeRings(current, replacement):
     """Replace the current thing with the new one"""
     current.splitter = replacement.splitter
@@ -238,7 +248,7 @@ def createBridgeRings(cfg, proxyList, key):
     :param cfg: The current configuration, including any in-memory
                 settings (i.e. settings whose values were not obtained from the
                 config file, but were set via a function somewhere)
-    :type proxyList: :class:`ProxyCategory`
+    :type proxyList: :class:`~bridgedb.proxy.ProxySet`
     :param proxyList: The container for the IP addresses of any currently
                       known open proxies.
     :param bytes key: Splitter master key
@@ -246,7 +256,6 @@ def createBridgeRings(cfg, proxyList, key):
     :returns: A BridgeSplitter splitter, an IPBasedDistributor or None,
               and an EmailBasedDistributor or None.
     """
-
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
     splitter = Bridges.BridgeSplitter(crypto.getHMAC(key, "Splitter-Key"))
@@ -261,7 +270,7 @@ def createBridgeRings(cfg, proxyList, key):
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
         categories = []
-        if proxyList.ipset:
+        if proxyList:
             logging.debug("Adding proxyList to HTTPS Distributor categories.")
             categories.append(proxyList)
         logging.debug("HTTPS Distributor categories: '%s'" % categories)
@@ -297,14 +306,23 @@ def createBridgeRings(cfg, proxyList, key):
 
     return splitter, emailDistributor, ipDistributor
 
-def startup(options):
-    """Parse bridges,
+def run(options, reactor=reactor):
+    """This is BridgeDB's main entry point and main runtime loop.
+
+    Given the parsed commandline options, this function handles locating the
+    configuration file, loading and parsing it, and then either (re)parsing
+    plus (re)starting the servers, or dumping bridge assignments to files.
 
     :type options: :class:`bridgedb.parse.options.MainOptions`
     :param options: A pre-parsed options class containing any arguments and
         options given in the commandline we were called with.
     :type state: :class:`bridgedb.persistent.State`
     :ivar state: A persistent state object which holds config changes.
+    :param reactor: An implementer of
+        :api:`twisted.internet.interfaces.IReactorCore`. This parameter is
+        mainly for testing; the default
+        :api:`twisted.internet.epollreactor.EPollReactor` is fine for normal
+        application runs.
     """
     # Change to the directory where we're supposed to run. This must be done
     # before parsing the config file, otherwise there will need to be two
@@ -349,8 +367,9 @@ def startup(options):
     key = crypto.getKey(config.MASTER_KEY_FILE)
 
     # Get a proxy list.
-    proxyList = ProxyCategory()
-    proxyList.replaceProxyList(loadProxyList(config))
+    proxyList = proxy.ProxySet()
+    for proxyfile in config.PROXY_LIST_FILES:
+        proxy.loadProxiesFromFile(proxyfile, proxyList)
 
     emailDistributor = ipDistributor = None
 
@@ -377,7 +396,7 @@ def startup(options):
         :type splitter: A :class:`bridgedb.Bridges.BridgeHolder`
         :ivar splitter: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
-        :type proxyList: :class:`ProxyCategory`
+        :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
              known open proxies.
         :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.
@@ -418,8 +437,10 @@ def startup(options):
 
         state = persistent.load()
         logging.info("Bridges loaded: %d" % len(splitter))
+
         logging.debug("Replacing the list of open proxies...")
-        state.proxyList.replaceProxyList(loadProxyList(cfg))
+        for proxyfile in cfg.PROXY_LIST_FILES:
+            proxy.loadProxiesFromFile(proxyfile, state.proxyList, removeStale=True)
 
         if emailDistributorTmp is not None:
             emailDistributorTmp.prepopulateRings() # create default rings
@@ -484,23 +505,45 @@ def startup(options):
     signal.signal(signal.SIGHUP, _handleSIGHUP)
     signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
-    # And actually load it to start parsing. Get back our distributors.
-    emailDistributor, ipDistributor = reload(False)
+    if reactor:
+        # And actually load it to start parsing. Get back our distributors.
+        emailDistributor, ipDistributor = reload(False)
 
-    # Configure all servers:
-    if config.HTTPS_DIST and config.HTTPS_SHARE:
-        #webSchedule = schedule.ScheduledInterval("day", 2)
-        webSchedule = schedule.Unscheduled()
-        HTTPServer.addWebServer(config, ipDistributor, webSchedule)
-    if config.EMAIL_DIST and config.EMAIL_SHARE:
-        #emailSchedule = schedule.ScheduledInterval("day", 1)
-        emailSchedule = schedule.Unscheduled()
-        addSMTPServer(config, emailDistributor, emailSchedule)
+        # Configure all servers:
+        if config.HTTPS_DIST and config.HTTPS_SHARE:
+            #webSchedule = schedule.ScheduledInterval("day", 2)
+            webSchedule = schedule.Unscheduled()
+            HTTPServer.addWebServer(config, ipDistributor, webSchedule)
+        if config.EMAIL_DIST and config.EMAIL_SHARE:
+            #emailSchedule = schedule.ScheduledInterval("day", 1)
+            emailSchedule = schedule.Unscheduled()
+            addSMTPServer(config, emailDistributor, emailSchedule)
+
+        tasks = {}
+
+        # Setup all our repeating tasks:
+        if config.TASKS['GET_TOR_EXIT_LIST']:
+            tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
+                proxy.downloadTorExits,
+                proxyList,
+                config.SERVER_PUBLIC_EXTERNAL_IP)
+
+        # Schedule all configured repeating tasks:
+        for name, seconds in config.TASKS.items():
+            if seconds:
+                try:
+                    tasks[name].start(abs(seconds))
+                except KeyError:
+                    logging.info("Task %s is disabled and will not run." % name)
+                else:
+                    logging.info("Scheduled task %s to run every %s seconds."
+                                 % (name, seconds))
 
     # Actually run the servers.
     try:
-        logging.info("Starting reactors.")
-        reactor.run()
+        if reactor and not reactor.running:
+            logging.info("Starting reactors.")
+            reactor.run()
     except KeyboardInterrupt:
         logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
@@ -543,16 +586,3 @@ def runSubcommand(options, config):
         logging.info("Subcommand '%s' finished with status %s."
                      % (options.subCommand, statuscode))
         sys.exit(statuscode)
-
-def run(options):
-    """This is the main entry point into BridgeDB.
-
-    Given the parsed commandline options, this function handles locating the
-    configuration file, loading and parsing it, and then either
-    starting/reloading the servers or dumping bridge assignments to files.
-
-    :type options: :class:`bridgedb.parse.options.MainOptions`
-    :param options: A pre-parsed options class containing any arguments and
-        options given in the commandline we were called with.
-    """
-    startup(options)

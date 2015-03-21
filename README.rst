@@ -66,6 +66,10 @@ instructions for getting extra Bridges.
 Maintainer Setup
 ================
 
+If you'd like to hack on BridgeDB, you might wish to read BridgeDB's
+`developer documentation <https://pythonhosted.org/bridgedb/>`__.  The rest of
+this document mainly concerns mainenance and installation instructions.
+
 -----------------------------
 Dependencies and installation
 -----------------------------
@@ -75,8 +79,7 @@ BridgeDB requires the following OS-level dependencies:
 -  python>=2.7
 -  python-dev
 -  build-essential
--  libgpgme11
--  libgpgme11-dev
+-  gnupg (preferrably, gnupg2)
 -  OpenSSL>=1.0.1g
 -  `SQLite3 <http://www.maxmind.com/app/python>`__
 -  `MaxMind GeoIP <https://www.maxmind.com/en/geolocation_landing>`__
@@ -101,8 +104,7 @@ BridgeDB should work with or without a Python virtualenv.
    can do::
 
          sudo apt-get install build-essential openssl python python-dev \
-           python-setuptools sqlite3 libgpgme11 libgpgme11-dev libgeoip-dev \
-           geoip-database
+           python-setuptools sqlite3 gnupg2 libgeoip-dev geoip-database
 
 
 -  Install Pip 1.3.1 or later. Debian has this version, but if for some
@@ -183,7 +185,7 @@ branch.
 
 -  To extract all strings from BridgeDB's source::
 
-         python setup.py extract_messages --input-dirs ./lib/bridgedb/templates
+         python setup.py extract_messages
 
    A .pot file will be created in ./i18n/templates/bridgedb.pot
 
@@ -256,14 +258,27 @@ To enable using a local cache of CAPTCHAs, set the following options::
 GnuPG email signing:
 --------------------
 
-Add these two options to your bridgedb.conf::
+In your ``bridgedb.conf`` file, make sure that::
 
-      EMAIL_GPG_SIGNING_ENABLED
-      EMAIL_GPG_SIGNING_KEY
+      EMAIL_GPG_SIGNING_ENABLED = True
 
-The former may be either True or False, and the latter must point to the
-ascii-armored private key file. The keyfile must not be passphrase
-protected.
+and edit the following option to add the full fingerprint of the GnuPG key
+that should be used to by BridgeDB to sign outgoing emails::
+
+      EMAIL_GPG_PRIMARY_KEY_FINGERPRINT
+
+The key specified by ``EMAIL_GPG_PRIMARY_KEY_FINGERPRINT`` can be a master
+key, or a subkey (with or without the private portions of its corresponding
+master key), but it **must** be inside the ``secring.gpg`` and ``pubring.gpg``
+keyrings inside the directory specified in the ``bridgedb.conf`` option::
+
+      EMAIL_GPG_HOMEDIR
+
+If the key has requires a passphrase for signing, you'll also need to set
+either of::
+
+      EMAIL_GPG_PASSPHRASE
+      EMAIL_GPG_PASSPHRASE_FILE
 
 
 ----------------------------------------------------------
@@ -280,24 +295,6 @@ blocked bridges from the responses it gives to clients requesting
 bridges.
 
 
-------------------------
-Updating the SQL schema:
-------------------------
-
-Make sure that SQLite3 is installed. (You should have installed it
-already during the setup and installation stage.) To update, do::
-
-      sqlite3 path/to/bridgedist.db.sqlite
-
-Enter the following commands at the ``sqlite>`` prompt::
-
-      CREATE TABLE BlockedBridges ( id INTEGER PRIMARY KEY NOT NULL, hex_key, blocking_country);
-      CREATE INDEX BlockedBridgesBlockingCountry on BlockedBridges(hex_key);
-      CREATE TABLE WarnedEmails ( email PRIMARY KEY NOT NULL, when_warned);
-      CREATE INDEX WarnedEmailsWasWarned on WarnedEmails ( email );
-      REPLACE INTO Config VALUES ( 'schema-version', 2 );
-
-
 ================
 Testing BridgeDB
 ================
@@ -312,8 +309,9 @@ To create a bunch of fake bridge descriptors to test BridgeDB, do::
 
       bridgedb mock [-n NUMBER_OF_DESCRIPTORS]
 
-Note that you will need to install ``leekspin`` in order to run the
-``bridgedb mock``. See HACKING.md for details.
+Note that you will need to install
+`leekspin <https://pypi.python.org/pypi/leekspin>`__ in order to run the
+``bridgedb mock`` command. See ``doc/HACKING.md`` for details.
 
 And finally, to run the test suites, do::
 
@@ -386,12 +384,13 @@ Using a BridgeDB Instance
 =========================
 
 Obviously, you'll have to feed it bridge descriptor files from a
-BridgeAuth. There's currently only one BridgeAuth in the entire world, but Tor
-Project is, of course, very interested in adding support for multiple
-BridgeAuths so that we can scale our own network, and make it easier for
-individual and organisations who wish to run a lot of Tor bridge relays, and
-distribute those themselves, have an easier time doing so. If you'd like to
-fund our work on this, please contact tor-dev@lists.torproject.org!
+BridgeAuthority. There's currently only one BridgeAuthority in the entire
+world, but Tor Project is, of course, very interested in adding support for
+multiple BridgeAuthorities so that we can scale our own network, and make it
+easier for individual and organisations who wish to run a lot of Tor bridge
+relays have an easier time distributing those bridges themselves (if they wish
+to do so). If you'd like to fund our work on this, please contact
+tor-dev@lists.torproject.org!
 
 ----------------------------------
 Accessing the HTTPS User Interface

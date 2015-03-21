@@ -41,7 +41,7 @@ Module Overview
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import gpgme
+import gnupg
 import hashlib
 import hmac
 import io
@@ -72,7 +72,7 @@ DIGESTMOD = hashlib.sha1
 NEW_BUFFER_INTERFACE = False
 try:
     io.BytesIO(buffer('test'))
-except TypeError:
+except TypeError:  # pragma: no cover
     logging.warn(
         "This Python version is too old! "\
         "It doesn't support new-style buffer interfaces: "\
@@ -80,56 +80,13 @@ except TypeError:
 else:
     NEW_BUFFER_INTERFACE = True
 
-#: Settings for the GPGME Context and `Crypto Engine`_.
-#: .. _`Crypto Engine`:
-#:      http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
-GPGME_CONTEXT_HOMEDIR = '.gnupg'
-GPGME_CONTEXT_BINARY = which('gpg2') or which('gpg')  # These will be lists
 
+class PKCS1PaddingError(Exception):
+    """Raised when there is a problem adding or removing PKCS#1 padding."""
 
 class RSAKeyGenerationError(Exception):
     """Raised when there was an error creating an RSA keypair."""
 
-class PythonicGpgmeError(Exception):
-    """Replacement for ``gpgme.GpgmeError`` with understandable error info."""
-
-class LessCrypticGPGMEError(Exception):
-    """Holds interpreted info on source/type of a ``gpgme.GpgmeError``."""
-
-    def __init__(self, gpgmeError, *args):
-        self.interpretCrypticGPGMEError(gpgmeError)
-        super(LessCrypticGPGMEError, self).__init__(self.message)
-
-    def interpretCrypticGPGMEError(self, gpgmeError):
-        """Set our ``message`` attribute with a decoded explanation of the
-        GPGME error code received.
-
-        :type gpgmeError: ``gpgme.GpgmeError``
-        :param gpgmeError: An exception raised by the gpgme_ module.
-
-        .. _gpgme: https://bazaar.launchpad.net/~jamesh/pygpgme/trunk/view/head:/src/pygpgme-error.c
-        """
-        try:
-            errorSource, errorCode, errorMessage = gpgmeError.args
-        except (AttributeError, ValueError):
-            self.message = "Could not get error code from gpgme.GpgmeError!"
-            return
-
-        if errorCode and errorSource:
-            try:
-                sources = gpgmeErrorTranslations[str(errorSource)]
-            except KeyError:
-                sources = ['UNKNOWN']
-            sources = ', '.join(sources).strip(',')
-
-            try:
-                names = gpgmeErrorTranslations[str(errorCode)]
-            except KeyError:
-                names = ['UNKNOWN']
-            names = ', '.join(names).strip(',')
-
-            self.message = "GpgmeError: {0} stemming from {1}: '{2}'""".format(
-                names, sources, str(errorMessage))
 
 def writeKeyToFile(key, filename):
     """Write **key** to **filename**, with ``0400`` permissions.
@@ -273,181 +230,130 @@ def getHMACFunc(key, hex=True):
             return h_tmp.digest()
     return hmac_fn
 
-def _createGPGMEErrorInterpreters():
-    """Create a mapping of GPGME ERRNOs ←→ human-readable error names/causes.
+def removePKCS1Padding(message):
+    """Remove PKCS#1 padding from a **message**.
 
-    This function is called automatically when :mod:`this module
-    <bridgedb.crypto>` is loaded. The resulting dictionary mapping is stored
-    as :attr:`~bridgedb.crypto.gpgmeErrorTranslations`, and is used by
-    :exc:`~bridgedb.crypto.LessCrypticGPGMEError`.
+    (PKCS#1 v1.0? see https://bugs.torproject.org/13042)
 
-    :returns: A dict of::
-          {str(ERRNO): [ERRORNAME, ANOTHER_ERRORNAME, …],
-           …,
-           str(ERRORNAME): str(ERRNO),
-           …}
-        for all known error numbers and error names/causes.
+    Each block is 128 bytes total in size:
+
+        * 2 bytes for the type info ('\x00\x01')
+        * 1 byte for the separator ('\x00')
+        * variable length padding ('\xFF')
+        * variable length for the **message**
+
+    For more information on the structure of PKCS#1 padding, see :rfc:`2313`,
+    particularly the notes in §8.1.
+
+    :param str message: A message which is PKCS#1 padded.
+    :raises PKCS1PaddingError: if there is an issue parsing the **message**.
+    :rtype: bytes
+    :returns: The message without the PKCS#1 padding.
     """
-    errorDict = {}
-    errorAttrs = []
+    padding = b'\xFF'
+    typeinfo = b'\x00\x01'
+    separator = b'\x00'
 
-    if gpgme is not None:
-        errorAttrs = dir(gpgme)
-
-    for attr in errorAttrs:
-        if attr.startswith('ERR'):
-            errorName = attr
-            errorCode = getattr(gpgme, attr, None)
-            if errorCode is not None:
-                try:
-                    allErrorNames = errorDict[str(errorCode)]
-                except KeyError:
-                    allErrorNames = []
-                allErrorNames.append(str(errorName))
-
-                errorDict.update({str(errorCode): allErrorNames})
-                errorDict.update({str(errorName): str(errorCode)})
-
-    return errorDict
-
-#: This is a dictionary which holds a translation of GPGME ERRNOs ←→ all known
-#: names/causes for that ERRNO, and vice versa. It is created automatically,
-#: via the :func:`_createGPGMEErrorInterpreters` function, when this module is
-#: loaded so that :exc:`LessCrypticGPGMEError` can use it to display
-#: human-readable information about why GPGME borked itself on something.
-gpgmeErrorTranslations = _createGPGMEErrorInterpreters()
-
-def getGPGContext(cfg):
-    """Import a key from a file and initialise a context for GnuPG operations.
-
-    The key should not be protected by a passphrase, and should have the
-    signing flag enabled.
-
-    :type cfg: :class:`bridgedb.persistent.Conf`
-    :param cfg: The loaded config file.
-    :rtype: :class:`gpgme.Context` or None
-    :returns: A GPGME context with the signers initialized by the keyfile
-        specified by the option EMAIL_GPG_SIGNING_KEY in bridgedb.conf, or
-        None if the option was not enabled, or was unable to initialize.
-    """
-    try:
-        # must have enabled signing and specified a key file
-        if not cfg.EMAIL_GPG_SIGNING_ENABLED or not cfg.EMAIL_GPG_SIGNING_KEY:
-            return None
-    except AttributeError:
-        return None
-
-    keyfile = None
-    ctx = gpgme.Context()
+    unpadded = None
 
     try:
-        binary = GPGME_CONTEXT_BINARY[0]
-    except Exception:
-        # Setting this to ``None`` will cause libgpgme to "use the default
-        # binary", according their docs:
-        binary = None
-
-    try:
-        homedir = os.path.abspath(GPGME_CONTEXT_HOMEDIR)
-        logging.debug("Setting GPG homedir to %r" % homedir)
-        if not os.path.isdir(homedir):
-            os.makedirs(homedir)
-        # This is done to ensure that we don't ever use keys in the process
-        # owner's $GNUPGHOME directory, see:
-        # http://www.gnupg.org/documentation/manuals/gpgme/Crypto-Engine.html#Crypto-Engine
-        ctx.set_engine_info(gpgme.PROTOCOL_OpenPGP, binary, homedir)
-
-        logging.debug("Opening GPG keyfile %s..." % cfg.EMAIL_GPG_SIGNING_KEY)
-        keyfile = open(cfg.EMAIL_GPG_SIGNING_KEY)
-        key = ctx.import_(keyfile)
-
-        if not len(key.imports) > 0:
-            logging.debug("Unexpected result from gpgme.Context.import_(): %r"
-                          % key)
-            raise PythonicGpgmeError("Could not import GnuPG key from file %r"
-                                     % cfg.EMAIL_GPG_SIGNING_KEY)
-
-        fingerprint = key.imports[0][0]
-        subkeyFingerprints = []
-        # For some reason, if we don't do it exactly like this, we can get
-        # signatures for *any* key in the current process owner's keyring
-        # file:
-        bridgedbKey = ctx.get_key(fingerprint)
-        bridgedbUID = bridgedbKey.uids[0].uid
-        logging.info("GnuPG key imported: %s" % bridgedbUID)
-        logging.info("       Fingerprint: %s" % fingerprint)
-        for subkey in bridgedbKey.subkeys:
-            logging.info("Subkey fingerprint: %s" % subkey.fpr)
-            subkeyFingerprints.append(subkey.fpr)
-
-        ctx.armor = True
-        ctx.signers = (bridgedbKey,)
-
-        logging.debug("Testing signature created with GnuPG key...")
-        signatureText, sigs = gpgSignMessage(ctx, "Testing 1 2 3")
-
-        if not len(sigs) == 1:
-            raise PythonicGpgmeError("Testing couldn't produce a signature "\
-                                     "with GnuPG key: %s" % fingerprint)
-
-        sigFingerprint = sigs[0].fpr
-        if sigFingerprint in subkeyFingerprints:
-            logging.info("GPG signatures will use subkey with fingerprint: %s"
-                         % sigFingerprint)
-        else:
-            if sigFingerprint != fingerprint:
-                raise PythonicGpgmeError(
-                    "Test sig fingerprint '%s' not from any appropriate key!"
-                    % sigFingerprint)
-
-    except (IOError, OSError) as error:
-        logging.debug(error)
-        logging.error("Could not open or read from GnuPG key file %r!"
-                      % cfg.EMAIL_GPG_SIGNING_KEY)
-        ctx = None
-    except gpgme.GpgmeError as error:
-        lessCryptic = LessCrypticGPGMEError(error)
-        logging.error(lessCryptic)
-        ctx = None
-    except PythonicGpgmeError as error:
-        logging.error(error)
-        ctx = None
-    finally:
-        if keyfile and not keyfile.closed:
-            keyfile.close()
-
-    return ctx
-
-def gpgSignMessage(gpgmeCtx, messageString, mode=None):
-    """Sign a **messageString** with a GPGME context.
-
-    :param gpgmeCtx: A ``gpgme.Context`` initialised with the appropriate
-        settings.
-    :param str messageString: The message to sign.
-    :param mode: The signing mode. (default: ``gpgme.SIG_MODE_CLEAR``)
-    :rtype: tuple
-    :returns: A 2-tuple of ``(signature, list)``, where:
-        * ``signature`` is the ascii-armored signature text.
-        * ``list`` is a list of ``gpgme.NewSignature``s.
-
-    .. warning:: The returned signature text and list *may* be empty, if no
-        signature was created.
-    """
-    if not mode:
-        mode = gpgme.SIG_MODE_CLEAR
-
-    if NEW_BUFFER_INTERFACE:
-        msgFile = io.BytesIO(buffer(messageString))
-        sigFile = io.BytesIO()
+        if message.index(typeinfo) != 0:
+            raise PKCS1PaddingError("Couldn't find PKCS#1 identifier bytes!")
+        start = message.index(separator, 2) + 1  # 2 bytes for the typeinfo,
+                                                 # and 1 byte for the separator.
+    except ValueError:
+        raise PKCS1PaddingError("Couldn't find PKCS#1 separator byte!")
     else:
-        msgFile = io.StringIO(unicode(messageString))
-        sigFile = io.StringIO()
+        unpadded = message[start:]
 
-    sigList = gpgmeCtx.sign(msgFile, sigFile, mode)
-    sigFile.seek(0)
-    signature = sigFile.read()
+    return unpadded
 
-    return (signature, sigList)
+def initializeGnuPG(config):
+    """Initialize a GnuPG interface and test our configured keys.
+
+    .. note:: This function uses python-gnupg_.
+
+    :type config: :class:`bridgedb.persistent.Conf`
+    :param config: The loaded config file.
+    :rtype: 2-tuple
+    :returns: If ``EMAIL_GPG_SIGNING_ENABLED`` isn't ``True``, or we couldn't
+        initialize GnuPG and make a successful test signature with the
+        specified key, then a 2-tuple of ``None`` is returned.  Otherwise, the
+        first item in the tuple is a :class:`gnupg.GPG` interface_ with the
+        GnuPG homedir set to the ``EMAIL_GPG_HOMEDIR`` option and the signing
+        key specified by the ``EMAIL_GPG_SIGNING_KEY_FINGERPRINT`` option in
+        bridgedb.conf set as the default key. The second item in the tuple is
+        a signing function with the passphrase (as specified in either
+        ``EMAIL_GPG_PASSPHRASE`` or ``EMAIL_GPG_PASSPHRASE_FILE``) already
+        set.
+
+    .. _python-gnupg: https://pypi.python.org/pypi/gnupg/
+    .. _interface: https://python-gnupg.readthedocs.org/en/latest/gnupg.html#gnupg-module
+    """
+    ret = (None, None)
+
+    if not config.EMAIL_GPG_SIGNING_ENABLED:
+        return ret
+
+    homedir = config.EMAIL_GPG_HOMEDIR
+    primary = config.EMAIL_GPG_PRIMARY_KEY_FINGERPRINT
+    passphrase = config.EMAIL_GPG_PASSPHRASE
+    passFile = config.EMAIL_GPG_PASSPHRASE_FILE
+
+    logging.info("Using %s as our GnuPG home directory..." % homedir)
+    gpg = gnupg.GPG(homedir=homedir)
+    logging.info("Initialized GnuPG interface using %s binary with version %s."
+                 % (gpg.binary, gpg.binary_version))
+
+    primarySK = None
+    primaryPK = None
+    secrets = gpg.list_keys(secret=True)
+    publics = gpg.list_keys()
+
+    if not secrets:
+        logging.warn("No secret keys found in %s!" % gpg.secring)
+        return ret
+
+    primarySK = filter(lambda key: key['fingerprint'] == primary, secrets)
+    primaryPK = filter(lambda key: key['fingerprint'] == primary, publics)
+
+    if primarySK and primaryPK:
+        logging.info("Found GnuPG primary key with fingerprint: %s" % primary)
+        for sub in primaryPK[0]['subkeys']:
+            logging.info("  Subkey: %s  Usage: %s" % (sub[0], sub[1].upper()))
+    else:
+        logging.warn("GnuPG key %s could not be found in %s!" % (primary, gpg.secring))
+        return ret
+
+    if passphrase:
+        logging.info("Read GnuPG passphrase from config.")
+    elif passFile:
+        try:
+            with open(passFile) as fh:
+                passphrase = fh.read()
+        except (IOError, OSError):
+            logging.error("Could not open GnuPG passphrase file: %s!" % passFile)
+        else:
+            logging.info("Read GnuPG passphrase from file: %s" % passFile)
+
+    def gpgSignMessage(message):
+        """Sign **message** with the default key specified by
+        ``EMAIL_GPG_PRIMARY_KEY_FINGERPRINT``.
+
+        :param str message: A message to sign.
+        :rtype: str or ``None``.
+        :returns: A string containing the clearsigned message, or ``None`` if
+            the signing failed.
+        """
+        sig = gpg.sign(message, default_key=primary, passphrase=passphrase)
+        if sig and sig.data:
+            return sig.data
+
+    logging.debug("Testing signature created with GnuPG key...")
+    sig = gpgSignMessage("Testing 1 2 3")
+    if sig:
+        logging.info("Test signature with GnuPG key %s okay:\n%s" % (primary, sig))
+        return (gpg, gpgSignMessage)
 
 
 class SSLVerifyingContextFactory(ssl.CertificateOptions):

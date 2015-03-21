@@ -40,14 +40,15 @@ def loadConfig(configFile=None, configCls=None):
     .. _default: http://stackoverflow.com/q/17470193
     .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
 
-    :ivar boolean itsSafeToUseLogging: This is called in :func:`startup`
-        before :func:`safelog.configureLogging`. When called from ``startup``,
-        the ``configCls`` parameter is not given, because that is the first
-        time that a :class:`Conf` is created. If a :class:`logging.Logger` is
-        created in this function, then logging will not be correctly
-        configured, therefore, if the ``configCls`` parameter is not given,
-        then it's the first time this function has been called and it is
-        therefore not safe to make calls to the logging module.
+    :ivar boolean itsSafeToUseLogging: This is called in
+        :func:`~bridgedb.Main.run` before
+        :func:`bridgedb.safelog.configureLogging`. When called from
+        :func:`~bridgedb.Main.run`, the **configCls** parameter is not given,
+        because that is the first time that a :class:`Conf` is created. If a
+        :class:`logging.Logger` is created in this function, then logging will
+        not be correctly configured, therefore, if the **configCls** parameter
+        is not given, then it's the first time this function has been called
+        and it is therefore not safe to make calls to the logging module.
     :type: configFile: string or None
     :param configFile: If given, the filename of the config file to load.
     :type configCls: :class:`Conf` or None
@@ -103,14 +104,15 @@ def loadConfig(configFile=None, configCls=None):
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
                  "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE",
                  "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
-                 "GIMP_CAPTCHA_RSA_KEYFILE"]:
+                 "GIMP_CAPTCHA_RSA_KEYFILE", "EMAIL_GPG_HOMEDIR",
+                 "EMAIL_GPG_PASSPHRASE_FILE"]:
         setting = getattr(config, attr, None)
         if setting is None:
             setattr(config, attr, setting)
         else:
             setattr(config, attr, os.path.abspath(os.path.expanduser(setting)))
 
-    for attr in ["FORCE_PORTS", "FORCE_FLAGS"]:
+    for attr in ["FORCE_PORTS", "FORCE_FLAGS", "NO_DISTRIBUTION_COUNTRIES"]:
         setting = getattr(config, attr, []) # Default to empty lists
         setattr(config, attr, setting)
 

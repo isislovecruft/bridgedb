@@ -18,7 +18,7 @@ import logging
 
 try:
     import qrcode
-except ImportError:
+except ImportError:  # pragma: no cover
     qrcode = False
     logging.warn("Could not import Python qrcode module.")
     logging.debug(("You'll need the qrcode Python module for this to "
@@ -43,6 +43,7 @@ def generateQR(bridgelines, imageFormat=u'JPEG', bridgeSchema=False):
 
     if not qrcode:
         logging.info("Not creating QRCode for bridgelines; no qrcode module.")
+        return
 
     try:
         if bridgeSchema:
@@ -70,8 +71,7 @@ def generateQR(bridgelines, imageFormat=u'JPEG', bridgeSchema=False):
     except KeyError as error:
         logging.error(str(error))
         logging.debug(("It seems python-imaging doesn't understand how to "
-                       "save in the %s format.") % imgFormat)
-    except Exception as error:
+                       "save in the %s format.") % imageFormat)
+    except Exception as error:  # pragma: no cover
         logging.error(("There was an error while attempting to generate the "
                        "QRCode: %s") % str(error))
-

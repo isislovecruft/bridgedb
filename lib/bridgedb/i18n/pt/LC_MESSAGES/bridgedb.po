@@ -1,22 +1,23 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Isis <isis@torproject.org>, 2014
+# alfalb.as, 2015
 # André Monteiro <andre.monteir@gmail.com>, 2014
 # kagazz <lourenxo_619@hotmail.com>, 2014
-# Manuela Silva <manuela.silva@sky.com>, 2014
+# alfalb_mansil, 2014
 # Andrew_Melim <nokostya.translation@gmail.com>, 2014
+# Pedro Albuquerque <palbuquerque73@gmail.com>, 2014-2015
 # Sérgio Marques <smarquespt@gmail.com>, 2014
 # TiagoJMMC <tiagojmmc@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-06-06 21:46+0000\n"
-"PO-Revision-Date: 2014-07-26 02:04+0000\n"
-"Last-Translator: Isis <isis@torproject.org>\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-02-23 16:31+0000\n"
+"Last-Translator: alfalb.as\n"
 "Language-Team: Portuguese (http://www.transifex.com/projects/p/torproject/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,13 +37,13 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
-msgstr "Pedimos desculpa, mas ocorreu algo errado com o seu pedido!"
+msgstr "Desculpe! Ocorreu algo de errado com o seu pedido."
 
 #: lib/bridgedb/strings.py:18
 msgid "[This is an automated message; please do not reply.]"
-msgstr "[Esta é uma mensagem automática; por favor não responda.]"
+msgstr "[Esta é uma mensagem automática; por favor, não responda.]"
 
 #: lib/bridgedb/strings.py:20
 msgid "Here are your bridges:"
@@ -81,7 +82,7 @@ msgstr "Olá, amigo!"
 
 #: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
 msgid "Public Keys"
-msgstr "Chaves públicas"
+msgstr "Chaves Públicas"
 
 #. TRANSLATORS: This string will end up saying something like:
 #. "This email was generated with rainbows, unicorns, and sparkles
@@ -148,11 +149,11 @@ msgid ""
 "Another way to get bridges is to send an email to %s. Please note that you must\n"
 "send the email using an address from one of the following email providers:\n"
 "%s, %s or %s."
-msgstr "Outro método para obter pontes é escrever uma mensagem para %s. Tenha em atenção\nque tem de enviar a mensagem através de um dos seguintes fornecedores de correio:\n%s, %s ou %s."
+msgstr "Outra forma de obter pontes é enviar uma mensagem para %s. Por favor, note que\na mensagem tem de ser enviada de um dos seguintes fornecedores de serviço:\n%s, %s ou %s."
 
 #: lib/bridgedb/strings.py:90
 msgid "My bridges don't work! I need help!"
-msgstr "As minhas pontes não funcionam! Preciso de ajuda!"
+msgstr "As minhas pontes não funcionam! Eu preciso de ajuda!"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
 #: lib/bridgedb/strings.py:92
@@ -260,15 +261,15 @@ msgstr "Solicita um Pluggable Transport por TYPE."
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Obter uma cópia da chave pública GnuPG da BridgeDB."
 
-#: lib/bridgedb/templates/base.html:91
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr "Reportar um erro"
 
-#: lib/bridgedb/templates/base.html:93
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr "Código fonte"
 
-#: lib/bridgedb/templates/base.html:96
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr "Registo de alterações"
 
@@ -276,19 +277,42 @@ msgstr "Registo de alterações"
 msgid "Contact"
 msgstr "Contactos"
 
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "Escolher todos"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "Mostrar QRCode"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "QRCode para as suas linhas de ponte"
+
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr "Ocorreu um erro!"
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "Parece que ocorreu um erro ao obter o seu QRCode."
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "Este QRCode contém as suas linhas de ponte. Leia-o com um leitor de QRCode para copiar as linhas de ponte para dispositivos móveis."
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr "Atualmente não existem pontes livres..."
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid ""
 " Perhaps you should try %s going back %s and choosing a different bridge "
@@ -349,7 +373,7 @@ msgstr "nenhuma"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr "%sS%sim!"
@@ -357,7 +381,7 @@ msgstr "%sS%sim!"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr "%sO%sbter pontes"
