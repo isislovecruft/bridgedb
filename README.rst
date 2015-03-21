@@ -384,12 +384,13 @@ Using a BridgeDB Instance
 =========================
 
 Obviously, you'll have to feed it bridge descriptor files from a
-BridgeAuth. There's currently only one BridgeAuth in the entire world, but Tor
-Project is, of course, very interested in adding support for multiple
-BridgeAuths so that we can scale our own network, and make it easier for
-individual and organisations who wish to run a lot of Tor bridge relays, and
-distribute those themselves, have an easier time doing so. If you'd like to
-fund our work on this, please contact tor-dev@lists.torproject.org!
+BridgeAuthority. There's currently only one BridgeAuthority in the entire
+world, but Tor Project is, of course, very interested in adding support for
+multiple BridgeAuthorities so that we can scale our own network, and make it
+easier for individual and organisations who wish to run a lot of Tor bridge
+relays have an easier time distributing those bridges themselves (if they wish
+to do so). If you'd like to fund our work on this, please contact
+tor-dev@lists.torproject.org!
 
 ----------------------------------
 Accessing the HTTPS User Interface
