@@ -27,6 +27,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(
 
 
 import bridgedb
+import bridgedb.bridgerequest
+import bridgedb.bridges
 import bridgedb.captcha
 import bridgedb.Bridges
 import bridgedb.Bucket
@@ -39,9 +41,12 @@ import bridgedb.email.request
 import bridgedb.email.server
 import bridgedb.email.templates
 import bridgedb.Filters
+import bridgedb.geo
 import bridgedb.HTTPServer
 import bridgedb.Main
 import bridgedb.persistent
+import bridgedb.proxy
+import bridgedb.qrcodes
 import bridgedb.runner
 import bridgedb.safelog
 import bridgedb.schedule
@@ -49,7 +54,7 @@ import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.strings
 import bridgedb.test
-import bridgedb.Tests
+import bridgedb.translations
 import bridgedb.txrecaptcha
 import bridgedb.util
 

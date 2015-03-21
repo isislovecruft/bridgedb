@@ -7,6 +7,7 @@ BridgeDB Package and Module Documentation
     :toctree:
 
     bridgedb.bridgerequest
+    bridgedb.bridges
     bridgedb.Bridges
     bridgedb.Bucket
     bridgedb.captcha
@@ -15,18 +16,20 @@ BridgeDB Package and Module Documentation
     bridgedb.Dist
     bridgedb.email
     bridgedb.Filters
+    bridgedb.geo
     bridgedb.HTTPServer
     bridgedb.interfaces
     bridgedb.Main
     bridgedb.parse
     bridgedb.persistent
+    bridgedb.proxy
+    bridgedb.qrcodes
     bridgedb.runner
     bridgedb.safelog
     bridgedb.schedule
     bridgedb.Stability
     bridgedb.Storage
     bridgedb.strings
-    bridgedb.Tests
     bridgedb.translations
     bridgedb.txrecaptcha
     bridgedb.util
