@@ -36,6 +36,7 @@ from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
+from bridgedb.util import remove_suffix
 
 HTTP_ROOT = 'http://127.0.0.1:6788'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'
@@ -44,7 +45,7 @@ CAPTCHA_RESPONSE = 'Tvx74Pmy'
 class HTTPTests(unittest.TestCase):
     def setUp(self):
         here = os.getcwd()
-        topdir = here.rstrip('_trial_temp')
+        topdir = remove_suffix(here, '_trial_temp')
         self.rundir = os.path.join(topdir, 'run')
         self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
         self.pid = getBridgeDBPID(self.pidfile)

@@ -16,6 +16,7 @@ import os
 from twisted.trial import unittest
 
 from bridgedb import configure
+from bridgedb.util import remove_suffix
 
 
 class ConfigureTests(unittest.TestCase):
@@ -24,7 +25,7 @@ class ConfigureTests(unittest.TestCase):
     def setUp(self):
         """Find the config file in the top directory of this repo."""
         here = os.getcwd()
-        topdir = here.rstrip('_trial_temp')
+        topdir = remove_suffix(here, '_trial_temp')
         self.configFilename = os.path.join(topdir, 'bridgedb.conf')
 
     def test_loadConfig_with_file(self):

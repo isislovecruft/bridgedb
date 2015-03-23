@@ -23,6 +23,7 @@ from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
+from bridgedb.util import remove_suffix
 
 
 class BridgeDBCliTest(unittest.TestCase):
@@ -30,7 +31,7 @@ class BridgeDBCliTest(unittest.TestCase):
 
     def setUp(self):
         here = os.getcwd()
-        topdir = here.rstrip('_trial_temp')
+        topdir = remove_suffix(here, '_trial_temp')
         self.rundir = os.path.join(topdir, 'run')
         self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
         self.pid = getBridgeDBPID(self.pidfile)
