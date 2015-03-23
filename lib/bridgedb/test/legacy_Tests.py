@@ -85,10 +85,7 @@ def randomPortSpec():
         ports.append(random.randint(1,65535))
     ports.sort(reverse=True)
 
-    portspec = ""
-    for i in range(0,16):
-        portspec += "%d," % random.choice(ports)
-    portspec = portspec.rstrip(',') #remove trailing ,
+    portspec = ",".join(["%d" % random.choice(ports) for i in range(0,16)])
     return portspec
 
 def randomCountry():

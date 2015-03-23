@@ -429,7 +429,7 @@ def isValidIP(ip):
         reasons.append('cannot convert to ip')
 
     if reasons:
-        explain = ', '.join([r for r in reasons]).strip(', ')
+        explain = ', '.join([r for r in reasons])
         logging.debug("IP address %r is invalid! Reason(s): %s"
                       % (ip, explain))
         return False
@@ -568,11 +568,7 @@ class PortList(object):
 
     def __str__(self):
         """Returns a pretty string representation of this PortList."""
-        ret = []
-        for port in self.ports:
-            ret.append(',%s' % port)
-        ret = ''.join([piece for piece in ret])
-        return ret.lstrip(",")
+        return ','.join(['%s' % port for port in self.ports])
 
     def __repr__(self):
         """Returns a raw depiction of this PortList."""

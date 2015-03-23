@@ -671,7 +671,7 @@ class PortListTest(unittest.TestCase):
         tooMany = addr.PortList.PORTSPEC_LEN + 1
         ports = [self.getRandomPort() for x in xrange(tooMany)]
         log.msg("Testing addr.PortList(%s))"
-                % ', '.join([type('')(port) for port in ports]).strip(', '))
+                % ', '.join([type('')(port) for port in ports]))
         portList = addr.PortList(*ports)
         self.assertEqual(len(portList), tooMany)
 
