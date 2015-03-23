@@ -74,7 +74,7 @@ def filterBridgesByIP6(bridge):
 setattr(filterBridgesByIP6, "description", "ip=6")
 
 def filterBridgesByTransport(methodname, addressClass=None):
-    if not isinstance(addressClass, (IPv6Address, IPv4Address)):
+    if not ((addressClass is IPv4Address) or (addressClass is IPv6Address)):
         addressClass = IPv4Address
 
     ruleset = frozenset([methodname, addressClass])
