@@ -22,11 +22,11 @@ pyflakes:
 
 install:
 	-python setup.py compile_catalog
-	python setup.py install --record installed-files.txt
+	BRIDGEDB_INSTALL_DEPENDENCIES=0	python setup.py install --record installed-files.txt
 
 force-install:
 	-python setup.py compile_catalog
-	python setup.py install --force --record installed-files.txt
+	BRIDGEDB_INSTALL_DEPENDENCIES=0	python setup.py install --force --record installed-files.txt
 
 uninstall:
 	touch installed-files.txt
