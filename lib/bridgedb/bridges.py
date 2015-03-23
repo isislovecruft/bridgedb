@@ -1038,7 +1038,9 @@ class Bridge(BridgeBackwardsCompatibility):
             return a :term:`Bridge Line` for the requested pluggable transport
             type.
         """
-        logging.info("Bridge %s answering request for vanilla address..." % self)
+        logging.info(
+            "Bridge %s answering request for IPv%s vanilla address..." %
+            (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
 
         if not bridgeRequest.filters:
             logging.debug(("Request %s didn't have any filters; "

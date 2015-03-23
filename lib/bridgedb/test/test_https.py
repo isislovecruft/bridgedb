@@ -216,6 +216,29 @@ class HTTPTests(unittest.TestCase):
             addr = bridge[0].rsplit(':', 1)[0]
             self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv4Address)
 
+    def test_get_vanilla_ipv6(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = '0'
+        soup = self.submitOptions(transport=PT, ipv6=True,
+                                  captchaResponse=CAPTCHA_RESPONSE)
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
+        for bridge in bridges:
+            self.assertTrue(bridge != None)
+            addr = bridge[0].rsplit(':', 1)[0].strip('[]')
+            self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv6Address)
+
     def test_get_scramblesuit_ipv4(self):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
