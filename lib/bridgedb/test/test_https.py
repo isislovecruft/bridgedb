@@ -24,6 +24,7 @@ repository.
 
 from __future__ import print_function
 
+import ipaddr
 import mechanize
 import os
 
@@ -211,8 +212,9 @@ class HTTPTests(unittest.TestCase):
                                   captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
         for bridge in bridges:
-            # TODO: do more interesting checks
             self.assertTrue(bridge != None)
+            addr = bridge[0].rsplit(':', 1)[0]
+            self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv4Address)
 
     def test_get_scramblesuit_ipv4(self):
         if os.environ.get("CI"):
