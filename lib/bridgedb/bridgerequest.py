@@ -88,8 +88,8 @@ class BridgeRequestBase(object):
 
     def __init__(self, addressClass=None):
         self.addressClass = addressClass
-        if not isinstance(self.addressClass,
-                          (ipaddr.IPv4Address, ipaddr.IPv6Address)):
+        if not ((self.addressClass is ipaddr.IPv4Address) or
+                (self.addressClass is ipaddr.IPv6Address)):
             self.addressClass = ipaddr.IPv4Address
         self.filters = list()
         self.transports = list()
