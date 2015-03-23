@@ -18,7 +18,7 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
         return funcs[ruleset]
     except KeyError:
         def _assignBridgesToRing(bridge):
-            digest = hmac(bridge.fingerprint)
+            digest = hmac(bridge.getID())
             pos = long( digest[:8], 16 )
             which = pos % numRings
 
