@@ -4,8 +4,8 @@
 #
 # :authors: Nick Mathewson
 #           Isis Lovecruft <isis@torproject.org> 0xa3adb67a2cdb8b35
-# :copyright: (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2014, Isis Lovecruft
+# :copyright: (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 
 """This module implements functions for dividing time into chunks."""

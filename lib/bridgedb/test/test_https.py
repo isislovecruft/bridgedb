@@ -3,8 +3,9 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: trygve <tor-dev@lists.torproject.org>
-# :copyright: (c) trygve
-#             (c) 2014, The Tor Project, Inc.
+# :copyright: (c) 2014, trygve
+#             (c) 2014-2015, The Tor Project, Inc.
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 

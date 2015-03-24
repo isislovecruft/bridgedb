@@ -4,9 +4,9 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2014 Isis Lovecruft
-#             (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2007-2014, all entities within the AUTHORS file
+# :copyright: (c) 2014-2015 Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2007-2015, all entities within the AUTHORS file
 # :license: see included LICENSE for information
 
 """Parsers for Tor version number strings.
