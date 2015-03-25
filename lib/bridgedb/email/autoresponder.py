@@ -656,12 +656,12 @@ class SMTPAutoresponder(smtp.SMTPClient):
 
         # The canonical domains from the SMTP ``MAIL FROM:`` and the email
         # ``From:`` header should match:
-        #if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
-        #    logging.error("SMTP/Email canonical domain mismatch!")
-        #    logging.debug("Canonical domain mismatch: %s != %s"
-        #                  % (self.incoming.canonicalFromSMTP,
-        #                     self.incoming.canonicalFromEmail))
-        #    return False
+        if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
+            logging.error("SMTP/Email canonical domain mismatch!")
+            logging.debug("Canonical domain mismatch: %s != %s"
+                          % (self.incoming.canonicalFromSMTP,
+                             self.incoming.canonicalFromEmail))
+            #return False
 
         self.incoming.domainRules = self.incoming.context.domainRules.get(
             self.incoming.canonicalFromEmail, list())
