@@ -634,6 +634,10 @@ class SMTPAutoresponder(smtp.SMTPClient):
             self.incoming.canonicalFromEmail = client.domain
             logging.info("'From:' header contained whitelisted address: %s"
                          % str(client))
+        # Straight up reject addresses in the EMAIL_BLACKLIST config option:
+        elif str(client) in self.incoming.context.blacklist:
+            logging.info("'From:' header contained blacklisted address: %s")
+            return False
         else:
             logging.debug("Canonicalizing client email domain...")
             try:
