@@ -7,6 +7,20 @@
 #             (c) 2007-2015, The Tor Project, Inc.
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
+"""Twisted-based reCAPTCHA client.
+
+This client *always* uses TLS with strict hostname checking, unlike the
+official Google Python recaptcha-client_, which is harcoded_ to use plaintext
+HTTP.
+
+Small portions of this code were taken from the official Google Python
+recaptcha-client_ module, version 1.0.6.  Those portions are
+:class:`RecaptchaResponse`, :data:`API_SERVER`, They total 5 lines of code,
+which are copyright the authors of the recaptcha-client_ package.
+
+.. _hardcoded: https://code.google.com/p/recaptcha/source/browse/trunk/recaptcha-plugins/python/recaptcha/client/captcha.py#76
+.. _recaptcha-client: https://pypi.python.org/pypi/recaptcha-client/1.0.6
+"""
 
 import logging
 import urllib
