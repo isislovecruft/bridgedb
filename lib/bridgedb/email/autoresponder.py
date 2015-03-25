@@ -672,8 +672,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         # :func:`~bridgedb.util.levenshteinDistance`):
         if self.incoming.context.fuzzyMatch != 0:
             for blacklistedAddress in self.incoming.context.blacklist:
-                distance = levenshteinDistance(self.incoming.canonicalFromEmail,
-                                               blacklistedAddress)
+                distance = levenshteinDistance(str(client), blacklistedAddress)
                 if distance <= self.incoming.context.fuzzyMatch:
                     logging.info("Fuzzy-matched %s to blacklisted address %s!"
                                  % (self.incoming.canonicalFromEmail,
