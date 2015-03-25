@@ -3,8 +3,8 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: please see the AUTHORS file for attributions
-# :copyright: (c) 2013-2014, Isis Lovecruft
-#             (c) 2007-2014, The Tor Project, Inc.
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
 """Classes for manipulating and storing Bridges and their attributes."""
@@ -1038,7 +1038,9 @@ class Bridge(BridgeBackwardsCompatibility):
             return a :term:`Bridge Line` for the requested pluggable transport
             type.
         """
-        logging.info("Bridge %s answering request for vanilla address..." % self)
+        logging.info(
+            "Bridge %s answering request for IPv%s vanilla address..." %
+            (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
 
         if not bridgeRequest.filters:
             logging.debug(("Request %s didn't have any filters; "

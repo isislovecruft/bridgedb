@@ -264,8 +264,19 @@ class runTests(setuptools.Command):
             sys.path = old_path
 
 
+# If there is an environment variable BRIDGEDB_INSTALL_DEPENDENCIES=0, it will
+# disable checking for, fetching, and installing BridgeDB's dependencies with
+# easy_install.
+#
+# Setting BRIDGEDB_INSTALL_DEPENDENCIES=0 is *highly* recommended, because
+# easy_install is a security nightmare.  Automatically installing dependencies
+# is enabled by default, however, because this is how all Python packages are
+# supposed to work.
+if bool(int(os.environ.get("BRIDGEDB_INSTALL_DEPENDENCIES", 1))):
+    requires, deplinks = get_requirements()
+else:
+    requires, deplinks = [], []
 
-requires, deplinks = get_requirements()
 
 setuptools.setup(
     name='bridgedb',

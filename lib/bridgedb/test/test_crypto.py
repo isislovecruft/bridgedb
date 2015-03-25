@@ -4,9 +4,9 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2013, Isis Lovecruft
-#             (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """Unittests for :mod:`bridgedb.crypto`."""
@@ -23,7 +23,9 @@ import shutil
 
 import OpenSSL
 
+from twisted import version as _twistedversion
 from twisted.internet import defer
+from twisted.python.versions import Version
 from twisted.trial import unittest
 from twisted.test.proto_helpers import StringTransport
 from twisted.web.test import test_agent as txtagent
@@ -331,6 +333,14 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
 
     def test_getHostnameFromURL(self):
         """``getHostnameFromURL()`` should return a hostname from a URI."""
+        if _twistedversion >= Version('twisted', 14, 0, 0):
+            raise unittest.SkipTest(
+                ("The SSLVerifyingContextFactory is no longer necessary in "
+                 "Twisted>=14.0.0, because the way in which TLS certificates "
+                 "are checked now includes certificate pinning, and the "
+                 "SSLVerifyingContextFactory only implemented strict hostname "
+                 "checking."))
+
         agent = txrecaptcha._getAgent(self.reactor, self.url)
         contextFactory = agent._contextFactory
         self.assertRegexpMatches(contextFactory.hostname,
@@ -341,6 +351,14 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
         ``SSLVerifyingContextFactory.hostname`` does not match the one found
         in the level 0 certificate subject CN.
         """
+        if _twistedversion >= Version('twisted', 14, 0, 0):
+            raise unittest.SkipTest(
+                ("The SSLVerifyingContextFactory is no longer necessary in "
+                 "Twisted>=14.0.0, because the way in which TLS certificates "
+                 "are checked now includes certificate pinning, and the "
+                 "SSLVerifyingContextFactory only implemented strict hostname "
+                 "checking."))
+
         agent = txrecaptcha._getAgent(self.reactor, self.url)
         contextFactory = agent._contextFactory
         x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,

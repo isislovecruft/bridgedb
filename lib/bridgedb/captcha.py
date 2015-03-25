@@ -7,9 +7,9 @@
 #           Aaron Gibson   0x2C4B239DD876C9F6 <aagbsn@torproject.org>
 #           Nick Mathewson 0x21194EBB165733EA <nickm@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2007-2014, all entities within the AUTHORS file
-#             (c) 2014, Isis Lovecruft
+# :copyright: (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2007-2015, all entities within the AUTHORS file
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 

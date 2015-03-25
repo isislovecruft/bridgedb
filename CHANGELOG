@@ -1,4 +1,44 @@
-Changes in version 0.3.0 - XXX
+Changes in version 0.3.1 - 2015-03-24
+
+        * FIXES #14065 https://bugs.torproject.org/14065
+        When requesting vanilla IPv6 bridges from
+        https://bridges.torproject.org, BridgeDB would respond with IPv4
+        addresses.  It now correctly responds with IPv6 addresses.
+
+And includes the following general changes:
+
+        * FIXES an issue with the filtering of hashrings while answering
+        requests for Pluggable Transports. (commit 3ef37df6)
+
+        * FIXES the return value from the GnuPG interface initialization
+        function (bridgedb.crypto.initializeGnuPG) when creating a test
+        signature has failed.
+
+        * CHANGES the way BridgeDB handles the case where it parses to
+        duplicate extrainfo descriptors (for the same Bridge) which also
+        have identical timestamps.  Before, we assumed this wasn't
+        possible.  It turns out that it not only is possible, but that
+        usually every batch of descriptors has at least one Bridge with
+        such a set of perfectly identical extrainfo descriptors.  Even
+        stranger, it appears that only Bridges started for the first time
+        quite recently (within the last eight hours) display this
+        behaviour.  BridgeDB now logs these errors, rather than leaving
+        them unhandled.
+        (commit a27d7905)
+
+        * ADDS an environment variable check to setup.py which controls
+        whether the setup.py script tries to install the dependencies
+        listed in the requirements.txt file with easy_install.  If the
+        environment variable BRIDGEDB_INSTALL_DEPENDENCIES=0, then
+        setup.py will not use easy_install.  When BridgeDB is installed
+        via `make install` the default is to not use easy_install;
+        however, when installed via `python setup.py install`, the default
+        is to use easy_install to check for, find, and install
+        dependencies.  (NOTE: the latter is *not* recommended.)
+        (commit d035fe64)
+
+
+Changes in version 0.3.0 - 2015-03-21
 
         * FIXES #2895 https://bugs.torproject.org/2895
         BridgeDB no longer assumes that any extrainfo descriptor files are

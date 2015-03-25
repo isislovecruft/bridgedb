@@ -25,6 +25,8 @@ https://ipaddr-py.googlecode.com/files/ipaddr-2.1.10.tar.gz#sha1=c608450b077b197
 pycrypto==2.6.1
 pygeoip==0.2.7
 gnupg==2.0.1
-recaptcha-client==1.0.6
+pillow>=2.6.1
+qrcode==5.0.1
+service_identity==14.0.0
 stem==1.3.0
 zope.interface==3.6.1

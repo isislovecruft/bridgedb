@@ -3,8 +3,9 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: trygve <tor-dev@lists.torproject.org>
-# :copyright: (c) trygve
-#             (c) 2014, The Tor Project, Inc.
+# :copyright: (c) 2014, trygve
+#             (c) 2014-2015, The Tor Project, Inc.
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
@@ -24,6 +25,7 @@ repository.
 
 from __future__ import print_function
 
+import ipaddr
 import mechanize
 import os
 
@@ -211,8 +213,32 @@ class HTTPTests(unittest.TestCase):
                                   captchaResponse=CAPTCHA_RESPONSE)
         bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
         for bridge in bridges:
-            # TODO: do more interesting checks
             self.assertTrue(bridge != None)
+            addr = bridge[0].rsplit(':', 1)[0]
+            self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv4Address)
+
+    def test_get_vanilla_ipv6(self):
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
+
+        self.openBrowser()
+        self.goToOptionsPage()
+
+        PT = '0'
+        soup = self.submitOptions(transport=PT, ipv6=True,
+                                  captchaResponse=CAPTCHA_RESPONSE)
+        bridges = self.getBridgeLinesFromSoup(soup, fieldsPerBridge=2)
+        for bridge in bridges:
+            self.assertTrue(bridge != None)
+            addr = bridge[0].rsplit(':', 1)[0].strip('[]')
+            self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv6Address)
 
     def test_get_scramblesuit_ipv4(self):
         if os.environ.get("CI"):

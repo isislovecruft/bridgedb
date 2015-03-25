@@ -5,8 +5,8 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2014, Isis Lovecruft
+# :copyright: (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
@@ -18,8 +18,6 @@ import os
 import shutil
 
 from stem import ProtocolError
-from stem.descriptor import extrainfo_descriptor
-from stem.descriptor import server_descriptor
 from stem.descriptor import parse_file
 from stem.descriptor.router_status_entry import _parse_file as _parseNSFile
 from stem.descriptor.router_status_entry import RouterStatusEntryV3
@@ -198,10 +196,14 @@ def deduplicate(descriptors):
             # ``platform`` line in its server-descriptor and tell whoever
             # wrote that code that they're probably (D)DOSing the Tor network.
             else:
-                raise DescriptorWarning(
-                    ("Duplicate descriptor with identical timestamp (%s) for "
-                     "router with fingerprint '%s'!")
-                    % (descriptor.published, fingerprint))
+                try:
+                    raise DescriptorWarning(
+                        ("Duplicate descriptor with identical timestamp (%s) "
+                         "for router with fingerprint '%s'!")
+                        % (descriptor.published, fingerprint))
+                # And just in case it does happen, catch the warning:
+                except DescriptorWarning as descwarn:
+                    logging.warn("DescriptorWarning: %s" % str(descwarn))
 
         # Hoorah! No duplicates! (yet...)
         else:

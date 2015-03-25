@@ -3,10 +3,10 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: please see the AUTHORS file for attributions
-# :copyright: (c) 2013-2014, Isis Lovecruft
-#             (c) 2013-2014, Matthew Finkel
-#             (c) 2007-2014, Nick Mathewson
-#             (c) 2007-2014, The Tor Project, Inc.
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2013-2015, Matthew Finkel
+#             (c) 2007-2015, Nick Mathewson
+#             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
 """This module sets up BridgeDB and starts the servers running."""

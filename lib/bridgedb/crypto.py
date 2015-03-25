@@ -3,9 +3,9 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
-# :copyright: (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2013-2014, Isis Lovecruft
-#             (c) 2007-2014, all entities within the AUTHORS file
+# :copyright: (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
 """BridgeDB general cryptographic utilities.
@@ -354,6 +354,8 @@ def initializeGnuPG(config):
     if sig:
         logging.info("Test signature with GnuPG key %s okay:\n%s" % (primary, sig))
         return (gpg, gpgSignMessage)
+
+    return ret
 
 
 class SSLVerifyingContextFactory(ssl.CertificateOptions):

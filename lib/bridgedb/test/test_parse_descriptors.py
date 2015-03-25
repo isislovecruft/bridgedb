@@ -3,8 +3,8 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
-# :copyright: (c) 2013-2014, Isis Lovecruft
-#             (c) 2007-2014, The Tor Project, Inc.
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """Unittests for :class:`bridgedb.parse.descriptors` module."""
@@ -370,13 +370,14 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def test_parse_descriptors_deduplicate_identical_timestamps(self):
         """Parsing two descriptors for the same bridge with identical
-        timestamps should raise a ``b.p.descriptors.DescriptorWarning``.
+        timestamps should log a ``b.p.descriptors.DescriptorWarning``
+        and retain only one copy of the descriptor.
         """
         descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
         descFileTwo = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR)
-        self.assertRaises(descriptors.DescriptorWarning,
-                          descriptors.parseExtraInfoFiles,
-                          descFileOne, descFileTwo)
+        routers = descriptors.parseExtraInfoFiles(descFileOne, descFileTwo)
+
+        self.assertEqual(len(routers), 1)
 
     def test_parse_descriptors_parseExtraInfoFiles_two_files(self):
         """Test for ``b.p.descriptors.parseExtraInfoFiles`` with two

@@ -5,8 +5,8 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2007-2014, The Tor Project, Inc.
-#             (c) 2014, Isis Lovecruft
+# :copyright: (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
@@ -88,8 +88,8 @@ class BridgeRequestBase(object):
 
     def __init__(self, addressClass=None):
         self.addressClass = addressClass
-        if not isinstance(self.addressClass,
-                          (ipaddr.IPv4Address, ipaddr.IPv6Address)):
+        if not ((self.addressClass is ipaddr.IPv4Address) or
+                (self.addressClass is ipaddr.IPv6Address)):
             self.addressClass = ipaddr.IPv4Address
         self.filters = list()
         self.transports = list()
