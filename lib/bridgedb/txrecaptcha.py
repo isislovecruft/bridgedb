@@ -25,9 +25,6 @@ which are copyright the authors of the recaptcha-client_ package.
 import logging
 import urllib
 
-from recaptcha.client.captcha import API_SSL_SERVER
-from recaptcha.client.captcha import RecaptchaResponse
-from recaptcha.client.captcha import displayhtml
 
 from twisted import version as _twistedversion
 from twisted.internet import defer
@@ -44,7 +41,8 @@ from zope.interface import implements
 from bridgedb.crypto import SSLVerifyingContextFactory
 
 
-API_SERVER = API_SSL_SERVER
+#: This was taken from  recaptcha.client.captcha.API_SSL_SERVER.
+API_SSL_SERVER = API_SERVER = "https://www.google.com/recaptcha/api"
 API_SSL_VERIFY_URL = "%s/verify" % API_SSL_SERVER
 
 # `t.w.client.HTTPConnectionPool` isn't available in Twisted-12.0.0 (see
@@ -105,6 +103,15 @@ _setAgent(_getAgent())
 
 class RecaptchaResponseError(ValueError):
     """There was an error with the reCaptcha API server's response."""
+
+
+class RecaptchaResponse(object):
+    """Taken from recaptcha.client.captcha.`RecaptchaResponse`_.
+    .. RecaptchaResponse: https://code.google.com/p/recaptcha/source/browse/trunk/recaptcha-plugins/python/recaptcha/client/captcha.py#7
+    """
+    def __init__(self, is_valid, error_code=None):
+        self.is_valid = is_valid
+        self.error_code = error_code
 
 
 class RecaptchaResponseProtocol(protocol.Protocol):
