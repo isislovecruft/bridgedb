@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: bridgedb 0.2.4-234-g193c80a-dirty\n"
-"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'
+"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'"
 "POT-Creation-Date: 2015-03-19 22:13+0000\n"
 "PO-Revision-Date: 2015-03-19 22:13+0000\n"
 "Last-Translator: Isis Lovecruft <isis@torproject.org>\n"
