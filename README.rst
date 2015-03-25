@@ -398,7 +398,7 @@ Accessing the HTTPS User Interface
 ----------------------------------
 
 Just connect to the appropriate port. (See the ``HTTPS_PORT`` and
-``HTTP_UNENCRYPTED\_PORT`` options in the ``bridgedb.conf`` file.)
+``HTTP_UNENCRYPTED_PORT`` options in the ``bridgedb.conf`` file.)
 
 The HTTPS interface for our BridgeDB instance can be found `here
 <https://bridges.torproject.org>`__.
