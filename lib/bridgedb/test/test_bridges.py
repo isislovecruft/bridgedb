@@ -912,6 +912,15 @@ class BridgeTests(unittest.TestCase):
                          ''.join(['$', '0'*40,
                                   '~', bridge.nickname]))
 
+    def test_Bridge_str_without_fingerprint_without_nickname(self):
+        """Calling str(Bridge) on a Bridge whose fingerprint and nickname were
+        not set should return a Bridge identifier string where the fingerprint
+        is all 0's and the nickname is "Unnamed".
+        """
+        bridge = bridges.Bridge()
+        identifier = str(bridge)
+        self.assertEqual(identifier, ''.join(['$', '0'*40, '~', 'Unnamed']))
+
     def test_Bridge_updateFromNetworkStatus_IPv4_ORAddress(self):
         """Calling updateFromNetworkStatus() with a descriptor which has an
         IPv4 address as an additional ORAddress should result in a
