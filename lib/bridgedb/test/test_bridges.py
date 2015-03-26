@@ -107,6 +107,38 @@ XILT4o+SveEQUG72R4bENsKxqV4rRNh1g6CNAbYhAITqrU9B+jImDgrBBW+XWT5K
 -----END SIGNATURE-----
 '''
 
+# The timestamps have changed, and the IP:port for obfs3 changed
+BRIDGE_EXTRAINFO_NEW = '''\
+extra-info FourfoldQuirked 2C3225C4805331025E211F4B6E5BF45C333FDD2C
+published 2014-12-22 22:51:27
+write-history 2014-12-22 22:51:27 (900 s) 3188736,2226176,2866176
+read-history 2014-12-22 22:51:27 (900 s) 3891200,2483200,2698240
+dirreq-write-history 2014-12-22 22:51:27 (900 s) 1024,0,2048
+dirreq-read-history 2014-12-22 22:51:27 (900 s) 0,0,0
+geoip-db-digest 51AE9611B53880B2BCF9C71E735D73F33FAD2DFE
+geoip6-db-digest 26B0D55B20BEB496A3ADE7C6FDD866F5A81027F7
+dirreq-stats-end 2014-12-22 22:51:27 (86400 s)
+dirreq-v3-ips
+dirreq-v3-reqs
+dirreq-v3-resp ok=16,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
+transport obfs3 11.11.11.11:1111
+transport obfs2 179.178.155.140:36491
+transport scramblesuit 179.178.155.140:36492 password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
+transport obfs4 179.178.155.140:36493 iat-mode=0,node-id=25293f2761d658cc70c19515861842d712751bdc,public-key=02d20bbd7e394ad5999a4cebabac9619732c343a4cac99470c03e23ba2bdc2bc
+bridge-stats-end 2014-12-22 22:51:27 (86400 s)
+bridge-ips ca=8
+bridge-ip-versions v4=8,v6=0
+bridge-ip-transports <OR>=8
+router-signature
+-----BEGIN SIGNATURE-----
+cn4+8pQwCMPnHcp1s8wm7ZYsnd9AXJH6ysNlvQ63jsPCG9JdE5E8BwCThEgUccJI
+XILT4o+SveEQUG72R4bENsKxqV4rRNh1g6CNAbYhAITqrU9B+jImDgrBBW+XWT5K
+78ECRPn6Y4KsxFb0TIn7ddv9QjApyBJNIDMihH80Yng=
+-----END SIGNATURE-----
+'''
+
 
 class BridgeIntegrationTests(unittest.TestCase):
     """Integration tests to ensure that the new :class:`bridgedb.bridges.Bridge`
@@ -726,6 +758,8 @@ class BridgeTests(unittest.TestCase):
             self._serverDescriptorFile)[0]
         self.extrainfo = descriptors.parseExtraInfoFiles(
             self._extrainfoFile).values()[0]
+        self.extrainfoNew = descriptors.parseExtraInfoFiles(
+            self._extrainfoNewFile).values()[0]
 
     def _writeNetworkstatus(self, networkstatus):
         with open(self._networkstatusFile, 'w') as fh:
@@ -742,10 +776,16 @@ class BridgeTests(unittest.TestCase):
             fh.write(extrainfo)
             fh.flush()
 
-    def _writeDescriptorFiles(self, networkstatus, serverdesc, extrainfo):
+    def _writeExtrainfoNew(self, extrainfo):
+        with open(self._extrainfoNewFile, 'w') as fh:
+            fh.write(extrainfo)
+            fh.flush()
+
+    def _writeDescriptorFiles(self, networkstatus, serverdesc, extrainfo, extrainfoNew):
         self._writeNetworkstatus(networkstatus)
         self._writeServerdesc(serverdesc)
         self._writeExtrainfo(extrainfo)
+        self._writeExtrainfoNew(extrainfoNew)
 
     def setUp(self):
         def _cwd(filename):
@@ -754,10 +794,12 @@ class BridgeTests(unittest.TestCase):
         self._networkstatusFile = _cwd('BridgeTests-networkstatus-bridges')
         self._serverDescriptorFile = _cwd('BridgeTests-bridge-descriptors')
         self._extrainfoFile = _cwd('BridgeTests-cached-extrainfo')
+        self._extrainfoNewFile = _cwd('BridgeTests-cached-extrainfo.new')
 
         self._writeDescriptorFiles(BRIDGE_NETWORKSTATUS,
                                    BRIDGE_SERVER_DESCRIPTOR,
-                                   BRIDGE_EXTRAINFO)
+                                   BRIDGE_EXTRAINFO,
+                                   BRIDGE_EXTRAINFO_NEW)
         self._parseAllDescriptorFiles()
 
         self.bridge = bridges.Bridge()
@@ -1355,3 +1397,40 @@ class BridgeTests(unittest.TestCase):
         self.assertTrue(self.bridge.transportIsBlockedIn('GB', 'obfs4'))
         self.assertTrue(self.bridge.addressIsBlockedIn('GB', '179.178.155.140', 36493))
         self.assertFalse(self.bridge.addressIsBlockedIn('gb', '179.178.155.140', 36488))
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_no_verify(self):
+        """A changed extrainfo descriptor should log that a transport's
+        IP and/or port changed.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        changedExtrainfo = BRIDGE_EXTRAINFO
+        changedExtrainfo.replace('transport obfs3 179.178.155.140:36490',
+                                 'transport obfs3 179.178.155.14:3649')
+        self._writeExtrainfo(changedExtrainfo)
+
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo, verify=False)
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_verify(self):
+        """A changed extrainfo descriptor with verify=True should raise an
+        InvalidExtraInfoSignature exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfoNew)
+
+        # We should have hit the return just after the
+        # `except InvalidExtraInfoSignature` line, and so the
+        # bridge.descriptors['extrainfo'] shouldn't have been updated.
+        # Therefore, the one we stored should be older, that is, we shouldn't
+        # have kept the new one.
+        self.assertLess(self.bridge.descriptors['extrainfo'].published,
+                        self.extrainfoNew.published)
+        # And the one we stored should be the older one, with the same
+        # published timestamp:
+        self.assertEqual(self.bridge.descriptors['extrainfo'], self.extrainfo)
+        self.assertEqual(self.bridge.descriptors['extrainfo'].published,
+                         self.extrainfo.published)
