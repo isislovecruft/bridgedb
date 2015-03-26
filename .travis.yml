@@ -59,29 +59,12 @@ before_install:
   - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
-  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 python-dev python-setuptools libgeoip-dev geoip-database
-  - pip install -q --no-use-wheel -r .travis.requirements.txt
-  - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
+  - TWISTED_VERSION=$TWISTED_VERSION PYOPENSSL_VERSION=$PYOPENSSL_VERSION ./scripts/install-dependencies
   - make install
 
 # Start a BridgeDB instance before running the tests:
 before_script:
-  - mkdir run
-  - cp -R -t run bridgedb.conf captchas .gnupg
-  # Add '127.0.0.1' to EMAIL_DOMAINS in bridgedb.conf. This should ONLY be
-  # done on testing servers, never on production servers.
-  - sed -r -i -e "s/(EMAIL_DOMAINS)(.*)(])/\1\2\, '127.0.0.1']/" run/bridgedb.conf
-  # Change EMAIL_SMTP_PORT to 2525:
-  - sed -r -i -e "s/(EMAIL_SMTP_PORT = )([1-9]{2,5})/\12525/" run/bridgedb.conf
-  # Enable plaintext HTTP distribution, otherwise the mechanize-based tests in
-  # test_https.py will fail with CERTIFICATE_VERIFY_FAILED because urllib2
-  # won't recognize our self-signed certificate:
-  - sed -r -i -e "s/(HTTP_UNENCRYPTED_BIND_IP = )(None)/\1'127.0.0.1'/" run/bridgedb.conf
-  - sed -r -i -e "s/(HTTP_UNENCRYPTED_PORT = )(None)/\16788/" run/bridgedb.conf
-  - leekspin -n 100
-  - cp -t run networkstatus-bridges cached-extrainfo* bridge-descriptors
-  - ./scripts/make-ssl-cert
-  - cp -t run privkey.pem cert
+  - ./scripts/setup-tests
   - bridgedb -r run &
 
 script:
