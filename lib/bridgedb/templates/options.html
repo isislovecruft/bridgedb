@@ -87,11 +87,14 @@
                               accesskey="t">
                         ${_("""No""")}
 <option label="none"  value="0"        >${_("none")}</option>
-<option label="obfs2" value="obfs2"              >obfs2</option>
-<option label="obfs3" value="obfs3"   selected   >obfs3</option>
-<option label="obfs4" value="obfs4"              >obfs4</option>
-<option label="scramblesuit" value="scramblesuit">scramblesuit</option>
-<option label="fte"   value="fte"                >fteproxy</option>
+% for methodname, default in strings._getSupportedAndDefaultTransports().items():
+    <option label=${methodname}
+            value=${methodname}
+    % if default:
+            selected
+    % endif
+            > ${methodname} </option>
+% endfor
                       </select>
                     </div>
                   </div>

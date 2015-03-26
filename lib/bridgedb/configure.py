@@ -14,6 +14,9 @@
 import logging
 import os
 
+# Used to set the SUPPORTED_TRANSPORTS:
+from bridgedb import strings
+
 
 def loadConfig(configFile=None, configCls=None):
     """Load configuration settings on top of the current settings.
@@ -115,6 +118,17 @@ def loadConfig(configFile=None, configCls=None):
     for attr in ["FORCE_PORTS", "FORCE_FLAGS", "NO_DISTRIBUTION_COUNTRIES"]:
         setting = getattr(config, attr, []) # Default to empty lists
         setattr(config, attr, setting)
+
+    for attr in ["SUPPORTED_TRANSPORTS"]:
+        setting = getattr(config, attr, {}) # Default to emtpy dicts
+        setattr(config, attr, setting)
+
+    # Set the SUPPORTED_TRANSPORTS to populate the webserver and email options:
+    strings._setSupportedTransports(getattr(config, "SUPPORTED_TRANSPORTS", {}))
+    strings._setDefaultTransport(getattr(config, "DEFAULT_TRANSPORT", ""))
+    logging.info("Currently supported transports: %s" %
+                 " ".join(strings._getSupportedTransports()))
+    logging.info("Default transport: %s" % strings._getDefaultTransport())
 
     for domain in config.EMAIL_DOMAINS:
         config.EMAIL_DOMAIN_MAP[domain] = domain
