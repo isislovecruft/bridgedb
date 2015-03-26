@@ -372,6 +372,31 @@ class PluggableTransport(BridgeAddressBase):
                 ("Cannot create PluggableTransport with arguments type: %s")
                 % type(self.arguments))
 
+        if not self._checkArguments():
+            raise MalformedPluggableTransport(
+                ("Can't use %s transport with missing arguments. Arguments: "
+                 "%s") % (self.methodname, ' '.join(self.arguments.keys())))
+
+    def _checkArguments(self):
+        """This method is a temporary fix for PTs with missing arguments
+        (see `#13202 <https://bugs.torproject.org/13202`_).  This method can
+        be removed after Tor-0.2.4.x is deprecated.
+        """
+        # obfs4 requires (iat-mode && (cert || (node-id && public-key))):
+        if self.methodname == 'obfs4':
+            if self.arguments.get('iat-mode'):
+                if (self.arguments.get('cert') or \
+                    (self.arguments.get('node-id') and self.arguments.get('public-key'))):
+                    return True
+        # scramblesuit requires (password):
+        elif self.methodname == 'scramblesuit':
+            if self.arguments.get('password'):
+                return True
+        else:
+            return True
+
+        return False
+
     @property
     def port(self):
         """Get the port number which this ``PluggableTransport`` is listening
@@ -1574,10 +1599,16 @@ class Bridge(BridgeBackwardsCompatibility):
                                      % (methodname, self, pt.address, pt.port,
                                         address, port))
 
-                    oldTransports.remove(pt)
-                    pt.updateFromStemTransport(str(self.fingerprint),
-                                               methodname,
-                                               (address, port, args,))
+                    original = pt
+                    try:
+                        pt.updateFromStemTransport(str(self.fingerprint),
+                                                   methodname,
+                                                   (address, port, args,))
+                    except MalformedPluggableTransport as error:
+                        logging.info(str(error))
+                    else:
+                        oldTransports.remove(original)
+
                     updated = True
                     break
 
@@ -1590,11 +1621,14 @@ class Bridge(BridgeBackwardsCompatibility):
                 logging.info(
                     "Received new %s pluggable transport for bridge %s."
                     % (methodname, self))
-                transport = PluggableTransport()
-                transport.updateFromStemTransport(str(self.fingerprint),
-                                                  methodname,
-                                                  (address, port, args,))
-                self.transports.append(transport)
+                try:
+                    transport = PluggableTransport()
+                    transport.updateFromStemTransport(str(self.fingerprint),
+                                                      methodname,
+                                                      (address, port, args,))
+                    self.transports.append(transport)
+                except MalformedPluggableTransport as error:
+                    logging.info(str(error))
 
         # These are the pluggable transports which we knew about before, which
         # however were not updated in this descriptor, ergo the bridge must
