@@ -668,7 +668,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
             self.flags.running = bool(running)
         if stable is not None:
             self.stable = bool(stable)
-            self.flags.stable = bool(running)
+            self.flags.stable = bool(stable)
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
                       request=None, transport=None):
