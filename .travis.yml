@@ -59,9 +59,7 @@ before_install:
   - chmod -R og-w $PYTHON_EGG_CACHE
 
 install:
-  - sudo apt-get install -qq --no-install-suggests --no-install-recommends build-essential openssl sqlite3 python-dev python-setuptools libgeoip-dev geoip-database
-  - pip install -q --no-use-wheel -r .travis.requirements.txt
-  - pip install -q --no-use-wheel Twisted==$TWISTED_VERSION pyOpenSSL==$PYOPENSSL_VERSION
+  - TWISTED_VERSION=$TWISTED_VERSION PYOPENSSL_VERSION=$PYOPENSSL_VERSION ./scripts/install-dependencies
   - make install
 
 # Start a BridgeDB instance before running the tests:
