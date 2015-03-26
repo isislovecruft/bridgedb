@@ -692,7 +692,7 @@ class BridgeBackwardsCompatibilityTests(unittest.TestCase):
         self.assertTrue(bridge.running)
         self.assertTrue(bridge.flags.running)
 
-    def test_BridgeBackwardsCompatibility_setStatus_running(self):
+    def test_BridgeBackwardsCompatibility_setStatus_running_stable(self):
         """Using setStatus() to set the Running and Stable flags should set
         Bridge.running, Bridge.flags.running, Bridge.stable, and
         Bridge.flags.stable.
