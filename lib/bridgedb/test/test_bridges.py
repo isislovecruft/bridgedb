@@ -706,6 +706,24 @@ class BridgeBackwardsCompatibilityTests(unittest.TestCase):
         self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
         self.assertEqual(len(bridge.orAddresses), 1)
 
+    def test_BridgeBackwardsCompatibility_setStatus_stable(self):
+        """Using setStatus() to set the Stable flag should set Bridge.stable
+        and Bridge.flags.stable to True.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport=self.orPort,
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertFalse(bridge.stable)
+        self.assertFalse(bridge.flags.stable)
+
+        bridge.setStatus(stable=True)
+        self.assertTrue(bridge.stable)
+        self.assertTrue(bridge.flags.stable)
+
     def test_BridgeBackwardsCompatibility_setStatus_running(self):
         """Using setStatus() to set the Running flag should set Bridge.running
         and Bridge.flags.running to True.
