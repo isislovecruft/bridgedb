@@ -933,6 +933,23 @@ class BridgeTests(unittest.TestCase):
                                                  bridgePrefix=True)
         self.assertEqual(bridgeline, 'Bridge [6bf3:806b:78cd::4ced:cfad:dad4]:36488')
 
+    def test_Bridge_updateORAddresses_valid_and_invalid(self):
+        """Bridge._updateORAddresses() called with a mixture of valid and
+        invalid ORAddress tuples should only retain the valid ones.
+        """
+        orAddresses = [
+            (u'1.1.1.1', 1111, False),    # valid
+            (u'127.0.0.1', 2222, False),  # invalid IPv4 loopback
+            (u'FE80::1234', 3333, True)]  # invalid IPv6 link local
+        bridge = bridges.Bridge()
+        bridge._updateORAddresses(orAddresses)
+
+        self.assertEqual(len(bridge.orAddresses), 1)
+        addr, port, version = bridge.orAddresses[0]
+        self.assertEqual(addr, ipaddr.IPAddress('1.1.1.1'))
+        self.assertEqual(port, 1111)
+        self.assertEqual(version, 4)
+
     def test_Bridge_updateFromNetworkStatus_IPv4_ORAddress(self):
         """Calling updateFromNetworkStatus() with a descriptor which has an
         IPv4 address as an additional ORAddress should result in a
