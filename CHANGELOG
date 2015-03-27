@@ -1,3 +1,35 @@
+Changes in version 0.3.2 - 2015-03-??
+
+        * FIXES a problem with the calculation of Levenshtein distances
+        between blacklisted email addresses and those on incoming
+        email. This fixes a problem with the fuzzy matching implemented in
+        #9385: https://bugs.torproject.org/9385.
+
+        * FIXES #12504 https://bugs.torproject.org/12504
+        Which Pluggable Transports BridgeDB distributes is now easily
+        configurable via the bridgedb.conf configuration file.
+
+        * FIXES #13202 https://bugs.torproject.org/13202
+        Old bridges running Tor-0.2.4.x with Pluggable Transports like
+        scramblesuit and obfs4proxy have a bug which causes them to not
+        include the PT arguments in the `transport` line they submit to
+        the BridgeAuthority in their extrainfo descriptors.  This causes
+        BridgeDB to have broken bridge lines for these bridges.
+                For example, scramblesuit requires a `password=` in the
+        `ClientTransportPlugin` for clients to connect to it.  If BridgeDB
+        receives a line in that bridge's extrainfo which says
+        `transport scramblesuit 1.2.3.4:1234` (without a password), then
+        when BridgeDB gives clients a bridge line for that bridge, it'll
+        look like "Bridge scramblesuit 1.2.3.4:1234" - meaning that it won't
+        work.  This fixes the issue by excluding broken transports from
+        being distributed to clients.
+
+        * FIXES #15464 https://bugs.torproject.org/15464
+        The setup procedure for creating a BridgeDB Continuous Integration
+        build machine is now simplified and generalised to include build
+        environments like Jenkins, not just TravisCI.
+
+
 Changes in version 0.3.1 - 2015-03-24
 
         * FIXES #14065 https://bugs.torproject.org/14065
