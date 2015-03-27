@@ -120,7 +120,7 @@ def loadConfig(configFile=None, configCls=None):
         setattr(config, attr, setting)
 
     for attr in ["SUPPORTED_TRANSPORTS"]:
-        setting = getattr(config, attr, {}) # Default to emtpy dicts
+        setting = getattr(config, attr, {}) # Default to empty dicts
         setattr(config, attr, setting)
 
     # Set the SUPPORTED_TRANSPORTS to populate the webserver and email options:
