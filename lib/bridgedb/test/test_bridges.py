@@ -512,6 +512,61 @@ class PluggableTransportTests(unittest.TestCase):
         self.assertItemsEqual(args, {"sharedsecret": "foobar",
                                      "publickey": "1234"})
 
+    def test_PluggableTransport_checkArguments_scramblesuit_missing_password(self):
+        """Calling _checkArguments on a scramblesuit PT without a password should
+        raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'scramblesuit', ('34.230.223.87', 37341, []))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_iatmode(self):
+        """Calling _checkArguments on an obfs4 PT without an iat-mode argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                'cert=UXj/cWm0qolGrROYpkl0UyD/7PEhzkoZkZXrOpjRKwImvkpQZwmF0nSzBXfyfbT9afBZEw']))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_cert(self):
+        """Calling _checkArguments on an obfs4 PT without a cert argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, ['iat-mode=1']))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_publickey(self):
+        """Calling _checkArguments on an obfs4 PT without a public-key argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                ('iat-mode=1,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722')]))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_nodeid(self):
+        """Calling _checkArguments on an obfs4 PT without a public-key argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                ('iat-mode=1,'
+                 'public-key=0a5b046d07f6f971b7776de682f57c5b9cdc8fa060db7ef59de82e721c8098f4')]))
+
     def test_PluggableTransport_runChecks_invalid_fingerprint(self):
         """Calling _runChecks() on a PluggableTransport with an invalid
         fingerprint should raise a MalformedPluggableTransport exception.
@@ -1509,3 +1564,55 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(self.bridge.descriptors['extrainfo'], self.extrainfo)
         self.assertEqual(self.bridge.descriptors['extrainfo'].published,
                          self.extrainfo.published)
+
+    def test_Bridge_updateFromExtraInfoDescriptor_obfs4_no_iatmode(self):
+        """An extrainfo descriptor with an obfs4 transport missing the
+        `iat-mode=[…]` argument should not add the obfs4 transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        obfs4 = self.extrainfo.transport['obfs4']
+        obfs4 = (u'1.1.1.1', 1111, obfs4[-1][-1].replace('iat-mode=0,', ''))
+
+        self.extrainfo.transport['obfs4'] = obfs4
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('obfs4',
+                         [pt.methodname for pt in self.bridge.transports])
+
+    def test_Bridge_updateFromExtraInfoDescriptor_scramblesuit_no_password(self):
+        """An extrainfo descriptor with `transport scramblesuit 1.1.1.1:1111`
+        (i.e. missing the `password=[…]` argument) should not add the
+        scramblesuit transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        self.extrainfo.transport['scramblesuit'] = (u'1.1.1.1', 1111, [])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('scramblesuit',
+                         [pt.methodname for pt in self.bridge.transports])
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_scramblesuit_no_password(self):
+        """An extrainfo descriptor whose scramblesuit transport was previously
+        valid and is now missing the `password=[…]` argument should be removed
+        from the Bridge.transports list.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 4)
+        self.assertIn('scramblesuit',
+                      [pt.methodname for pt in self.bridge.transports])
+
+        self.extrainfo.transport['scramblesuit'] = (u'1.1.1.1', 1111, [])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('scramblesuit',
+                         [pt.methodname for pt in self.bridge.transports])
