@@ -320,7 +320,7 @@ class IPBasedDistributor(Distributor):
         # otherwise, add a new ring and populate it
         if ruleset in self.splitter.filterRings.keys():
             logging.debug("Cache hit %s" % ruleset)
-            _,ring = self.splitter.filterRings[ruleset]
+            _, ring = self.splitter.filterRings[ruleset]
 
         # else create the ring and populate it
         else:
