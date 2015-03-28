@@ -321,7 +321,7 @@ class PluggableTransport(BridgeAddressBase):
         """
         argDict = {}
 
-        # PT argumentss are comma-separated in the extrainfo
+        # PT arguments are comma-separated in the extrainfo
         # descriptors. While there *shouldn't* be anything after them that was
         # separated by a space (and hence would wind up being in a different
         # item in `arguments`), if there was we'll join it to the rest of the
