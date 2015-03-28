@@ -152,7 +152,7 @@ def main(filename=None, address=None, port=None):
     if not address:
         address = getSelfIPAddress()
 
-    check  = "https://check.torproject.org/cgi-bin/TorBulkExitList.py"
+    check  = "https://check.torproject.org/torbulkexitlist"
     params = []
 
     params.append('ip=%s' % address)
