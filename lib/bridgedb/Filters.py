@@ -27,6 +27,8 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
             return False
         _assignBridgesToRing.__name__ = ("filterAssignBridgesToRing(%s, %s, %s)"
                                          % (hmac, numRings, assignedRing))
+        # XXX The `description` attribute must contain an `=`, or else
+        # dumpAssignments() will not work correctly.
         setattr(_assignBridgesToRing, "description", "ring=%d" % assignedRing)
         funcs[ruleset] = _assignBridgesToRing
         return _assignBridgesToRing
