@@ -243,7 +243,11 @@ class IPBasedDistributor(Distributor):
                           be any string, so long as it changes with every
                           period.
         :param int N: The number of bridges to try to give back. (default: 1)
-        :param str countryCode: DOCDOC (default: None)
+        :param str countryCode: The two-letter geoip country code of the
+            client's IP address. If given, the client will be placed in that
+            "area". Clients within the same area receive the same bridges per
+            period. If not given, the **ip** is truncated to it's CIDR /24
+            representation and used as the "area". (default: None)
         :param list bridgeFilterRules: A list of callables used filter the
                                        bridges returned in the response to the
                                        client. See :mod:`~bridgedb.Filters`.
