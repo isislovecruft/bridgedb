@@ -369,6 +369,7 @@ def run(options, reactor=reactor):
     # Get a proxy list.
     proxyList = proxy.ProxySet()
     for proxyfile in config.PROXY_LIST_FILES:
+        logging.info("Loading proxies from: %s" % proxyfile)
         proxy.loadProxiesFromFile(proxyfile, proxyList)
 
     emailDistributor = ipDistributor = None
