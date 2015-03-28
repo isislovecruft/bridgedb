@@ -79,14 +79,17 @@ def loadProxiesFromFile(filename, proxySet=None, removeStale=False):
     logging.info("Reloading proxy lists...")
 
     addresses = []
-    if proxySet:
+
+    # We have to check the instance because, if the ProxySet was newly
+    # created, it will likely be empty, causing it to evaluate to False:
+    if isinstance(proxySet, ProxySet):
         oldProxySet = proxySet.copy()
 
     try:
         with open(filename, 'r') as proxyFile:
             for line in proxyFile.readlines():
                 line = line.strip()
-                if proxySet:
+                if isinstance(proxySet, ProxySet):
                     # ProxySet.add() will validate the IP address
                     if proxySet.add(line, tag=filename):
                         logging.info("Added %s to the proxy list." % line)
@@ -98,7 +101,7 @@ def loadProxiesFromFile(filename, proxySet=None, removeStale=False):
     except Exception as error:
         logging.warn("Error while reading a proxy list file: %s" % str(error))
 
-    if proxySet:
+    if isinstance(proxySet, ProxySet):
         stale = list(oldProxySet.difference(addresses))
 
         if removeStale:
