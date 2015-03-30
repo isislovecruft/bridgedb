@@ -289,13 +289,19 @@ class IPBasedDistributor(Distributor):
         # try to match the request to an ip category
         for category in self.categories:
             # IP Categories
-            if category.contains(ip):
+            if ip in category:
+                # The tag is a tag applied to a proxy IP address when it is
+                # added to the bridgedb.proxy.ProxySet. For Tor Exit relays,
+                # the default is 'exit_relay'. For other proxies loaded from
+                # the PROXY_LIST_FILES config option, the default tag is the
+                # full filename that the IP address originally came from.
+                tag = category.getTag(ip)
+                logging.info("Client was from known proxy (tag: %s): %s" % (tag, ip))
                 g = filterAssignBridgesToRing(self.splitter.hmac,
                                               self.nClusters +
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, logSafely(area))
                 pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
