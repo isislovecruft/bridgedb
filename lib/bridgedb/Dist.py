@@ -273,8 +273,7 @@ class IPBasedDistributor(Distributor):
                       % ' '.join([x.func_name for x in bridgeFilterRules]))
 
         area = self.areaMapper(ip)
-        logging.debug("IP mapped to area:\t%s"
-                      % logSafely("{0}.0/24".format(area)))
+        logging.debug("IP mapped to area:\t%s.0 /24" % area)
 
         key1 = ''
         pos = 0
