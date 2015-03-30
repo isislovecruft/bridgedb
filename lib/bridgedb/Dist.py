@@ -12,6 +12,7 @@
 
 """This module has functions to decide which bridges to hand out to whom."""
 
+import ipaddr
 import logging
 import re
 import time
@@ -302,7 +303,14 @@ class IPBasedDistributor(Distributor):
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
+                # Cluster Tor/proxy users into four groups.  This means that
+                # no matter how many different Tor Exits or proxies a client
+                # uses, the most they can ever get is four different sets of
+                # bridge lines (per period).
+                group = (int(ipaddr.IPAddress(ip)) % 4) + 1
+                logging.debug(("Assigning client hashring position based on: "
+                               "known-proxy<%s>%s") % (epoch, group))
+                pos = self.areaOrderHmac("known-proxy<%s>%s" % (epoch, group))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
                 break
