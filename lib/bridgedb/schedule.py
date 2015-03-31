@@ -68,11 +68,11 @@ class Unscheduled(object):
 
     implements(ISchedule)
 
-    def __init__(self, period=None, count=None):
+    def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
-        :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         :param int count: The number of **period**s in an interval.
+        :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         """
         self.intervalCount = count
         self.intervalPeriod = period
@@ -102,7 +102,6 @@ class Unscheduled(object):
             specificity depends on what type of interval we're using. For
             example, if using ``"month"``, the return value would be something
             like ``"2013-12"``.
-
         """
         return fromUnixSeconds(0).strftime('%04Y-%02m-%02d %02H:%02M:%02S')
 
@@ -125,13 +124,14 @@ class ScheduledInterval(Unscheduled):
     """
     implements(ISchedule)
 
-    def __init__(self, period=None, count=None):
+    def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
+        :type count: int or str
+        :param count: The number of **period**s in an interval.
         :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
-        :param int count: The number of **period**s in an interval.
         """
-        super(ScheduledInterval, self).__init__(period, count)
+        super(ScheduledInterval, self).__init__(count, period)
         self._setIntervalCount(count)
         self._setIntervalPeriod(period)
 
@@ -219,7 +219,7 @@ class ScheduledInterval(Unscheduled):
 
         >>> import calendar
         >>> from bridgedb.schedule import ScheduledInterval
-        >>> sched = ScheduledInterval('month', 1)
+        >>> sched = ScheduledInterval(1, 'month')
         >>> when = calendar.timegm((2007, 12, 12, 0, 0, 0))
         >>> sched.getInterval(when)
         '2007-12'

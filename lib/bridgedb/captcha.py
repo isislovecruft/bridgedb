@@ -206,7 +206,7 @@ class GimpCaptcha(Captcha):
     .. _gimp-captcha: https://github.com/isislovecruft/gimp-captcha
     """
 
-    sched = schedule.ScheduledInterval('minutes', 30)
+    sched = schedule.ScheduledInterval(30, 'minutes')
 
     def __init__(self, publicKey=None, secretKey=None, hmacKey=None,
                  cacheDir=None):
