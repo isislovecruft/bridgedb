@@ -524,7 +524,7 @@ class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
 
     def test_addServer(self):
         """Call :func:`bridgedb.email.server.addServer` to test startup."""
-        factory = server.addServer(self.config, self.dist, self.sched)
+        factory = server.addServer(self.config, self.dist)
         factory.timeout = None
         factory.protocol.timeout = None  # Or else the reactor gets dirty
 

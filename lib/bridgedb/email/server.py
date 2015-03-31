@@ -68,6 +68,8 @@ from bridgedb.email import request
 from bridgedb.parse import addr
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
+from bridgedb.schedule import ScheduledInterval
+from bridgedb.schedule import Unscheduled
 
 
 class MailServerContext(object):
@@ -458,7 +460,7 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
         return p
 
 
-def addServer(config, distributor, schedule):
+def addServer(config, distributor):
     """Set up a SMTP server which listens on the configured ``EMAIL_PORT`` for
     incoming connections, and responds as necessary to requests for bridges.
 
@@ -467,9 +469,13 @@ def addServer(config, distributor, schedule):
     :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
-    :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
-    :param schedule: The schedule. XXX: Is this even used?
     """
+    if config.EMAIL_ROTATION_PERIOD:
+        count, period = config.EMAIL_ROTATION_PERIOD.split()
+        schedule = ScheduledInterval(count, period)
+    else:
+        schedule = Unscheduled()
+
     context = MailServerContext(config, distributor, schedule)
     factory = SMTPIncomingServerFactory()
     factory.setContext(context)

@@ -512,13 +512,9 @@ def run(options, reactor=reactor):
 
         # Configure all servers:
         if config.HTTPS_DIST and config.HTTPS_SHARE:
-            #webSchedule = schedule.ScheduledInterval("day", 2)
-            webSchedule = schedule.Unscheduled()
-            HTTPServer.addWebServer(config, ipDistributor, webSchedule)
+            HTTPServer.addWebServer(config, ipDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:
-            #emailSchedule = schedule.ScheduledInterval("day", 1)
-            emailSchedule = schedule.Unscheduled()
-            addSMTPServer(config, emailDistributor, emailSchedule)
+            addSMTPServer(config, emailDistributor)
 
         tasks = {}
 
