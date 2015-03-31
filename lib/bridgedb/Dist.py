@@ -56,6 +56,10 @@ def uniformMap(ip):
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
     '1.2.3'
+    >>> Dist.uniformMap('1.2.3.154')
+    '1.2.3'
+    >>> Dist.uniformMap('2001:f::bc1:b13:2808')
+    '2001:000f:0000:0000'
 
     :param str ip: A string representing an IPv4 or IPv6 address.
     :rtype: str
