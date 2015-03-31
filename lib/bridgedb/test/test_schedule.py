@@ -143,6 +143,18 @@ class ScheduledIntervalTests(unittest.TestCase):
     def test_ScheduledInterval_intervalStart_seconds(self):
         self._check_intervalStart(30, 'seconds', 30)
 
+    def test_ScheduledInterval_intervalStart_time_time(self):
+        """Calling ScheduledInterval.intervalStart(time.time()) should only
+        return ints, not floats.
+        """
+        import time
+
+        timestamp = time.time()
+        sched = self.sched(5, 'minutes')
+
+        self.assertIsInstance(timestamp, float)
+        self.assertIsInstance(sched.intervalStart(timestamp), int)
+
     def _check_getInterval(self, count=30, period='second', variance=30):
         """Test the ScheduledInterval.getInterval() method.
 
