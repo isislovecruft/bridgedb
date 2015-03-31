@@ -54,6 +54,8 @@ from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.qrcodes import generateQR
 from bridgedb.safelog import logSafely
+from bridgedb.schedule import Unscheduled
+from bridgedb.schedule import ScheduledInterval
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
@@ -819,7 +821,7 @@ class WebRoot(resource.Resource):
         return rendered
 
 
-def addWebServer(cfg, dist, sched):
+def addWebServer(cfg, dist):
     """Set up a web server for HTTP(S)-based bridge distribution.
 
     :type cfg: :class:`bridgedb.persistent.Conf`
@@ -835,6 +837,7 @@ def addWebServer(cfg, dist, sched):
              HTTPS_PORT
              HTTPS_BIND_IP
              HTTPS_USE_IP_FROM_FORWARDED_HEADER
+             HTTPS_ROTATION_PERIOD
              RECAPTCHA_ENABLED
              RECAPTCHA_PUB_KEY
              RECAPTCHA_SEC_KEY
@@ -845,10 +848,6 @@ def addWebServer(cfg, dist, sched):
              GIMP_CAPTCHA_RSA_KEYFILE
     :type dist: :class:`bridgedb.Dist.IPBasedDistributor`
     :param dist: A bridge distributor.
-    :type sched: :class:`bridgedb.schedule.ScheduledInterval`
-    :param sched: The scheduled interval at which bridge selection, which
-        are ultimately displayed on the :class:`WebResourceBridges` page, will
-        be shifted.
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`
     :returns: A webserver.
@@ -886,6 +885,12 @@ def addWebServer(cfg, dist, sched):
         captcha = partial(GimpCaptchaProtectedResource,
                           hmacKey=hmacKey,
                           captchaDir=cfg.GIMP_CAPTCHA_DIR)
+
+    if cfg.HTTPS_ROTATION_PERIOD:
+        count, period = cfg.HTTPS_ROTATION_PERIOD.split()
+        sched = ScheduledInterval(count, period)
+    else:
+        sched = Unscheduled()
 
     bridges = WebResourceBridges(dist, sched, numBridges,
                                  fwdHeaders, includeFingerprints=fprInclude)
