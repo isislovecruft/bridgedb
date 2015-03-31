@@ -64,8 +64,28 @@ class ISchedule(interface.Interface):
 
 
 class Unscheduled(object):
-    """A base ``Schedule`` that has only one period that contains all time."""
+    """A base ``Schedule`` that has only one period that contains all time.
 
+    >>> from bridgedb.schedule import fromUnixSeconds
+    >>> from bridgedb.schedule import Unscheduled
+    >>> timestamp = 1427769526
+    >>> str(fromUnixSeconds(timestamp))
+    '2015-03-31 02:38:46'
+    >>> sched = Unscheduled()
+    >>> start = sched.intervalStart(timestamp)
+    >>> start
+    -62135596800
+    >>> str(fromUnixSeconds(start))
+    '0001-01-01 00:00:00'
+    >>> sched.getInterval(timestamp)
+    '1970-01-01 00:00:00'
+    >>> next = sched.nextIntervalStarts(timestamp)
+    >>> next
+    253402300799
+    >>> str(fromUnixSeconds(next))
+    '9999-12-31 23:59:59'
+
+    """
     implements(ISchedule)
 
     def __init__(self, count=None, period=None):
