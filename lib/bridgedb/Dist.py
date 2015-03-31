@@ -17,9 +17,6 @@ import logging
 import re
 import time
 
-from ipaddr import IPv6Address
-from ipaddr import IPAddress
-
 import bridgedb.Bridges
 import bridgedb.Storage
 
@@ -56,20 +53,31 @@ def uniformMap(ip):
 
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
-    '1.2.3'
+    '1.2.3.0/24'
     >>> Dist.uniformMap('1.2.3.154')
-    '1.2.3'
+    '1.2.3.0/24'
     >>> Dist.uniformMap('2001:f::bc1:b13:2808')
-    '2001:000f:0000:0000'
+    '2001:f::/64'
+    >>> Dist.uniformMap('2a00:c98:2030:a020:2::42')
+    '2a00:c98:2030:a020::/64'
 
     :param str ip: A string representing an IPv4 or IPv6 address.
     :rtype: str
-    :returns: The truncated **ip**.
+    :returns: The appropriately sized CIDR subnet representation of the **ip**.
     """
-    if type(IPAddress(ip)) is IPv6Address:
-        return ":".join(IPv6Address(ip).exploded.split(':')[:4])
+    # We aren't using bridgedb.parse.addr.isIPAddress(ip, compressed=False)
+    # here because adding the string "False" into the map would land any and
+    # all clients whose IP address appeared to be invalid at the same position
+    # in a hashring.
+    address = ipaddr.IPAddress(ip)
+    if address.version == 6:
+        truncated = ':'.join(address.exploded.split(':')[:4])
+        subnet = str(ipaddr.IPv6Network(truncated + "::/64"))
+        return subnet
     else:
-        return ".".join(ip.split(".")[:3])
+        truncated = '.'.join(address.exploded.split('.')[:3])
+        subnet = str(ipaddr.IPv4Network(truncated + '.0/24'))
+        return subnet
 
 def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     if len(ring) < 20:
@@ -280,7 +288,7 @@ class IPBasedDistributor(Distributor):
                       % ' '.join([x.func_name for x in bridgeFilterRules]))
 
         area = self.areaMapper(ip)
-        logging.debug("IP mapped to area:\t%s.0 /24" % area)
+        logging.debug("IP mapped to area:\t%s" % area)
 
         key1 = ''
         pos = 0
