@@ -49,14 +49,17 @@ class EmailRequestedKey(Exception):
 
 
 def uniformMap(ip):
-    """Map an IP to an arbitrary 'area' string, such that any two /24 addresses
-    get the same string.
+    """Map an IP to an arbitrary 'area' string, such that any two IPv4
+    addresses in the same ``/24`` subnet, or any two IPv6 addresses in the
+    same ``/64`` subnet, get the same string.
 
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
     '1.2.3'
 
     :param str ip: A string representing an IPv4 or IPv6 address.
+    :rtype: str
+    :returns: The truncated **ip**.
     """
     if type(IPAddress(ip)) is IPv6Address:
         return ":".join(IPv6Address(ip).exploded.split(':')[:4])
