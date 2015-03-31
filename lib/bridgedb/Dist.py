@@ -12,12 +12,10 @@
 
 """This module has functions to decide which bridges to hand out to whom."""
 
+import ipaddr
 import logging
 import re
 import time
-
-from ipaddr import IPv6Address
-from ipaddr import IPAddress
 
 import bridgedb.Bridges
 import bridgedb.Storage
@@ -50,25 +48,36 @@ class EmailRequestedKey(Exception):
 
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two IPv4
-    addresses in the same ``/24`` subnet, or any two IPv6 addresses in the
+    addresses in the same ``/16`` subnet, or any two IPv6 addresses in the
     same ``/64`` subnet, get the same string.
 
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
-    '1.2.3'
-    >>> Dist.uniformMap('1.2.3.154')
-    '1.2.3'
+    '1.2.0.0/16'
+    >>> Dist.uniformMap('1.2.211.154')
+    '1.2.0.0/16'
     >>> Dist.uniformMap('2001:f::bc1:b13:2808')
-    '2001:000f:0000:0000'
+    '2001:f::/64'
+    >>> Dist.uniformMap('2a00:c98:2030:a020:2::42')
+    '2a00:c98:2030:a020::/64'
 
     :param str ip: A string representing an IPv4 or IPv6 address.
     :rtype: str
-    :returns: The truncated **ip**.
+    :returns: The appropriately sized CIDR subnet representation of the **ip**.
     """
-    if type(IPAddress(ip)) is IPv6Address:
-        return ":".join(IPv6Address(ip).exploded.split(':')[:4])
+    # We aren't using bridgedb.parse.addr.isIPAddress(ip, compressed=False)
+    # here because adding the string "False" into the map would land any and
+    # all clients whose IP address appeared to be invalid at the same position
+    # in a hashring.
+    address = ipaddr.IPAddress(ip)
+    if address.version == 6:
+        truncated = ':'.join(address.exploded.split(':')[:4])
+        subnet = str(ipaddr.IPv6Network(truncated + "::/64"))
+        return subnet
     else:
-        return ".".join(ip.split(".")[:3])
+        truncated = '.'.join(address.exploded.split('.')[:2])
+        subnet = str(ipaddr.IPv4Network(truncated + '.0.0/16'))
+        return subnet
 
 def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     if len(ring) < 20:
@@ -279,7 +288,7 @@ class IPBasedDistributor(Distributor):
                       % ' '.join([x.func_name for x in bridgeFilterRules]))
 
         area = self.areaMapper(ip)
-        logging.debug("IP mapped to area:\t%s.0 /24" % area)
+        logging.debug("IP mapped to area:\t%s" % area)
 
         key1 = ''
         pos = 0
@@ -289,14 +298,27 @@ class IPBasedDistributor(Distributor):
         # try to match the request to an ip category
         for category in self.categories:
             # IP Categories
-            if category.contains(ip):
+            if ip in category:
+                # The tag is a tag applied to a proxy IP address when it is
+                # added to the bridgedb.proxy.ProxySet. For Tor Exit relays,
+                # the default is 'exit_relay'. For other proxies loaded from
+                # the PROXY_LIST_FILES config option, the default tag is the
+                # full filename that the IP address originally came from.
+                tag = category.getTag(ip)
+                logging.info("Client was from known proxy (tag: %s): %s" % (tag, ip))
                 g = filterAssignBridgesToRing(self.splitter.hmac,
                                               self.nClusters +
                                               len(self.categories),
                                               n)
                 bridgeFilterRules.append(g)
-                logging.info("category<%s>%s", epoch, logSafely(area))
-                pos = self.areaOrderHmac("category<%s>%s" % (epoch, area))
+                # Cluster Tor/proxy users into four groups.  This means that
+                # no matter how many different Tor Exits or proxies a client
+                # uses, the most they can ever get is four different sets of
+                # bridge lines (per period).
+                group = (int(ipaddr.IPAddress(ip)) % 4) + 1
+                logging.debug(("Assigning client hashring position based on: "
+                               "known-proxy<%s>%s") % (epoch, group))
+                pos = self.areaOrderHmac("known-proxy<%s>%s" % (epoch, group))
                 key1 = getHMAC(self.splitter.key,
                                "Order-Bridges-In-Ring-%d" % n)
                 break
