@@ -49,7 +49,7 @@ class EmailRequestedKey(Exception):
 def uniformMap(ip):
     """Map an IP to an arbitrary 'area' string, such that any two IPv4
     addresses in the same ``/16`` subnet, or any two IPv6 addresses in the
-    same ``/64`` subnet, get the same string.
+    same ``/32`` subnet, get the same string.
 
     >>> from bridgedb import Dist
     >>> Dist.uniformMap('1.2.3.4')
@@ -57,9 +57,9 @@ def uniformMap(ip):
     >>> Dist.uniformMap('1.2.211.154')
     '1.2.0.0/16'
     >>> Dist.uniformMap('2001:f::bc1:b13:2808')
-    '2001:f::/64'
+    '2001:f::/32'
     >>> Dist.uniformMap('2a00:c98:2030:a020:2::42')
-    '2a00:c98:2030:a020::/64'
+    '2a00:c98::/32'
 
     :param str ip: A string representing an IPv4 or IPv6 address.
     :rtype: str
@@ -71,8 +71,8 @@ def uniformMap(ip):
     # in a hashring.
     address = ipaddr.IPAddress(ip)
     if address.version == 6:
-        truncated = ':'.join(address.exploded.split(':')[:4])
-        subnet = str(ipaddr.IPv6Network(truncated + "::/64"))
+        truncated = ':'.join(address.exploded.split(':')[:2])
+        subnet = str(ipaddr.IPv6Network(truncated + "::/32"))
         return subnet
     else:
         truncated = '.'.join(address.exploded.split('.')[:2])
