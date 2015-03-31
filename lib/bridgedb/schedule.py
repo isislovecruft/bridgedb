@@ -138,6 +138,31 @@ class ScheduledInterval(Unscheduled):
     """An class that splits time into periods, based on seconds, minutes,
     hours, days, weeks, or months.
 
+    >>> from bridgedb.schedule import fromUnixSeconds
+    >>> from bridgedb.schedule import ScheduledInterval
+    >>> timestamp = 1427769526
+    >>> str(fromUnixSeconds(timestamp))
+    '2015-03-31 02:38:46'
+    >>> sched = ScheduledInterval(5, 'minutes')
+    >>> start = sched.intervalStart(timestamp)
+    >>> start
+    1427769300
+    >>> current = sched.getInterval(timestamp)
+    >>> current
+    '2015-03-31 02:35:00'
+    >>> current == str(fromUnixSeconds(start))
+    True
+    >>> next = sched.nextIntervalStarts(timestamp)
+    >>> next
+    1427769600
+    >>> str(fromUnixSeconds(next))
+    '2015-03-31 02:40:00'
+    >>> later = 1427771057
+    >>> str(fromUnixSeconds(later))
+    '2015-03-31 03:04:17'
+    >>> sched.getInterval(later)
+    '2015-03-31 03:00:00'
+
     :ivar str intervalPeriod: One of the :data:`KNOWN_INTERVALS`.
     :ivar int intervalCount: The number of times **intervalPeriod** should be
         repeated within an interval.
