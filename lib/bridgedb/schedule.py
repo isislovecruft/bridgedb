@@ -12,6 +12,8 @@
 
 import calendar
 
+import math
+
 from datetime import datetime
 
 from zope import interface
@@ -237,6 +239,9 @@ class ScheduledInterval(Unscheduled):
         :returns: The Unix epoch timestamp for the start time of the interval
             that contains **when**.
         """
+        # Convert `when`s which are floats, i.e. from time.time(), to ints:
+        when = int(math.ceil(when))
+
         if self.intervalPeriod == 'month':
             # For months, we always start at the beginning of the month.
             date = fromUnixSeconds(when)
