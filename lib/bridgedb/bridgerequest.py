@@ -33,8 +33,8 @@ class IRequestBridges(Interface):
     transports = Attribute(
         "A list of strings of Pluggable Transport types requested.")
     notBlockedIn = Attribute(
-        "A list of 2-4 letter country codes. The distributed bridges should "
-        "not be blocked in these countries.")
+        "A list of two-character country codes. The distributed bridges "
+        "should not be blocked in these countries.")
     valid = Attribute(
         "A boolean. Should be ``True`` if the client's request was valid.")
     client = Attribute(
@@ -87,12 +87,18 @@ class BridgeRequestBase(object):
     implements(IRequestBridges)
 
     def __init__(self, addressClass=None):
+        #: (:class:`ipaddr.IPv4Address` or :class:`ipaddr.IPv6Address`) The IP
+        #: version of bridge addresses to distribute to the client.
         self.addressClass = addressClass
         if not ((self.addressClass is ipaddr.IPv4Address) or
                 (self.addressClass is ipaddr.IPv6Address)):
             self.addressClass = ipaddr.IPv4Address
+        #: (list) A list of callables used to filter bridges from a hashring.
         self.filters = list()
+        #: (list) A list of strings of Pluggable Transport types requested.
         self.transports = list()
+        #: (list) A list of two-character country codes. The distributed bridges
+        #: should not be blocked in these countries.
         self.notBlockedIn = list()
         #: This should be some information unique to the client making the
         #: request for bridges, such that we are able to HMAC this unique data
@@ -100,6 +106,7 @@ class BridgeRequestBase(object):
         #: bridge addresses they get in the request response). It defaults to
         #: the string ``'default'``.
         self.client = 'default'
+        #: (bool) Should be ``True`` if the client's request was valid.
         self.valid = False
 
     def getHashringPlacement(self, key, client=None):
