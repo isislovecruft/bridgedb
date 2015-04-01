@@ -175,26 +175,6 @@ def load(state, splitter, clear=False):
                           "but could not find bridge with that fingerprint.")
                          % router.fingerprint)
 
-    # XXX TODO refactor the next block according with new parsers for OONI
-    # bridge-reachability reports:
-    if state.COUNTRY_BLOCK_FILE:  # pragma: no cover
-        logging.info("Opening Blocking Countries file %s"
-                     % state.COUNTRY_BLOCK_FILE)
-        f = open(state.COUNTRY_BLOCK_FILE)
-        # Identity digest, primary OR address, portlist, country codes
-        for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
-            if ID in bridges.keys() and bridges[ID].running:
-                for port in portlist:
-                    addrport = "{0}:{1}".format(addr, port)
-                    logging.debug(":'( Tears! %s blocked bridge %s at %s"
-                                  % (cc, bridges[ID].fingerprint, addrport))
-                    try:
-                        bridges[ID].blockingCountries[addrport].update(cc)
-                    except KeyError:
-                        bridges[ID].blockingCountries[addrport] = set(cc)
-        logging.debug("Closing blocking-countries document")
-        f.close()
-
     inserted = 0
     logging.info("Inserting %d bridges into splitter..." % len(bridges))
     for fingerprint, bridge in bridges.items():

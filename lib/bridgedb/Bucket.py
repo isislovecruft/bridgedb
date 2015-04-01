@@ -242,14 +242,6 @@ class BucketManager(object):
                     bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
                                      y.weightedFractionalUptime))
 
-            # for a bridge, get the list of countries it might not work in
-            blocklist = dict()
-            if getattr(self.cfg, "COUNTRY_BLOCK_FILE", None) is not None:
-                f = open(self.cfg.COUNTRY_BLOCK_FILE, 'r')
-                for ID,address,portlist,countries in bridgedb.Bridges.parseCountryBlockFile(f):
-                    blocklist[toHex(ID)] = countries
-                f.close()
-
             try:
                 f = open(filename, 'w')
                 if self.cfg.COLLECT_TIMESTAMPS:

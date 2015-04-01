@@ -40,41 +40,6 @@ ID_LEN = 20  # XXX Only used in commented out line in Storage.py
 DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
-re_ipv6 = re.compile("\[([a-fA-F0-9:]+)\]:(.*$)")
-re_ipv4 = re.compile("((?:\d{1,3}\.?){4}):(.*$)")
-
-
-def parseCountryBlockFile(f):
-    """Generator. Parses a blocked-bridges file 'f', and yields
-       a fingerprint (ID), address, a list of ports, and a list of country
-       codes where the bridge is blocked for each valid line:
-       address, port [], countrycode []"""
-    for line in f:
-        ID = address = fields = portlist = countries = None
-        line = line.strip()
-        try:
-            ID, addrspec, countries = line.split()
-            if isValidFingerprint(ID):
-                ID = fromHex(ID)
-                logging.debug("Parsed ID: %s", ID)
-            else:
-                print "failed to parse ID!"
-                continue # skip this line
-
-            for regex in [re_ipv4, re_ipv6]:
-                m = regex.match(addrspec)
-                if m:
-                    address = ipaddr.IPAddress(m.group(1))
-                    portlist = addr.PortList(m.group(2))
-                    countries = countries.split(',')
-                    logging.debug("Parsed address: %s", address)
-                    logging.debug("Parsed portlist: %s", portlist)
-                    logging.debug("Parsed countries: %s", countries)
-        except (IndexError, ValueError):
-            logging.debug("Skipping line")
-            continue # skip this line
-        if ID and address and portlist and countries:
-            yield ID, address, portlist, countries
 
 class BridgeHolder(object):
     """Abstract base class for all classes that hold bridges."""
@@ -751,40 +716,3 @@ class FilteredBridgeSplitter(BridgeHolder):
             desc = "%s %s" % (description.strip(),
                     " ".join([v for k,v in grouped.items()]).strip())
             f.write("%s %s\n"%( toHex(b.getID()), desc))
-
-class BridgeBlock(object):
-    """Base class that abstracts bridge blocking.
-
-    .. TODO:: This should be a zope.interface specification.
-    """
-    def __init__(self):
-        pass
-
-    def insert(self, fingerprint, blockingRule):
-        raise NotImplementedError
-
-    def clear(self):
-        pass
-
-class CountryBlock(BridgeBlock):
-    """Countrywide bridge blocking"""
-    def __init__(self):
-        self.db = bridgedb.Storage.getDB()
-
-    def clear(self):
-        assert self.db
-        self.db.cleanBridgeBlocks()
-        self.db.commit()
-
-    def insert(self, fingerprint, blockingRule):
-        """ insert a country based blocking rule """
-        assert self.db
-        countryCode = blockingRule
-        self.db.addBridgeBlock(fingerprint, countryCode)
-        self.db.commit()
-
-    def getBlockingCountries(self, fingerprint):
-        """ returns a list of country codes where this fingerprint is blocked"""
-        assert self.db
-        if fingerprint is not None:
-            return self.db.getBlockingCountries(fingerprint) 

@@ -501,23 +501,6 @@ class SQLStorageTests(unittest.TestCase):
         cur.execute("SELECT * FROM EmailedBridges")
         self.assertEquals(len(cur.fetchall()), 1)
 
-        db.addBridgeBlock(b2.fingerprint, 'us')
-        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), True)
-        db.delBridgeBlock(b2.fingerprint, 'us')
-        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), False)
-        db.addBridgeBlock(b2.fingerprint, 'uk')
-        db.addBridgeBlock(b3.fingerprint, 'uk')
-        self.assertEquals(set([b2.fingerprint, b3.fingerprint]),
-                set(db.getBlockedBridges('uk')))
-
-        db.addBridgeBlock(b2.fingerprint, 'cn')
-        db.addBridgeBlock(b2.fingerprint, 'de')
-        db.addBridgeBlock(b2.fingerprint, 'jp')
-        db.addBridgeBlock(b2.fingerprint, 'se')
-        db.addBridgeBlock(b2.fingerprint, 'kr')
-
-        self.assertEquals(set(db.getBlockingCountries(b2.fingerprint)),
-                set(['uk', 'cn', 'de', 'jp', 'se', 'kr']))
         self.assertEquals(db.getWarnedEmail("def@example.com"), False)
         db.setWarnedEmail("def@example.com")
         self.assertEquals(db.getWarnedEmail("def@example.com"), True)
@@ -529,27 +512,6 @@ class SQLStorageTests(unittest.TestCase):
         db.cleanWarnedEmails(t+200)
         self.assertEquals(db.getWarnedEmail("def@example.com"), False)
 
-class ParseCountryBlockFileTests(unittest.TestCase):
-
-    def testParseCountryBlockFile(self):
-        simpleBlock = "%s:%s %s\n"
-        countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
-        test = str()
-        for i in range(100):
-            test += simpleBlock % (randomIPString(), randomPort(),
-                    randomCountrySpec())
-            test+=gettimestamp()
-
-        for a,p,c in bridgedb.Bridges.parseCountryBlockFile(test.split('\n')):
-            assert type(a) in (ipaddr.IPv6Address, ipaddr.IPv4Address)
-            assert isinstance(p, addr.PortList)
-            assert isinstance(c, list)
-            assert len(c) > 0
-            for y in c:
-                assert y in countries
-            #print "address: %s" % a
-            #print "portlist: %s" % p
-            #print "countries: %s" % c
 
 class BridgeStabilityTests(unittest.TestCase):
     def setUp(self):
@@ -689,7 +651,7 @@ def testSuite():
     loader = unittest.TestLoader()
 
     for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  ParseCountryBlockFileTests, BridgeStabilityTests]:
+                  BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
 
     for module in [ bridgedb.Bridges,
