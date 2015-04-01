@@ -136,8 +136,7 @@ class DummyEmailDistributor(object):
         self.domainrules = domainrules
         self.answerParameters = answerParameters
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
-                           countryCode=None, bridgeFilterRules=None):
+    def getBridges(self, bridgeRequest, epoch, N=1):
         return [DummyBridge() for _ in xrange(N)]
 
     def cleanDatabase(self):
@@ -160,22 +159,21 @@ class DummyEmailDistributorWithState(DummyEmailDistributor):
         super(DummyEmailDistributorWithState, self).__init__()
         self.alreadySeen = {}
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
-                           countryCode=None, bridgeFilterRules=None):
+    def getBridges(self, bridgeRequest, epoch, N=1):
         # Keep track of the number of times we've seen a client.
-        if not emailaddress in self.alreadySeen.keys():
-            self.alreadySeen[emailaddress] = 0
-        self.alreadySeen[emailaddress] += 1
+        if not bridgeRequest.client in self.alreadySeen.keys():
+            self.alreadySeen[bridgeRequest.client] = 0
+        self.alreadySeen[bridgeRequest.client] += 1
 
-        if self.alreadySeen[emailaddress] <= 1:
+        if self.alreadySeen[bridgeRequest.client] <= 1:
             return [DummyBridge() for _ in xrange(N)]
-        elif self.alreadySeen[emailaddress] == 2:
+        elif self.alreadySeen[bridgeRequest.client] == 2:
             raise TooSoonEmail(
                 "Seen client '%s' %d times"
-                % (emailaddress, self.alreadySeen[emailaddress]),
-                emailaddress)
+                % (bridgeRequest.client, self.alreadySeen[bridgeRequest.client]),
+                bridgeRequest.client)
         else:
             raise IgnoreEmail(
                 "Seen client '%s' %d times"
-                % (emailaddress, self.alreadySeen[emailaddress]),
-                emailaddress)
+                % (bridgeRequest.client, self.alreadySeen[bridgeRequest.client]),
+                bridgeRequest.client)

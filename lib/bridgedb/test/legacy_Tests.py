@@ -169,11 +169,11 @@ class EmailBridgeDistTests(unittest.TestCase):
                 {'example.com': [], 'dkim.example.com': ['dkim']})
         for _ in xrange(256):
             d.insert(fakeBridge())
-        d.getBridgesForEmail('abc@example.com', 1, 3)
+        d.getBridges('abc@example.com', 1, 3)
         self.assertRaises(bridgedb.Dist.TooSoonEmail,
-                d.getBridgesForEmail, 'abc@example.com', 1, 3)
+                d.getBridges, 'abc@example.com', 1, 3)
         self.assertRaises(bridgedb.Dist.IgnoreEmail,
-                d.getBridgesForEmail, 'abc@example.com', 1, 3)
+                d.getBridges, 'abc@example.com', 1, 3)
 
     def testUnsupportedDomain(self):
         db = self.db

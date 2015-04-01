@@ -473,65 +473,63 @@ class EmailBasedDistributor(Distributor):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridgesForEmail(self, emailaddress, epoch, N=1, parameters=None,
-                           countryCode=None, bridgeFilterRules=None):
+    def getBridges(self, bridgeRequest, epoch, N=1):
         """Return a list of bridges to give to a user.
 
-        :param str emailaddress: The user's email address, as given in a
-            :header:`From:` line.
+        :type bridgeRequest: :class:`~bridgedb.email.request.EmailBridgeRequest`
+        :param bridgeRequest: A :class:`~bridgedb.bridgerequest.BridgeRequestBase`
+            with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
+            attribute set to a string containing the client's full, canonicalized
+            email address.
         :param epoch: The time period when we got this request. This can be
             any string, so long as it changes with every period.
         :param int N: The number of bridges to try to give back.
-        :param parameters: DOCDOC
-        :param countryCode: DOCDOC
-        :param bridgeFilterRules: DOCDOC
         """
-        if not bridgeFilterRules:
-            bridgeFilterRules=[]
-        now = time.time()
-
         # All checks on the email address, such as checks for whitelisting and
         # canonicalization of domain name, are done in
         # :meth:`bridgedb.email.autoresponder.getMailTo` and
         # :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
-        if not emailaddress:
-            logging.error(("%s distributor can't get bridges for blank email "
-                           "address!") % (self.name, emailaddress))
-            return []
+        if (not bridgeRequest.client) or (bridgeRequest.client == 'default'):
+            raise addr.BadEmail(
+                ("%s distributor can't get bridges for invalid email email "
+                 " address: %s") % (self.name, bridgeRequest.client))
+
+        now = time.time()
 
         with bridgedb.Storage.getDB() as db:
-            wasWarned = db.getWarnedEmail(emailaddress)
-            lastSaw = db.getEmailTime(emailaddress)
+            wasWarned = db.getWarnedEmail(bridgeRequest.client)
+            lastSaw = db.getEmailTime(bridgeRequest.client)
 
             logging.info("Attempting to return for %d bridges for %s..."
-                         % (N, emailaddress))
+                         % (N, bridgeRequest.client))
 
             if lastSaw is not None:
-                if emailaddress in self.whitelist.keys():
+                if bridgeRequest.client in self.whitelist.keys():
                     logging.info(("Whitelisted email address %s was last seen "
                                   "%d seconds ago.")
-                                 % (emailaddress, now - lastSaw))
+                                 % (bridgeRequest.client, now - lastSaw))
                 elif (lastSaw + MAX_EMAIL_RATE) >= now:
                     wait = (lastSaw + MAX_EMAIL_RATE) - now
                     logging.info("Client %s must wait another %d seconds."
-                                 % (emailaddress, wait))
+                                 % (bridgeRequest.client, wait))
                     if wasWarned:
-                        raise IgnoreEmail("Client was warned.", emailaddress)
+                        raise IgnoreEmail("Client was warned.",
+                                          bridgeRequest.client)
                     else:
                         logging.info("Sending duplicate request warning.")
-                        db.setWarnedEmail(emailaddress, True, now)
+                        db.setWarnedEmail(bridgeRequest.client, True, now)
                         db.commit()
                         raise TooSoonEmail("Must wait %d seconds" % wait,
-                                           emailaddress)
+                                           bridgeRequest.client)
 
             # warning period is over
             elif wasWarned:
-                db.setWarnedEmail(emailaddress, False)
+                db.setWarnedEmail(bridgeRequest.client, False)
 
-            pos = self.emailHmac("<%s>%s" % (epoch, emailaddress))
+            pos = self.emailHmac("<%s>%s" % (epoch, bridgeRequest.client))
 
             ring = None
-            ruleset = frozenset(bridgeFilterRules)
+            ruleset = frozenset(bridgeRequest.filters)
             if ruleset in self.splitter.filterRings.keys():
                 logging.debug("Cache hit %s" % ruleset)
                 _, ring = self.splitter.filterRings[ruleset]
@@ -540,19 +538,17 @@ class EmailBasedDistributor(Distributor):
                 logging.debug("Cache miss %s" % ruleset)
 
                 # add new ring
-                key1 = getHMAC(self.splitter.key,
-                                                 "Order-Bridges-In-Ring")
+                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                # debug log: cache miss
                 self.splitter.addRing(ring, ruleset,
-                                      filterBridgesByRules(bridgeFilterRules),
+                                      filterBridgesByRules(ruleset),
                                       populate_from=self.splitter.bridges)
 
             numBridgesToReturn = getNumBridgesPerAnswer(ring,
                                                         max_bridges_per_answer=N)
             result = ring.getBridges(pos, numBridgesToReturn)
 
-            db.setEmailTime(emailaddress, now)
+            db.setEmailTime(bridgeRequest.client, now)
             db.commit()
 
         return result
