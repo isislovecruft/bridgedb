@@ -111,6 +111,32 @@ def getBridgeDBPID(pidfile="bridgedb.pid"):
 
     return pid
 
+def bracketIPv6(ip):
+    """Put brackets around an IPv6 address, just as tor does."""
+    return "[%s]" % ip
+
+def randomIPv4():
+    return ipaddr.IPv4Address(random.getrandbits(32))
+
+def randomIPv6():
+    return ipaddr.IPv6Address(random.getrandbits(128))
+
+def randomIP():
+    if random.choice(xrange(2)):
+        return randomIPv4()
+    return randomIPv6()
+
+def randomIPv4String():
+    return randomIPv4().compressed
+
+def randomIPv6String():
+    return bracketIPv6(randomIPv6().compressed)
+
+def randomIPString():
+    if random.choice(xrange(2)):
+        return randomIPv4String()
+    return randomIPv6String()
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be
