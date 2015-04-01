@@ -23,8 +23,6 @@ import os
 from functools import partial
 
 from ipaddr import IPv4Address
-from ipaddr import IPv6Address
-from ipaddr import IPAddress
 
 import mako.exceptions
 from mako.template import Template
@@ -32,14 +30,10 @@ from mako.lookup import TemplateLookup
 
 from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
-from twisted.python import filepath
 from twisted.web import resource
 from twisted.web import server
 from twisted.web import static
 from twisted.web.util import redirectTo
-
-import bridgedb.Dist
-import bridgedb.geo
 
 from bridgedb import captcha
 from bridgedb import crypto
@@ -50,6 +44,7 @@ from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.Filters import filterBridgesByTransport
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.qrcodes import generateQR
@@ -671,6 +666,18 @@ class WebResourceBridges(resource.Resource):
 
         return response
 
+    def getClientIP(self, request):
+        """Get the client's IP address from the :header:`X-Forwarded-For`
+        header, or from the :api:`request <twisted.web.server.Request>`.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for a
+            :api:`twisted.web.resource.Resource`.
+        :rtype: None or str
+        :returns: The client's IP address, if it was obtainable.
+        """
+        return getClientIP(request, self.useForwardedHeader)
+
     def getBridgeRequestAnswer(self, request):
         """Respond to a client HTTP request for bridges.
 
@@ -680,104 +687,75 @@ class WebResourceBridges(resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
-        # XXX why are we getting the interval if our distributor might be
-        # using bridgedb.schedule.Unscheduled?
+        bridgeLines = None
         interval = self.schedule.intervalStart(time.time())
-        bridges = ( )
-        ip = None
-        countryCode = None
-
-        ip = getClientIP(request, self.useForwardedForHeader)
-
-        # Look up the country code of the input IP
-        if isIPAddress(ip):
-            countryCode = bridgedb.geo.getCountryCode(IPAddress(ip))
-        else:
-            logging.warn("Invalid IP detected; skipping country lookup.")
-            countryCode = None
-
-        # XXX separate function again
-        format = request.args.get("format", None)
-        if format and len(format): format = format[0] # choose the first arg
-
-        # do want any options?
-        transport = ipv6 = unblocked = False
-
-        ipv6 = request.args.get("ipv6", False)
-        if ipv6: ipv6 = True # if anything after ?ipv6=
-
-        # XXX oh dear hell. why not check for the '?transport=' arg before
-        # regex'ing? And why not compile the regex once, somewhere outside
-        # this function and class?
-        try:
-            # validate method name
-            transport = re.match('[_a-zA-Z][_a-zA-Z0-9]*',
-                    request.args.get("transport")[0]).group()
-        except (TypeError, IndexError, AttributeError):
-            transport = None
-
-        try:
-            unblocked = re.match('[a-zA-Z]{2,4}',
-                    request.args.get("unblocked")[0]).group()
-        except (TypeError, IndexError, AttributeError):
-            unblocked = False
+        ip = self.getClientIP(request)
 
         logging.info("Replying to web request from %s. Parameters were %r"
                      % (ip, request.args))
 
-        rules = []
-        bridgeLines = None
-
         if ip:
-            if ipv6:
-                rules.append(filterBridgesByIP6)
-                addressClass = IPv6Address
-            else:
-                rules.append(filterBridgesByIP4)
-                addressClass = IPv4Address
+            bridgeRequest = HTTPSBridgeRequest()
+            bridgeRequest.client = ip
+            bridgeRequest.isValid(True)
+            bridgeRequest.withIPversion(request.args)
+            bridgeRequest.withPluggableTransportType(request.args)
+            bridgeRequest.withoutBlockInCountry(request)
+            bridgeRequest.generateFilters()
 
-            if transport:
-                #XXX: A cleaner solution would differentiate between
-                # addresses by protocol rather than have separate lists
-                # Tor to be a transport, and selecting between them.
-                rules = [filterBridgesByTransport(transport, addressClass)]
+            bridges = self.distributor.getBridges(bridgeRequest, interval)
+            bridgeLines = [replaceControlChars(bridge.getBridgeLine(
+                bridgeRequest, self.includeFingerprints)) for bridge in bridges]
 
-            if unblocked:
-                rules.append(filterBridgesByNotBlockedIn(unblocked,
-                    addressClass, transport))
+        return self.renderAnswer(request, bridgeLines)
 
-            bridges = self.distributor.getBridgesForIP(ip, interval,
-                                                       self.nBridgesToGive,
-                                                       countryCode,
-                                                       bridgeFilterRules=rules)
-            bridgeLines = [replaceControlChars(b.getConfigLine(
-                includeFingerprint=self.includeFingerprints,
-                addressClass=addressClass,
-                transport=transport,
-                request=bridgedb.Dist.uniformMap(ip))) for b in bridges]
+    def getResponseFormat(self, request):
+        """Determine the requested format for the response.
 
-        answer = self.renderAnswer(request, bridgeLines, format)
-        return answer
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object containing the HTTP method, full
+            URI, and any URL/POST arguments and headers present.
+        :rtype: ``None`` or str
+        :returns: The argument of the first occurence of the ``format=`` HTTP
+            GET parameter, if any were present. (The only one which currently
+            has any effect is ``format=plain``, see note in
+            :meth:`renderAnswer`.)  Otherwise, returns ``None``.
+        """
+        format = request.args.get("format", None)
+        if format and len(format):
+            format = format[0]  # Choose the first arg
+        return format
 
-    def renderAnswer(self, request, bridgeLines=None, format=None):
-        """Generate a response for a client which includes **bridges**.
+    def renderAnswer(self, request, bridgeLines=None):
+        """Generate a response for a client which includes **bridgesLines**.
 
-        The generated response can be plaintext or HTML.
+        .. note: The generated response can be plain or HTML. A plain response
+            looks like::
+
+                voltron 1.2.3.4:1234 ABCDEF01234567890ABCDEF01234567890ABCDEF
+                voltron 5.5.5.5:5555 0123456789ABCDEF0123456789ABCDEF01234567
+
+            That is, there is no HTML, what you see is what you get, and what
+            you get is suitable for pasting directly into Tor Launcher (or
+            into a torrc, if you prepend ``"Bridge "`` to each line). The
+            plain format can be requested from BridgeDB's web service by
+            adding an ``&format=plain`` HTTP GET parameter to the URL. Also
+            note that you won't get a QRCode, usage instructions, error
+            messages, or any other fanciness if you use the plain format.
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
             URI, and any URL/POST arguments and headers present.
         :type bridgeLines: list or None
         :param bridgeLines: A list of strings used to configure a Tor client
-            to use a bridge.
-        :type format: str or None
-        :param format: If ``'plain'``, return a plaintext response. Otherwise,
-            use the :file:`bridgedb/templates/bridges.html` template to render
-            an HTML response page which includes the **bridges**.
+            to use a bridge. If ``None``, then the returned page will instead
+            explain that there were no bridges of the type they requested,
+            with instructions on how to proceed.
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
         rtl = False
+        format = self.getResponseFormat(request)
 
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
