@@ -305,118 +305,92 @@ class IPBasedDistributor(Distributor):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridgesForIP(self, ip, epoch, N=1, countryCode=None,
-                        bridgeFilterRules=None):
+    def _buildHashringFilters(self, previousFilters, clientCluster):
+        totalRings = self.nClusters + len(self.categories)
+        g = filterAssignBridgesToRing(self.splitter.hmac, totalRings, clientCluster)
+        previousFilters.append(g)
+        return frozenset(previousFilters)
+
+    def getBridges(self, bridgeRequest, interval, N=1):
         """Return a list of bridges to give to a user.
 
-        :param str ip: The user's IP address, as a dotted quad.
-        :param str epoch: The time period when we got this request.  This can
-                          be any string, so long as it changes with every
-                          period.
+        :type bridgeRequest: :class:`bridgedb.https.request.HTTPSBridgeRequest`
+        :param bridgeRequest: A :class:`~bridgedb.bridgerequest.BridgeRequestBase`
+            with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
+            attribute set to a string containing the client's IP address.
+        :param str interval: The time period when we got this request.  This
+            can be any string, so long as it changes with every period.
         :param int N: The number of bridges to try to give back. (default: 1)
-        :param str countryCode: The two-letter geoip country code of the
-            client's IP address. If given, it is assumed that any bridges
-            distributed to that client should not be blocked in that
-            country. (default: None)
-        :param list bridgeFilterRules: A list of callables used filter the
-                                       bridges returned in the response to the
-                                       client. See :mod:`~bridgedb.Filters`.
         :rtype: list
         :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
-                 the response. See
-                 :meth:`bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer`
-                 for an example of how this is used.
+            the response. See
+            :meth:`bridgedb.HTTPServer.WebResourceBridges.getBridgeRequestAnswer`
+            for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
-                     % (N, ip))
-
-        if not bridgeFilterRules:
-            bridgeFilterRules=[]
+                     % (N, bridgeRequest.client))
 
         if not len(self.splitter):
             logging.warn("Bailing! Splitter has zero bridges!")
             return []
 
-        logging.debug("Bridges in splitter:\t%d" % len(self.splitter))
-        logging.debug("Client request epoch:\t%s" % epoch)
-        logging.debug("Active bridge filters:\t%s"
-                      % ' '.join([x.func_name for x in bridgeFilterRules]))
-
-        area = self.areaMapper(ip)
-        logging.debug("IP mapped to area:\t%s" % area)
-
-        key1 = ''
-        pos = 0
-        n = self.nClusters
-
-        # only one of ip categories or area clustering is active
-        # try to match the request to an ip category
+        # The cluster the client should draw bridges from:
+        clientCluster = self.nClusters
+        # First, check if the client's IP is one of the known proxies in one
+        # of our :data:`catagories`:
         for category in self.categories:
-            # IP Categories
-            if ip in category:
+            if bridgeRequest.client in category:
                 # The tag is a tag applied to a proxy IP address when it is
                 # added to the bridgedb.proxy.ProxySet. For Tor Exit relays,
                 # the default is 'exit_relay'. For other proxies loaded from
                 # the PROXY_LIST_FILES config option, the default tag is the
                 # full filename that the IP address originally came from.
-                tag = category.getTag(ip)
-                logging.info("Client was from known proxy (tag: %s): %s" % (tag, ip))
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                                              self.nClusters +
-                                              len(self.categories),
-                                              n)
-                bridgeFilterRules.append(g)
+                tag = category.getTag(bridgeRequest.client)
+                logging.info("Client was from known proxy (tag: %s): %s" %
+                             (tag, bridgeRequest.client))
                 # Cluster Tor/proxy users into four groups.  This means that
                 # no matter how many different Tor Exits or proxies a client
                 # uses, the most they can ever get is four different sets of
                 # bridge lines (per period).
-                group = (int(ipaddr.IPAddress(ip)) % 4) + 1
-                logging.debug(("Assigning client hashring position based on: "
-                               "known-proxy<%s>%s") % (epoch, group))
-                pos = self.areaOrderHmac("known-proxy<%s>%s" % (epoch, group))
-                key1 = getHMAC(self.splitter.key,
-                               "Order-Bridges-In-Ring-%d" % n)
+                group = (int(ipaddr.IPAddress(bridgeRequest.client)) % 4) + 1
+                area = "known-proxy-group-%d" % group
                 break
-            n += 1
-
-        # if no category matches, use area clustering
+            clientCluster += 1
+        # If the client wasn't using Tor or any other known proxy, select the
+        # client's cluster number based upon the /16 of the client's IP
+        # address:
         else:
-            # IP clustering
-            h = int( self.areaClusterHmac(area)[:8], 16)
-            # length of numClusters
-            clusterNum = h % self.nClusters
+            # Areas (i.e. /16s) are grouped into the number of rings specified
+            # by the N_IP_CLUSTERS configuration option.
+            area = self.areaMapper(bridgeRequest.client)
+            logging.debug("IP mapped to area:\t%s" % area)
+            clientCluster = int(self.areaClusterHmac(area)[:8], 16) % self.nClusters
 
-            g = filterAssignBridgesToRing(self.splitter.hmac,
-                                          self.nClusters +
-                                          len(self.categories),
-                                          clusterNum)
-            bridgeFilterRules.append(g)
-            pos = self.areaOrderHmac("<%s>%s" % (epoch, area))
-            key1 = getHMAC(self.splitter.key,
-                           "Order-Bridges-In-Ring-%d" % clusterNum)
+        pos = self.areaOrderHmac("<%s>%s" % (interval, area))
+        filters = self._buildHashringFilters(bridgeRequest.filters, clientCluster)
 
-        # try to find a cached copy
-        ruleset = frozenset(bridgeFilterRules)
+        logging.debug("Assigned client hashring position based on: <%s>%s" %
+                      (interval, area))
+        logging.debug("Bridges in splitter:\t%d" % len(self.splitter))
+        logging.debug("Active bridge filters:\t%s" %
+                      ' '.join([x.func_name for x in filters]))
 
-        # See if we have a cached copy of the ring,
-        # otherwise, add a new ring and populate it
-        if ruleset in self.splitter.filterRings.keys():
-            logging.debug("Cache hit %s" % ruleset)
-            _, ring = self.splitter.filterRings[ruleset]
-
-        # else create the ring and populate it
+        # Check wheth we have a cached copy of the hashring:
+        if filters in self.splitter.filterRings.keys():
+            logging.debug("Cache hit %s" % filters)
+            _, ring = self.splitter.filterRings[filters]
+        # Otherwise, construct a new hashring and populate it:
         else:
-            logging.debug("Cache miss %s" % ruleset)
+            logging.debug("Cache miss %s" % filters)
+            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % clientCluster)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.splitter.addRing(ring,
-                                  ruleset,
-                                  filterBridgesByRules(bridgeFilterRules),
+            self.splitter.addRing(ring, filters, filterBridgesByRules(filters),
                                   populate_from=self.splitter.bridges)
 
-        # get an appropriate number of bridges
-        numBridgesToReturn = getNumBridgesPerAnswer(ring,
-                                                    max_bridges_per_answer=N)
-        answer = ring.getBridges(pos, numBridgesToReturn)
+        # Determine the appropriate number of bridges to give to the client:
+        returnNum = getNumBridgesPerAnswer(ring, max_bridges_per_answer=N)
+        answer = ring.getBridges(pos, returnNum)
+
         return answer
 
     def __len__(self):
@@ -424,6 +398,7 @@ class IPBasedDistributor(Distributor):
 
     def dumpAssignments(self, f, description=""):
         self.splitter.dumpAssignments(f, description)
+
 
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming

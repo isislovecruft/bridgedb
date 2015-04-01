@@ -392,6 +392,7 @@ setuptools.setup(
     package_dir={'': 'lib'},
     packages=['bridgedb',
               'bridgedb.email',
+              'bridgedb.https',
               'bridgedb.parse',
               'bridgedb.test'],
     scripts=['scripts/bridgedb',

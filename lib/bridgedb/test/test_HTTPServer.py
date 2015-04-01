@@ -448,22 +448,22 @@ class DummyBridge(object):
         self.or_addresses = {ipaddr.IPv6Address(self._returnSix()):
                              self._randORPort()}
 
-    def getConfigLine(self, includeFingerprint=True,
-                      addressClass=ipaddr.IPv4Address,
-                      transport=None,
-                      request=None):
+    def getBridgeLine(self, bridgeRequest, includeFingerprint=True):
         """Get a "torrc" bridge config line to give to a client."""
+        if not bridgeRequest.isValid():
+            return
         line = []
-        if transport is not None:
-            #print("getConfigLine got transport=%r" % transport)
-            line.append(str(transport))
-        line.append("%s:%s" % (self.ip, self.orport))
-        if includeFingerprint is True: line.append(self.fingerprint)
+        if bridgeRequest.transports:
+            line.append(bridgeRequest.transports[-1])  # Just the last PT
+        if bridgeRequest.addressClass is ipaddr.IPv6Address:
+            line.append("[%s]:%s" % self.or_addresses.items()[0])
+        else:
+            line.append("%s:%s" % (self.ip, self.orport))
+        if includeFingerprint is True:
+            line.append(self.fingerprint)
         if self.ptArgs:
             line.append(','.join(['='.join(x) for x in self.ptArgs.items()]))
-        bridgeLine = " ".join([item for item in line])
-        #print "Created config line: %r" % bridgeLine
-        return bridgeLine
+        return " ".join([item for item in line])
 
 
 class DummyMaliciousBridge(DummyBridge):
@@ -499,8 +499,7 @@ class DummyIPBasedDistributor(object):
         self.ipCategories = ipCategories
         self.answerParameters = answerParameters
 
-    def getBridgesForIP(self, ip=None, epoch=None, N=1,
-                        countyCode=None, bridgeFilterRules=None):
+    def getBridges(self, bridgeRequest=None, epoch=None, N=1):
         """Needed because it's called in
         :meth:`WebResourceBridges.getBridgesForIP`.
         """
