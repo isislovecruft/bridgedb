@@ -243,52 +243,6 @@ class Database(object):
         cur.execute("UPDATE Bridges SET distributor = ? WHERE hex_key = ?",
                     (distributor, hex_key))
 
-    def addBridgeBlock(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("INSERT OR REPLACE INTO BlockedBridges "
-                    "(hex_key,blocking_country) VALUES (?,?)",
-                    (fingerprint, countryCode))
-
-    def delBridgeBlock(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("DELETE FROM BlockedBridges WHERE hex_key = ? "
-                    "AND blocking_country = ?", (fingerprint, countryCode))
-
-    def cleanBridgeBlocks(self):
-        cur = self._cur
-        cur.execute("DELETE FROM BlockedBridges")
-
-    def getBlockingCountries(self, fingerprint):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE hex_key = ? ",
-                    (fingerprint,))
-        v = cur.fetchall()
-        if v is None:
-            return None
-
-        # return list of country-codes
-        return [ str(result[1]) for (result) in v ]
-
-    def getBlockedBridges(self, countryCode):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE blocking_country = ? ",
-                    (countryCode,))
-        v = cur.fetchall()
-        if v is None:
-            return None
-        # return list of fingerprints
-        return [ str(result[0]) for (result) in v ]
-
-    def isBlocked(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE "
-                    "hex_key = ? AND blocking_country = ?",
-                    (fingerprint, countryCode))
-        v = cur.fetchone()
-        if v is None:
-            return False
-        return True 
-
     def getWarnedEmail(self, addr):
         addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
