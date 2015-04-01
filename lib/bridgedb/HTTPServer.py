@@ -75,6 +75,33 @@ lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         collection_size=500)
 logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
+
+def getClientIP(request, useForwardedHeader=False):
+    """Get the client's IP address from the :header:`X-Forwarded-For`
+    header, or from the :api:`request <twisted.web.server.Request>`.
+
+    :type request: :api:`twisted.web.http.Request`
+    :param request: A ``Request`` object for a
+        :api:`twisted.web.resource.Resource`.
+    :param bool useForwardedHeader: If ``True``, attempt to get the client's
+        IP address from the :header:`X-Forwarded-For` header.
+    :rtype: None or str
+    :returns: The client's IP address, if it was obtainable.
+    """
+    ip = None
+
+    if useForwardedHeader:
+        header = request.getHeader("X-Forwarded-For")
+        if header:
+            ip = header.split(",")[-1].strip()
+            if not isIPAddress(ip):
+                logging.warn("Got weird X-Forwarded-For value %r" % header)
+                ip = None
+    else:
+        ip = request.getClientIP()
+
+    return ip
+
 def replaceErrorPage(error, template_name=None):
     """Create a general error page for displaying in place of tracebacks.
 
@@ -138,20 +165,13 @@ class CaptchaProtectedResource(resource.Resource):
         """Get the client's IP address from the :header:`X-Forwarded-For`
         header, or from the :api:`request <twisted.web.server.Request>`.
 
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for a
+            :api:`twisted.web.resource.Resource`.
         :rtype: None or str
         :returns: The client's IP address, if it was obtainable.
         """
-        ip = None
-        if self.useForwardedHeader:
-            h = request.getHeader("X-Forwarded-For")
-            if h:
-                ip = h.split(",")[-1].strip()
-                if not isIPAddress(ip):
-                    logging.warn("Got weird X-Forwarded-For value %r" % h)
-                    ip = None
-        else:
-            ip = request.getClientIP()
-        return ip
+        return getClientIP(request, self.useForwardedHeader)
 
     def getCaptchaImage(self, request=None):
         """Get a CAPTCHA image.
@@ -667,16 +687,7 @@ class WebResourceBridges(resource.Resource):
         ip = None
         countryCode = None
 
-        # XXX this code is duplicated in CaptchaProtectedResource
-        if self.useForwardedHeader:
-            h = request.getHeader("X-Forwarded-For")
-            if h:
-                ip = h.split(",")[-1].strip()
-                if not isIPAddress(ip):
-                    logging.warn("Got weird forwarded-for value %r",h)
-                    ip = None
-        else:
-            ip = request.getClientIP()
+        ip = getClientIP(request, self.useForwardedForHeader)
 
         # Look up the country code of the input IP
         if isIPAddress(ip):
