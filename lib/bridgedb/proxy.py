@@ -406,7 +406,8 @@ class ExitListProtocol(protocol.ProcessProtocol):
     def errReceived(self, data):
         """Some data was received from stderr."""
         # The get-exit-list script uses twisted.python.log to log to stderr:
-        logging.debug(data)  # pragma: no cover
+        for line in data.splitlines():  # pragma: no cover
+            logging.debug(line)
 
     def outReceived(self, data):
         """Some data was received from stdout."""
