@@ -83,7 +83,8 @@ def loadConfig(configFile=None, configCls=None):
     if itsSafeToUseLogging:
         logging.debug("New configuration settings:")
         logging.debug("\n".join(["{0} = {1}".format(key, value)
-                                 for key, value in configuration.items()]))
+                                 for key, value in configuration.items()
+                                 if not key.startswith('_')]))
 
     # Create a :class:`Conf` from the settings stored within the local scope
     # of the ``configuration`` dictionary:
