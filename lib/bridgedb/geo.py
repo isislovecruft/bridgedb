@@ -38,20 +38,25 @@ except Exception as err:  # pragma: no cover
     geoip = None
     geoipv6 = None
 
-def getCountryCode(IPAddr):
+
+def getCountryCode(ip):
     """Return the two-letter country code of a given IP address.
 
-    :param IPAddr: (:class:`ipaddr.IPAddress`) An IPv4 OR IPv6 address.
-    """
+    :type ip: :class:`ipaddr.IPAddress`
+    :param ip: An IPv4 OR IPv6 address.
+    :rtype: ``None`` or str
 
-    ip = None
+    :returns: If the GeoIP databases are loaded, and the **ip** lookup is
+        successful, then this returns a two-letter country code.  Otherwise,
+        this returns ``None``.
+    """
+    addr = None
     version = None
     try:
-        ip = IPAddr.compressed
-        version = IPAddr.version
+        addr = ip.compressed
+        version = ip.version
     except AttributeError as err:
-        logging.warn("Wrong type passed to getCountryCode. Offending call:"
-        " %r" % err)
+        logging.warn("Wrong type passed to getCountryCode: %s" % str(err))
         return None
 
     # GeoIP has two databases: one for IPv4 addresses, and one for IPv6
@@ -59,8 +64,7 @@ def getCountryCode(IPAddr):
     db = None
     # First, make sure we loaded GeoIP properly.
     if None in (geoip, geoipv6):
-        logging.warn("GeoIP databases failed to load; could not look up"\
-                     " country code.")
+        logging.warn("GeoIP databases aren't loaded; can't look up country code")
         return None
     else:
         if version == 4:
@@ -69,10 +73,10 @@ def getCountryCode(IPAddr):
             db = geoipv6
 
     # Look up the country code of the address.
-    countryCode = db.country_code_by_addr(ip)
+    countryCode = db.country_code_by_addr(addr)
     if countryCode:
         logging.debug("Looked up country code: %s" % countryCode)
         return countryCode
     else:
-        logging.debug("Country code was not detected. IP: %s" % ip)
+        logging.debug("Country code was not detected. IP: %s" % addr)
         return None
