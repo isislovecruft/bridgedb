@@ -201,6 +201,61 @@ class IPBasedDistributor(Distributor):
         self.setDistributorName('HTTPS')
 
     def prepopulateRings(self):
+        """Prepopulate this distributor's hashrings and subhashrings with
+        bridges.
+
+        The hashring structure for this distributor is influenced by the
+        ``N_IP_CLUSTERS`` configuration option, as well as the number of
+        ``PROXY_LIST_FILES``.  Essentially, :data:`nClusters` is set to the
+        specified ``N_IP_CLUSTERS``.  The ``PROXY_LIST_FILES`` (plus the
+        :class:`bridgedb.proxy.ProxySet` for the Tor Exit list downloaded into
+        memory with :script:`get-tor-exits`) are stored in :data:`categories`.
+
+        The number of subhashrings which this :class:`Distributor` has active
+        in its hashring is then the :data:`nClusters` plus the number of
+        :data:`categories`.
+
+        As an example, if BridgeDB was configured with ``N_IP_CLUSTERS=4`` and
+        ``PROXY_LIST_FILES=["open-socks-proxies.txt"]``, then the total number
+        of subhashrings is six — four for the "clusters", and two
+        "categories": one for everything contained within the
+        ``"open-socks-proxies.txt"`` file and the other for the downloaded
+        list of Tor Exits.  Thus, the resulting hashring-subhashring structure
+        would look like:
+
+        +------------------+---------------------------------------------------+-------------------------+
+        |                  |               Directly connecting users           | Tor / known proxy users |
+        +------------------+------------+------------+------------+------------+------------+------------+
+        | Clusters /       | Cluster-1  | Cluster-2  | Cluster-3  | Cluster-4  | Cat-1      | Cat-2      |
+        | Categories       |            |            |            |            |            |            |
+        +==================+============+============+============+============+============+============+
+        | Subhashrings     |            |            |            |            |            |            |
+        | (total, assigned)| (6,0)      | (6,1)      | (6,2)      | (6,3)      | (6,4)      | (6,5)      |
+        +------------------+------------+------------+------------+------------+------------+------------+
+        | Filtered         | (6,0)      | (6,1)      | (6,2)      | (6,3)      | (6,4)      | (6,5)      |
+        | Subhashrings     +------------+------------+------------+------------+------------+------------+
+        | bBy requested    | (6,0)-IPv4 | (6,1)-IPv4 | (6,2)-IPv4 | (6,3)-IPv4 | (6,4)-IPv4 | (6,5)-IPv4 |
+        | bridge type)     +------------+------------+------------+------------+------------+------------+
+        |                  | (6,0)-IPv6 | (6,1)-IPv6 | (6,2)-IPv6 | (6,3)-IPv6 | (6,4)-IPv6 | (6,5)-IPv6 |
+        +------------------+------------+------------+------------+------------+------------+------------+
+
+        The "filtered subhashrings" are essentially copies of their respective
+        subhashring, that is, subhashring ``(6,0)`` contains both IPv4 and
+        IPv6 bridges, meaning that its contents are a superset of the filtered
+        subhashrings ``(6,0)-IPv4`` and ``(6,0)-IPv6``.  (I have no idea of
+        the relation between ``(6,0)-IPv4`` and ``(6,0)-IPv6``, including
+        whether or not their contents are disjoint. I didn't design this shit,
+        I'm just redesigning it.)
+
+        "Why does the ``(6,0)`` superset subhashring exist then?"
+
+        you might ask.  That's a very good question.  I don't know either.
+        I'm inclined to think it shouldn't exist, unless we wish to allow
+        clients to request IPv4 bridges and IPv6 bridges simultaneously
+        (there's currently no interface to do this, however).
+
+        Thus, in this example, we end up with **18 total subhashrings**.
+        """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
         # populate all rings (for dumping assignments and testing)
         for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
