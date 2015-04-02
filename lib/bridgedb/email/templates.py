@@ -150,7 +150,7 @@ def addFooter(template, clientAddress=None):
               % (clientAddr,
                  now.strftime('%A, %d %B, %Y'),
                  now.strftime('%H:%M:%S'))
-    footer += u'\n'
+    footer += u'\n\n'
 
     return footer
 
