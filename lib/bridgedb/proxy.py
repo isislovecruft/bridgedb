@@ -92,7 +92,6 @@ def loadProxiesFromFile(filename, proxySet=None, removeStale=False):
                 if isinstance(proxySet, ProxySet):
                     # ProxySet.add() will validate the IP address
                     if proxySet.add(line, tag=filename):
-                        logging.info("Added %s to the proxy list." % line)
                         addresses.append(line)
                 else:
                     ip = isIPAddress(line)
@@ -170,7 +169,7 @@ class ProxySet(MutableSet):
         ip = isIPAddress(ip)
         if ip:
             if self._proxies.isdisjoint(set(ip)):
-                logging.debug("Adding %s to proxy list %r..." % (ip, self))
+                logging.debug("Adding %s to proxy list..." % ip)
                 self._proxies.add(ip)
                 self._proxydict[ip] = tag if tag else time.time()
                 return True
