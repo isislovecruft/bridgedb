@@ -233,33 +233,25 @@ class IPBasedDistributor(Distributor):
         | Subhashrings     |            |            |            |            |            |            |
         | (total, assigned)| (6,0)      | (6,1)      | (6,2)      | (6,3)      | (6,4)      | (6,5)      |
         +------------------+------------+------------+------------+------------+------------+------------+
-        | Filtered         | (6,0)      | (6,1)      | (6,2)      | (6,3)      | (6,4)      | (6,5)      |
-        | Subhashrings     +------------+------------+------------+------------+------------+------------+
-        | bBy requested    | (6,0)-IPv4 | (6,1)-IPv4 | (6,2)-IPv4 | (6,3)-IPv4 | (6,4)-IPv4 | (6,5)-IPv4 |
-        | bridge type)     +------------+------------+------------+------------+------------+------------+
-        |                  | (6,0)-IPv6 | (6,1)-IPv6 | (6,2)-IPv6 | (6,3)-IPv6 | (6,4)-IPv6 | (6,5)-IPv6 |
+        | Filtered         | (6,0)-IPv4 | (6,1)-IPv4 | (6,2)-IPv4 | (6,3)-IPv4 | (6,4)-IPv4 | (6,5)-IPv4 |
+        | Subhashrings     |            |            |            |            |            |            |
+        | bBy requested    +------------+------------+------------+------------+------------+------------+
+        | bridge type)     | (6,0)-IPv6 | (6,1)-IPv6 | (6,2)-IPv6 | (6,3)-IPv6 | (6,4)-IPv6 | (6,5)-IPv6 |
+        |                  |            |            |            |            |            |            |
         +------------------+------------+------------+------------+------------+------------+------------+
 
-        The "filtered subhashrings" are essentially copies of their respective
-        subhashring, that is, subhashring ``(6,0)`` contains both IPv4 and
-        IPv6 bridges, meaning that its contents are a superset of the filtered
-        subhashrings ``(6,0)-IPv4`` and ``(6,0)-IPv6``.  (I have no idea of
-        the relation between ``(6,0)-IPv4`` and ``(6,0)-IPv6``, including
-        whether or not their contents are disjoint. I didn't design this shit,
-        I'm just redesigning it.)
+        The "filtered subhashrings" are essentially filtered copies of their
+        respective subhashring, such that they only contain bridges which
+        support IPv4 or IPv6, respectively.  (I have no idea of the relation
+        between ``(6,0)-IPv4`` and ``(6,0)-IPv6``, including whether or not
+        their contents are disjoint. I didn't design this shit, I'm just
+        redesigning it.)
 
-        "Why does the ``(6,0)`` superset subhashring exist then?"
-
-        you might ask.  That's a very good question.  I don't know either.
-        I'm inclined to think it shouldn't exist, unless we wish to allow
-        clients to request IPv4 bridges and IPv6 bridges simultaneously
-        (there's currently no interface to do this, however).
-
-        Thus, in this example, we end up with **18 total subhashrings**.
+        Thus, in this example, we end up with **12 total subhashrings**.
         """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
         # populate all rings (for dumping assignments and testing)
-        for filterFn in [None, filterBridgesByIP4, filterBridgesByIP6]:
+        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
             n = self.nClusters
             for category in self.categories:
                 g = filterAssignBridgesToRing(self.splitter.hmac,
