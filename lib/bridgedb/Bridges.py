@@ -449,7 +449,6 @@ class BridgeSplitter(BridgeHolder):
            p -- the relative proportion of bridges to assign to this
                bridgeholder.
         """
-        assert isinstance(ring, BridgeHolder)
         self.ringsByName[ringname] = ring
         self.pValues.append(self.totalP)
         self.rings.append(ringname)

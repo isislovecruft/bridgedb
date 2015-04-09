@@ -92,7 +92,8 @@ def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
 
     return n_bridges_per_answer
 
-class Distributor(bridgedb.Bridges.BridgeHolder):
+
+class Distributor(object):
     """Distributes bridges to clients."""
 
     def __init__(self):
