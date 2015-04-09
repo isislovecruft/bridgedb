@@ -250,45 +250,22 @@ class IPBasedDistributor(Distributor):
         Thus, in this example, we end up with **12 total subhashrings**.
         """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
-        # populate all rings (for dumping assignments and testing)
+
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
-            n = self.nClusters
-            for category in self.categories:
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                                              self.nClusters +
-                                              len(self.categories),
-                                              n)
-                bridgeFilterRules = [g]
-                if filterFn:
-                    bridgeFilterRules.append(filterFn)
-                ruleset = frozenset(bridgeFilterRules)
-                key1 = getHMAC(self.splitter.key,
-                               "Order-Bridges-In-Ring-%d" % n)
-                n += 1
+            # XXX Distributors should have a "totalClusters" property in order
+            # to avoid reusing this unclear construct all over the place.  (Or
+            # just get rid of the idea of "categories".)
+            for cluster in range(self.nClusters + len(self.categories)):
+                filters = self._buildHashringFilters([filterFn,], cluster)
+                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                ring.setName('{0} Ring'.format(self.name))
-                self.splitter.addRing(ring,
-                                      ruleset,
-                                      filterBridgesByRules(bridgeFilterRules),
-                                      populate_from=self.splitter.bridges)
-
-
-            # populate all ip clusters
-            for clusterNum in xrange(self.nClusters):
-                g = filterAssignBridgesToRing(self.splitter.hmac,
-                                              self.nClusters +
-                                              len(self.categories),
-                                              clusterNum)
-                bridgeFilterRules = [g]
-                if filterFn:
-                    bridgeFilterRules.append(filterFn)
-                ruleset = frozenset(bridgeFilterRules)
-                key1 = getHMAC(self.splitter.key,
-                               "Order-Bridges-In-Ring-%d" % clusterNum)
-                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring,
-                                      ruleset,
-                                      filterBridgesByRules(bridgeFilterRules),
+                # For consistency with previous implementation of this method,
+                # only set the "name" for "clusters" which are in this
+                # distributor's categories:
+                if cluster >= self.nClusters:
+                    ring.setName('{0} Ring'.format(self.name))
+                self.splitter.addRing(ring, filters,
+                                      filterBridgesByRules(filters),
                                       populate_from=self.splitter.bridges)
 
     def clear(self):
