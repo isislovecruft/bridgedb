@@ -27,7 +27,6 @@ from twisted.internet.threads import deferToThread
 from twisted.trial import unittest
 
 from bridgedb import Main
-from bridgedb.Bridges import BridgeHolder
 from bridgedb.parse.options import parseOptions
 
 
@@ -59,13 +58,17 @@ def mockUpdateBridgeHistory(bridges, timestamps):
                   (fingerprint, timestamp))
 
 
-class MockBridgeHolder(BridgeHolder):
+class MockBridgeHolder(object):
     def __init__(self):
         self._bridges = {}
     def __len__(self):
         return len(self._bridges.keys())
     def insert(self, bridge):
         self._bridges[bridge.fingerprint] = bridge
+    def clear(self):
+        pass
+    def dumpAssignments(self):
+        pass
 
 
 class MainTests(unittest.TestCase):
