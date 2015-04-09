@@ -448,7 +448,7 @@ class EmailBasedDistributor(Distributor):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def getBridges(self, bridgeRequest, epoch, N=1):
+    def getBridges(self, bridgeRequest, interval, N=1):
         """Return a list of bridges to give to a user.
 
         :type bridgeRequest: :class:`~bridgedb.email.request.EmailBridgeRequest`
@@ -456,7 +456,7 @@ class EmailBasedDistributor(Distributor):
             with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
             attribute set to a string containing the client's full, canonicalized
             email address.
-        :param epoch: The time period when we got this request. This can be
+        :param interval: The time period when we got this request. This can be
             any string, so long as it changes with every period.
         :param int N: The number of bridges to try to give back.
         """
@@ -501,7 +501,7 @@ class EmailBasedDistributor(Distributor):
             elif wasWarned:
                 db.setWarnedEmail(bridgeRequest.client, False)
 
-            pos = self.emailHmac("<%s>%s" % (epoch, bridgeRequest.client))
+            pos = self.emailHmac("<%s>%s" % (interval, bridgeRequest.client))
 
             ring = None
             ruleset = frozenset(bridgeRequest.filters)
