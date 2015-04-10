@@ -268,9 +268,6 @@ class IPBasedDistributor(Distributor):
                                       filterBridgesByRules(filters),
                                       populate_from=self.splitter.bridges)
 
-    def clear(self):
-        self.splitter.clear()
-
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
@@ -409,10 +406,6 @@ class EmailBasedDistributor(Distributor):
             key2, max_cached_rings=5)
 
         self.setDistributorName('Email')
-
-    def clear(self):
-        self.splitter.clear()
-        #self.ring.clear() # should be take care of by above
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
