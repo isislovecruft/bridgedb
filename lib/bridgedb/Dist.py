@@ -141,7 +141,7 @@ class IPBasedDistributor(Distributor):
         distributor.
     """
 
-    def __init__(self, areaMapper, nClusters, key,
+    def __init__(self, areaMapper, numberOfClusters, key,
                  ipCategories=None, answerParameters=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
@@ -151,9 +151,9 @@ class IPBasedDistributor(Distributor):
             strings, such that addresses which map to identical strings are
             considered to be in the same "area" (for some arbitrary definition
             of "area"). See :func:`bridgedb.Dist.uniformMap` for an example.
-        :param integer nClusters: The number of clusters to group IP addresses
+        :param integer numberOfClusters: The number of clusters to group IP addresses
             into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then
-            the actual number of clusters is one higher than ``nClusters``,
+            the actual number of clusters is one higher than ``numberOfClusters``,
             because the set of known open proxies constitutes its own
             category.
             DOCDOC What exactly does a cluster *do*?
@@ -169,7 +169,7 @@ class IPBasedDistributor(Distributor):
             bridges" or "at least one bridge on port 443", etc.
         """
         self.areaMapper = areaMapper
-        self.nClusters = nClusters
+        self.numberOfClusters = numberOfClusters
         self.answerParameters = answerParameters
 
         if not ipCategories:
@@ -193,7 +193,7 @@ class IPBasedDistributor(Distributor):
         #
         # XXX Why is the "extra room" hardcoded to be 5? Shouldn't it be some
         #     fraction of the number of clusters/categories? --isis
-        ring_cache_size  = self.nClusters + len(ipCategories) + 5
+        ring_cache_size  = self.numberOfClusters + len(ipCategories) + 5
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=ring_cache_size)
         logging.debug("Added splitter %s to IPBasedDistributor."
@@ -207,13 +207,13 @@ class IPBasedDistributor(Distributor):
 
         The hashring structure for this distributor is influenced by the
         ``N_IP_CLUSTERS`` configuration option, as well as the number of
-        ``PROXY_LIST_FILES``.  Essentially, :data:`nClusters` is set to the
+        ``PROXY_LIST_FILES``.  Essentially, :data:`numberOfClusters` is set to the
         specified ``N_IP_CLUSTERS``.  The ``PROXY_LIST_FILES`` (plus the
         :class:`bridgedb.proxy.ProxySet` for the Tor Exit list downloaded into
         memory with :script:`get-tor-exits`) are stored in :data:`categories`.
 
         The number of subhashrings which this :class:`Distributor` has active
-        in its hashring is then the :data:`nClusters` plus the number of
+        in its hashring is then the :data:`numberOfClusters` plus the number of
         :data:`categories`.
 
         As an example, if BridgeDB was configured with ``N_IP_CLUSTERS=4`` and
@@ -255,14 +255,14 @@ class IPBasedDistributor(Distributor):
             # XXX Distributors should have a "totalClusters" property in order
             # to avoid reusing this unclear construct all over the place.  (Or
             # just get rid of the idea of "categories".)
-            for cluster in range(self.nClusters + len(self.categories)):
+            for cluster in range(self.numberOfClusters + len(self.categories)):
                 filters = self._buildHashringFilters([filterFn,], cluster)
                 key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 # For consistency with previous implementation of this method,
                 # only set the "name" for "clusters" which are in this
                 # distributor's categories:
-                if cluster >= self.nClusters:
+                if cluster >= self.numberOfClusters:
                     ring.setName('{0} Ring'.format(self.name))
                 self.splitter.addRing(ring, filters,
                                       filterBridgesByRules(filters),
@@ -273,7 +273,7 @@ class IPBasedDistributor(Distributor):
         self.splitter.insert(bridge)
 
     def _buildHashringFilters(self, previousFilters, clientCluster):
-        totalRings = self.nClusters + len(self.categories)
+        totalRings = self.numberOfClusters + len(self.categories)
         g = filterAssignBridgesToRing(self.splitter.hmac, totalRings, clientCluster)
         previousFilters.append(g)
         return frozenset(previousFilters)
@@ -302,7 +302,7 @@ class IPBasedDistributor(Distributor):
             return []
 
         # The cluster the client should draw bridges from:
-        clientCluster = self.nClusters
+        clientCluster = self.numberOfClusters
         # First, check if the client's IP is one of the known proxies in one
         # of our :data:`catagories`:
         for category in self.categories:
@@ -331,7 +331,7 @@ class IPBasedDistributor(Distributor):
             # by the N_IP_CLUSTERS configuration option.
             area = self.areaMapper(bridgeRequest.client)
             logging.debug("IP mapped to area:\t%s" % area)
-            clientCluster = int(self.areaClusterHmac(area)[:8], 16) % self.nClusters
+            clientCluster = int(self.areaClusterHmac(area)[:8], 16) % self.numberOfClusters
 
         pos = self.areaOrderHmac("<%s>%s" % (interval, area))
         filters = self._buildHashringFilters(bridgeRequest.filters, clientCluster)
