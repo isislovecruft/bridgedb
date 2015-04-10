@@ -487,13 +487,13 @@ class DummyIPBasedDistributor(object):
 
     def _dumbAreaMapper(ip): return ip
 
-    def __init__(self, areaMapper=None, nClusters=None, key=None,
+    def __init__(self, areaMapper=None, numberOfClusters=None, key=None,
                  ipCategories=None, answerParameters=None):
         """None of the parameters are really used, they are just there to retain
         an identical method signature.
         """
         self.areaMapper = self._dumbAreaMapper
-        self.nClusters = 3
+        self.numberOfClusters = 3
         self.nBridgesToGive = 3
         self.key = self.__class__.__name__
         self.ipCategories = ipCategories
