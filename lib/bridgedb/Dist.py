@@ -134,7 +134,7 @@ class IPBasedDistributor(Distributor):
         hashrings, one for each area in the ``areaMapper``. Every inserted
         bridge will go into one of these rings, and every area is associated
         with one.
-    :ivar categories: DOCDOC See :param:`ipCategories`.
+    :ivar categories: DOCDOC See :param:`proxySets`.
     :type splitter: :class:`bridgedb.Bridges.FixedBridgeSplitter`
     :ivar splitter: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
@@ -142,7 +142,7 @@ class IPBasedDistributor(Distributor):
     """
 
     def __init__(self, areaMapper, numberOfClusters, key,
-                 ipCategories=None, answerParameters=None):
+                 proxySets=None, answerParameters=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
 
@@ -160,8 +160,8 @@ class IPBasedDistributor(Distributor):
         :param bytes key: The master HMAC key for this distributor. All added
             bridges are HMACed with this key in order to place them into the
             hashrings.
-        :type ipCategories: iterable or None
-        :param ipCategories: DOCDOC
+        :type proxySets: iterable or None
+        :param proxySets: DOCDOC
         :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
         :param answerParameters: A mechanism for ensuring that the set of
             bridges that this distributor answers a client with fit certain
@@ -172,14 +172,14 @@ class IPBasedDistributor(Distributor):
         self.numberOfClusters = numberOfClusters
         self.answerParameters = answerParameters
 
-        if not ipCategories:
-            ipCategories = []
+        if not proxySets:
+            proxySets = []
         if not answerParameters:
             answerParameters = []
         self.rings = []
 
         self.categories = []
-        for c in ipCategories:
+        for c in proxySets:
             self.categories.append(c)
 
         key2 = getHMAC(key, "Assign-Bridges-To-Rings")
@@ -193,7 +193,7 @@ class IPBasedDistributor(Distributor):
         #
         # XXX Why is the "extra room" hardcoded to be 5? Shouldn't it be some
         #     fraction of the number of clusters/categories? --isis
-        ring_cache_size  = self.numberOfClusters + len(ipCategories) + 5
+        ring_cache_size  = self.numberOfClusters + len(proxySets) + 5
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=ring_cache_size)
         logging.debug("Added splitter %s to IPBasedDistributor."

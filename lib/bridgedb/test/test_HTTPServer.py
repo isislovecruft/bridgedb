@@ -488,7 +488,7 @@ class DummyIPBasedDistributor(object):
     def _dumbAreaMapper(ip): return ip
 
     def __init__(self, areaMapper=None, numberOfClusters=None, key=None,
-                 ipCategories=None, answerParameters=None):
+                 proxySets=None, answerParameters=None):
         """None of the parameters are really used, they are just there to retain
         an identical method signature.
         """
@@ -496,7 +496,7 @@ class DummyIPBasedDistributor(object):
         self.numberOfClusters = 3
         self.nBridgesToGive = 3
         self.key = self.__class__.__name__
-        self.ipCategories = ipCategories
+        self.proxySets = proxySets
         self.answerParameters = answerParameters
 
     def getBridges(self, bridgeRequest=None, epoch=None, N=1):
