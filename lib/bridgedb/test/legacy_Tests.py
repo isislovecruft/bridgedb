@@ -176,8 +176,8 @@ def gettimestamp():
     ts = time.strftime("%Y-%m-%d %H:%M:%S")
     return "opt published %s\n" % ts
 
-class RhymesWith255Category:
-    def contains(self, ip):
+class RhymesWith255ProxySet:
+    def __contains__(self, ip):
         return ip.endswith(".255")
 
 class EmailBridgeDistTests(unittest.TestCase):
@@ -227,15 +227,14 @@ class IPBridgeDistTests(unittest.TestCase):
         n2 = d.getBridgesForIP("1.2.3.4", "x", 2)
         self.assertEquals(n, n2)
 
-    def testDistWithCategories(self):
+    def testDistWithProxies(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo",
-                                             [RhymesWith255Category()])
-        assert len(d.categories) == 1
+                                             [RhymesWith255ProxySet()])
         for _ in xrange(256):
             d.insert(fakeBridge())
 
         for _ in xrange(256):
-            # Make sure that the categories do not overlap
+            # Make sure that the ProxySets do not overlap
             f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
             g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
             n = d.getBridgesForIP(g(), "x", 10)
