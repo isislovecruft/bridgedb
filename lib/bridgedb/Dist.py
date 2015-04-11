@@ -151,9 +151,12 @@ class IPBasedDistributor(Distributor):
 
         :type areaMapper: callable
         :param areaMapper: A function that maps IP addresses arbitrarily to
-            strings, such that addresses which map to identical strings are
-            considered to be in the same "area" (for some arbitrary definition
-            of "area"). See :func:`bridgedb.Dist.uniformMap` for an example.
+            strings, such that IP addresses which map to identical strings are
+            considered to be in the same "area".  The default **areaMapper**
+            is :func:`bridgedb.Dist.uniformMap`, which maps all IPv4 addresses
+            within the same /16 and all IPv6 addresses within the same /32 to
+            the same area.  Areas are then grouped into the number of rings
+            specified by the ``N_IP_CLUSTERS`` configuration option.
         :param integer numberOfClusters: The number of clusters to group IP addresses
             into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then
             the actual number of clusters is one higher than ``numberOfClusters``,
@@ -327,8 +330,6 @@ class IPBasedDistributor(Distributor):
         # based upon the client's area (i.e. the /16 of the client's IP
         # address):
         else:
-            # Areas (i.e. /16s) are grouped into the number of rings specified
-            # by the N_IP_CLUSTERS configuration option.
             area = self.areaMapper(bridgeRequest.client)
             cluster = (int(self.areaClusterHmac(area)[:8], 16)
                        % (self.numberOfClusters - 1))
