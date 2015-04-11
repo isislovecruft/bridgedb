@@ -21,6 +21,7 @@ import bridgedb.Bridges
 import bridgedb.Storage
 
 from bridgedb import proxy
+from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.Filters import filterAssignBridgesToRing
@@ -193,23 +194,17 @@ class IPBasedDistributor(Distributor):
             self.proxies = proxy.ProxySet()
             self.proxyCluster = 0
 
+        self.ringCacheSize = self.numberOfClusters * 3
 
         key2 = getHMAC(key, "Assign-Bridges-To-Rings")
         key3 = getHMAC(key, "Order-Areas-In-Rings")
-        self.areaOrderHmac = getHMACFunc(key3, hex=False)
         key4 = getHMAC(key, "Assign-Areas-To-Rings")
-        self.areaClusterHmac = getHMACFunc(key4, hex=True)
 
-        # add splitter and cache the default rings
-        # plus leave room for dynamic filters
-        #
-        # XXX Why is the "extra room" hardcoded to be 5? Shouldn't it be some
-        #     fraction of the number of clusters/categories? --isis
-        ring_cache_size = self.numberOfClusters + 5
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
-            key2, max_cached_rings=ring_cache_size)
-        logging.debug("Added splitter %s to IPBasedDistributor."
-                      % self.splitter.__class__)
+        self.areaOrderHmac = getHMACFunc(key3, hex=False)
+        self.areaClusterHmac = getHMACFunc(key4, hex=True)
+        self.splitter = FilteredBridgeSplitter(key2, self.ringCacheSize)
+        logging.debug("Added %s to HTTPS distributor." %
+                      self.splitter.__class__.__name__)
 
         self.setDistributorName('HTTPS')
 
