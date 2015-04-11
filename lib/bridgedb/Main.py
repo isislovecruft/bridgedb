@@ -210,17 +210,11 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        categories = []
-        if proxyList:
-            logging.debug("Adding proxyList to HTTPS Distributor categories.")
-            categories.append(proxyList)
-        logging.debug("HTTPS Distributor categories: '%s'" % categories)
-
         ipDistributor = Dist.IPBasedDistributor(
             Dist.uniformMap,
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
-            categories,
+            proxyList,
             answerParameters=ringParams)
         splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
 
@@ -306,17 +300,12 @@ def run(options, reactor=reactor):
 
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
-
-    # Get a proxy list.
-    proxyList = proxy.ProxySet()
-    for proxyfile in config.PROXY_LIST_FILES:
-        logging.info("Loading proxies from: %s" % proxyfile)
-        proxy.loadProxiesFromFile(proxyfile, proxyList)
-
-    emailDistributor = ipDistributor = None
+    proxies = proxy.ProxySet()
+    emailDistributor = None
+    ipDistributor = None
 
     # Save our state
-    state.proxyList = proxyList
+    state.proxies = proxies
     state.key = key
     state.save()
 
@@ -363,25 +352,21 @@ def run(options, reactor=reactor):
         level = getattr(logging, level)
         logging.getLogger().setLevel(level)
 
-        logging.debug("Saving state again before reparsing descriptors...")
-        state.save()
-        logging.info("Reparsing bridge descriptors...")
+        logging.info("Reloading the list of open proxies...")
+        for proxyfile in cfg.PROXY_LIST_FILES:
+            logging.info("Loading proxies from: %s" % proxyfile)
+            proxy.loadProxiesFromFile(proxyfile, state.proxies, removeStale=True)
 
+        logging.info("Reparsing bridge descriptors...")
         (splitter,
          emailDistributorTmp,
-         ipDistributorTmp) = createBridgeRings(cfg, proxyList, key)
+         ipDistributorTmp) = createBridgeRings(cfg, state.proxies, key)
+        logging.info("Bridges loaded: %d" % len(splitter))
 
         # Initialize our DB.
         bridgedb.Storage.initializeDBLock()
         bridgedb.Storage.setDBFilename(cfg.DB_FILE + ".sqlite")
         load(state, splitter, clear=False)
-
-        state = persistent.load()
-        logging.info("Bridges loaded: %d" % len(splitter))
-
-        logging.debug("Replacing the list of open proxies...")
-        for proxyfile in cfg.PROXY_LIST_FILES:
-            proxy.loadProxiesFromFile(proxyfile, state.proxyList, removeStale=True)
 
         if emailDistributorTmp is not None:
             emailDistributorTmp.prepopulateRings() # create default rings
@@ -462,7 +447,7 @@ def run(options, reactor=reactor):
         if config.TASKS['GET_TOR_EXIT_LIST']:
             tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
                 proxy.downloadTorExits,
-                proxyList,
+                state.proxies,
                 config.SERVER_PUBLIC_EXTERNAL_IP)
 
         # Schedule all configured repeating tasks:
