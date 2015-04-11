@@ -20,6 +20,7 @@ import time
 import bridgedb.Bridges
 import bridgedb.Storage
 
+from bridgedb import proxy
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.Filters import filterAssignBridgesToRing
@@ -134,7 +135,9 @@ class IPBasedDistributor(Distributor):
         hashrings, one for each area in the ``areaMapper``. Every inserted
         bridge will go into one of these rings, and every area is associated
         with one.
-    :ivar categories: DOCDOC See :param:`proxySets`.
+    :type proxies: :class:`~bridgedb.proxies.ProxySet`
+    :ivar proxies: All known proxies, which we treat differently. See
+        :param:`proxies`.
     :type splitter: :class:`bridgedb.Bridges.FixedBridgeSplitter`
     :ivar splitter: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
@@ -142,7 +145,7 @@ class IPBasedDistributor(Distributor):
     """
 
     def __init__(self, areaMapper, numberOfClusters, key,
-                 proxySets=None, answerParameters=None):
+                 proxies=None, answerParameters=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
 
@@ -160,27 +163,33 @@ class IPBasedDistributor(Distributor):
         :param bytes key: The master HMAC key for this distributor. All added
             bridges are HMACed with this key in order to place them into the
             hashrings.
-        :type proxySets: iterable or None
-        :param proxySets: DOCDOC
+        :type proxies: :class:`~bridgedb.proxy.ProxySet`
+        :param proxies: A :class:`bridgedb.proxy.ProxySet` containing known
+            Tor Exit relays and other known proxies.  These will constitute
+            the extra cluster, and any client requesting bridges from one of
+            these **proxies** will be distributed bridges from a separate
+            subhashring that is specific to Tor/proxy users.
         :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
         :param answerParameters: A mechanism for ensuring that the set of
             bridges that this distributor answers a client with fit certain
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
-        self.areaMapper = areaMapper
-        self.numberOfClusters = numberOfClusters
-        self.answerParameters = answerParameters
-
-        if not proxySets:
-            proxySets = []
-        if not answerParameters:
-            answerParameters = []
         self.rings = []
+        self.areaMapper = areaMapper
+        self.answerParameters = answerParameters
+        self.numberOfClusters = numberOfClusters
 
-        self.categories = []
-        for c in proxySets:
-            self.categories.append(c)
+        if proxies:
+            logging.info("Added known proxies to HTTPS distributor...")
+            self.proxies = proxies
+            self.numberOfClusters += 1
+            self.proxyCluster = self.numberOfClusters
+        else:
+            logging.warn("No known proxies were added to HTTPS distributor!")
+            self.proxies = proxy.ProxySet()
+            self.proxyCluster = 0
+
 
         key2 = getHMAC(key, "Assign-Bridges-To-Rings")
         key3 = getHMAC(key, "Order-Areas-In-Rings")
@@ -193,7 +202,7 @@ class IPBasedDistributor(Distributor):
         #
         # XXX Why is the "extra room" hardcoded to be 5? Shouldn't it be some
         #     fraction of the number of clusters/categories? --isis
-        ring_cache_size  = self.numberOfClusters + len(proxySets) + 5
+        ring_cache_size = self.numberOfClusters + 5
         self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=ring_cache_size)
         logging.debug("Added splitter %s to IPBasedDistributor."
@@ -207,63 +216,59 @@ class IPBasedDistributor(Distributor):
 
         The hashring structure for this distributor is influenced by the
         ``N_IP_CLUSTERS`` configuration option, as well as the number of
-        ``PROXY_LIST_FILES``.  Essentially, :data:`numberOfClusters` is set to the
-        specified ``N_IP_CLUSTERS``.  The ``PROXY_LIST_FILES`` (plus the
-        :class:`bridgedb.proxy.ProxySet` for the Tor Exit list downloaded into
-        memory with :script:`get-tor-exits`) are stored in :data:`categories`.
+        ``PROXY_LIST_FILES``.
 
-        The number of subhashrings which this :class:`Distributor` has active
-        in its hashring is then the :data:`numberOfClusters` plus the number of
-        :data:`categories`.
+        Essentially, :data:`numberOfClusters` is set to the specified
+        ``N_IP_CLUSTERS``.  All of the ``PROXY_LIST_FILES``, plus the list of
+        Tor Exit relays (downloaded into memory with :script:`get-tor-exits`),
+        are stored in :data:`proxies`, and the latter is added as an
+        additional cluster (such that :data:`numberOfClusters` becomes
+        ``N_IP_CLUSTERS + 1``).  The number of subhashrings which this
+        :class:`Distributor` has active in its hashring is then
+        :data:`numberOfClusters`, where the last cluster is reserved for all
+        :data:`proxies`.
 
         As an example, if BridgeDB was configured with ``N_IP_CLUSTERS=4`` and
         ``PROXY_LIST_FILES=["open-socks-proxies.txt"]``, then the total number
-        of subhashrings is six — four for the "clusters", and two
-        "categories": one for everything contained within the
-        ``"open-socks-proxies.txt"`` file and the other for the downloaded
-        list of Tor Exits.  Thus, the resulting hashring-subhashring structure
+        of subhashrings is five — four for the "clusters", and one for the
+        :data:`proxies`. Thus, the resulting hashring-subhashring structure
         would look like:
 
-        +------------------+---------------------------------------------------+-------------------------+
-        |                  |               Directly connecting users           | Tor / known proxy users |
-        +------------------+------------+------------+------------+------------+------------+------------+
-        | Clusters /       | Cluster-1  | Cluster-2  | Cluster-3  | Cluster-4  | Cat-1      | Cat-2      |
-        | Categories       |            |            |            |            |            |            |
-        +==================+============+============+============+============+============+============+
-        | Subhashrings     |            |            |            |            |            |            |
-        | (total, assigned)| (6,0)      | (6,1)      | (6,2)      | (6,3)      | (6,4)      | (6,5)      |
-        +------------------+------------+------------+------------+------------+------------+------------+
-        | Filtered         | (6,0)-IPv4 | (6,1)-IPv4 | (6,2)-IPv4 | (6,3)-IPv4 | (6,4)-IPv4 | (6,5)-IPv4 |
-        | Subhashrings     |            |            |            |            |            |            |
-        | bBy requested    +------------+------------+------------+------------+------------+------------+
-        | bridge type)     | (6,0)-IPv6 | (6,1)-IPv6 | (6,2)-IPv6 | (6,3)-IPv6 | (6,4)-IPv6 | (6,5)-IPv6 |
-        |                  |            |            |            |            |            |            |
-        +------------------+------------+------------+------------+------------+------------+------------+
+        +------------------+---------------------------------------------------+--------------
+        |                  |               Directly connecting users           | Tor / known |
+        |                  |                                                   | proxy users |
+        +------------------+------------+------------+------------+------------+-------------+
+        | Clusters         | Cluster-1  | Cluster-2  | Cluster-3  | Cluster-4  | Cluster-5   |
+        +==================+============+============+============+============+=============+
+        | Subhashrings     |            |            |            |            |             |
+        | (total, assigned)| (5,1)      | (5,2)      | (5,3)      | (5,4)      | (5,5)       |
+        +------------------+------------+------------+------------+------------+-------------+
+        | Filtered         | (5,1)-IPv4 | (5,2)-IPv4 | (5,3)-IPv4 | (5,4)-IPv4 | (5,5)-IPv4  |
+        | Subhashrings     |            |            |            |            |             |
+        | bBy requested    +------------+------------+------------+------------+-------------+
+        | bridge type)     | (5,1)-IPv6 | (5,2)-IPv6 | (5,3)-IPv6 | (5,4)-IPv6 | (5,5)-IPv6  |
+        |                  |            |            |            |            |             |
+        +------------------+------------+------------+------------+------------+-------------+
 
         The "filtered subhashrings" are essentially filtered copies of their
         respective subhashring, such that they only contain bridges which
-        support IPv4 or IPv6, respectively.  (I have no idea of the relation
-        between ``(6,0)-IPv4`` and ``(6,0)-IPv6``, including whether or not
-        their contents are disjoint. I didn't design this shit, I'm just
-        redesigning it.)
+        support IPv4 or IPv6, respectively.  Additionally, the contents of
+        ``(5,1)-IPv4`` and ``(5,1)-IPv6`` sets are *not* disjoint.
 
-        Thus, in this example, we end up with **12 total subhashrings**.
+        Thus, in this example, we end up with **10 total subhashrings**.
         """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
 
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
-            # XXX Distributors should have a "totalClusters" property in order
-            # to avoid reusing this unclear construct all over the place.  (Or
-            # just get rid of the idea of "categories".)
-            for cluster in range(self.numberOfClusters + len(self.categories)):
+            for cluster in range(1, self.numberOfClusters):
                 filters = self._buildHashringFilters([filterFn,], cluster)
                 key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 # For consistency with previous implementation of this method,
-                # only set the "name" for "clusters" which are in this
-                # distributor's categories:
-                if cluster >= self.numberOfClusters:
-                    ring.setName('{0} Ring'.format(self.name))
+                # only set the "name" for "clusters" which are for this
+                # distributor's proxies:
+                if cluster == self.proxyCluster:
+                    ring.setName('{0} Proxy Ring'.format(self.name))
                 self.splitter.addRing(ring, filters,
                                       filterBridgesByRules(filters),
                                       populate_from=self.splitter.bridges)
@@ -273,8 +278,8 @@ class IPBasedDistributor(Distributor):
         self.splitter.insert(bridge)
 
     def _buildHashringFilters(self, previousFilters, clientCluster):
-        totalRings = self.numberOfClusters + len(self.categories)
-        g = filterAssignBridgesToRing(self.splitter.hmac, totalRings, clientCluster)
+        g = filterAssignBridgesToRing(self.splitter.hmac,
+                                      self.numberOfClusters, clientCluster)
         previousFilters.append(g)
         return frozenset(previousFilters)
 
@@ -301,41 +306,38 @@ class IPBasedDistributor(Distributor):
             logging.warn("Bailing! Splitter has zero bridges!")
             return []
 
-        # The cluster the client should draw bridges from:
-        clientCluster = self.numberOfClusters
-        # First, check if the client's IP is one of the known proxies in one
-        # of our :data:`catagories`:
-        for category in self.categories:
-            if bridgeRequest.client in category:
-                # The tag is a tag applied to a proxy IP address when it is
-                # added to the bridgedb.proxy.ProxySet. For Tor Exit relays,
-                # the default is 'exit_relay'. For other proxies loaded from
-                # the PROXY_LIST_FILES config option, the default tag is the
-                # full filename that the IP address originally came from.
-                tag = category.getTag(bridgeRequest.client)
-                logging.info("Client was from known proxy (tag: %s): %s" %
-                             (tag, bridgeRequest.client))
-                # Cluster Tor/proxy users into four groups.  This means that
-                # no matter how many different Tor Exits or proxies a client
-                # uses, the most they can ever get is four different sets of
-                # bridge lines (per period).
-                group = (int(ipaddr.IPAddress(bridgeRequest.client)) % 4) + 1
-                area = "known-proxy-group-%d" % group
-                break
-            clientCluster += 1
-        # If the client wasn't using Tor or any other known proxy, select the
-        # client's cluster number based upon the /16 of the client's IP
-        # address:
+        # First, check if the client's IP is one of the known :data:`proxies`:
+        if bridgeRequest.client in self.proxies:
+            cluster = self.proxyCluster
+            # The tag is a tag applied to a proxy IP address when it is added
+            # to the bridgedb.proxy.ProxySet. For Tor Exit relays, the default
+            # is 'exit_relay'. For other proxies loaded from the
+            # PROXY_LIST_FILES config option, the default tag is the full
+            # filename that the IP address originally came from.
+            tag = self.proxies.getTag(bridgeRequest.client)
+            logging.info("Client was from known proxy (tag: %s): %s" %
+                         (tag, bridgeRequest.client))
+            # Place Tor/proxy users into four groups.  This means that no
+            # matter how many different Tor Exits or proxies a client
+            # uses, the most they can ever get is four different sets of
+            # bridge lines (per period).
+            group = (int(ipaddr.IPAddress(bridgeRequest.client)) % 4) + 1
+            area = "known-proxy-group-%d" % group
+        # If the client wasn't using a proxy, select the client's cluster
+        # based upon the client's area (i.e. the /16 of the client's IP
+        # address):
         else:
             # Areas (i.e. /16s) are grouped into the number of rings specified
             # by the N_IP_CLUSTERS configuration option.
             area = self.areaMapper(bridgeRequest.client)
-            logging.debug("IP mapped to area:\t%s" % area)
-            clientCluster = int(self.areaClusterHmac(area)[:8], 16) % self.numberOfClusters
+            cluster = (int(self.areaClusterHmac(area)[:8], 16)
+                       % (self.numberOfClusters - 1))
 
         pos = self.areaOrderHmac("<%s>%s" % (interval, area))
-        filters = self._buildHashringFilters(bridgeRequest.filters, clientCluster)
+        filters = self._buildHashringFilters(bridgeRequest.filters, cluster)
 
+        logging.debug("Assigned client to cluster %d/%d" %
+                      (cluster, self.numberOfClusters))
         logging.debug("Assigned client hashring position based on: <%s>%s" %
                       (interval, area))
         logging.debug("Bridges in splitter:\t%d" % len(self.splitter))
@@ -349,7 +351,7 @@ class IPBasedDistributor(Distributor):
         # Otherwise, construct a new hashring and populate it:
         else:
             logging.debug("Cache miss %s" % filters)
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % clientCluster)
+            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, filters, filterBridgesByRules(filters),
                                   populate_from=self.splitter.bridges)
