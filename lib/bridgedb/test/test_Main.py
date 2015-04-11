@@ -278,8 +278,8 @@ class MainTests(unittest.TestCase):
         # Should have an IPBasedDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
         self.assertEqual(len(splitter.ringsByName.keys()), 3)
-        self.assertGreater(len(httpsDist.categories), 0)
-        self.assertItemsEqual(exitRelays, httpsDist.categories[-1])
+        self.assertGreater(len(httpsDist.proxies), 0)
+        self.assertItemsEqual(exitRelays, httpsDist.proxies)
 
     def test_Main_createBridgeRings_no_https_dist(self):
         """When HTTPS_DIST=False, Main.createBridgeRings() should add only
