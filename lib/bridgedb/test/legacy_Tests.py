@@ -11,7 +11,6 @@ from __future__ import print_function
 
 import os
 import random
-import sqlite3
 import tempfile
 import unittest
 import warnings
@@ -49,11 +48,6 @@ from math import log
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
 
-def random16IP():
-    upper = "123.123." # same 16
-    lower = ".".join([str(random.randrange(1,256)) for _ in xrange(2)]) 
-    return upper+lower
-
 def randomPort():
     return random.randint(1,65535)
 
@@ -71,23 +65,6 @@ def randomPortSpec():
         portspec += "%d," % random.choice(ports)
     portspec = portspec.rstrip(',') #remove trailing ,
     return portspec
-
-def randomCountry():
-    countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
-    #XXX: load from geoip
-    return random.choice(countries)
-
-def randomCountrySpec():
-    countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
-    #XXX: load from geoip
-    spec = ""
-    choices = []
-    for i in xrange(10):
-        choices.append(random.choice(countries))
-    choices = set(choices) #dedupe
-    choices = list(choices)
-    spec += ",".join(choices)
-    return spec
 
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
@@ -166,21 +143,11 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
 
     return b
 
-def fake16Bridge(orport=8080, running=True, stable=True):
-    nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = random16IP()
-    fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
-    b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
-    b.setStatus(running, stable)
-    return b
-
 simpleDesc = "router Unnamed %s %s 0 9030\n"\
 "opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
 "opt @purpose bridge\n"
 orAddress = "or-address %s:%s\n"
-def gettimestamp():
-    ts = time.strftime("%Y-%m-%d %H:%M:%S")
-    return "opt published %s\n" % ts
+
 
 class RhymesWith255ProxySet:
     def __contains__(self, ip):
@@ -276,19 +243,6 @@ class IPBridgeDistTests(unittest.TestCase):
     #        self.assertEquals(len(fps), len(n))
     #        self.assertEquals(len(fps), 5)
     #        self.assertTrue(count >= 1)
-
-    #def testDistWithFilter16(self):
-    #    d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
-    #    for _ in xrange(256):
-    #        d.insert(fake16Bridge())
-    #    n = d.getBridgesForIP("1.2.3.4", "x", 10)
-
-    #    slash16s = dict()
-    #    for bridge in n:
-    #        m = re.match(r'(\d+\.\d+)\.\d+\.\d+', bridge.ip)
-    #        upper16 = m.group(1)
-    #        self.assertTrue(upper16 not in slash16s)
-    #        slash16s[upper16] = True
 
     def testDistWithFilterIP6(self):
         d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
