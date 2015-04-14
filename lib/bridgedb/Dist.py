@@ -81,14 +81,14 @@ class Distributor(object):
         >>> ipDist = Dist.IPBasedDistributor(5, 'fake-hmac-key')
         >>> ipDist.setDistributorName('HTTPS Distributor')
         >>> ipDist.prepopulateRings()
-        >>> hashrings = ipDist.splitter.filterRings
+        >>> hashrings = ipDist.hashring.filterRings
         >>> firstSubring = hashrings.items()[0][1][1]
         >>> assert firstSubring.name
 
         :param str name: A name for this distributor.
         """
         self.name = name
-        self.splitter.distributorName = name
+        self.hashring.distributorName = name
 
 
 class IPBasedDistributor(Distributor):
@@ -98,8 +98,8 @@ class IPBasedDistributor(Distributor):
     :type proxies: :class:`~bridgedb.proxies.ProxySet`
     :ivar proxies: All known proxies, which we treat differently. See
         :param:`proxies`.
-    :type splitter: :class:`bridgedb.Bridges.FixedBridgeSplitter`
-    :ivar splitter: A hashring that assigns bridges to subrings with fixed
+    :type hashring: :class:`bridgedb.Bridges.FixedBridgeSplitter`
+    :ivar hashring: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
         distributor.
     """
@@ -150,9 +150,9 @@ class IPBasedDistributor(Distributor):
 
         self._clientToPositionHMAC = getHMACFunc(key3, hex=False)
         self._subnetToSubringHMAC = getHMACFunc(key4, hex=True)
-        self.splitter = FilteredBridgeSplitter(key2, self.ringCacheSize)
+        self.hashring = FilteredBridgeSplitter(key2, self.ringCacheSize)
         logging.debug("Added %s to HTTPS distributor." %
-                      self.splitter.__class__.__name__)
+                      self.hashring.__class__.__name__)
 
         self.setDistributorName('HTTPS')
 
@@ -311,16 +311,16 @@ class IPBasedDistributor(Distributor):
                 # distributor's proxies:
                 if subring == self.proxySubring:
                     ring.setName('{0} Proxy Ring'.format(self.name))
-                self.splitter.addRing(ring, filters,
+                self.hashring.addRing(ring, filters,
                                       filterBridgesByRules(filters),
-                                      populate_from=self.splitter.bridges)
+                                      populate_from=self.hashring.bridges)
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
-        self.splitter.insert(bridge)
+        self.hashring.insert(bridge)
 
     def _buildHashringFilters(self, previousFilters, subring):
-        f = filterAssignBridgesToRing(self.splitter.hmac, self.totalSubrings, subring)
+        f = filterAssignBridgesToRing(self.hashring.hmac, self.totalSubrings, subring)
         previousFilters.append(f)
         return frozenset(previousFilters)
 
@@ -343,8 +343,8 @@ class IPBasedDistributor(Distributor):
         logging.info("Attempting to return %d bridges to client %s..."
                      % (N, bridgeRequest.client))
 
-        if not len(self.splitter):
-            logging.warn("Bailing! Splitter has zero bridges!")
+        if not len(self.hashring):
+            logging.warn("Bailing! Hashring has zero bridges!")
             return []
 
         usingProxy = False
@@ -373,16 +373,16 @@ class IPBasedDistributor(Distributor):
         logging.debug("Bridge filters: %s" % ' '.join([x.func_name for x in filters]))
 
         # Check wheth we have a cached copy of the hashring:
-        if filters in self.splitter.filterRings.keys():
+        if filters in self.hashring.filterRings.keys():
             logging.debug("Cache hit %s" % filters)
-            _, ring = self.splitter.filterRings[filters]
+            _, ring = self.hashring.filterRings[filters]
         # Otherwise, construct a new hashring and populate it:
         else:
             logging.debug("Cache miss %s" % filters)
             key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.splitter.addRing(ring, filters, filterBridgesByRules(filters),
-                                  populate_from=self.splitter.bridges)
+            self.hashring.addRing(ring, filters, filterBridgesByRules(filters),
+                                  populate_from=self.hashring.bridges)
 
         # Determine the appropriate number of bridges to give to the client:
         returnNum = getNumBridgesPerAnswer(ring, max_bridges_per_answer=N)
@@ -391,18 +391,18 @@ class IPBasedDistributor(Distributor):
         return answer
 
     def __len__(self):
-        return len(self.splitter)
+        return len(self.hashring)
 
     def dumpAssignments(self, f, description=""):
-        self.splitter.dumpAssignments(f, description)
+        self.hashring.dumpAssignments(f, description)
 
 
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
     request and the current time period.
 
-    :type splitter: :class:`~bridgedb.Bridges.BridgeRing`
-    :ivar splitter: A hashring to hold all the bridges we hand out.
+    :type hashring: :class:`~bridgedb.Bridges.BridgeRing`
+    :ivar hashring: A hashring to hold all the bridges we hand out.
     """
 
     def __init__(self, key, domainmap, domainrules,
@@ -434,14 +434,14 @@ class EmailBasedDistributor(Distributor):
         self.answerParameters = answerParameters
 
         #XXX cache options not implemented
-        self.splitter = bridgedb.Bridges.FilteredBridgeSplitter(
+        self.hashring = bridgedb.Bridges.FilteredBridgeSplitter(
             key2, max_cached_rings=5)
 
         self.setDistributorName('Email')
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
-        self.splitter.insert(bridge)
+        self.hashring.insert(bridge)
 
     def getBridges(self, bridgeRequest, interval, N=1):
         """Return a list of bridges to give to a user.
@@ -500,9 +500,9 @@ class EmailBasedDistributor(Distributor):
 
             ring = None
             ruleset = frozenset(bridgeRequest.filters)
-            if ruleset in self.splitter.filterRings.keys():
+            if ruleset in self.hashring.filterRings.keys():
                 logging.debug("Cache hit %s" % ruleset)
-                _, ring = self.splitter.filterRings[ruleset]
+                _, ring = self.hashring.filterRings[ruleset]
             else:
                 # cache miss, add new ring
                 logging.debug("Cache miss %s" % ruleset)
@@ -510,9 +510,9 @@ class EmailBasedDistributor(Distributor):
                 # add new ring
                 key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.splitter.addRing(ring, ruleset,
+                self.hashring.addRing(ring, ruleset,
                                       filterBridgesByRules(ruleset),
-                                      populate_from=self.splitter.bridges)
+                                      populate_from=self.hashring.bridges)
 
             numBridgesToReturn = getNumBridgesPerAnswer(ring,
                                                         max_bridges_per_answer=N)
@@ -524,7 +524,7 @@ class EmailBasedDistributor(Distributor):
         return result
 
     def __len__(self):
-        return len(self.splitter)
+        return len(self.hashring)
 
     def cleanDatabase(self):
         with bridgedb.Storage.getDB() as db:
@@ -538,7 +538,7 @@ class EmailBasedDistributor(Distributor):
                 db.commit()
 
     def dumpAssignments(self, f, description=""):
-        self.splitter.dumpAssignments(f, description)
+        self.hashring.dumpAssignments(f, description)
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
@@ -546,6 +546,6 @@ class EmailBasedDistributor(Distributor):
             ruleset = frozenset([filterFn])
             key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.splitter.addRing(ring, ruleset,
+            self.hashring.addRing(ring, ruleset,
                                   filterBridgesByRules([filterFn]),
-                                  populate_from=self.splitter.bridges)
+                                  populate_from=self.hashring.bridges)

@@ -311,7 +311,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
-        for b in d.splitter.bridges:
+        for b in d.hashring.bridges:
             # china blocks all :-(
             for pt in b.transports:
                 key = "%s:%s" % (pt.address, pt.port)
@@ -337,7 +337,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge6(or_addresses=True, transports=True))
             d.insert(fakeBridge(or_addresses=True, transports=True))
 
-        for b in d.splitter.bridges:
+        for b in d.hashring.bridges:
             # china blocks some transports
             for pt in b.transports:
                 if random.choice(xrange(2)) > 0:
