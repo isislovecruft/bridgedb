@@ -48,39 +48,6 @@ class EmailRequestedKey(Exception):
     """Raised when an incoming email requested a copy of our GnuPG keys."""
 
 
-def uniformMap(ip):
-    """Map an IP to an arbitrary 'area' string, such that any two IPv4
-    addresses in the same ``/16`` subnet, or any two IPv6 addresses in the
-    same ``/32`` subnet, get the same string.
-
-    >>> from bridgedb import Dist
-    >>> Dist.uniformMap('1.2.3.4')
-    '1.2.0.0/16'
-    >>> Dist.uniformMap('1.2.211.154')
-    '1.2.0.0/16'
-    >>> Dist.uniformMap('2001:f::bc1:b13:2808')
-    '2001:f::/32'
-    >>> Dist.uniformMap('2a00:c98:2030:a020:2::42')
-    '2a00:c98::/32'
-
-    :param str ip: A string representing an IPv4 or IPv6 address.
-    :rtype: str
-    :returns: The appropriately sized CIDR subnet representation of the **ip**.
-    """
-    # We aren't using bridgedb.parse.addr.isIPAddress(ip, compressed=False)
-    # here because adding the string "False" into the map would land any and
-    # all clients whose IP address appeared to be invalid at the same position
-    # in a hashring.
-    address = ipaddr.IPAddress(ip)
-    if address.version == 6:
-        truncated = ':'.join(address.exploded.split(':')[:2])
-        subnet = str(ipaddr.IPv6Network(truncated + "::/32"))
-        return subnet
-    else:
-        truncated = '.'.join(address.exploded.split('.')[:2])
-        subnet = str(ipaddr.IPv4Network(truncated + '.0.0/16'))
-        return subnet
-
 def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
     if len(ring) < 20:
         n_bridges_per_answer = 1
@@ -111,9 +78,7 @@ class Distributor(object):
         hashrings will also carry that name.
 
         >>> from bridgedb import Dist
-        >>> ipDist = Dist.IPBasedDistributor(Dist.uniformMap,
-        ...                                  5,
-        ...                                  'fake-hmac-key')
+        >>> ipDist = Dist.IPBasedDistributor(5, 'fake-hmac-key')
         >>> ipDist.setDistributorName('HTTPS Distributor')
         >>> ipDist.prepopulateRings()
         >>> hashrings = ipDist.splitter.filterRings
@@ -130,8 +95,6 @@ class IPBasedDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
 
-    :ivar areaOrderHmac: An HMAC function used to order areas within rings.
-    :ivar areaClusterHmac: An HMAC function used to assign areas to rings.
     :ivar list rings: A list of :class:`bridgedb.Bridges.BridgeHolder`
         hashrings, one for each area in the ``areaMapper``. Every inserted
         bridge will go into one of these rings, and every area is associated
@@ -145,19 +108,10 @@ class IPBasedDistributor(Distributor):
         distributor.
     """
 
-    def __init__(self, areaMapper, numberOfClusters, key,
-                 proxies=None, answerParameters=None):
+    def __init__(self, numberOfClusters, key, proxies=None, answerParameters=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
 
-        :type areaMapper: callable
-        :param areaMapper: A function that maps IP addresses arbitrarily to
-            strings, such that IP addresses which map to identical strings are
-            considered to be in the same "area".  The default **areaMapper**
-            is :func:`bridgedb.Dist.uniformMap`, which maps all IPv4 addresses
-            within the same /16 and all IPv6 addresses within the same /32 to
-            the same area.  Areas are then grouped into the number of rings
-            specified by the ``N_IP_CLUSTERS`` configuration option.
         :param integer numberOfClusters: The number of clusters to group IP addresses
             into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then
             the actual number of clusters is one higher than ``numberOfClusters``,
@@ -180,7 +134,6 @@ class IPBasedDistributor(Distributor):
             bridges" or "at least one bridge on port 443", etc.
         """
         self.rings = []
-        self.areaMapper = areaMapper
         self.answerParameters = answerParameters
         self.numberOfClusters = numberOfClusters
 
@@ -200,13 +153,109 @@ class IPBasedDistributor(Distributor):
         key3 = getHMAC(key, "Order-Areas-In-Rings")
         key4 = getHMAC(key, "Assign-Areas-To-Rings")
 
-        self.areaOrderHmac = getHMACFunc(key3, hex=False)
-        self.areaClusterHmac = getHMACFunc(key4, hex=True)
+        self._clientToPositionHMAC = getHMACFunc(key3, hex=False)
+        self._subnetToSubringHMAC = getHMACFunc(key4, hex=True)
         self.splitter = FilteredBridgeSplitter(key2, self.ringCacheSize)
         logging.debug("Added %s to HTTPS distributor." %
                       self.splitter.__class__.__name__)
 
         self.setDistributorName('HTTPS')
+
+    @classmethod
+    def getSubnet(cls, ip, usingProxy=False, proxySubnets=4):
+        """Map all clients whose **ip**s are within the same subnet to the same
+        arbitrary string.
+
+        .. hint:: For non-proxy IP addresses, any two IPv4 addresses within
+            the same ``/16`` subnet, or any two IPv6 addresses in the same
+            ``/32`` subnet, will get the same string.
+
+        Subnets for this distributor are grouped into the number of rings
+        specified by the ``N_IP_CLUSTERS`` configuration option, such that
+        Alice (with the address ``1.2.3.4`` and Bob (with the address
+        ``1.2.178.234``) are placed within the same cluster, but Carol (with
+        address ``1.3.11.33``) *might* end up in a different cluster.
+
+        >>> from bridgedb.Dist import IPBasedDistributor
+        >>> IPBasedDistributor.getSubnet('1.2.3.4')
+        '1.2.0.0/16'
+        >>> IPBasedDistributor.getSubnet('1.2.211.154')
+        '1.2.0.0/16'
+        >>> IPBasedDistributor.getSubnet('2001:f::bc1:b13:2808')
+        '2001:f::/32'
+        >>> IPBasedDistributor.getSubnet('2a00:c98:2030:a020:2::42')
+        '2a00:c98::/32'
+
+        :param str ip: A string representing an IPv4 or IPv6 address.
+        :param bool usingProxy: Set to ``True`` if the client was using one of
+            the known :data:`proxies`.
+        :param int proxySubnets: Place Tor/proxy users into this number of
+            "subnet" groups.  This means that no matter how many different Tor
+            Exits or proxies a client uses, the most they can ever get is
+            **proxySubnets** different sets of bridge lines (per interval).
+            This parameter only has any effect when **usingProxy** is ``True``.
+        :rtype: str
+        :returns: The appropriately sized CIDR subnet representation of the **ip**.
+        """
+        if not usingProxy:
+            # We aren't using bridgedb.parse.addr.isIPAddress(ip,
+            # compressed=False) here because adding the string "False" into
+            # the map would land any and all clients whose IP address appeared
+            # to be invalid at the same position in a hashring.
+            address = ipaddr.IPAddress(ip)
+            if address.version == 6:
+                truncated = ':'.join(address.exploded.split(':')[:2])
+                subnet = str(ipaddr.IPv6Network(truncated + "::/32"))
+            else:
+                truncated = '.'.join(address.exploded.split('.')[:2])
+                subnet = str(ipaddr.IPv4Network(truncated + '.0.0/16'))
+        else:
+            group = (int(ipaddr.IPAddress(ip)) % 4) + 1
+            subnet = "proxy-group-%d" % group
+
+        logging.debug("Client IP was within area: %s" % subnet)
+        return subnet
+
+    def mapSubnetToSubring(self, subnet, usingProxy=False):
+        """Determine the correct subhashring for a client, based upon the
+        **subnet**.
+
+        :param str subnet: The subnet which contains the client's IP.  See
+            :staticmethod:`getSubnet`.
+        :param bool usingProxy: Set to ``True`` if the client was using one of
+            the known :data:`proxies`.
+        """
+        # If the client wasn't using a proxy, select the client's subring
+        # based upon the client's subnet (modulo the total subrings):
+        if not usingProxy:
+            mod = self.numberOfClusters
+            # If there is a proxy subring, don't count it for the modulus:
+            if self.proxyCluster:
+                mod -= 1
+            return int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod
+        else:
+            return self.proxyCluster
+
+    def mapClientToHashringPosition(self, interval, subnet):
+        """Map the client to a position on a (sub)hashring, based upon the
+        **interval** which the client's request occurred within, as well as
+        the **subnet** of the client's IP address.
+
+        .. note:: For an explanation of how **subnet** is determined, see
+            :staticmethod:`getSubnet`.
+
+        :param str interval: The interval which this client's request for
+            bridges took place within.
+        :param str subnet: A string representing the subnet containing the
+            client's IP address.
+        :rtype: int
+        :returns: The results of keyed HMAC, which should determine the
+            client's position in a (sub)hashring of bridges (and thus
+            determine which bridges they receive).
+        """
+        position = "<%s>%s" % (interval, subnet)
+        mapping = self._clientToPositionHMAC(position)
+        return mapping
 
     def prepopulateRings(self):
         """Prepopulate this distributor's hashrings and subhashrings with
@@ -304,6 +353,8 @@ class IPBasedDistributor(Distributor):
             logging.warn("Bailing! Splitter has zero bridges!")
             return []
 
+        usingProxy = False
+
         # First, check if the client's IP is one of the known :data:`proxies`:
         if bridgeRequest.client in self.proxies:
             cluster = self.proxyCluster
@@ -315,30 +366,17 @@ class IPBasedDistributor(Distributor):
             tag = self.proxies.getTag(bridgeRequest.client)
             logging.info("Client was from known proxy (tag: %s): %s" %
                          (tag, bridgeRequest.client))
-            # Place Tor/proxy users into four groups.  This means that no
-            # matter how many different Tor Exits or proxies a client
-            # uses, the most they can ever get is four different sets of
-            # bridge lines (per period).
-            group = (int(ipaddr.IPAddress(bridgeRequest.client)) % 4) + 1
-            area = "known-proxy-group-%d" % group
-        # If the client wasn't using a proxy, select the client's cluster
-        # based upon the client's area (i.e. the /16 of the client's IP
-        # address):
-        else:
-            area = self.areaMapper(bridgeRequest.client)
-            cluster = (int(self.areaClusterHmac(area)[:8], 16)
-                       % (self.numberOfClusters - 1))
 
-        pos = self.areaOrderHmac("<%s>%s" % (interval, area))
+        subnet = self.getSubnet(bridgeRequest.client, usingProxy)
+        cluster = self.mapSubnetToSubring(subnet, usingProxy)
+        position = self.mapClientToHashringPosition(interval, subnet)
         filters = self._buildHashringFilters(bridgeRequest.filters, cluster)
 
-        logging.debug("Assigned client to cluster %d/%d" %
-                      (cluster, self.numberOfClusters))
-        logging.debug("Assigned client hashring position based on: <%s>%s" %
-                      (interval, area))
-        logging.debug("Bridges in splitter:\t%d" % len(self.splitter))
-        logging.debug("Active bridge filters:\t%s" %
-                      ' '.join([x.func_name for x in filters]))
+        logging.debug("Client request within time interval: %s" % interval)
+        logging.debug("Assigned client to subhashring %d/%d" % (subring, self.totalSubrings))
+        logging.debug("Assigned client to subhashring position: %s" % position.encode('hex'))
+        logging.debug("Total bridges: %d" % len(self.hashring))
+        logging.debug("Bridge filters: %s" % ' '.join([x.func_name for x in filters]))
 
         # Check wheth we have a cached copy of the hashring:
         if filters in self.splitter.filterRings.keys():
@@ -354,7 +392,7 @@ class IPBasedDistributor(Distributor):
 
         # Determine the appropriate number of bridges to give to the client:
         returnNum = getNumBridgesPerAnswer(ring, max_bridges_per_answer=N)
-        answer = ring.getBridges(pos, returnNum)
+        answer = ring.getBridges(position, returnNum)
 
         return answer
 
