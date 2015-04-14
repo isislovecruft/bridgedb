@@ -715,10 +715,10 @@ class BridgeBackwardsCompatibility(BridgeBase):
         :type addressClass: :class:`ipaddr.IPv4Address` or
             :class:`ipaddr.IPv6Address`.
         :param addressClass: Type of address to choose.
-        :param str request: A string unique to this request e.g. email-address
-            or ``uniformMap(ip)`` or ``'default'``. In this case, this is not
-            a :class:`~bridgerequest.BridgeRequestBase` (as might be expected)
-            but the equivalent of
+        :param str request: A string (somewhat) unique to this request,
+            e.g. email-address or ``IPBasedDistributor.getSubnet(ip)``.  In
+            this case, this is not a :class:`~bridgerequest.BridgeRequestBase`
+            (as might be expected) but the equivalent of
             :data:`bridgerequest.BridgeRequestBase.client`.
         :param str transport: A pluggable transport method name.
         """
