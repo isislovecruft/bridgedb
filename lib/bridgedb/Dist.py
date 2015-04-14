@@ -128,6 +128,7 @@ class IPBasedDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
+        self.key = key
         self.totalSubrings = totalSubrings
         self.answerParameters = answerParameters
 
@@ -303,7 +304,7 @@ class IPBasedDistributor(Distributor):
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
             for subring in range(1, self.totalSubrings + 1):
                 filters = self._buildHashringFilters([filterFn,], subring)
-                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % subring)
+                key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 # For consistency with previous implementation of this method,
                 # only set the "name" for "clusters" which are for this
@@ -378,7 +379,7 @@ class IPBasedDistributor(Distributor):
         # Otherwise, construct a new hashring and populate it:
         else:
             logging.debug("Cache miss %s" % filters)
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % subring)
+            key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, filters, filterBridgesByRules(filters),
                                   populate_from=self.splitter.bridges)
@@ -420,6 +421,8 @@ class EmailBasedDistributor(Distributor):
         :param whitelist: A dictionary that maps whitelisted email addresses
             to GnuPG fingerprints.
         """
+        self.key = key
+
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
 
@@ -505,7 +508,7 @@ class EmailBasedDistributor(Distributor):
                 logging.debug("Cache miss %s" % ruleset)
 
                 # add new ring
-                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
+                key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 self.splitter.addRing(ring, ruleset,
                                       filterBridgesByRules(ruleset),
@@ -541,7 +544,7 @@ class EmailBasedDistributor(Distributor):
         # populate all rings (for dumping assignments and testing)
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
             ruleset = frozenset([filterFn])
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring")
+            key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, ruleset,
                                   filterBridgesByRules([filterFn]),
