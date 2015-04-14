@@ -167,7 +167,7 @@ class BridgeIntegrationTests(unittest.TestCase):
     test_getConfigLine_vanilla_withoutFingerprint   test_integration_getConfigLine_vanilla_withoutFingerprint
     test_getConfigLine_vanilla_withFingerprint      test_integration_getConfigLine_vanilla_withFingerprint
     test_getConfigLine_scramblesuit_withFingeprint  test_integration_getConfigLine_scramblesuit_withFingerprint
-    test_splitterBridgeInsertion                    test_integration_splitterBridgeInsertion
+    test_splitterBridgeInsertion                    test_integration_hashringBridgeInsertion
     ==============================================  ========================
     ..
     """
@@ -318,9 +318,9 @@ class BridgeIntegrationTests(unittest.TestCase):
                          % (self.fingerprint, ptArgsList),
                          bridgeLine)
 
-    def test_integration_splitterBridgeInsertion(self):
+    def test_integration_hashringBridgeInsertion(self):
         key = "Testing-Bridges-To-Rings"
-        splitter = FilteredBridgeSplitter(key)
+        hashring = FilteredBridgeSplitter(key)
 
         bridge1 = bridges.Bridge('unamed1', '1.2.3.5', 9100,
                                  'a1cc8dfef1fa11af9c40af1054df9daf45250550')
@@ -335,18 +335,18 @@ class BridgeIntegrationTests(unittest.TestCase):
                                  'b1cc8dfef1fa11af9c40af1054df9daf45250552')
         bridge4.setStatus(running = True)
 
-        self.failUnlessEqual(len(splitter), 0)
-        splitter.insert(bridge1)
-        splitter.insert(bridge2)
-        splitter.insert(bridge3)
+        self.failUnlessEqual(len(hashring), 0)
+        hashring.insert(bridge1)
+        hashring.insert(bridge2)
+        hashring.insert(bridge3)
         # Check that all were inserted
-        self.failUnlessEqual(len(splitter), 3)
-        splitter.insert(bridge1)
+        self.failUnlessEqual(len(hashring), 3)
+        hashring.insert(bridge1)
         # Check that the same bridge is not inserted twice
-        self.failUnlessEqual(len(splitter), 3)
-        splitter.insert(bridge4)
+        self.failUnlessEqual(len(hashring), 3)
+        hashring.insert(bridge4)
         # Check that identical bridges are not inserted twice
-        self.failUnlessEqual(len(splitter), 3)
+        self.failUnlessEqual(len(hashring), 3)
 
 
 class FlagsTests(unittest.TestCase):
