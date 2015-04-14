@@ -569,7 +569,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             return
 
         index = 0
-        logging.debug("Inserting %s into splitter"
+        logging.debug("Inserting %s into hashring"
                       % (logSafely(bridge.fingerprint)))
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
