@@ -104,16 +104,15 @@ class IPBasedDistributor(Distributor):
         distributor.
     """
 
-    def __init__(self, numberOfClusters, key, proxies=None, answerParameters=None):
+    def __init__(self, totalSubrings, key, proxies=None, answerParameters=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
 
-        :param integer numberOfClusters: The number of clusters to group IP addresses
-            into. Note that if PROXY_LIST_FILES is set in bridgedb.conf, then
-            the actual number of clusters is one higher than ``numberOfClusters``,
-            because the set of known open proxies constitutes its own
-            category.
-            DOCDOC What exactly does a cluster *do*?
+        :param int totalSubrings: The number of subhashrings to group clients
+            into. Note that if ``PROXY_LIST_FILES`` is set in bridgedb.conf,
+            then the actual number of clusters is one higher than
+            ``totalSubrings``, because the set of all known open proxies is
+            given its own subhashring.
         :param bytes key: The master HMAC key for this distributor. All added
             bridges are HMACed with this key in order to place them into the
             hashrings.
@@ -129,20 +128,20 @@ class IPBasedDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
+        self.totalSubrings = totalSubrings
         self.answerParameters = answerParameters
-        self.numberOfClusters = numberOfClusters
 
         if proxies:
             logging.info("Added known proxies to HTTPS distributor...")
             self.proxies = proxies
-            self.numberOfClusters += 1
-            self.proxyCluster = self.numberOfClusters
+            self.totalSubrings += 1
+            self.proxySubring = self.totalSubrings
         else:
             logging.warn("No known proxies were added to HTTPS distributor!")
             self.proxies = proxy.ProxySet()
-            self.proxyCluster = 0
+            self.proxySubring = 0
 
-        self.ringCacheSize = self.numberOfClusters * 3
+        self.ringCacheSize = self.totalSubrings * 3
 
         key2 = getHMAC(key, "Assign-Bridges-To-Rings")
         key3 = getHMAC(key, "Order-Areas-In-Rings")
@@ -223,13 +222,13 @@ class IPBasedDistributor(Distributor):
         # If the client wasn't using a proxy, select the client's subring
         # based upon the client's subnet (modulo the total subrings):
         if not usingProxy:
-            mod = self.numberOfClusters
+            mod = self.totalSubrings
             # If there is a proxy subring, don't count it for the modulus:
-            if self.proxyCluster:
+            if self.proxySubring:
                 mod -= 1
-            return int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod
+            return (int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod) + 1
         else:
-            return self.proxyCluster
+            return self.proxySubring
 
     def mapClientToHashringPosition(self, interval, subnet):
         """Map the client to a position on a (sub)hashring, based upon the
@@ -260,14 +259,14 @@ class IPBasedDistributor(Distributor):
         ``N_IP_CLUSTERS`` configuration option, as well as the number of
         ``PROXY_LIST_FILES``.
 
-        Essentially, :data:`numberOfClusters` is set to the specified
+        Essentially, :data:`totalSubrings` is set to the specified
         ``N_IP_CLUSTERS``.  All of the ``PROXY_LIST_FILES``, plus the list of
         Tor Exit relays (downloaded into memory with :script:`get-tor-exits`),
         are stored in :data:`proxies`, and the latter is added as an
-        additional cluster (such that :data:`numberOfClusters` becomes
+        additional cluster (such that :data:`totalSubrings` becomes
         ``N_IP_CLUSTERS + 1``).  The number of subhashrings which this
         :class:`Distributor` has active in its hashring is then
-        :data:`numberOfClusters`, where the last cluster is reserved for all
+        :data:`totalSubrings`, where the last cluster is reserved for all
         :data:`proxies`.
 
         As an example, if BridgeDB was configured with ``N_IP_CLUSTERS=4`` and
@@ -302,14 +301,14 @@ class IPBasedDistributor(Distributor):
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
 
         for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
-            for cluster in range(1, self.numberOfClusters):
-                filters = self._buildHashringFilters([filterFn,], cluster)
-                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
+            for subring in range(1, self.totalSubrings + 1):
+                filters = self._buildHashringFilters([filterFn,], subring)
+                key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % subring)
                 ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
                 # For consistency with previous implementation of this method,
                 # only set the "name" for "clusters" which are for this
                 # distributor's proxies:
-                if cluster == self.proxyCluster:
+                if subring == self.proxySubring:
                     ring.setName('{0} Proxy Ring'.format(self.name))
                 self.splitter.addRing(ring, filters,
                                       filterBridgesByRules(filters),
@@ -319,10 +318,9 @@ class IPBasedDistributor(Distributor):
         """Assign a bridge to this distributor."""
         self.splitter.insert(bridge)
 
-    def _buildHashringFilters(self, previousFilters, clientCluster):
-        g = filterAssignBridgesToRing(self.splitter.hmac,
-                                      self.numberOfClusters, clientCluster)
-        previousFilters.append(g)
+    def _buildHashringFilters(self, previousFilters, subring):
+        f = filterAssignBridgesToRing(self.splitter.hmac, self.totalSubrings, subring)
+        previousFilters.append(f)
         return frozenset(previousFilters)
 
     def getBridges(self, bridgeRequest, interval, N=1):
@@ -352,20 +350,20 @@ class IPBasedDistributor(Distributor):
 
         # First, check if the client's IP is one of the known :data:`proxies`:
         if bridgeRequest.client in self.proxies:
-            cluster = self.proxyCluster
             # The tag is a tag applied to a proxy IP address when it is added
             # to the bridgedb.proxy.ProxySet. For Tor Exit relays, the default
             # is 'exit_relay'. For other proxies loaded from the
             # PROXY_LIST_FILES config option, the default tag is the full
             # filename that the IP address originally came from.
+            usingProxy = True
             tag = self.proxies.getTag(bridgeRequest.client)
             logging.info("Client was from known proxy (tag: %s): %s" %
                          (tag, bridgeRequest.client))
 
         subnet = self.getSubnet(bridgeRequest.client, usingProxy)
-        cluster = self.mapSubnetToSubring(subnet, usingProxy)
+        subring = self.mapSubnetToSubring(subnet, usingProxy)
         position = self.mapClientToHashringPosition(interval, subnet)
-        filters = self._buildHashringFilters(bridgeRequest.filters, cluster)
+        filters = self._buildHashringFilters(bridgeRequest.filters, subring)
 
         logging.debug("Client request within time interval: %s" % interval)
         logging.debug("Assigned client to subhashring %d/%d" % (subring, self.totalSubrings))
@@ -380,7 +378,7 @@ class IPBasedDistributor(Distributor):
         # Otherwise, construct a new hashring and populate it:
         else:
             logging.debug("Cache miss %s" % filters)
-            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % cluster)
+            key1 = getHMAC(self.splitter.key, "Order-Bridges-In-Ring-%d" % subring)
             ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
             self.splitter.addRing(ring, filters, filterBridgesByRules(filters),
                                   populate_from=self.splitter.bridges)

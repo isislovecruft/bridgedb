@@ -19,7 +19,7 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
         def _assignBridgesToRing(bridge):
             digest = hmac(bridge.getID())
             pos = long( digest[:8], 16 )
-            which = pos % numRings
+            which = pos % numRings + 1
 
             if which == assignedRing:
                 return True
