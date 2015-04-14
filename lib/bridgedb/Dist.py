@@ -95,10 +95,6 @@ class IPBasedDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
 
-    :ivar list rings: A list of :class:`bridgedb.Bridges.BridgeHolder`
-        hashrings, one for each area in the ``areaMapper``. Every inserted
-        bridge will go into one of these rings, and every area is associated
-        with one.
     :type proxies: :class:`~bridgedb.proxies.ProxySet`
     :ivar proxies: All known proxies, which we treat differently. See
         :param:`proxies`.
@@ -133,7 +129,6 @@ class IPBasedDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
-        self.rings = []
         self.answerParameters = answerParameters
         self.numberOfClusters = numberOfClusters
 
