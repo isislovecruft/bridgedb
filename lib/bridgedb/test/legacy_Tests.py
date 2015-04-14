@@ -9,7 +9,6 @@ separate from the production codebase.
 
 from __future__ import print_function
 
-import doctest
 import os
 import random
 import sqlite3
@@ -653,13 +652,6 @@ def testSuite():
     for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
                   BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
-
-    for module in [ bridgedb.Bridges,
-                    bridgedb.Main,
-                    bridgedb.Dist,
-                    bridgedb.schedule ]:
-        suite.addTest(doctest.DocTestSuite(module))
-
     return suite
 
 def main():
