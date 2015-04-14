@@ -211,7 +211,6 @@ def createBridgeRings(cfg, proxyList, key):
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
         ipDistributor = Dist.IPBasedDistributor(
-            Dist.uniformMap,
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             proxyList,
