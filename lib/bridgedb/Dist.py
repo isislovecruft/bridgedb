@@ -156,9 +156,9 @@ class IPBasedDistributor(Distributor):
             because the set of known open proxies constitutes its own
             category.
             DOCDOC What exactly does a cluster *do*?
-        :param bytearray key: The master HMAC key for this distributor. All
-            added bridges are HMACed with this key in order to place them into
-            the hashrings.
+        :param bytes key: The master HMAC key for this distributor. All added
+            bridges are HMACed with this key in order to place them into the
+            hashrings.
         :type ipCategories: iterable or None
         :param ipCategories: DOCDOC
         :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
