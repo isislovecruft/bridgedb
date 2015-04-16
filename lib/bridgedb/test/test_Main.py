@@ -259,7 +259,7 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor ring,
+        # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 3)
 
@@ -273,7 +273,7 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor ring,
+        # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 3)
         self.assertGreater(len(httpsDist.proxies), 0)
@@ -304,7 +304,7 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                proxyList,
                                                                self.key)
-        # Should have an IPBasedDistributor ring, and an UnallocatedHolder ring:
+        # Should have an HTTPSDistributor ring, and an UnallocatedHolder ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 2)
         self.assertNotIn('email', hashring.rings)
         self.assertNotIn(emailDist, hashring.ringsByName.values())
@@ -319,7 +319,7 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, and an EmailDistributor ring:
+        # Should have an HTTPSDistributor ring, and an EmailDistributor ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 2)
         self.assertNotIn('unallocated', hashring.rings)
 
@@ -337,7 +337,7 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor, and an
+        # Should have an HTTPSDistributor ring, an EmailDistributor, and an
         # UnallocatedHolder ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 3)
 
