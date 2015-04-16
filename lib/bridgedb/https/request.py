@@ -106,7 +106,7 @@ class HTTPSBridgeRequest(bridgerequest.BridgeRequestBase):
                 pass
             else:
                 if country:
-                    self.notBlockedIn.append(country)
+                    self.notBlockedIn.append(country.lower())
                     logging.info("HTTPS request for bridges not blocked in: %r"
                                  % country)
 
@@ -116,7 +116,7 @@ class HTTPSBridgeRequest(bridgerequest.BridgeRequestBase):
             if addr.isIPAddress(self.client):
                 country = geo.getCountryCode(ipaddr.IPAddress(self.client))
                 if country:
-                    self.notBlockedIn.append(country)
+                    self.notBlockedIn.append(country.lower())
                     logging.info(
                         ("HTTPS client's bridges also shouldn't be blocked "
                          "in their GeoIP country code: %s") % country)
