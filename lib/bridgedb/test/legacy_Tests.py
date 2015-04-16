@@ -192,7 +192,7 @@ class IPBridgeDistTests(unittest.TestCase):
     def dumbAreaMapper(self, ip):
         return ip
     def testBasicDist(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(256):
             d.insert(fakeBridge())
         n = d.getBridgesForIP("1.2.3.4", "x", 2)
@@ -200,7 +200,7 @@ class IPBridgeDistTests(unittest.TestCase):
         self.assertEquals(n, n2)
 
     def testDistWithProxies(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo",
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo",
                                              [RhymesWith255ProxySet()])
         for _ in xrange(256):
             d.insert(fakeBridge())
@@ -224,8 +224,8 @@ class IPBridgeDistTests(unittest.TestCase):
     #XXX: #6175 breaks this test!
     #def testDistWithPortRestrictions(self):
     #    param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
-    #    d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Baz",
-    #                                         answerParameters=param)
+    #    d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Baz",
+    #                                       answerParameters=param)
     #    for _ in xrange(32):
     #        d.insert(fakeBridge(443))
     #    for _ in range(256):
@@ -244,7 +244,7 @@ class IPBridgeDistTests(unittest.TestCase):
     #        self.assertTrue(count >= 1)
 
     def testDistWithFilterIP6(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -260,7 +260,7 @@ class IPBridgeDistTests(unittest.TestCase):
             assert filterBridgesByIP6(random.choice(bridges))
 
     def testDistWithFilterIP4(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -276,7 +276,7 @@ class IPBridgeDistTests(unittest.TestCase):
             assert filterBridgesByIP4(random.choice(bridges))
 
     def testDistWithFilterBoth(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -300,7 +300,7 @@ class IPBridgeDistTests(unittest.TestCase):
 
 
     def testDistWithFilterAll(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -311,7 +311,7 @@ class IPBridgeDistTests(unittest.TestCase):
             assert len(b) == 0
 
     def testDistWithFilterBlockedCountries(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -337,7 +337,7 @@ class IPBridgeDistTests(unittest.TestCase):
             assert len(b) > 0
 
     def testDistWithFilterBlockedCountriesAdvanced(self):
-        d = bridgedb.Dist.IPBasedDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True, transports=True))
             d.insert(fakeBridge(or_addresses=True, transports=True))
