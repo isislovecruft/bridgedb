@@ -177,3 +177,38 @@ class Benchmarker(object):
         self.milliseconds = self.seconds * 1000
         if self.verbose:
             print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))
+
+
+class DummyBridge(object):
+    """A mock :class:`bridgedb.bridges.Bridge` which only supports a mocked
+    ``getBridgeLine`` method."""
+
+    def _randORPort(self): return random.randint(9001, 9999)
+
+    def __init__(self):
+        """Create a mocked bridge suitable for testing distributors and web
+        resource rendering.
+        """
+        ipv4 = randomIPv4()
+        self.nickname = "bridge-{0}".format(ipv4)
+        self.address = ipaddr.IPv4Address(ipv4)
+        self.orPort = self._randORPort()
+        self.fingerprint = "".join(random.choice('abcdef0123456789')
+                                   for _ in xrange(40))
+        self.orAddresses = [
+            (randomIPv6(), self._randORPort(), 6)
+        ]
+
+    def getBridgeLine(self, bridgeRequest, includeFingerprint=True):
+        if not bridgeRequest.isValid():
+            return
+        line = []
+        if bridgeRequest.transports:
+            line.append(bridgeRequest.transports[-1])  # Just the last PT
+        if bridgeRequest.addressClass is ipaddr.IPv6Address:
+            line.append("[%s]:%s" % self.orAddresses[0][:2])
+        else:
+            line.append("%s:%s" % (self.address, self.orPort))
+        if includeFingerprint is True:
+            line.append(self.fingerprint)
+        return " ".join([item for item in line])
