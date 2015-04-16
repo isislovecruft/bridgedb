@@ -299,7 +299,7 @@ class BridgeRing(BridgeHolder):
         """
         # XXX This can be removed after we determine if countryCode is ever
         # actually being used. It seems the countryCode should be passed in
-        # from bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer() in
+        # from bridgedb.https.server.WebResource.getBridgeRequestAnswer() in
         # order to hand out bridges which are believed to not be blocked in a
         # given country.
         if countryCode:

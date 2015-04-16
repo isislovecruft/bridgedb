@@ -337,7 +337,7 @@ class IPBasedDistributor(Distributor):
         :rtype: list
         :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
             the response. See
-            :meth:`bridgedb.HTTPServer.WebResourceBridges.getBridgeRequestAnswer`
+            :meth:`bridgedb.https.server.WebResourceBridges.getBridgeRequestAnswer`
             for an example of how this is used.
         """
         logging.info("Attempting to return %d bridges to client %s..."
