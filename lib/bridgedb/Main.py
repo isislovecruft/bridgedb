@@ -295,7 +295,7 @@ def run(options, reactor=reactor):
     state = persistent.State(config=config)
 
     from bridgedb.email.server import addServer as addSMTPServer
-    from bridgedb import HTTPServer
+    from bridgedb.https.server import addWebServer
 
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
@@ -436,7 +436,7 @@ def run(options, reactor=reactor):
 
         # Configure all servers:
         if config.HTTPS_DIST and config.HTTPS_SHARE:
-            HTTPServer.addWebServer(config, ipDistributor)
+            addWebServer(config, ipDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:
             addSMTPServer(config, emailDistributor)
 
@@ -486,7 +486,7 @@ def runSubcommand(options, config):
     """
     # Make sure that the runner module is only imported after logging is set
     # up, otherwise we run into the same logging configuration problem as
-    # mentioned above with the email.server and HTTPServer.
+    # mentioned above with the email.server and https.server.
     from bridgedb import runner
 
     statuscode = 0

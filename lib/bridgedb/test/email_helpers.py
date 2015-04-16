@@ -3,10 +3,8 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
-#           please also see AUTHORS file
-# :copyright: (c) 2013, Isis Lovecruft
-#             (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
 
@@ -20,7 +18,7 @@ from bridgedb.Dist import TooSoonEmail
 from bridgedb.persistent import Conf
 from bridgedb.email.server import MailServerContext
 from bridgedb.schedule import Unscheduled
-from bridgedb.test.test_HTTPServer import DummyBridge
+from bridgedb.test import util
 
 
 EMAIL_DIST = True
@@ -137,7 +135,7 @@ class DummyEmailDistributor(object):
         self.answerParameters = answerParameters
 
     def getBridges(self, bridgeRequest, epoch, N=1):
-        return [DummyBridge() for _ in xrange(N)]
+        return [util.DummyBridge() for _ in xrange(N)]
 
     def cleanDatabase(self):
         pass
@@ -166,7 +164,7 @@ class DummyEmailDistributorWithState(DummyEmailDistributor):
         self.alreadySeen[bridgeRequest.client] += 1
 
         if self.alreadySeen[bridgeRequest.client] <= 1:
-            return [DummyBridge() for _ in xrange(N)]
+            return [util.DummyBridge() for _ in xrange(N)]
         elif self.alreadySeen[bridgeRequest.client] == 2:
             raise TooSoonEmail(
                 "Seen client '%s' %d times"
