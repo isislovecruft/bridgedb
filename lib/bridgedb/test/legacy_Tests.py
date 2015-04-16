@@ -357,7 +357,7 @@ class IPBridgeDistTests(unittest.TestCase):
         for i in xrange(5):
             b = d.getBridges(randomIPString(), "x", 1,
                     bridgeFilterRules=[
-                        filterBridgesByNotBlockedIn("cn", methodname='obfs2'),
+                        filterBridgesByNotBlockedIn("cn"),
                         filterBridgesByTransport('obfs2'),
                         ])
             try: assert len(b) > 0
