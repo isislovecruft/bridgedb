@@ -31,7 +31,6 @@ from datetime import datetime
 
 from bridgedb import strings
 from bridgedb.Dist import MAX_EMAIL_RATE
-from bridgedb.HTTPServer import TEMPLATE_DIR
 
 
 def addCommands(template):
@@ -75,18 +74,7 @@ def addGreeting(template, clientName=None, welcome=False):
     return greeting
 
 def addKeyfile(template):
-    filename = os.path.join(TEMPLATE_DIR, 'bridgedb.asc')
-
-    try:
-        with open(filename) as fh:
-            keyFile  = fh.read()
-    except Exception as error:  # pragma: no cover
-        logging.exception(error)
-        keyFile = u''
-    else:
-        keyFile += u'\n\n'
-
-    return keyFile
+    return u'%s\n\n' % strings.BRIDGEDB_OPENPGP_KEY
 
 def addBridgeAnswer(template, answer):
     # Give the user their bridges, i.e. the `answer`:

@@ -66,6 +66,14 @@ class HTTPSBridgeRequestTests(unittest.TestCase):
         self.request.withoutBlockInCountry(httprequest)
         self.assertItemsEqual(['NL'], self.request.notBlockedIn)
 
+    def test_HTTPSBridgeRequest_withoutBlockInCountry_bad_params(self):
+        """HTTPSBridgeRequest.withoutBlockInCountry() should stop processing if
+        the request had a bad "unblocked" parameter.
+        """
+        httprequest = MockRequest({'unblocked': [3,]})
+        self.request.withoutBlockInCountry(httprequest)
+        self.assertNotIn('IR', self.request.notBlockedIn)
+
     def test_HTTPSBridgeRequest_withPluggableTransportType(self):
         """HTTPSBridgeRequest.withPluggableTransportType() should add the
         pluggable transport type to the ``transport`` attribute.
@@ -73,3 +81,11 @@ class HTTPSBridgeRequestTests(unittest.TestCase):
         httprequest = MockRequest({'transport': ['huggable_transport']})
         self.request.withPluggableTransportType(httprequest.args)
         self.assertIn('huggable_transport', self.request.transports)
+
+    def test_HTTPSBridgeRequest_withPluggableTransportType_bad_param(self):
+        """HTTPSBridgeRequest.withPluggableTransportType() should stop
+        processing if the request had a bad "unblocked" parameter.
+        """
+        httprequest = MockRequest({'transport': [3,]})
+        self.request.withPluggableTransportType(httprequest.args)
+        self.assertNotIn('huggable_transport', self.request.transports)
