@@ -42,7 +42,9 @@ import bridgedb.email.server
 import bridgedb.email.templates
 import bridgedb.Filters
 import bridgedb.geo
-import bridgedb.HTTPServer
+import bridgedb.https
+import bridgedb.https.request
+import bridgedb.https.server
 import bridgedb.Main
 import bridgedb.parse
 import bridgedb.parse.addr

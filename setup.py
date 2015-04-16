@@ -62,7 +62,7 @@ repo_langs = os.path.join(pkgpath, '_langs.py')
 
 # The directory containing template files and other resources to serve on the
 # web server:
-repo_templates = os.path.join(pkgpath, 'templates')
+repo_templates = os.path.join(pkgpath, 'https', 'templates')
 
 # The directories to install non-sourcecode resources into should always be
 # given as relative paths, in order to force distutils to install relative to
@@ -409,7 +409,7 @@ setuptools.setup(
     exclude_package_data={'bridgedb': ['*.po', '*.pot']},
     message_extractors={pkgpath: [
         ('**.py', 'python', None),
-        ('templates/**.html', 'mako', None),
+        ('https/templates/**.html', 'mako', None),
         ('public/**', 'ignore', None)]},
 )
 # XXX I think we don't need the 'public/**' babel.messages.frontend.method_map

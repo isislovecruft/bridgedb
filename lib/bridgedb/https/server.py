@@ -1,4 +1,4 @@
-# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_HTTPServer -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_https_server -*-
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
@@ -6,20 +6,26 @@
 # :copyright: (c) 2007-2015, The Tor Project, Inc.
 #             (c) 2013-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
+ 
+""" 
+.. py:module:: bridgedb.https.server
+    :synopsis: Servers which interface with clients and distribute bridges
+               over HTTP(S).
 
-"""
-This module implements the web (http, https) interfaces to the bridge database.
-"""
+bridgedb.https.server
+=====================
 
-import base64
-import gettext
-import logging
+Servers which interface with clients and distribute bridges over HTTP(S).
+""" 
+ 
+import base64 
+import gettext 
+import logging 
 import random
-import re
-import textwrap
-import time
-import os
-
+import re 
+import time 
+import os 
+ 
 from functools import partial
 
 from ipaddr import IPv4Address
@@ -28,13 +34,14 @@ import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-from twisted.internet import reactor
+from twisted.internet import reactor 
 from twisted.internet.error import CannotListenError
 from twisted.web import resource
-from twisted.web import server
-from twisted.web import static
-from twisted.web.util import redirectTo
-
+from twisted.web import static 
+from twisted.web.server import NOT_DONE_YET
+from twisted.web.server import Site
+from twisted.web.util import redirectTo 
+ 
 from bridgedb import captcha
 from bridgedb import crypto
 from bridgedb import strings
@@ -42,8 +49,8 @@ from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport
-from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.Filters import filterBridgesByTransport 
+from bridgedb.Filters import filterBridgesByNotBlockedIn 
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
@@ -56,7 +63,7 @@ from bridgedb.util import replaceControlChars
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
-
+ 
 # Setting `filesystem_checks` to False is recommended for production servers,
 # due to potential speed increases. This means that the atimes of the Mako
 # template files aren't rechecked every time the template is requested
@@ -143,6 +150,60 @@ def replaceErrorPage(error, template_name=None):
     return rendered
 
 
+class TranslatedTemplateResource(resource.Resource):
+    """A generalised resource which uses gettext translations and Mako
+    templates.
+    """
+    isLeaf = True
+
+    def __init__(self, template=None):
+        """Create a new :api:`~twisted.web.resource.Resource` for a
+        Mako-templated webpage.
+        """
+        gettext.install("bridgedb", unicode=True)
+        resource.Resource.__init__(self)
+        self.template = template
+
+    def render_GET(self, request):
+        rtl = False
+        try:
+            langs = translations.getLocaleFromHTTPRequest(request)
+            rtl = translations.usingRTLLang(langs)
+            template = lookup.get_template(self.template)
+            rendered = template.render(strings, rtl=rtl, lang=langs[0])
+        except Exception as err:  # pragma: no cover
+            rendered = replaceErrorPage(err)
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        return rendered
+
+    render_POST = render_GET
+
+
+class IndexResource(TranslatedTemplateResource):
+    """The parent resource of all other documents hosted by the webserver."""
+
+    def __init__(self):
+        """Create a :api:`twisted.web.resource.Resource` for the index page."""
+        TranslatedTemplateResource.__init__(self, 'index.html')
+
+
+class OptionsResource(TranslatedTemplateResource):
+    """A resource with additional options which a client may use to specify the
+    which bridge types should be returned by :class:`BridgesResource`.
+    """
+    def __init__(self):
+        """Create a :api:`twisted.web.resource.Resource` for the options page."""
+        TranslatedTemplateResource.__init__(self, 'options.html')
+
+
+class HowtoResource(TranslatedTemplateResource):
+    """A resource which explains how to use bridges."""
+
+    def __init__(self):
+        """Create a :api:`twisted.web.resource.Resource` for the HowTo page."""
+        TranslatedTemplateResource.__init__(self, 'howto.html')
+
+
 class CaptchaProtectedResource(resource.Resource):
     """A general resource protected by some form of CAPTCHA."""
 
@@ -153,10 +214,10 @@ class CaptchaProtectedResource(resource.Resource):
         resource.Resource.__init__(self)
         self.publicKey = publicKey
         self.secretKey = secretKey
-        self.useForwardedHeader = useForwardedHeader
+        self.useForwardedHeader = useForwardedHeader 
         self.resource = protectedResource
-
-    def getClientIP(self, request):
+ 
+    def getClientIP(self, request): 
         """Get the client's IP address from the :header:`X-Forwarded-For`
         header, or from the :api:`request <twisted.web.server.Request>`.
 
@@ -167,7 +228,7 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: The client's IP address, if it was obtainable.
         """
         return getClientIP(request, self.useForwardedHeader)
-
+ 
     def getCaptchaImage(self, request=None):
         """Get a CAPTCHA image.
 
@@ -208,7 +269,7 @@ class CaptchaProtectedResource(resource.Resource):
         """
         return False
 
-    def render_GET(self, request):
+    def render_GET(self, request): 
         """Retrieve a ReCaptcha from the API server and serve it to the client.
 
         :type request: :api:`twisted.web.http.Request`
@@ -237,8 +298,8 @@ class CaptchaProtectedResource(resource.Resource):
 
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
-
-    def render_POST(self, request):
+ 
+    def render_POST(self, request): 
         """Process a client's CAPTCHA solution.
 
         If the client's CAPTCHA solution is valid (according to
@@ -267,8 +328,8 @@ class CaptchaProtectedResource(resource.Resource):
         logging.debug("Client failed a CAPTCHA; returning redirect to %s"
                       % request.uri)
         return redirectTo(request.uri, request)
-
-
+ 
+ 
 class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     """A web resource which uses a local cache of CAPTCHAs, generated with
     gimp-captcha_, to protect another resource.
@@ -559,67 +620,15 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         """
         d = self.checkSolution(request)
         d.addCallback(self._renderDeferred)
-        return server.NOT_DONE_YET
+        return NOT_DONE_YET
 
 
-class WebResourceOptions(resource.Resource):
-    """A resource with additional options which a client may use to specify the
-    which bridge types should be returned by :class:`WebResourceBridges`.
-    """
-
-    isLeaf = True
-
-    def __init__(self):
-        """Create a new WebResource for the Options page"""
-        gettext.install("bridgedb", unicode=True)
-        resource.Resource.__init__(self)
-
-    def render_GET(self, request):
-        rtl = False
-        try:
-            langs = translations.getLocaleFromHTTPRequest(request)
-            rtl = translations.usingRTLLang(langs)
-            template = lookup.get_template('options.html')
-            rendered = template.render(strings, rtl=rtl, lang=langs[0])
-        except Exception as err:  # pragma: no cover
-            rendered = replaceErrorPage(err)
-        request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return rendered
-
-    render_POST = render_GET
-
-
-class WebResourceHowto(resource.Resource):
-    """A resource which explains how to use bridges."""
-
-    isLeaf = True
-
-    def __init__(self):
-        """Create a new WebResource for the Options page"""
-        gettext.install("bridgedb", unicode=True)
-        resource.Resource.__init__(self)
-
-    def render_GET(self, request):
-        rtl = False
-        try:
-            langs = translations.getLocaleFromHTTPRequest(request)
-            rtl = translations.usingRTLLang(langs)
-            template = lookup.get_template('howto.html')
-            rendered = template.render(strings, rtl=rtl, lang=langs[0])
-        except Exception as err:  # pragma: no cover
-            rendered = replaceErrorPage(err)
-        request.setHeader("Content-Type", "text/html; charset=utf-8")
-        return rendered
-
-    render_POST = render_GET
-
-
-class WebResourceBridges(resource.Resource):
+class BridgesResource(resource.Resource):
     """This resource displays bridge lines in response to a request."""
 
-    isLeaf = True
-
-    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
+    isLeaf = True 
+ 
+    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False, 
                  includeFingerprints=True):
         """Create a new resource for displaying bridges to a client.
 
@@ -634,16 +643,16 @@ class WebResourceBridges(resource.Resource):
             X-Forwarded-For header instead of the source IP address.
         :param bool includeFingerprints: Do we include the bridge's
             fingerprint in the response?
-        """
-        gettext.install("bridgedb", unicode=True)
+        """ 
+        gettext.install("bridgedb", unicode=True) 
         resource.Resource.__init__(self)
-        self.distributor = distributor
-        self.schedule = schedule
-        self.nBridgesToGive = N
-        self.useForwardedHeader = useForwardedHeader
-        self.includeFingerprints = includeFingerprints
-
-    def render(self, request):
+        self.distributor = distributor 
+        self.schedule = schedule 
+        self.nBridgesToGive = N 
+        self.useForwardedHeader = useForwardedHeader 
+        self.includeFingerprints = includeFingerprints 
+ 
+    def render(self, request): 
         """Render a response for a client HTTP request.
 
         Presently, this method merely wraps :meth:`getBridgeRequestAnswer` to
@@ -665,7 +674,7 @@ class WebResourceBridges(resource.Resource):
             response = self.renderAnswer(request)
 
         return response
-
+ 
     def getClientIP(self, request):
         """Get the client's IP address from the :header:`X-Forwarded-For`
         header, or from the :api:`request <twisted.web.server.Request>`.
@@ -678,7 +687,7 @@ class WebResourceBridges(resource.Resource):
         """
         return getClientIP(request, self.useForwardedHeader)
 
-    def getBridgeRequestAnswer(self, request):
+    def getBridgeRequestAnswer(self, request): 
         """Respond to a client HTTP request for bridges.
 
         :type request: :api:`twisted.web.http.Request`
@@ -693,7 +702,7 @@ class WebResourceBridges(resource.Resource):
 
         logging.info("Replying to web request from %s. Parameters were %r"
                      % (ip, request.args))
-
+ 
         if ip:
             bridgeRequest = HTTPSBridgeRequest()
             bridgeRequest.client = ip
@@ -708,10 +717,10 @@ class WebResourceBridges(resource.Resource):
                 bridgeRequest, self.includeFingerprints)) for bridge in bridges]
 
         return self.renderAnswer(request, bridgeLines)
-
+ 
     def getResponseFormat(self, request):
         """Determine the requested format for the response.
-
+ 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
             URI, and any URL/POST arguments and headers present.
@@ -725,16 +734,16 @@ class WebResourceBridges(resource.Resource):
         if format and len(format):
             format = format[0]  # Choose the first arg
         return format
-
+ 
     def renderAnswer(self, request, bridgeLines=None):
         """Generate a response for a client which includes **bridgesLines**.
-
+ 
         .. note: The generated response can be plain or HTML. A plain response
             looks like::
 
                 voltron 1.2.3.4:1234 ABCDEF01234567890ABCDEF01234567890ABCDEF
                 voltron 5.5.5.5:5555 0123456789ABCDEF0123456789ABCDEF01234567
-
+ 
             That is, there is no HTML, what you see is what you get, and what
             you get is suitable for pasting directly into Tor Launcher (or
             into a torrc, if you prepend ``"Bridge "`` to each line). The
@@ -785,39 +794,11 @@ class WebResourceBridges(resource.Resource):
         return rendered
 
 
-class WebRoot(resource.Resource):
-    """The parent resource of all other documents hosted by the webserver."""
-
-    isLeaf = True
-
-    def render_GET(self, request):
-        """Handles requests for the webserver root document.
-
-        For example, this function handles requests for
-        https://bridges.torproject.org/.
-
-        :type request: :api:`twisted.web.server.Request`
-        :param request: An incoming request.
-        """
-        rtl = False
-        try:
-            langs = translations.getLocaleFromHTTPRequest(request)
-            rtl = translations.usingRTLLang(langs)
-            template = lookup.get_template('index.html')
-            rendered = template.render(strings,
-                                       rtl=rtl,
-                                       lang=langs[0])
-        except Exception as err:
-            rendered = replaceErrorPage(err)
-
-        return rendered
-
-
-def addWebServer(cfg, dist):
+def addWebServer(config, distributor):
     """Set up a web server for HTTP(S)-based bridge distribution.
 
-    :type cfg: :class:`bridgedb.persistent.Conf`
-    :param cfg: A configuration object from
+    :type config: :class:`bridgedb.persistent.Conf`
+    :param config: A configuration object from
          :mod:`bridgedb.Main`. Currently, we use these options::
              HTTP_UNENCRYPTED_PORT
              HTTP_UNENCRYPTED_BIND_IP
@@ -838,87 +819,91 @@ def addWebServer(cfg, dist):
              GIMP_CAPTCHA_DIR
              GIMP_CAPTCHA_HMAC_KEYFILE
              GIMP_CAPTCHA_RSA_KEYFILE
-    :type dist: :class:`bridgedb.Dist.IPBasedDistributor`
-    :param dist: A bridge distributor.
+    :type distributor: :class:`bridgedb.Dist.IPBasedDistributor`
+    :param distributor: A bridge distributor.
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`
     :returns: A webserver.
-    """
+    """ 
     captcha = None
-    fwdHeaders = cfg.HTTP_USE_IP_FROM_FORWARDED_HEADER
-    numBridges = cfg.HTTPS_N_BRIDGES_PER_ANSWER
-    fprInclude = cfg.HTTPS_INCLUDE_FINGERPRINTS
+    fwdHeaders = config.HTTP_USE_IP_FROM_FORWARDED_HEADER
+    numBridges = config.HTTPS_N_BRIDGES_PER_ANSWER
+    fprInclude = config.HTTPS_INCLUDE_FINGERPRINTS
 
     logging.info("Starting web servers...")
 
-    httpdist = resource.Resource()
-    httpdist.putChild('', WebRoot())
-    httpdist.putChild('robots.txt',
-                      static.File(os.path.join(TEMPLATE_DIR, 'robots.txt')))
-    httpdist.putChild('keys',
-                      static.File(os.path.join(TEMPLATE_DIR, 'bridgedb.asc')))
-    httpdist.putChild('assets',
-                      static.File(os.path.join(TEMPLATE_DIR, 'assets/')))
-    httpdist.putChild('options', WebResourceOptions())
-    httpdist.putChild('howto', WebResourceHowto())
+    index   = IndexResource()
+    options = OptionsResource()
+    howto   = HowtoResource()
+    robots  = static.File(os.path.join(TEMPLATE_DIR, 'robots.txt'))
+    assets  = static.File(os.path.join(TEMPLATE_DIR, 'assets/'))
+    keys    = static.Data(bytes(strings.BRIDGEDB_OPENPGP_KEY), 'text/plain')
 
-    if cfg.RECAPTCHA_ENABLED:
-        publicKey = cfg.RECAPTCHA_PUB_KEY
-        secretKey = cfg.RECAPTCHA_SEC_KEY
+    root = resource.Resource()
+    root.putChild('', index)
+    root.putChild('robots.txt', robots)
+    root.putChild('keys', keys)
+    root.putChild('assets', assets)
+    root.putChild('options', options)
+    root.putChild('howto', howto)
+
+    if config.RECAPTCHA_ENABLED:
+        publicKey = config.RECAPTCHA_PUB_KEY
+        secretKey = config.RECAPTCHA_SEC_KEY
         captcha = partial(ReCaptchaProtectedResource,
-                          remoteIP=cfg.RECAPTCHA_REMOTEIP)
-    elif cfg.GIMP_CAPTCHA_ENABLED:
+                          remoteIP=config.RECAPTCHA_REMOTEIP)
+    elif config.GIMP_CAPTCHA_ENABLED:
         # Get the master HMAC secret key for CAPTCHA challenges, and then
         # create a new HMAC key from it for use on the server.
-        captchaKey = crypto.getKey(cfg.GIMP_CAPTCHA_HMAC_KEYFILE)
+        captchaKey = crypto.getKey(config.GIMP_CAPTCHA_HMAC_KEYFILE)
         hmacKey = crypto.getHMAC(captchaKey, "Captcha-Key")
         # Load or create our encryption keys:
-        secretKey, publicKey = crypto.getRSAKey(cfg.GIMP_CAPTCHA_RSA_KEYFILE)
+        secretKey, publicKey = crypto.getRSAKey(config.GIMP_CAPTCHA_RSA_KEYFILE)
         captcha = partial(GimpCaptchaProtectedResource,
                           hmacKey=hmacKey,
-                          captchaDir=cfg.GIMP_CAPTCHA_DIR)
+                          captchaDir=config.GIMP_CAPTCHA_DIR)
 
-    if cfg.HTTPS_ROTATION_PERIOD:
-        count, period = cfg.HTTPS_ROTATION_PERIOD.split()
+    if config.HTTPS_ROTATION_PERIOD:
+        count, period = config.HTTPS_ROTATION_PERIOD.split()
         sched = ScheduledInterval(count, period)
     else:
         sched = Unscheduled()
 
-    bridges = WebResourceBridges(dist, sched, numBridges,
-                                 fwdHeaders, includeFingerprints=fprInclude)
+    bridges = BridgesResource(distributor, sched, numBridges, fwdHeaders,
+                              includeFingerprints=fprInclude)
     if captcha:
         # Protect the 'bridges' page with a CAPTCHA, if configured to do so:
         protected = captcha(publicKey=publicKey,
                             secretKey=secretKey,
                             useForwardedHeader=fwdHeaders,
                             protectedResource=bridges)
-        httpdist.putChild('bridges', protected)
+        root.putChild('bridges', protected)
         logging.info("Protecting resources with %s." % captcha.func.__name__)
-    else:
-        httpdist.putChild('bridges', bridges)
+    else: 
+        root.putChild('bridges', bridges)
 
-    site = server.Site(httpdist)
+    site = Site(root)
     site.displayTracebacks = False
-
-    if cfg.HTTP_UNENCRYPTED_PORT:
-        ip = cfg.HTTP_UNENCRYPTED_BIND_IP or ""
-        port = cfg.HTTP_UNENCRYPTED_PORT or 80
+ 
+    if config.HTTP_UNENCRYPTED_PORT:  # pragma: no cover
+        ip = config.HTTP_UNENCRYPTED_BIND_IP or ""
+        port = config.HTTP_UNENCRYPTED_PORT or 80
         try:
             reactor.listenTCP(port, site, interface=ip)
         except CannotListenError as error:
             raise SystemExit(error)
         logging.info("Started HTTP server on %s:%d" % (str(ip), int(port)))
-
-    if cfg.HTTPS_PORT:
-        ip = cfg.HTTPS_BIND_IP or ""
-        port = cfg.HTTPS_PORT or 443
+ 
+    if config.HTTPS_PORT:  # pragma: no cover
+        ip = config.HTTPS_BIND_IP or ""
+        port = config.HTTPS_PORT or 443
         try:
             from twisted.internet.ssl import DefaultOpenSSLContextFactory
-            factory = DefaultOpenSSLContextFactory(cfg.HTTPS_KEY_FILE,
-                                                   cfg.HTTPS_CERT_FILE)
+            factory = DefaultOpenSSLContextFactory(config.HTTPS_KEY_FILE,
+                                                   config.HTTPS_CERT_FILE)
             reactor.listenSSL(port, site, factory, interface=ip)
         except CannotListenError as error:
             raise SystemExit(error)
         logging.info("Started HTTPS server on %s:%d" % (str(ip), int(port)))
-
-    return site
+ 
+    return site 
