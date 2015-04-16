@@ -43,28 +43,28 @@ class HTTPSBridgeRequestTests(unittest.TestCase):
         """HTTPSBridgeRequest.withoutBlockInCountry() should add the country CC
         to the ``notBlockedIn`` attribute.
         """
-        httprequest = MockRequest({'unblocked': ['IR']})
+        httprequest = MockRequest({'unblocked': ['ir']})
         self.request.withoutBlockInCountry(httprequest)
-        self.assertIn('IR', self.request.notBlockedIn)
+        self.assertIn('ir', self.request.notBlockedIn)
 
     def test_HTTPSBridgeRequest_withoutBlockInCountry_US(self):
         """HTTPSBridgeRequest.withoutBlockInCountry() should add the country CC
         to the ``notBlockedIn`` attribute (and not any other countries).
         """
-        httprequest = MockRequest({'unblocked': ['US']})
+        httprequest = MockRequest({'unblocked': ['us']})
         self.request.withoutBlockInCountry(httprequest)
-        self.assertNotIn('IR', self.request.notBlockedIn)
+        self.assertNotIn('ir', self.request.notBlockedIn)
 
     def test_HTTPSBridgeRequest_withoutBlockInCountry_no_addClientCountryCode(self):
         """HTTPSBridgeRequest.withoutBlockInCountry(), when
         addClientCountryCode=False, shouldn't add the client's country code to the
         ``notBlockedIn`` attribute.
         """
-        httprequest = MockRequest({'unblocked': ['NL']})
+        httprequest = MockRequest({'unblocked': ['nl']})
         self.request = request.HTTPSBridgeRequest(addClientCountryCode=False)
         self.request.client = '5.5.5.5'
         self.request.withoutBlockInCountry(httprequest)
-        self.assertItemsEqual(['NL'], self.request.notBlockedIn)
+        self.assertItemsEqual(['nl'], self.request.notBlockedIn)
 
     def test_HTTPSBridgeRequest_withoutBlockInCountry_bad_params(self):
         """HTTPSBridgeRequest.withoutBlockInCountry() should stop processing if

@@ -150,7 +150,7 @@ class BridgeRequestBase(object):
         self.addressClass = ipaddr.IPv6Address
 
     def withoutBlockInCountry(self, country):
-        self.notBlockedIn.append(country)
+        self.notBlockedIn.append(country.lower())
 
     def withPluggableTransportType(self, pt):
         self.transports.append(pt)
@@ -182,6 +182,6 @@ class BridgeRequestBase(object):
             self.addFilter(Filters.filterBridgesByTransport(transport,
                                                             self.addressClass))
         for country in self.notBlockedIn:
-            self.addFilter(Filters.filterBridgesByNotBlockedIn(country,
+            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower(),
                                                                self.addressClass,
                                                                transport))
