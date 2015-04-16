@@ -6,8 +6,8 @@
 # :copyright: (c) 2007-2015, The Tor Project, Inc.
 #             (c) 2013-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
- 
-""" 
+
+"""
 .. py:module:: bridgedb.https.server
     :synopsis: Servers which interface with clients and distribute bridges
                over HTTP(S).
@@ -16,16 +16,16 @@ bridgedb.https.server
 =====================
 
 Servers which interface with clients and distribute bridges over HTTP(S).
-""" 
- 
-import base64 
-import gettext 
-import logging 
+"""
+
+import base64
+import gettext
+import logging
 import random
-import re 
-import time 
-import os 
- 
+import re
+import time
+import os
+
 from functools import partial
 
 from ipaddr import IPv4Address
@@ -34,14 +34,14 @@ import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-from twisted.internet import reactor 
+from twisted.internet import reactor
 from twisted.internet.error import CannotListenError
 from twisted.web import resource
-from twisted.web import static 
+from twisted.web import static
 from twisted.web.server import NOT_DONE_YET
 from twisted.web.server import Site
-from twisted.web.util import redirectTo 
- 
+from twisted.web.util import redirectTo
+
 from bridgedb import captcha
 from bridgedb import crypto
 from bridgedb import strings
@@ -49,8 +49,8 @@ from bridgedb import translations
 from bridgedb import txrecaptcha
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport 
-from bridgedb.Filters import filterBridgesByNotBlockedIn 
+from bridgedb.Filters import filterBridgesByTransport
+from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
@@ -63,7 +63,7 @@ from bridgedb.util import replaceControlChars
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
- 
+
 # Setting `filesystem_checks` to False is recommended for production servers,
 # due to potential speed increases. This means that the atimes of the Mako
 # template files aren't rechecked every time the template is requested
@@ -214,10 +214,10 @@ class CaptchaProtectedResource(resource.Resource):
         resource.Resource.__init__(self)
         self.publicKey = publicKey
         self.secretKey = secretKey
-        self.useForwardedHeader = useForwardedHeader 
+        self.useForwardedHeader = useForwardedHeader
         self.resource = protectedResource
- 
-    def getClientIP(self, request): 
+
+    def getClientIP(self, request):
         """Get the client's IP address from the :header:`X-Forwarded-For`
         header, or from the :api:`request <twisted.web.server.Request>`.
 
@@ -228,7 +228,7 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: The client's IP address, if it was obtainable.
         """
         return getClientIP(request, self.useForwardedHeader)
- 
+
     def getCaptchaImage(self, request=None):
         """Get a CAPTCHA image.
 
@@ -269,7 +269,7 @@ class CaptchaProtectedResource(resource.Resource):
         """
         return False
 
-    def render_GET(self, request): 
+    def render_GET(self, request):
         """Retrieve a ReCaptcha from the API server and serve it to the client.
 
         :type request: :api:`twisted.web.http.Request`
@@ -298,8 +298,8 @@ class CaptchaProtectedResource(resource.Resource):
 
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
- 
-    def render_POST(self, request): 
+
+    def render_POST(self, request):
         """Process a client's CAPTCHA solution.
 
         If the client's CAPTCHA solution is valid (according to
@@ -328,8 +328,8 @@ class CaptchaProtectedResource(resource.Resource):
         logging.debug("Client failed a CAPTCHA; returning redirect to %s"
                       % request.uri)
         return redirectTo(request.uri, request)
- 
- 
+
+
 class GimpCaptchaProtectedResource(CaptchaProtectedResource):
     """A web resource which uses a local cache of CAPTCHAs, generated with
     gimp-captcha_, to protect another resource.
@@ -626,9 +626,9 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
 class BridgesResource(resource.Resource):
     """This resource displays bridge lines in response to a request."""
 
-    isLeaf = True 
- 
-    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False, 
+    isLeaf = True
+
+    def __init__(self, distributor, schedule, N=1, useForwardedHeader=False,
                  includeFingerprints=True):
         """Create a new resource for displaying bridges to a client.
 
@@ -643,16 +643,16 @@ class BridgesResource(resource.Resource):
             X-Forwarded-For header instead of the source IP address.
         :param bool includeFingerprints: Do we include the bridge's
             fingerprint in the response?
-        """ 
-        gettext.install("bridgedb", unicode=True) 
+        """
+        gettext.install("bridgedb", unicode=True)
         resource.Resource.__init__(self)
-        self.distributor = distributor 
-        self.schedule = schedule 
-        self.nBridgesToGive = N 
-        self.useForwardedHeader = useForwardedHeader 
-        self.includeFingerprints = includeFingerprints 
- 
-    def render(self, request): 
+        self.distributor = distributor
+        self.schedule = schedule
+        self.nBridgesToGive = N
+        self.useForwardedHeader = useForwardedHeader
+        self.includeFingerprints = includeFingerprints
+
+    def render(self, request):
         """Render a response for a client HTTP request.
 
         Presently, this method merely wraps :meth:`getBridgeRequestAnswer` to
@@ -674,7 +674,7 @@ class BridgesResource(resource.Resource):
             response = self.renderAnswer(request)
 
         return response
- 
+
     def getClientIP(self, request):
         """Get the client's IP address from the :header:`X-Forwarded-For`
         header, or from the :api:`request <twisted.web.server.Request>`.
@@ -687,7 +687,7 @@ class BridgesResource(resource.Resource):
         """
         return getClientIP(request, self.useForwardedHeader)
 
-    def getBridgeRequestAnswer(self, request): 
+    def getBridgeRequestAnswer(self, request):
         """Respond to a client HTTP request for bridges.
 
         :type request: :api:`twisted.web.http.Request`
@@ -702,7 +702,7 @@ class BridgesResource(resource.Resource):
 
         logging.info("Replying to web request from %s. Parameters were %r"
                      % (ip, request.args))
- 
+
         if ip:
             bridgeRequest = HTTPSBridgeRequest()
             bridgeRequest.client = ip
@@ -717,10 +717,10 @@ class BridgesResource(resource.Resource):
                 bridgeRequest, self.includeFingerprints)) for bridge in bridges]
 
         return self.renderAnswer(request, bridgeLines)
- 
+
     def getResponseFormat(self, request):
         """Determine the requested format for the response.
- 
+
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object containing the HTTP method, full
             URI, and any URL/POST arguments and headers present.
@@ -734,16 +734,16 @@ class BridgesResource(resource.Resource):
         if format and len(format):
             format = format[0]  # Choose the first arg
         return format
- 
+
     def renderAnswer(self, request, bridgeLines=None):
         """Generate a response for a client which includes **bridgesLines**.
- 
+
         .. note: The generated response can be plain or HTML. A plain response
             looks like::
 
                 voltron 1.2.3.4:1234 ABCDEF01234567890ABCDEF01234567890ABCDEF
                 voltron 5.5.5.5:5555 0123456789ABCDEF0123456789ABCDEF01234567
- 
+
             That is, there is no HTML, what you see is what you get, and what
             you get is suitable for pasting directly into Tor Launcher (or
             into a torrc, if you prepend ``"Bridge "`` to each line). The
@@ -824,7 +824,7 @@ def addWebServer(config, distributor):
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`
     :returns: A webserver.
-    """ 
+    """
     captcha = None
     fwdHeaders = config.HTTP_USE_IP_FROM_FORWARDED_HEADER
     numBridges = config.HTTPS_N_BRIDGES_PER_ANSWER
@@ -879,12 +879,12 @@ def addWebServer(config, distributor):
                             protectedResource=bridges)
         root.putChild('bridges', protected)
         logging.info("Protecting resources with %s." % captcha.func.__name__)
-    else: 
+    else:
         root.putChild('bridges', bridges)
 
     site = Site(root)
     site.displayTracebacks = False
- 
+
     if config.HTTP_UNENCRYPTED_PORT:  # pragma: no cover
         ip = config.HTTP_UNENCRYPTED_BIND_IP or ""
         port = config.HTTP_UNENCRYPTED_PORT or 80
@@ -893,7 +893,7 @@ def addWebServer(config, distributor):
         except CannotListenError as error:
             raise SystemExit(error)
         logging.info("Started HTTP server on %s:%d" % (str(ip), int(port)))
- 
+
     if config.HTTPS_PORT:  # pragma: no cover
         ip = config.HTTPS_BIND_IP or ""
         port = config.HTTPS_PORT or 443
@@ -905,5 +905,5 @@ def addWebServer(config, distributor):
         except CannotListenError as error:
             raise SystemExit(error)
         logging.info("Started HTTPS server on %s:%d" % (str(ip), int(port)))
- 
-    return site 
+
+    return site
