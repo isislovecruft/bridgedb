@@ -283,28 +283,17 @@ class BridgeRing(BridgeHolder):
         assert len(r) == N
         return r
 
-    def getBridges(self, pos, N=1, countryCode=None):
+    def getBridges(self, pos, N=1):
         """Return **N** bridges appearing in this hashring after a position.
 
         :param bytes pos: The position to jump to. Any bridges returned will
-                          start at this position in the hashring, if there is
-                          a bridge assigned to that position. Otherwise,
-                          indexing will start at the first position after this
-                          one which has a bridge assigned to it.
+            start at this position in the hashring, if there is a bridge
+            assigned to that position. Otherwise, indexing will start at the
+            first position after this one which has a bridge assigned to it.
         :param int N: The number of bridges to return.
-        :type countryCode: str or None
-        :param countryCode: DOCDOC
         :rtype: list
-        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        :returns: A list of :class:`~bridgedb.bridges.Bridge`s.
         """
-        # XXX This can be removed after we determine if countryCode is ever
-        # actually being used. It seems the countryCode should be passed in
-        # from bridgedb.https.server.WebResource.getBridgeRequestAnswer() in
-        # order to hand out bridges which are believed to not be blocked in a
-        # given country.
-        if countryCode:
-            logging.debug("getBridges: countryCode=%r" % countryCode)
-
         forced = []
         for _, _, count, subring in self.subrings:
             if len(subring) < count:
