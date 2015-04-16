@@ -98,8 +98,8 @@ def _createConfig(configFile=TEST_CONFIG_FILE):
     return config
 
 
-class DummyIPBasedDistributor(object):
-    """A mocked :class:`bridgedb.Dist.IPBasedDistributor` which is used to test
+class DummyHTTPSDistributor(object):
+    """A mocked :class:`bridgedb.Dist.HTTPSDistributor` which is used to test
     :class:`bridgedb.https.server.BridgesResource`.
     """
     _bridge_class = util.DummyBridge

@@ -727,7 +727,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
             :class:`ipaddr.IPv6Address`.
         :param addressClass: Type of address to choose.
         :param str request: A string (somewhat) unique to this request,
-            e.g. email-address or ``IPBasedDistributor.getSubnet(ip)``.  In
+            e.g. email-address or ``HTTPSDistributor.getSubnet(ip)``.  In
             this case, this is not a :class:`~bridgerequest.BridgeRequestBase`
             (as might be expected) but the equivalent of
             :data:`bridgerequest.BridgeRequestBase.client`.
