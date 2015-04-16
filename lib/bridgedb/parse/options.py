@@ -251,32 +251,6 @@ class BaseOptions(usage.Options):
             print("  self['rundir']=%s" % self['rundir'])
 
 
-class TestOptions(BaseOptions):
-    """Suboptions for running twisted.trial and unittest based tests."""
-
-    longdesc = textwrap.dedent("""BridgeDB testing commands.
-    See the `bridgedb mock` command for generating testing environments.""")
-
-    optFlags = [['coverage', 'c', 'Generate coverage statistics']]
-    optParameters = [
-        ['file', 'f', None, 'Run tests in specific file(s) (trial only)'],
-        ['unittests', 'u', False, 'Run unittests in bridgedb.Tests'],
-        ['trial', 't', True, 'Run twisted.trial tests in bridgedb.test']]
-
-    completionData = usage.Completions(
-        mutuallyExclusive=[('unittests', 'coverage'),
-                           ('unittests', 'file')],
-        optActions={'file': usage.CompleteFiles('lib/bridgedb/test/test_*.py',
-                                                repeat=True,
-                                                descr="test filename")},
-        extraActions=[
-            usage.Completer(descr="extra arguments to pass to trial")])
-
-    def parseArgs(self, *args):
-        """Parse any additional arguments after the options and flags."""
-        self['test_args'] = args
-
-
 class MockOptions(BaseOptions):
     """Suboptions for creating necessary conditions for testing purposes."""
 
@@ -315,7 +289,6 @@ class MainOptions(BaseOptions):
         ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
         ['reload', 'R', 'Reload bridge descriptors into running servers']]
     subCommands = [
-        ['test', None, TestOptions, "Run twisted.trial tests or unittests"],
         ['mock', None, MockOptions, "Generate a testing environment"],
         ['SIGHUP', None, SIGHUPOptions,
          "Reload bridge descriptors into running servers"],
