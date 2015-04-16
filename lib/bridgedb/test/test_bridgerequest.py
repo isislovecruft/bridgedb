@@ -34,7 +34,7 @@ class BridgeRequestBaseTests(unittest.TestCase):
         to the ``notBlockedIn`` attribute.
         """
         self.request.withoutBlockInCountry('US')
-        self.assertIn('US', self.request.notBlockedIn)
+        self.assertIn('us', self.request.notBlockedIn)
 
     def test_BridgeRequestBase_withPluggableTransportType(self):
         """BridgeRequestBase.withPluggableTransportType() should add the
