@@ -182,6 +182,4 @@ class BridgeRequestBase(object):
             self.addFilter(Filters.filterBridgesByTransport(transport,
                                                             self.addressClass))
         for country in self.notBlockedIn:
-            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower(),
-                                                               self.addressClass,
-                                                               transport))
+            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))
