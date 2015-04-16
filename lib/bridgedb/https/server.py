@@ -632,7 +632,7 @@ class BridgesResource(resource.Resource):
                  includeFingerprints=True):
         """Create a new resource for displaying bridges to a client.
 
-        :type distributor: :class:`IPBasedDistributor`
+        :type distributor: :class:`HTTPSDistributor`
         :param distributor: The mechanism to retrieve bridges for this
             distributor.
         :type schedule: :class:`~bridgedb.schedule.ScheduledInterval`
@@ -819,7 +819,7 @@ def addWebServer(config, distributor):
              GIMP_CAPTCHA_DIR
              GIMP_CAPTCHA_HMAC_KEYFILE
              GIMP_CAPTCHA_RSA_KEYFILE
-    :type distributor: :class:`bridgedb.Dist.IPBasedDistributor`
+    :type distributor: :class:`bridgedb.Dist.HTTPSDistributor`
     :param distributor: A bridge distributor.
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`

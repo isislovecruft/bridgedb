@@ -67,6 +67,7 @@ class Distributor(object):
 
     def __init__(self):
         super(Distributor, self).__init__()
+        self.name = None
 
     def setDistributorName(self, name):
         """Set a **name** for identifying this distributor.
@@ -78,12 +79,10 @@ class Distributor(object):
         hashrings will also carry that name.
 
         >>> from bridgedb import Dist
-        >>> ipDist = Dist.IPBasedDistributor(5, 'fake-hmac-key')
-        >>> ipDist.setDistributorName('HTTPS Distributor')
-        >>> ipDist.prepopulateRings()
-        >>> hashrings = ipDist.hashring.filterRings
-        >>> firstSubring = hashrings.items()[0][1][1]
-        >>> assert firstSubring.name
+        >>> dist = Dist.HTTPSDistributor(2, 'masterkey')
+        >>> dist.setDistributorName('Excellent Distributor')
+        >>> dist.name
+        'Excellent Distributor'
 
         :param str name: A name for this distributor.
         """
@@ -91,7 +90,7 @@ class Distributor(object):
         self.hashring.distributorName = name
 
 
-class IPBasedDistributor(Distributor):
+class HTTPSDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
 
@@ -128,6 +127,8 @@ class IPBasedDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
+        super(HTTPSDistributor, self).__init__()
+
         self.key = key
         self.totalSubrings = totalSubrings
         self.answerParameters = answerParameters
@@ -171,14 +172,14 @@ class IPBasedDistributor(Distributor):
         ``1.2.178.234``) are placed within the same cluster, but Carol (with
         address ``1.3.11.33``) *might* end up in a different cluster.
 
-        >>> from bridgedb.Dist import IPBasedDistributor
-        >>> IPBasedDistributor.getSubnet('1.2.3.4')
+        >>> from bridgedb.Dist import HTTPSDistributor
+        >>> HTTPSDistributor.getSubnet('1.2.3.4')
         '1.2.0.0/16'
-        >>> IPBasedDistributor.getSubnet('1.2.211.154')
+        >>> HTTPSDistributor.getSubnet('1.2.211.154')
         '1.2.0.0/16'
-        >>> IPBasedDistributor.getSubnet('2001:f::bc1:b13:2808')
+        >>> HTTPSDistributor.getSubnet('2001:f::bc1:b13:2808')
         '2001:f::/32'
-        >>> IPBasedDistributor.getSubnet('2a00:c98:2030:a020:2::42')
+        >>> HTTPSDistributor.getSubnet('2a00:c98:2030:a020:2::42')
         '2a00:c98::/32'
 
         :param str ip: A string representing an IPv4 or IPv6 address.

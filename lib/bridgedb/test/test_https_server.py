@@ -31,7 +31,7 @@ from bridgedb.https import server
 from bridgedb.schedule import ScheduledInterval
 from bridgedb.test.https_helpers import _createConfig
 from bridgedb.test.https_helpers import DummyRequest
-from bridgedb.test.https_helpers import DummyIPBasedDistributor
+from bridgedb.test.https_helpers import DummyHTTPSDistributor
 from bridgedb.test.util import DummyBridge
 from bridgedb.test.util import DummyMaliciousBridge
 
@@ -521,7 +521,7 @@ class BridgesResourceTests(unittest.TestCase):
         self.pagename = b'bridges.html'
         self.root = Resource()
 
-        self.dist = DummyIPBasedDistributor()
+        self.dist = DummyHTTPSDistributor()
         self.sched = ScheduledInterval(1, 'hour')
         self.nBridgesPerRequest = 2
 
@@ -796,7 +796,7 @@ class HTTPSServerServiceTests(unittest.TestCase):
     def setUp(self):
         """Create a server.MailServerContext and EmailBasedDistributor."""
         self.config = _createConfig()
-        self.distributor = DummyIPBasedDistributor()
+        self.distributor = DummyHTTPSDistributor()
 
     def tearDown(self):
         """Cleanup method after each ``test_*`` method runs; removes timed out

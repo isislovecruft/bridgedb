@@ -194,7 +194,7 @@ def createBridgeRings(cfg, proxyList, key):
                       known open proxies.
     :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter hashring, an IPBasedDistributor or None,
+    :returns: A BridgeSplitter hashring, an HTTPSDistributor or None,
               and an EmailBasedDistributor or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
@@ -210,7 +210,7 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        ipDistributor = Dist.IPBasedDistributor(
+        ipDistributor = Dist.HTTPSDistributor(
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             proxyList,
@@ -329,7 +329,7 @@ def run(options, reactor=reactor):
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
              known open proxies.
-        :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.
+        :ivar ipDistributor: A :class:`Dist.HTTPSDistributor`.
         :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
