@@ -55,7 +55,7 @@ class HTTPSBridgeRequest(bridgerequest.BridgeRequestBase):
 
     def __init__(self, addClientCountryCode=True):
         """Process a new bridge request received through the
-        :class:`~bridgedb.Dist.IPBasedDistributor`.
+        :class:`~bridgedb.Dist.HTTPSDistributor`.
 
         :param bool addClientCountryCode: If ``True``, then calling
             :meth:`withoutBlockInCountry` will attempt to add the client's own
