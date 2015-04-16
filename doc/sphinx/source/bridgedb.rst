@@ -18,7 +18,6 @@ BridgeDB Package and Module Documentation
     bridgedb.Filters
     bridgedb.geo
     bridgedb.https
-    bridgedb.HTTPServer
     bridgedb.interfaces
     bridgedb.Main
     bridgedb.parse

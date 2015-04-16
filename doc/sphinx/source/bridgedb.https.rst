@@ -8,3 +8,4 @@ bridgedb.https
 
 .. automodule:: bridgedb.https.__init__
 .. automodule:: bridgedb.https.request
+.. automodule:: bridgedb.https.server
