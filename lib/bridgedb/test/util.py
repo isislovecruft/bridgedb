@@ -18,6 +18,7 @@ import errno
 import ipaddr
 import os
 import random
+import time
 
 from functools import wraps
 
@@ -146,3 +147,33 @@ def randomIPString():
 #: being run as a ``TestCase`` by ``twisted.trial``.
 TestCaseMixin = bdbutil.mixin
 TestCaseMixin.register(unittest.TestCase)
+
+
+class Benchmarker(object):
+    """Wrap a context with a timer to benchmark execution time.
+
+    .. hint:: Use like so::
+
+            with Benchmarker():
+                 foo(bar, baz)
+
+        Once the ``with`` context exits, something like::
+
+            Benchmark: 180.269957ms (0s)
+
+        will be printed to stdout (if **verbose** is set to ``True``).
+    """
+
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.seconds = self.end - self.start
+        self.milliseconds = self.seconds * 1000
+        if self.verbose:
+            print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))
