@@ -144,7 +144,29 @@ def parseServerDescriptorsFile(filename, validate=True):
     routers = list(document)
     return routers
 
-def deduplicate(descriptors):
+def __cmp_published__(x, y):
+    """A custom ``cmp()`` which sorts descriptors by published date.
+
+    :rtype: int
+    :returns: Return negative if x<y, zero if x==y, positive if x>y.
+    """
+    if x.published < y.published:
+        return -1
+    elif x.published == y.published:
+        # This *shouldn't* happen. It would mean that two descriptors for
+        # the same router had the same timestamps, probably meaning there
+        # is a severely-messed up OR implementation out there. Let's log
+        # its fingerprint (no matter what!) so that we can look up its
+        # ``platform`` line in its server-descriptor and tell whoever
+        # wrote that code that they're probably (D)DOSing the Tor network.
+        logging.warn(("Duplicate descriptor with identical timestamp (%s) "
+                      "for bridge %s with fingerprint %s !") %
+                     (x.published, x.nickname, x.fingerprint))
+        return 0
+    elif x.published > y.published:
+        return 1
+
+def deduplicate(descriptors, statistics=False):
     """Deduplicate some descriptors, returning only the newest for each router.
 
     .. note:: If two descriptors for the same router are discovered, AND both
@@ -155,68 +177,48 @@ def deduplicate(descriptors):
     :param list descriptors: A list of
         :api:`stem.descriptor.server_descriptor.RelayDescriptor`s,
         :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s,
-        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
+        or :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
+    :param bool statistics: If ``True``, log some extra statistics about the
+        number of duplicates.
+    :rtype: dict
+    :returns: A dictionary mapping router fingerprints to their newest
+        available descriptor.
     """
     duplicates = {}
-    nonDuplicates = {}
+    newest = {}
 
     for descriptor in descriptors:
         fingerprint = descriptor.fingerprint
-
         logging.debug("Deduplicating %s descriptor for router %s"
                       % (str(descriptor.__class__).rsplit('.', 1)[1],
                          safelog.logSafely(fingerprint)))
-
-        if fingerprint in nonDuplicates.keys():
-            # We already found a descriptor for this fingerprint:
-            conflict = nonDuplicates[fingerprint]
-
-            # If the descriptor we are currently parsing is newer than the
-            # last one we found:
-            if descriptor.published > conflict.published:
-                # And if this is the first duplicate we've found for this
-                # router, then create a list in the ``duplicates`` dictionary
-                # for the router:
-                if not fingerprint in duplicates.keys():
-                    duplicates[fingerprint] = list()
-                # Add this to the list of duplicates for this router:
-                duplicates[fingerprint].append(conflict)
-                # Finally, put the newest descriptor in the ``nonDuplicates``
-                # dictionary:
-                nonDuplicates[fingerprint] = descriptor
-            # Same thing, but this time the one we're parsing is older:
-            elif descriptor.published < conflict.published:
-                if not fingerprint in duplicates.keys():
-                    duplicates[fingerprint] = list()
-                duplicates[fingerprint].append(descriptor)
-            # This *shouldn't* happen. It would mean that two descriptors for
-            # the same router had the same timestamps, probably meaning there
-            # is a severely-messed up OR implementation out there. Let's log
-            # its fingerprint (no matter what!) so that we can look up its
-            # ``platform`` line in its server-descriptor and tell whoever
-            # wrote that code that they're probably (D)DOSing the Tor network.
-            else:
-                try:
-                    raise DescriptorWarning(
-                        ("Duplicate descriptor with identical timestamp (%s) "
-                         "for router with fingerprint '%s'!")
-                        % (descriptor.published, fingerprint))
-                # And just in case it does happen, catch the warning:
-                except DescriptorWarning as descwarn:
-                    logging.warn("DescriptorWarning: %s" % str(descwarn))
-
-        # Hoorah! No duplicates! (yet...)
+        if fingerprint in duplicates:
+            duplicates[fingerprint].append(descriptor)
         else:
-            nonDuplicates[fingerprint] = descriptor
+            duplicates[fingerprint] = [descriptor,]
+
+    for fingerprint, dupes in duplicates.items():
+        dupes.sort(cmp=__cmp_published__)
+        first = dupes.pop()
+        newest[fingerprint] = first
+        duplicates[fingerprint] = dupes
+
+    if statistics:
+        # sorted() won't sort by values (or anything that isn't the first item
+        # in its container), period, no matter what the cmp function is.
+        totals  = sorted([(len(v), k,) for k, v in duplicates.viewitems()])
+        total   = sum([k for (k, v) in totals])
+        bridges = len(duplicates)
+        top     = 10 if bridges >= 10 else bridges
+        logging.info("Number of bridges with duplicates: %5d" % bridges)
+        logging.info("Total duplicate descriptors:       %5d" % total)
+        logging.info("Bridges with the most duplicates (Top %d):" % top)
+        for i, (subtotal, bridge) in zip(range(1, top + 1), totals[:top]):
+            logging.info("  #%d %s: %d duplicates" % (i, bridge, subtotal))
 
     logging.info("Descriptor deduplication finished.")
-    logging.info("Number of duplicates: %d" % len(duplicates))
-    for (fingerprint, dittos) in duplicates.items():
-        logging.info("  For %s: %d duplicates"
-                     % (safelog.logSafely(fingerprint), len(dittos)))
-    logging.info("Number of non-duplicates: %d" % len(nonDuplicates))
 
-    return nonDuplicates
+    return newest
 
 def parseExtraInfoFiles(*filenames, **kwargs):
     """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
