@@ -1040,6 +1040,13 @@ class Bridge(BridgeBackwardsCompatibility):
         :term:`Bridge Line` based upon the client identifier in the
         **bridgeRequest**.
 
+        .. warning:: If this bridge doesn't have any of the requested
+            pluggable transport type (optionally, not blocked in whichever
+            countries the user doesn't want their bridges to be blocked in),
+            then this method returns ``None``.  This should only happen
+            rarely, because the bridges are filtered into the client's
+            hashring based on the **bridgeRequest** options.
+
         :type bridgeRequest: :class:`bridgedb.bridgerequest.BridgeRequestBase`
         :param bridgeRequest: A ``BridgeRequest`` which stores all of the
             client-specified options for which type of bridge they want to
@@ -1056,29 +1063,40 @@ class Bridge(BridgeBackwardsCompatibility):
             return a :term:`Bridge Line` for the requested pluggable transport
             type.
         """
+        desired = bridgeRequest.justOnePTType()
         addressClass = bridgeRequest.addressClass
-        desiredTransport = bridgeRequest.justOnePTType()
-        hashringPosition = bridgeRequest.getHashringPlacement(bridgeRequest.client,
-                                                              'Order-Or-Addresses')
 
         logging.info("Bridge %s answering request for %s transport..." %
-                     (safelog.logSafely(self.fingerprint), desiredTransport))
+                     (self, desired))
+
         # Filter all this Bridge's ``transports`` according to whether or not
-        # their ``methodname`` matches the requested transport, i.e. only
-        # 'obfs3' transports, or only 'scramblesuit' transports:
-        transports = filter(lambda pt: desiredTransport == pt.methodname,
-                            self.transports)
+        # their ``methodname`` matches the requested transport:
+        transports = filter(lambda pt: pt.methodname == desired, self.transports)
         # Filter again for whichever of IPv4 or IPv6 was requested:
         transports = filter(lambda pt: isinstance(pt.address, addressClass),
                             transports)
 
-        if transports:
-            return transports[hashringPosition % len(transports)]
-        else:
+        if not transports:
             raise PluggableTransportUnavailable(
-                ("Client requested transport %s from bridge %s, but this "
-                 "bridge doesn't have any of that transport!") %
-                (desiredTransport, self.fingerprint))
+                ("Client requested transport %s, but bridge %s doesn't "
+                "have any of that transport!") % (desired, self))
+
+
+        unblocked = []
+        for pt in transports:
+            if not sum([self.transportIsBlockedIn(cc, pt.methodname)
+                        for cc in bridgeRequest.notBlockedIn]):
+                unblocked.append(pt)
+
+        if unblocked:
+            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses')
+            return transports[position % len(unblocked)]
+        else:
+            logging.warn(("Client requested transport %s%s, but bridge %s "
+                          "doesn't have any of that transport!") %
+                         (desired, " not blocked in %s" %
+                          " ".join(bridgeRequest.notBlockedIn)
+                          if bridgeRequest.notBlockedIn else "", self))
 
     def _getVanillaForRequest(self, bridgeRequest):
         """If vanilla bridges were requested, return the assigned
@@ -1235,9 +1253,13 @@ class Bridge(BridgeBackwardsCompatibility):
             logging.info("Bridge request was not valid. Dropping request.")
             return  # XXX raise error perhaps?
 
+        bridgeLine = None
+
         if bridgeRequest.transports:
             pt = self._getTransportForRequest(bridgeRequest)
-            bridgeLine = pt.getTransportLine(includeFingerprint, bridgePrefix)
+            if pt:
+                bridgeLine = pt.getTransportLine(includeFingerprint,
+                                                 bridgePrefix)
         else:
             addrport = self._getVanillaForRequest(bridgeRequest)
             bridgeLine = self._constructBridgeLine(addrport,
