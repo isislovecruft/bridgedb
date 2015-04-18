@@ -997,6 +997,10 @@ class Bridge(BridgeBackwardsCompatibility):
             return
 
         address, port, version = addrport
+
+        if not address or not port:
+            return
+
         bridgeLine = []
 
         if bridgePrefix:
@@ -1094,26 +1098,28 @@ class Bridge(BridgeBackwardsCompatibility):
             "Bridge %s answering request for IPv%s vanilla address..." %
             (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
 
-        if not bridgeRequest.filters:
-            logging.debug(("Request %s didn't have any filters; "
-                           "generating them now...") % bridgeRequest)
-            bridgeRequest.generateFilters()
+        addresses = []
 
-        addresses = self.allVanillaAddresses
-
-        # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
-        addresses = filter(
-            # ``address`` here is a 3-tuple:
-            # ``(ipaddr.IPAddress, int(port), int(ipaddr.IPAddress.version))``
-            lambda address: isinstance(address[0], bridgeRequest.addressClass),
-            self.allVanillaAddresses)
+        for address, port, version in self.allVanillaAddresses:
+            # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
+            if isinstance(address, bridgeRequest.addressClass):
+                # Determine if the address is blocked in any of the country
+                # codes.  Because :meth:`addressIsBlockedIn` returns a bool,
+                # we get a list like: ``[True, False, False, True]``, and
+                # because bools are ints, they may be summed.  What we care
+                # about is that there are no ``True``s, for any country code,
+                # so we check that the sum is zero (meaning the list was full
+                # of ``False``s).
+                #
+                # XXX Do we want to add a method for this construct?
+                if not sum([self.addressIsBlockedIn(cc, address, port)
+                            for cc in bridgeRequest.notBlockedIn]):
+                    addresses.append((address, port, version))
 
         if addresses:
             # Use the client's unique data to HMAC them into their position in
             # the hashring of filtered bridges addresses:
-            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses',
-                                                          bridgeRequest.client)
-            logging.debug("Client's hashring position is %r" % position)
+            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses')
             vanilla = addresses[position % len(addresses)]
             logging.info("Got vanilla bridge for client.")
 
