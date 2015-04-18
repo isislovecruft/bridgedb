@@ -13,11 +13,13 @@ from __future__ import print_function
 
 import datetime
 import glob
+import hashlib
 import io
 import os
 import textwrap
 
 from twisted.trial import unittest
+from twisted.trial.unittest import SkipTest
 
 HAS_STEM = False
 
@@ -30,6 +32,8 @@ except (ImportError, NameError), error:
     print("There was an error importing stem: %s" % error)
 else:
     HAS_STEM = True
+
+from bridgedb.test.util import Benchmarker
 
 
 BRIDGE_NETWORKSTATUS_0 = '''\
@@ -440,6 +444,79 @@ class ParseDescriptorsTests(unittest.TestCase):
             bridge.published,
             datetime.datetime.strptime("2014-12-04 03:10:25", "%Y-%m-%d %H:%M:%S"),
             "We should have the newest available descriptor for this router.")
+
+    def createDuplicatesForBenchmark(self, b=1, n=1200):
+        """Create a bunch of duplicate extrainfos for benchmark tests.
+
+        :param int b: The number of fake "bridges" to create **n** duplicate
+            descriptors for.
+        :param int n: The number of duplicate descriptors for each bridge
+            **b**.
+        """
+        descFiles = []
+
+        # The timestamp and fingerprint from BRIDGE_EXTRA_INFO_DESCRIPTOR:
+        timestamp  = "2014-11-04 06:23:22"
+        Y, M, rest = timestamp.split("-")
+        fpr        = "E08B324D20AD0A13E114F027AB9AC3F32CA696A0"
+        newerFpr   = "E08B324D20AD0A13E114F027AB9AC3F32CA696A0"
+
+        total = 0
+        needed = b * n
+        for x in range(b):
+            if total >= needed:
+                break
+            # Re-digest the fingerprint to create a "new" bridge
+            newerFpr = hashlib.sha1(newerFpr).hexdigest().upper()
+            # Generate n extrainfos with different timestamps:
+            count = 0
+            for year in range(1, ((n + 1)/ 12) + 2):  # Start from the next year
+                if count >= n:
+                    break
+                for month in range(1, 13):
+                    if count < n:
+                        newerTimestamp = "-".join([str(int(Y) + year), "%02d" % month, rest])
+                        newerDuplicate = BRIDGE_EXTRA_INFO_DESCRIPTOR[:].replace(
+                            fpr, newerFpr).replace(
+                                timestamp, newerTimestamp)
+                        descFiles.append(io.BytesIO(newerDuplicate))
+                        count += 1
+                        total += 1
+                    else:
+                        break
+
+        print("Deduplicating %5d total descriptors (%4d per bridge; %3d bridges):"
+              % (len(descFiles), n, b), end='\t')
+        return descFiles
+
+    def test_parse_descriptors_parseExtraInfoFiles_benchmark_100_bridges(self):
+        """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``."""
+        print()
+        for i in range(1, 11):
+            descFiles = self.createDuplicatesForBenchmark(b=100, n=i)
+            with Benchmarker():
+                routers = descriptors.parseExtraInfoFiles(*descFiles)
+
+    def test_parse_descriptors_parseExtraInfoFiles_benchmark_1000_bridges(self):
+        """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``."""
+        print()
+        for i in range(1, 11):
+            descFiles = self.createDuplicatesForBenchmark(b=1000, n=i)
+            with Benchmarker():
+                routers = descriptors.parseExtraInfoFiles(*descFiles)
+
+    def test_parse_descriptors_parseExtraInfoFiles_benchmark_10000_bridges(self):
+        """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``.
+        The algorithm should grow linearly in the number of duplicates.
+        """
+        raise SkipTest(("This test takes ~7 minutes to complete. "
+                        "Run it on your own free time."))
+
+        print()
+        for i in range(1, 11):
+            descFiles = self.createDuplicatesForBenchmark(b=10000, n=i)
+            with Benchmarker():
+                routers = descriptors.parseExtraInfoFiles(*descFiles)
 
     def test_parse_descriptors_parseExtraInfoFiles_no_validate(self):
         """Test for ``b.p.descriptors.parseExtraInfoFiles`` with
