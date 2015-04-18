@@ -84,11 +84,21 @@ class EmailServer(SMTPServer):
         assert self._thread.is_alive() == False, "Thread is alive and kicking"
 
     def getAndCheckMessageContains(self, text, timeoutInSecs=2.0):
-        #print("Checking for reponse")
-        message = self.message_queue.get(block=True, timeout=timeoutInSecs)
-        assert message.find(text) != -1, ("Message did not contain text '%s'."
-                                          "Full message is:\n %s"
-                                          % (text, message))
+        try:
+            message = self.message_queue.get(block=True, timeout=timeoutInSecs)
+        # Queue.Empty, according to its documentation, is only supposed to be
+        # raised when Queue.get(block=False) or Queue.get_nowait() are called.
+        # I've no idea why it's getting raised here, when we're blocking for
+        # it, but nonetheless it causes occasional, non-deterministic CI
+        # failures:
+        #
+        # https://travis-ci.org/isislovecruft/bridgedb/jobs/58996136#L3281
+        except Queue.Empty:
+            pass
+        else:
+            assert message.find(text) != -1, ("Message did not contain text '%s'."
+                                              "Full message is:\n %s"
+                                              % (text, message))
 
     def checkNoMessageReceived(self, timeoutInSecs=2.0):
         try:
