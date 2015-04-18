@@ -1484,6 +1484,47 @@ class BridgeTests(unittest.TestCase):
 
         self.assertIsNone(line)
 
+    def test_Bridge_getBridgeLine_blocked_pt_and_request_without_block_pt(self):
+        """Calling getBridgeLine() with a valid request for obfs3 bridges not
+        blocked in Iran, when the obfs3 line is blocked in Iran, shouldn't
+        return a bridge line.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.bridge.setBlockedIn('ir', methodname="obfs3")
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withoutBlockInCountry('IR')
+        request.withPluggableTransportType('obfs3')
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNone(line)
+
+    def test_Bridge_getBridgeLine_blocked_obfs3_and_request_without_block_obfs4(self):
+        """Calling getBridgeLine() with a valid request for obfs4 bridges not
+        blocked in Iran, when the obfs3 line is blocked in Iran, should return
+        a bridge line.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.bridge.setBlockedIn('ir', methodname="obfs3")
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withoutBlockInCountry('IR')
+        request.withPluggableTransportType('obfs4')
+        line = self.bridge.getBridgeLine(request)
+
+        self.assertIsNotNone(line)
+        self.assertIn('obfs4', line)
+        self.assertIn('179.178.155.140:36493', line)
+        self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
     def test_Bridge_getBridgeLine_IPv6(self):
         """Calling getBridgeLine() with a valid request for IPv6 bridges
         should return a bridge line.
