@@ -25,6 +25,7 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.parse.addr import isIPAddress
 
 
 def fileCheckDecorator(func):
@@ -121,6 +122,9 @@ def bracketIPv6(ip):
 def randomPort():
     return random.randint(1, 65535)
 
+def randomHighPort():
+    return random.randint(1024, 65535)
+
 def randomIPv4():
     return ipaddr.IPv4Address(random.getrandbits(32))
 
@@ -142,6 +146,27 @@ def randomIPString():
     if random.choice(xrange(2)):
         return randomIPv4String()
     return randomIPv6String()
+
+def valid(func):
+    """Wrapper for the above ``randomIPv*`` functions to ensure they only
+    return addresses which BridgeDB considers "valid".
+
+    .. seealso:: :func:`bridgedb.parse.addr.isIPAddress`
+    """
+    @wraps(func)
+    def wrapper():
+        ip = None
+        while not isIPAddress(ip):
+            ip = func()
+        return ip
+    return wrapper
+
+randomValidIPv4       = valid(randomIPv4)
+randomValidIPv6       = valid(randomIPv6)
+randomValidIP         = valid(randomIP)
+randomValidIPv4String = valid(randomIPv4String)
+randomValidIPv6String = valid(randomIPv6String)
+randomValidIPString   = valid(randomIPString)
 
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
