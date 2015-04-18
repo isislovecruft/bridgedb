@@ -25,8 +25,6 @@ import bridgedb.Bucket
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
-from bridgedb.parse.fingerprint import toHex
-from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.safelog import logSafely
 
@@ -221,13 +219,12 @@ class BridgeRing(BridgeHolder):
                 if val == 'stable' and bridge.flags.stable:
                     subring.insert(bridge)
 
-        ident = bridge.getID()
-        pos = self.hmac(ident)
-        if not self.bridges.has_key(pos):
+        pos = self.hmac(bridge.identity)
+        if not pos in self.bridges:
             self.sortedKeys.append(pos)
             self.isSorted = False
         self.bridges[pos] = bridge
-        self.bridgesByID[ident] = bridge
+        self.bridgesByID[bridge.identity] = bridge
         logging.debug("Adding %s to %s" % (bridge.address, self.name))
 
     def _sort(self):
@@ -330,11 +327,11 @@ class BridgeRing(BridgeHolder):
         logging.info("Dumping bridge assignments for %s..." % self.name)
         for b in self.bridges.itervalues():
             desc = [ description ]
-            ident = b.getID()
             for tp,val,_,subring in self.subrings:
-                if subring.getBridgeByID(ident):
+                if subring.getBridgeByID(b.identity):
                     desc.append("%s=%s"%(tp,val))
-            f.write("%s %s\n"%( toHex(ident), " ".join(desc).strip()))
+            f.write("%s %s\n" % (b.fingerprint, " ".join(desc).strip()))
+
 
 class FixedBridgeSplitter(BridgeHolder):
     """A bridgeholder that splits bridges up based on an hmac and assigns
@@ -348,7 +345,7 @@ class FixedBridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         # Grab the first 4 bytes
-        digest = self.hmac(bridge.getID())
+        digest = self.hmac(bridge.identity)
         pos = long( digest[:8], 16 )
         which = pos % len(self.rings)
         self.rings[which].insert(bridge)
@@ -467,11 +464,9 @@ class BridgeSplitter(BridgeHolder):
         if not bridge.flags.running:
             return
 
-        bridgeID = bridge.fingerprint
-
         # Determine which ring to put this bridge in if we haven't seen it
         # before.
-        pos = self.hmac(bridgeID)
+        pos = self.hmac(bridge.identity)
         n = int(pos[:8], 16) % self.totalP
         pos = bisect.bisect_right(self.pValues, n) - 1
         assert 0 <= pos < len(self.rings)
@@ -668,7 +663,7 @@ class FilteredBridgeSplitter(BridgeHolder):
                 if g(b):
                     # ghetto. get subring flags, ports
                     for tp,val,_,subring in r.subrings:
-                        if subring.getBridgeByID(b.getID()):
+                        if subring.getBridgeByID(b.identity):
                             desc.append("%s=%s"%(tp,val))
                     try:
                         desc.extend(g.description.split())
@@ -693,4 +688,4 @@ class FilteredBridgeSplitter(BridgeHolder):
             # add to assignments
             desc = "%s %s" % (description.strip(),
                     " ".join([v for k,v in grouped.items()]).strip())
-            f.write("%s %s\n"%( toHex(b.getID()), desc))
+            f.write("%s %s\n" % (b.fingerprint, desc))

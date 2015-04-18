@@ -178,6 +178,36 @@ class BridgeAddressBase(object):
         self._fingerprint = None
 
     @property
+    def identity(self):
+        """Get this Bridge's identity digest.
+
+        :rtype: bytes
+        :returns: The binary-encoded SHA-1 hash digest of the public half of
+            this Bridge's identity key, if available; otherwise, returns
+            ``None``.
+        """
+        if self.fingerprint:
+            return fromHex(self.fingerprint)
+
+    @identity.setter
+    def identity(self, value):
+        """Set this Bridge's identity digest to **value**.
+
+        .. info: The purported identity digest will be checked for
+            specification conformity with
+            :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+
+        :param str value: The binary-encoded SHA-1 hash digest of the public
+            half of this Bridge's identity key.
+        """
+        self.fingerprint = toHex(value)
+
+    @identity.deleter
+    def identity(self):
+        """Reset this Bridge's identity digest."""
+        del(self.fingerprint)
+
+    @property
     def address(self):
         """Get this bridge's address.
 
@@ -672,8 +702,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
         This method is provided for backwards compatibility and should not
         be relied upon.
         """
-        if self.fingerprint:
-            return fromHex(self.fingerprint)
+        return self.identity
 
     def setDescriptorDigest(self, digest):
         """Set this ``Bridge``'s server-descriptor digest.
