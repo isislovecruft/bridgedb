@@ -63,37 +63,6 @@ def _generateFakeBridges(n=500):
 BRIDGES = _generateFakeBridges()
 
 
-class GetNumBridgesPerAnswerTests(unittest.TestCase):
-    """Unittests for :func:`bridgedb.Dist.getNumBridgesPerAnswer`."""
-
-    def setUp(self):
-        self.key = 'aQpeOFIj8q20s98awfoiq23rpOIjFaqpEWFoij1X'
-        self.ring = BridgeRing(self.key)
-        self.bridges = _generateFakeBridges()
-
-    def test_Dist_getNumBridgesPerAnswer_120(self):
-        [self.ring.insert(bridge) for bridge in self.bridges[:120]]
-        self.assertEqual(Dist.getNumBridgesPerAnswer(self.ring), 3)
-
-    def test_Dist_getNumBridgesPerAnswer_100(self):
-        [self.ring.insert(bridge) for bridge in self.bridges[:100]]
-        self.assertEqual(Dist.getNumBridgesPerAnswer(self.ring), 3)
-
-    def test_Dist_getNumBridgesPerAnswer_50(self):
-        [self.ring.insert(bridge) for bridge in self.bridges[:60]]
-        self.assertEqual(Dist.getNumBridgesPerAnswer(self.ring), 2)
-
-    def test_Dist_getNumBridgesPerAnswer_15(self):
-        [self.ring.insert(bridge) for bridge in self.bridges[:15]]
-        self.assertEqual(Dist.getNumBridgesPerAnswer(self.ring), 1)
-
-    def test_Dist_getNumBridgesPerAnswer_100_max_5(self):
-        [self.ring.insert(bridge) for bridge in self.bridges[:100]]
-        self.assertEqual(
-            Dist.getNumBridgesPerAnswer(self.ring, max_bridges_per_answer=5),
-            5)
-
-
 class HTTPSDistributorTests(unittest.TestCase):
     """Tests for :class:`HTTPSDistributor`."""
 
@@ -133,6 +102,31 @@ class HTTPSDistributorTests(unittest.TestCase):
         self.assertGreater(dist.proxySubring, 0)
         self.assertEqual(dist.proxySubring, 4)
         self.assertEqual(dist.totalSubrings, 4)
+
+    def test_HTTPSDistributor_bridgesPerResponse_120(self):
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:120]]
+        self.assertEqual(dist.bridgesPerResponse(), 3)
+
+    def test_HTTPSDistributor_bridgesPerResponse_100(self):
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.hashring.insert(bridge) for bridge in self.bridges[:100]]
+        self.assertEqual(dist.bridgesPerResponse(), 3)
+
+    def test_HTTPSDistributor_bridgesPerResponse_50(self):
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:60]]
+        self.assertEqual(dist.bridgesPerResponse(), 2)
+
+    def test_HTTPSDistributor_bridgesPerResponse_15(self):
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:15]]
+        self.assertEqual(dist.bridgesPerResponse(), 1)
+
+    def test_HTTPSDistributor_bridgesPerResponse_100_max_5(self):
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:100]]
+        self.assertEqual(dist.bridgesPerResponse(maximum=5), 5)
 
     def test_HTTPSDistributor_getSubnet_usingProxy(self):
         """HTTPSDistributor.getSubnet(usingProxy=True) should return a proxy
