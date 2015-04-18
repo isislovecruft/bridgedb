@@ -118,6 +118,9 @@ def bracketIPv6(ip):
     """Put brackets around an IPv6 address, just as tor does."""
     return "[%s]" % ip
 
+def randomPort():
+    return random.randint(1, 65535)
+
 def randomIPv4():
     return ipaddr.IPv4Address(random.getrandbits(32))
 
@@ -185,8 +188,6 @@ class DummyBridge(object):
 
     ptArgs = {}
 
-    def _randORPort(self): return random.randint(9001, 9999)
-
     def __init__(self):
         """Create a mocked bridge suitable for testing distributors and web
         resource rendering.
@@ -194,12 +195,10 @@ class DummyBridge(object):
         ipv4 = randomIPv4()
         self.nickname = "bridge-{0}".format(ipv4)
         self.address = ipaddr.IPv4Address(ipv4)
-        self.orPort = self._randORPort()
+        self.orPort = randomPort()
         self.fingerprint = "".join(random.choice('abcdef0123456789')
                                    for _ in xrange(40))
-        self.orAddresses = [
-            (randomIPv6(), self._randORPort(), 6)
-        ]
+        self.orAddresses = [(randomIPv6(), randomPort(), 6)]
 
     def getBridgeLine(self, bridgeRequest, includeFingerprint=True):
         """Get a "torrc" bridge config line to give to a client."""
