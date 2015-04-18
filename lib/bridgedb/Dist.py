@@ -48,26 +48,13 @@ class EmailRequestedKey(Exception):
     """Raised when an incoming email requested a copy of our GnuPG keys."""
 
 
-def getNumBridgesPerAnswer(ring, max_bridges_per_answer=3):
-    if len(ring) < 20:
-        n_bridges_per_answer = 1
-    if 20 <= len(ring) < 100:
-        n_bridges_per_answer = min(2, max_bridges_per_answer)
-    if len(ring) >= 100:
-        n_bridges_per_answer = max_bridges_per_answer
-
-    logging.debug("Returning %d bridges from ring of len: %d" %
-                  (n_bridges_per_answer, len(ring)))
-
-    return n_bridges_per_answer
-
-
 class Distributor(object):
     """Distributes bridges to clients."""
 
     def __init__(self):
         super(Distributor, self).__init__()
         self.name = None
+        self.hashring = None
 
     def setDistributorName(self, name):
         """Set a **name** for identifying this distributor.
@@ -88,6 +75,21 @@ class Distributor(object):
         """
         self.name = name
         self.hashring.distributorName = name
+
+    def bridgesPerResponse(self, hashring=None, maximum=3):
+        if hashring is None:
+            hashring = self.hashring
+
+        if len(hashring) < 20:
+            n = 1
+        if 20 <= len(hashring) < 100:
+            n = min(2, maximum)
+        if len(hashring) >= 100:
+            n = maximum
+
+        logging.debug("Returning %d bridges from ring of len: %d" %
+                      (n, len(hashring)))
+        return n
 
 
 class HTTPSDistributor(Distributor):
@@ -156,6 +158,9 @@ class HTTPSDistributor(Distributor):
                       self.hashring.__class__.__name__)
 
         self.setDistributorName('HTTPS')
+
+    def bridgesPerResponse(self, hashring=None, maximum=3):
+        return super(HTTPSDistributor, self).bridgesPerResponse(hashring, maximum)
 
     @classmethod
     def getSubnet(cls, ip, usingProxy=False, proxySubnets=4):
@@ -386,7 +391,7 @@ class HTTPSDistributor(Distributor):
                                   populate_from=self.hashring.bridges)
 
         # Determine the appropriate number of bridges to give to the client:
-        returnNum = getNumBridgesPerAnswer(ring, max_bridges_per_answer=N)
+        returnNum = self.bridgesPerResponse(ring, maximum=N)
         answer = ring.getBridges(position, returnNum)
 
         return answer
@@ -439,6 +444,9 @@ class EmailBasedDistributor(Distributor):
             key2, max_cached_rings=5)
 
         self.setDistributorName('Email')
+
+    def bridgesPerResponse(self, hashring=None, maximum=3):
+        return super(EmailBasedDistributor, self).bridgesPerResponse(hashring, maximum)
 
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
@@ -515,9 +523,8 @@ class EmailBasedDistributor(Distributor):
                                       filterBridgesByRules(ruleset),
                                       populate_from=self.hashring.bridges)
 
-            numBridgesToReturn = getNumBridgesPerAnswer(ring,
-                                                        max_bridges_per_answer=N)
-            result = ring.getBridges(pos, numBridgesToReturn)
+            returnNum = self.bridgesPerResponse(ring, maximum=N)
+            result = ring.getBridges(pos, returnNum)
 
             db.setEmailTime(bridgeRequest.client, now)
             db.commit()
