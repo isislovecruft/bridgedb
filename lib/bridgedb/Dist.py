@@ -346,9 +346,6 @@ class HTTPSDistributor(Distributor):
 
         return answer
 
-    def __len__(self):
-        return len(self.hashring)
-
     def dumpAssignments(self, f, description=""):
         self.hashring.dumpAssignments(f, description)
 
@@ -474,9 +471,6 @@ class EmailBasedDistributor(Distributor):
             db.commit()
 
         return result
-
-    def __len__(self):
-        return len(self.hashring)
 
     def cleanDatabase(self):
         with bridgedb.Storage.getDB() as db:
