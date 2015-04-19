@@ -47,7 +47,7 @@ def load(state, hashring, clear=False):
     store them into our ``state.hashring`` instance. The ``state`` will be
     saved again at the end of this function.
 
-    :type hashring: :class:`BridgeSplitter <bridgedb.Bridges.BridgeHolder>`
+    :type hashring: :class:`~bridgedb.Bridges.BridgeSplitter`
     :param hashring: A class which provides a mechanism for HMACing
         Bridges in order to assign them to hashrings.
     :param boolean clear: If True, clear all previous bridges from the
@@ -323,7 +323,7 @@ def run(options, reactor=reactor):
         :ivar cfg: The current configuration, including any in-memory
             settings (i.e. settings whose values were not obtained from the
             config file, but were set via a function somewhere)
-        :type hashring: A :class:`bridgedb.Bridges.BridgeHolder`
+        :type hashring: A :class:`~bridgedb.Bridges.BridgeSplitter`
         :ivar hashring: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
