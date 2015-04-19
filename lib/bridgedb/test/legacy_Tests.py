@@ -303,32 +303,6 @@ class IPBridgeDistTests(unittest.TestCase):
                 filterBridgesByIP4, filterBridgesByIP6])
             assert len(b) == 0
 
-    def testDistWithFilterBlockedCountries(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for b in d.hashring.bridges:
-            # china blocks all :-(
-            for pt in b.transports:
-                key = "%s:%s" % (pt.address, pt.port)
-                b.blockingCountries[key] = set(['cn'])
-            for address, portlist in b.or_addresses.items():
-                for port in portlist:
-                    key = "%s:%s" % (address, port)
-                    b.blockingCountries[key] = set(['cn'])
-            key = "%s:%s" % (b.ip, b.orport)
-            b.blockingCountries[key] = set(['cn'])
-
-        for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("cn")])
-            assert len(b) == 0
-            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("us")])
-            assert len(b) > 0
-
     def testDistWithFilterBlockedCountriesAdvanced(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
