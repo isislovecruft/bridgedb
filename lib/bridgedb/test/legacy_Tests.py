@@ -185,27 +185,6 @@ class EmailBridgeDistTests(unittest.TestCase):
 
 class IPBridgeDistTests(unittest.TestCase):
 
-    def testDistWithProxies(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo", [RhymesWith255ProxySet()])
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-
-        for _ in xrange(256):
-            # Make sure that the ProxySets do not overlap
-            f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
-            g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
-            n = d.getBridges(g(), "x")
-            n2 = d.getBridges(f(), "x")
-
-            assert(len(n) > 0)
-            assert(len(n2) > 0)
-
-            for b in n:
-                assert (b not in n2)
-
-            for b in n2:
-                assert (b not in n)
-
     #XXX: #6175 breaks this test!
     #def testDistWithPortRestrictions(self):
     #    param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
