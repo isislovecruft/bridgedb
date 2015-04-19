@@ -230,6 +230,7 @@ class HTTPSDistributorTests(unittest.TestCase):
             bridges = dist.getBridges(clientRequest1, 1)
             for b in bridges:
                 self.assertFalse(b.isBlockedIn('cn'))
+                self.assertNotIn(b.fingerprint, blockedCN)
             # The client *should* have gotten some bridges still.
             self.assertGreater(len(bridges), 0)
 
@@ -237,4 +238,5 @@ class HTTPSDistributorTests(unittest.TestCase):
             bridges = dist.getBridges(clientRequest2, 1)
             for b in bridges:
                 self.assertFalse(b.isBlockedIn('ir'))
+                self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
