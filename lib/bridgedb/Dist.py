@@ -346,9 +346,6 @@ class HTTPSDistributor(Distributor):
 
         return answer
 
-    def dumpAssignments(self, f, description=""):
-        self.hashring.dumpAssignments(f, description)
-
 
 class EmailBasedDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
@@ -482,9 +479,6 @@ class EmailBasedDistributor(Distributor):
                 raise
             else:
                 db.commit()
-
-    def dumpAssignments(self, f, description=""):
-        self.hashring.dumpAssignments(f, description)
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
