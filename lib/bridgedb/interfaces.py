@@ -14,6 +14,7 @@
 """All available ``zope.interface``s in BridgeDB."""
 
 
-from bridgedb.bridgerequest import IRequestBridges
-from bridgedb.captcha import ICaptcha
-from bridgedb.schedule import ISchedule
+from bridgedb.bridgerequest import IRequestBridges         # pragma: no cover
+from bridgedb.distribute import IDistribute                # pragma: no cover
+from bridgedb.captcha import ICaptcha                      # pragma: no cover
+from bridgedb.schedule import ISchedule                    # pragma: no cover
