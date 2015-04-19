@@ -215,7 +215,7 @@ def createBridgeRings(cfg, proxyList, key):
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             proxyList,
             answerParameters=ringParams)
-        hashring.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+        hashring.addRing(ipDistributor.hashring, "https", cfg.HTTPS_SHARE)
 
     # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
@@ -226,7 +226,7 @@ def createBridgeRings(cfg, proxyList, key):
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams,
             whitelist=cfg.EMAIL_WHITELIST.copy())
-        hashring.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+        hashring.addRing(emailDistributor.hashring, "email", cfg.EMAIL_SHARE)
 
     # As appropriate, tell the hashring to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
