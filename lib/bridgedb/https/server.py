@@ -711,8 +711,7 @@ class BridgesResource(resource.Resource):
             bridgeRequest.withoutBlockInCountry(request)
             bridgeRequest.generateFilters()
 
-            bridges = self.distributor.getBridgesForIP(bridgeRequest, interval,
-                                                       self.nBridgesToGive)
+            bridges = self.distributor.getBridges(bridgeRequest, interval)
             bridgeLines = "".join("%s\n" %
                 bridge.getBridgeLine(bridgeRequest, self.includeFingerprints)
                 for bridge in bridges)
