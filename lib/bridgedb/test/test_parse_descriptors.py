@@ -492,7 +492,7 @@ class ParseDescriptorsTests(unittest.TestCase):
     def test_parse_descriptors_parseExtraInfoFiles_benchmark_100_bridges(self):
         """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``."""
         print()
-        for i in range(1, 11):
+        for i in range(1, 6):
             descFiles = self.createDuplicatesForBenchmark(b=100, n=i)
             with Benchmarker():
                 routers = descriptors.parseExtraInfoFiles(*descFiles)
@@ -500,7 +500,7 @@ class ParseDescriptorsTests(unittest.TestCase):
     def test_parse_descriptors_parseExtraInfoFiles_benchmark_1000_bridges(self):
         """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``."""
         print()
-        for i in range(1, 11):
+        for i in range(1, 6):
             descFiles = self.createDuplicatesForBenchmark(b=1000, n=i)
             with Benchmarker():
                 routers = descriptors.parseExtraInfoFiles(*descFiles)
@@ -513,7 +513,7 @@ class ParseDescriptorsTests(unittest.TestCase):
                         "Run it on your own free time."))
 
         print()
-        for i in range(1, 11):
+        for i in range(1, 6):
             descFiles = self.createDuplicatesForBenchmark(b=10000, n=i)
             with Benchmarker():
                 routers = descriptors.parseExtraInfoFiles(*descFiles)
