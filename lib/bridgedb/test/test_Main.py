@@ -56,7 +56,7 @@ def mockAddOrUpdateBridgeHistory(bridge, timestamp):
           (bridge.fingerprint, timestamp))
 
 
-class MockBridgeHolder(object):
+class MockHashring(object):
     def __init__(self):
         self._bridges = {}
     def __len__(self):
@@ -168,8 +168,8 @@ class MainTests(unittest.TestCase):
         self.state = Main.persistent.State(**self.config.__dict__)
         self.key = base64.b64decode('TvPS1y36BFguBmSOvhChgtXB2Lt+BOw0mGfz9SZe12Y=')
 
-        # Create a BridgeSplitter
-        self.hashring = MockBridgeHolder()
+        # Create a pseudo hashring
+        self.hashring = MockHashring()
 
         # Functions which some tests mock, which we'll need to re-replace
         # later in tearDown():

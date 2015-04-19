@@ -88,7 +88,8 @@ class State(jelly.Jellyable):
         modules which are known to be unjelliable/unpicklable so far are:
 
           - bridgedb.Dist
-          - bridgedb.Bridges.BridgeHolder and all other ``splitter`` classes
+          - bridgedb.Bridges, and all "splitter" and "ring" classes contained
+            within
 
         :property statefile: The filename to retrieve a pickled, jellied
             :class:`~bridgedb.persistent.State` instance from. (default:
