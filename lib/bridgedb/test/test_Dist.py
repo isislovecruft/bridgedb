@@ -243,6 +243,30 @@ class HTTPSDistributorTests(unittest.TestCase):
                 self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
 
+    def test_HTTPSDistributor_getBridges_with_proxy_and_nonproxy_users(self):
+        """An HTTPSDistributor should give separate bridges to proxy users."""
+        proxies = ProxySet(['.'.join(['1.1.1', str(x)]) for x in range(1, 256)])
+        dist = Dist.HTTPSDistributor(3, self.key, proxies)
+        [dist.insert(bridge) for bridge in self.bridges]
+
+        for _ in range(10):
+            bridgeRequest1 = self.randomClientRequest()
+            bridgeRequest1.client = '.'.join(['1.1.1', str(random.randrange(1, 255))])
+
+            bridgeRequest2 = self.randomClientRequest()
+            bridgeRequest2.client = '.'.join(['9.9.9', str(random.randrange(1, 255))])
+
+            n1 = dist.getBridges(bridgeRequest1, 1)
+            n2 = dist.getBridges(bridgeRequest2, 1)
+
+            self.assertGreater(len(n1), 0)
+            self.assertGreater(len(n2), 0)
+
+            for b in n1:
+                self.assertNotIn(b, n2)
+            for b in n2:
+                self.assertNotIn(b, n1)
+
     def test_HTTPSDistributor_getBridges_same_bridges_to_same_client(self):
         """The same client asking for bridges from the HTTPSDistributor
         multiple times in a row should get the same bridges in response each
