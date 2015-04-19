@@ -185,14 +185,6 @@ class EmailBridgeDistTests(unittest.TestCase):
 
 class IPBridgeDistTests(unittest.TestCase):
 
-    def testBasicDist(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-        n = d.getBridges("1.2.3.4", "x")
-        n2 = d.getBridges("1.2.3.4", "x")
-        self.assertEquals(n, n2)
-
     def testDistWithProxies(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo", [RhymesWith255ProxySet()])
         for _ in xrange(256):

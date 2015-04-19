@@ -243,6 +243,21 @@ class HTTPSDistributorTests(unittest.TestCase):
                 self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
 
+    def test_HTTPSDistributor_getBridges_same_bridges_to_same_client(self):
+        """The same client asking for bridges from the HTTPSDistributor
+        multiple times in a row should get the same bridges in response each
+        time.
+        """
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        bridgeRequest = self.randomClientRequest()
+        responses = {}
+        for i in range(5):
+            responses[i] = dist.getBridges(bridgeRequest, 1)
+        for i in range(4):
+            self.assertItemsEqual(responses[i], responses[i+1])
+
     def test_HTTPSDistributor_getBridges_ipv4_ipv6(self):
         """Asking for bridge addresses which are simultaneously IPv4 and IPv6
         (in that order) should return IPv4 bridges.
