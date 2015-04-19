@@ -102,10 +102,12 @@ class DummyHTTPSDistributor(object):
     """A mocked :class:`bridgedb.Dist.HTTPSDistributor` which is used to test
     :class:`bridgedb.https.server.BridgesResource`.
     """
-    def getBridgesForIP(self, bridgeRequest=None, epoch=None, N=1):
+    _bridgesPerResponseMin = 3
+
+    def getBridges(self, bridgeRequest=None, epoch=None):
         """Needed because it's called in
-        :meth:`BridgesResource.getBridgesForIP`."""
-        return [util.DummyBridge() for _ in xrange(N)]
+        :meth:`BridgesResource.getBridgeRequestAnswer`."""
+        return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
 
 
 class DummyRequest(requesthelper.DummyRequest):
