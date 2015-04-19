@@ -103,10 +103,11 @@ class DummyHTTPSDistributor(object):
     :class:`bridgedb.https.server.BridgesResource`.
     """
     _bridge_class = DummyBridge
+    _bridgesPerResponseMin = 3
 
-    def getBridgesForIP(self, bridgeRequest=None, epoch=None, N=1):
+    def getBridges(self, bridgeRequest=None, epoch=None):
         """Needed because it's called in
-        :meth:`BridgesResource.getBridgesForIP`."""
+        :meth:`BridgesResource.getBridgeRequestAnswer`."""
         return [self._bridge_class() for _ in xrange(N)]
 
 
