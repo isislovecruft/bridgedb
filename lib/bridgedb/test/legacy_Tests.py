@@ -297,18 +297,6 @@ class IPBridgeDistTests(unittest.TestCase):
                     t.getConfigLine(addressClass=ipaddr.IPv6Address))
                 assert type(address) is ipaddr.IPv6Address
 
-
-    def testDistWithFilterAll(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
-                filterBridgesByIP4, filterBridgesByIP6])
-            assert len(b) == 0
-
     def testDistWithFilterBlockedCountriesAdvanced(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):

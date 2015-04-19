@@ -24,6 +24,8 @@ from bridgedb.bridges import Bridge
 from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
 from bridgedb.test.util import randomHighPort
@@ -230,3 +232,17 @@ class HTTPSDistributorTests(unittest.TestCase):
                 self.assertFalse(b.isBlockedIn('ir'))
                 self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
+
+    def test_HTTPSDistributor_getBridges_with_filter_all(self):
+        """Asking for bridge addresses which are simultaneously IPv4 and IPv6
+        should return no bridges.
+        """
+        dist = Dist.HTTPSDistributor(3, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        bridgeRequest = self.randomClientRequestForNotBlockedIn('UK')
+        bridgeRequest.filters.append(filterBridgesByIP4)
+        bridgeRequest.filters.append(filterBridgesByIP6)
+        b = dist.getBridges(bridgeRequest, 1)
+
+        self.assertEqual(len(b), 0)
