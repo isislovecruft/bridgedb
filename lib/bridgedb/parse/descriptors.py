@@ -190,7 +190,7 @@ def deduplicate(descriptors, statistics=False):
     for descriptor in descriptors:
         fingerprint = descriptor.fingerprint
         logging.debug("Deduplicating %s descriptor for router %s"
-                      % (str(descriptor.__class__).rsplit('.', 1)[1],
+                      % (descriptor.__class__.__name__.rsplit('.', 1)[-1],
                          safelog.logSafely(fingerprint)))
         if fingerprint in duplicates:
             duplicates[fingerprint].append(descriptor)
