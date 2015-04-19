@@ -109,54 +109,49 @@ class BridgeRing(BridgeHolder):
 
         :type key: bytes
         :param key: The HMAC key, generated with
-                    :func:`bridgedb.crypto.getKey`.
+             :func:`~bridgedb.crypto.getKey`.
         :type answerParameters: :class:`BridgeRingParameters`
         :param answerParameters: DOCDOC
         :ivar dict bridges: A dictionary which maps HMAC keys to
-                            :class:`~bridgedb.Bridges.Bridge`s.
+            :class:`~bridgedb.bridges.Bridge`s.
         :ivar dict bridgesByID: A dictionary which maps raw hash digests of
-                                bridge ID keys to
-                                :class:`~bridgedb.Bridges.Bridge`s.
+            bridge ID keys to :class:`~bridgedb.bridges.Bridge`s.
         :type hmac: callable
         :ivar hmac: An HMAC function, which uses the **key** parameter to
-                    generate new HMACs for storing, inserting, and retrieving
-                    :class:`~bridgedb.Bridges.Bridge`s within mappings.
+             generate new HMACs for storing, inserting, and retrieving
+             :class:`~bridgedb.bridges.Bridge`s within mappings.
         :ivar bool isSorted: ``True`` if ``sortedKeys`` is currently sorted.
         :ivar list sortedKeys: A sorted list of all of the HMACs.
         :ivar str name: A string which identifies this hashring, used mostly
-                        for differentiating this hashring in log messages, but
-                        it is also used for naming subrings. If this hashring
-                        is a subring, the ``name`` will include whatever
-                        distinguishing parameters differentiate that
-                        particular subring (i.e. ``'(port-443 subring)'`` or
-                        ``'(Stable subring)'``)
+            for differentiating this hashring in log messages, but it is also
+            used for naming subrings. If this hashring is a subring, the
+            ``name`` will include whatever distinguishing parameters
+            differentiate that particular subring (i.e. ``'(port-443
+            subring)'`` or ``'(Stable subring)'``)
         :type subrings: list
         :ivar subrings: A list of other ``BridgeRing``s, each of which
-                        contains bridges of a particular type. For example, a
-                        subring might contain only ``Bridge``s which have been
-                        given the "Stable" flag, or it might contain only IPv6
-                        bridges. Each item in this list should be a 4-tuple:
+            contains bridges of a particular type. For example, a subring
+            might contain only ``Bridge``s which have been given the "Stable"
+            flag, or it might contain only IPv6 bridges. Each item in this
+            list should be a 4-tuple::
 
-                          ``(type, value, count, ring)``
+                (type, value, count, ring)
 
-                        where:
+            where:
 
-                          * ``type`` is a string which describes what kind of
-                            parameter is used to determine if a ``Bridge``
-                            belongs in that subring, i.e. ``'port'`` or
-                            ``'flag'``.
+              - ``type`` is a string which describes what kind of parameter is
+                used to determine if a ``Bridge`` belongs in that subring,
+                i.e. ``'port'`` or ``'flag'``.
 
-                          * ``value`` is a specific value pertaining to the
-                            ``type``, e.g. ``type='port'; value=443``.
+              - ``value`` is a specific value pertaining to the ``type``,
+                e.g. ``type='port'; value=443``.
 
-                          * ``count`` is an integer for the current total
-                             number of bridges in the subring.
+              - ``count`` is an integer for the current total number of
+                bridges in the subring.
 
-                          * ``ring`` is a
-                            :class:`~bridgedb.Bridges.BridgeRing`; it is the
-                            sub hashring which contains ``count`` number of
-                            :class:`~bridgedb.Bridges.Bridge`s of a certain
-                            ``type``.
+              - ``ring`` is a :class:`BridgeRing`; it is the subhashring which
+                contains ``count`` number of
+                :class:`~bridgedb.bridges.Bridge`s of a certain ``type``.
         """
         self.bridges = {}
         self.bridgesByID = {}
@@ -268,10 +263,9 @@ class BridgeRing(BridgeHolder):
              return them.
 
         :param bytes pos: The position to jump to. Any bridges returned will
-                          start at this position in the hashring, if there is
-                          a bridge assigned to that position. Otherwise,
-                          indexing will start at the first position after this
-                          one which has a bridge assigned to it.
+            start at this position in the hashring, if there is a bridge
+            assigned to that position. Otherwise, indexing will start at the
+            first position after this one which has a bridge assigned to it.
         :param int N: The number of bridges to return.
         :rtype: list
         :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
@@ -597,7 +591,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         :param str ringname: A unique name identifying a sub hashring.
         :rtype: list
         :returns: A sorted list of strings, all the function names of the
-                  filters applied to the sub hashring named **ringname**.
+            filters applied to the sub hashring named **ringname**.
         """
         filterNames = []
 
@@ -618,14 +612,13 @@ class FilteredBridgeSplitter(BridgeHolder):
         :param subring: The subring to add.
         :param str ringname: A unique name for identifying the new subring.
         :param filterFn: A function whose input is a :class:`Bridge`, and
-                         returns True/False based on some filtration criteria.
+            returns True/False based on some filtration criteria.
         :type populate_from: iterable or None
         :param populate_from: A group of :class:`Bridge`s. If given, the newly
-                              added subring will be populated with these
-                              bridges.
+            added subring will be populated with these bridges.
         :rtype: bool
         :returns: False if there was a problem adding the subring, True
-                  otherwise.
+            otherwise.
         """
         # XXX I think subring and ringname are switched in this function, or
         # at least that whatever is passed into this function as as the
