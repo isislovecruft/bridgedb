@@ -124,6 +124,8 @@ class DummyEmailDistributor(object):
     test :class:`bridgedb.EmailServer`.
     """
 
+    _bridgesPerResponseMin = 3
+
     def __init__(self, key=None, domainmap=None, domainrules=None,
                  answerParameters=None):
         """None of the parameters are really used, ― they are just there to retain an
@@ -134,8 +136,8 @@ class DummyEmailDistributor(object):
         self.domainrules = domainrules
         self.answerParameters = answerParameters
 
-    def getBridges(self, bridgeRequest, epoch, N=1):
-        return [util.DummyBridge() for _ in xrange(N)]
+    def getBridges(self, bridgeRequest, epoch):
+        return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
 
     def cleanDatabase(self):
         pass
@@ -157,14 +159,14 @@ class DummyEmailDistributorWithState(DummyEmailDistributor):
         super(DummyEmailDistributorWithState, self).__init__()
         self.alreadySeen = {}
 
-    def getBridges(self, bridgeRequest, epoch, N=1):
+    def getBridges(self, bridgeRequest, epoch):
         # Keep track of the number of times we've seen a client.
         if not bridgeRequest.client in self.alreadySeen.keys():
             self.alreadySeen[bridgeRequest.client] = 0
         self.alreadySeen[bridgeRequest.client] += 1
 
         if self.alreadySeen[bridgeRequest.client] <= 1:
-            return [util.DummyBridge() for _ in xrange(N)]
+            return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
         elif self.alreadySeen[bridgeRequest.client] == 2:
             raise TooSoonEmail(
                 "Seen client '%s' %d times"

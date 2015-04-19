@@ -97,10 +97,7 @@ def createResponseBody(lines, context, client, lang='en'):
 
         # Otherwise they must have requested bridges:
         interval = context.schedule.intervalStart(time.time())
-        bridges = context.distributor.getBridges(
-            bridgeRequest,
-            interval,
-            context.nBridges)
+        bridges = context.distributor.getBridges(bridgeRequest, interval)
     except EmailRequestedHelp as error:
         logging.info(error)
         return templates.buildWelcomeText(translator, client)

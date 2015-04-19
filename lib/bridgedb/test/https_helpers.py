@@ -105,7 +105,7 @@ class DummyHTTPSDistributor(object):
     _bridge_class = util.DummyBridge
     _bridgesPerResponseMin = 3
 
-    def getBridges(self, bridgeRequest=None, epoch=None, N=1):
+    def getBridges(self, bridgeRequest=None, epoch=None):
         """Needed because it's called in
         :meth:`BridgesResource.getBridgeRequestAnswer`."""
         return [self._bridge_class() for _ in range(self._bridgesPerResponseMin)]

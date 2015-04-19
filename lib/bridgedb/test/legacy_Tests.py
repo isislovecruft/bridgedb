@@ -169,11 +169,11 @@ class EmailBridgeDistTests(unittest.TestCase):
                 {'example.com': [], 'dkim.example.com': ['dkim']})
         for _ in xrange(256):
             d.insert(fakeBridge())
-        d.getBridges('abc@example.com', 1, 3)
+        d.getBridges('abc@example.com', 1)
         self.assertRaises(bridgedb.Dist.TooSoonEmail,
-                d.getBridges, 'abc@example.com', 1, 3)
+                d.getBridges, 'abc@example.com', 1)
         self.assertRaises(bridgedb.Dist.IgnoreEmail,
-                d.getBridges, 'abc@example.com', 1, 3)
+                d.getBridges, 'abc@example.com', 1)
 
     def testUnsupportedDomain(self):
         db = self.db
@@ -184,19 +184,17 @@ class EmailBridgeDistTests(unittest.TestCase):
                           {'example.com':[]})
 
 class IPBridgeDistTests(unittest.TestCase):
-    def dumbAreaMapper(self, ip):
-        return ip
+
     def testBasicDist(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(256):
             d.insert(fakeBridge())
-        n = d.getBridges("1.2.3.4", "x", 2)
-        n2 = d.getBridges("1.2.3.4", "x", 2)
+        n = d.getBridges("1.2.3.4", "x")
+        n2 = d.getBridges("1.2.3.4", "x")
         self.assertEquals(n, n2)
 
     def testDistWithProxies(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo",
-                                             [RhymesWith255ProxySet()])
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo", [RhymesWith255ProxySet()])
         for _ in xrange(256):
             d.insert(fakeBridge())
 
@@ -204,8 +202,8 @@ class IPBridgeDistTests(unittest.TestCase):
             # Make sure that the ProxySets do not overlap
             f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
             g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
-            n = d.getBridges(g(), "x", 10)
-            n2 = d.getBridges(f(), "x", 10)
+            n = d.getBridges(g(), "x")
+            n2 = d.getBridges(f(), "x")
 
             assert(len(n) > 0)
             assert(len(n2) > 0)
@@ -219,7 +217,7 @@ class IPBridgeDistTests(unittest.TestCase):
     #XXX: #6175 breaks this test!
     #def testDistWithPortRestrictions(self):
     #    param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
-    #    d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Baz",
+    #    d = bridgedb.Dist.HTTPSDistributor(3, "Baz",
     #                                       answerParameters=param)
     #    for _ in xrange(32):
     #        d.insert(fakeBridge(443))
@@ -227,7 +225,7 @@ class IPBridgeDistTests(unittest.TestCase):
     #        d.insert(fakeBridge())
     #    for _ in xrange(32):
     #        i = randomIP()
-    #        n = d.getBridges(i, "x", 5)
+    #        n = d.getBridges(i, "x")
     #        count = 0
     #        fps = {}
     #        for b in n:
@@ -239,15 +237,15 @@ class IPBridgeDistTests(unittest.TestCase):
     #        self.assertTrue(count >= 1)
 
     def testDistWithFilterIP6(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
             bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp",
-                                        bridgeFilterRules=[filterBridgesByIP6])
+                                   "faketimestamp",
+                                   bridgeFilterRules=[filterBridgesByIP6])
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv6Address)
             address, portlist = networkstatus.parseALine(bridge_line)
@@ -255,15 +253,15 @@ class IPBridgeDistTests(unittest.TestCase):
             assert filterBridgesByIP6(random.choice(bridges))
 
     def testDistWithFilterIP4(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
             bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp",
-                                        bridgeFilterRules=[filterBridgesByIP4])
+                                   "faketimestamp",
+                                   bridgeFilterRules=[filterBridgesByIP4])
             bridge = random.choice(bridges)
             bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
             address, portlist = networkstatus.parseALine(bridge_line)
@@ -271,17 +269,17 @@ class IPBridgeDistTests(unittest.TestCase):
             assert filterBridgesByIP4(random.choice(bridges))
 
     def testDistWithFilterBoth(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(50):
             bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp", 1,
-                                        bridgeFilterRules=[
-                                            filterBridgesByIP4,
-                                            filterBridgesByIP6])
+                                   "faketimestamp",
+                                   bridgeFilterRules=[
+                                       filterBridgesByIP4,
+                                       filterBridgesByIP6])
             if bridges:
                 t = bridges.pop()
                 assert filterBridgesByIP4(t)
@@ -295,18 +293,18 @@ class IPBridgeDistTests(unittest.TestCase):
 
 
     def testDistWithFilterAll(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
                 filterBridgesByIP4, filterBridgesByIP6])
             assert len(b) == 0
 
     def testDistWithFilterBlockedCountries(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True))
             d.insert(fakeBridge(or_addresses=True))
@@ -324,15 +322,15 @@ class IPBridgeDistTests(unittest.TestCase):
             b.blockingCountries[key] = set(['cn'])
 
         for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("cn")])
             assert len(b) == 0
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("us")])
             assert len(b) > 0
 
     def testDistWithFilterBlockedCountriesAdvanced(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
+        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
             d.insert(fakeBridge6(or_addresses=True, transports=True))
             d.insert(fakeBridge(or_addresses=True, transports=True))
@@ -355,7 +353,7 @@ class IPBridgeDistTests(unittest.TestCase):
         # we probably will get at least one bridge back!
         # it's pretty unlikely to lose a coin flip 250 times in a row
         for i in xrange(5):
-            b = d.getBridges(randomIPString(), "x", 1,
+            b = d.getBridges(randomIPString(), "x",
                     bridgeFilterRules=[
                         filterBridgesByNotBlockedIn("cn"),
                         filterBridgesByTransport('obfs2'),
@@ -363,7 +361,7 @@ class IPBridgeDistTests(unittest.TestCase):
             try: assert len(b) > 0
             except AssertionError:
                 print("epic fail")
-            b = d.getBridges(randomIPString(), "x", 1, bridgeFilterRules=[
+            b = d.getBridges(randomIPString(), "x", bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("us")])
             assert len(b) > 0
 

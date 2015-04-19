@@ -125,8 +125,9 @@ class HTTPSDistributorTests(unittest.TestCase):
 
     def test_HTTPSDistributor_bridgesPerResponse_100_max_5(self):
         dist = Dist.HTTPSDistributor(3, self.key)
+        dist._bridgesPerResponseMax = 5
         [dist.insert(bridge) for bridge in self.bridges[:100]]
-        self.assertEqual(dist.bridgesPerResponse(maximum=5), 5)
+        self.assertEqual(dist.bridgesPerResponse(), 5)
 
     def test_HTTPSDistributor_getSubnet_usingProxy(self):
         """HTTPSDistributor.getSubnet(usingProxy=True) should return a proxy
@@ -199,11 +200,11 @@ class HTTPSDistributorTests(unittest.TestCase):
 
         for _ in range(5):
             clientRequest1 = self.randomClientRequestForNotBlockedIn('cn')
-            b = dist.getBridges(clientRequest1, 1, 3)
+            b = dist.getBridges(clientRequest1, 1)
             self.assertEqual(len(b), 0)
 
             clientRequest2 = self.randomClientRequestForNotBlockedIn('ir')
-            b = dist.getBridges(clientRequest2, 1, 3)
+            b = dist.getBridges(clientRequest2, 1)
             self.assertEqual(len(b), 3)
 
     def test_HTTPSDistributor_getBridges_with_some_blocked_bridges(self):
@@ -226,14 +227,14 @@ class HTTPSDistributorTests(unittest.TestCase):
 
         for _ in range(5):
             clientRequest1 = self.randomClientRequestForNotBlockedIn('cn')
-            bridges = dist.getBridges(clientRequest1, 1, 3)
+            bridges = dist.getBridges(clientRequest1, 1)
             for b in bridges:
                 self.assertFalse(b.isBlockedIn('cn'))
             # The client *should* have gotten some bridges still.
             self.assertGreater(len(bridges), 0)
 
             clientRequest2 = self.randomClientRequestForNotBlockedIn('ir')
-            bridges = dist.getBridges(clientRequest2, 1, 3)
+            bridges = dist.getBridges(clientRequest2, 1)
             for b in bridges:
                 self.assertFalse(b.isBlockedIn('ir'))
             self.assertGreater(len(bridges), 0)
