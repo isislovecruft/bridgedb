@@ -12,7 +12,6 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
     # ruleset ensures that the same 
     logging.debug("Creating a filter for assigning bridges to hashrings...")
     ruleset = frozenset([hmac, numRings, assignedRing]) 
-    logging.debug("Filter created: %s" % ruleset)
 
     try: 
         return funcs[ruleset]

@@ -634,9 +634,6 @@ class FilteredBridgeSplitter(BridgeHolder):
         # I suppose since it contains memory addresses, it *is* technically
         # likely to be a unique string, but it is messy.
 
-        logging.debug("Adding '%s' subring to %s..."
-                      % (ringname, self.__class__.__name__))
-
         if not isinstance(subring, BridgeHolder):
             logging.fatal("%s hashring can't add invalid subring: %r"
                           % (self.distributorName, subring))
