@@ -185,7 +185,7 @@ class HTTPSDistributor(Distributor):
             # If there is a proxy subring, don't count it for the modulus:
             if self.proxySubring:
                 mod -= 1
-            return int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod
+            return (int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod) + 1
         else:
             return self.proxySubring
 
