@@ -298,19 +298,51 @@ class HTTPSDistributorTests(unittest.TestCase):
            self.assertGreater(len(fingerprints), 0)
            self.assertTrue(count >= 1)
 
-    def test_HTTPSDistributor_getBridges_with_filter_all(self):
+    def test_HTTPSDistributor_getBridges_ipv4_ipv6(self):
         """Asking for bridge addresses which are simultaneously IPv4 and IPv6
-        should return no bridges.
+        (in that order) should return IPv4 bridges.
         """
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = Dist.HTTPSDistributor(1, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
-        bridgeRequest = self.randomClientRequestForNotBlockedIn('UK')
-        bridgeRequest.filters.append(filterBridgesByIP4)
+        bridgeRequest = self.randomClientRequest()
+        bridgeRequest.withIPv4()
         bridgeRequest.filters.append(filterBridgesByIP6)
-        b = dist.getBridges(bridgeRequest, 1)
+        bridgeRequest.generateFilters()
 
-        self.assertEqual(len(b), 0)
+        bridges = dist.getBridges(bridgeRequest, 1)
+        self.assertEqual(len(bridges), 3)
+
+        bridge = random.choice(bridges)
+        bridgeLine = bridge.getBridgeLine(bridgeRequest)
+        addrport, fingerprint = bridgeLine.split()
+        address, port = addrport.rsplit(':', 1)
+        address = address.strip('[]')
+        self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv4Address)
+        self.assertIsNotNone(filterBridgesByIP4(random.choice(bridges)))
+
+    def test_HTTPSDistributor_getBridges_ipv6_ipv4(self):
+        """Asking for bridge addresses which are simultaneously IPv6 and IPv4
+        (in that order) should return IPv6 bridges.
+        """
+        dist = Dist.HTTPSDistributor(1, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        bridgeRequest = self.randomClientRequest()
+        bridgeRequest.withIPv6()
+        bridgeRequest.generateFilters()
+        bridgeRequest.filters.append(filterBridgesByIP4)
+
+        bridges = dist.getBridges(bridgeRequest, 1)
+        self.assertEqual(len(bridges), 3)
+
+        bridge = random.choice(bridges)
+        bridgeLine = bridge.getBridgeLine(bridgeRequest)
+        addrport, fingerprint = bridgeLine.split()
+        address, port = addrport.rsplit(':', 1)
+        address = address.strip('[]')
+        self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv6Address)
+        self.assertIsNotNone(filterBridgesByIP6(random.choice(bridges)))
 
     def test_HTTPSDistributor_getBridges_ipv6(self):
         """A request for IPv6 bridges should return IPv6 bridges."""
