@@ -185,28 +185,6 @@ class EmailBridgeDistTests(unittest.TestCase):
 
 class IPBridgeDistTests(unittest.TestCase):
 
-    #XXX: #6175 breaks this test!
-    #def testDistWithPortRestrictions(self):
-    #    param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
-    #    d = bridgedb.Dist.HTTPSDistributor(3, "Baz",
-    #                                       answerParameters=param)
-    #    for _ in xrange(32):
-    #        d.insert(fakeBridge(443))
-    #    for _ in range(256):
-    #        d.insert(fakeBridge())
-    #    for _ in xrange(32):
-    #        i = randomIP()
-    #        n = d.getBridges(i, "x")
-    #        count = 0
-    #        fps = {}
-    #        for b in n:
-    #            fps[b.getID()] = 1
-    #            if b.orport == 443:
-    #                count += 1
-    #        self.assertEquals(len(fps), len(n))
-    #        self.assertEquals(len(fps), 5)
-    #        self.assertTrue(count >= 1)
-
     def testDistWithFilterBlockedCountriesAdvanced(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):

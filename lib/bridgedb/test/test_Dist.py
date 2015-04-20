@@ -23,6 +23,7 @@ from bridgedb import Dist
 from bridgedb.bridges import Bridge
 from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
+from bridgedb.Bridges import BridgeRingParameters
 from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.Filters import filterBridgesByIP4
 from bridgedb.Filters import filterBridgesByIP6
@@ -281,6 +282,30 @@ class HTTPSDistributorTests(unittest.TestCase):
             responses[i] = dist.getBridges(bridgeRequest, 1)
         for i in range(4):
             self.assertItemsEqual(responses[i], responses[i+1])
+
+    def test_HTTPSDistributor_getBridges_with_BridgeRingParameters(self):
+       param = BridgeRingParameters(needPorts=[(443, 1)])
+       dist = Dist.HTTPSDistributor(3, self.key, answerParameters=param)
+
+       bridges = self.bridges[:32]
+       for b in self.bridges:
+           b.orPort = 443
+
+       [dist.insert(bridge) for bridge in bridges]
+       [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+       for _ in xrange(32):
+           bridgeRequest = self.randomClientRequest()
+           answer = dist.getBridges(bridgeRequest, 1)
+           count = 0
+           fingerprints = {}
+           for bridge in answer:
+               fingerprints[bridge.identity] = 1
+               if bridge.orPort == 443:
+                   count += 1
+           self.assertEquals(len(fingerprints), len(answer))
+           self.assertGreater(len(fingerprints), 0)
+           self.assertTrue(count >= 1)
 
     def test_HTTPSDistributor_getBridges_ipv4_ipv6(self):
         """Asking for bridge addresses which are simultaneously IPv4 and IPv6
