@@ -539,14 +539,12 @@ class FilteredBridgeSplitter(object):
         """
         # The bridge must be running to insert it:
         if not bridge.flags.running:
-            logging.warn(
-                "Skipping hashring insertion for non-running bridge: '%s'"
-                % logSafely(bridge.fingerprint))
+            logging.warn(("Skipping hashring insertion for non-running "
+                          "bridge: %s") % bridge)
             return
 
         index = 0
-        logging.debug("Inserting %s into hashring"
-                      % (logSafely(bridge.fingerprint)))
+        logging.debug("Inserting %s into hashring..." % bridge)
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
                 self.bridges[index] = bridge
@@ -557,8 +555,8 @@ class FilteredBridgeSplitter(object):
         for ringname, (filterFn, subring) in self.filterRings.items():
             if filterFn(bridge):
                 subring.insert(bridge)
-                logging.debug("Inserted bridge '%s' into '%s' sub hashring"
-                              % (logSafely(bridge.fingerprint), ringname))
+                logging.debug("Inserted bridge %s into %s subhashring." %
+                              (bridge, ringname))
 
     def extractFilterNames(self, ringname):
         """Get the names of the filters applied to a particular sub hashring.
