@@ -73,6 +73,11 @@ class HTTPSDistributorTests(unittest.TestCase):
         self.key = 'aQpeOFIj8q20s98awfoiq23rpOIjFaqpEWFoij1X'
         self.bridges = BRIDGES
 
+    def tearDown(self):
+        """Reset all bridge blocks in between test method runs."""
+        for bridge in self.bridges:
+            bridge._blockedIn = {}
+
     def coinFlip(self):
         return bool(random.getrandbits(1))
 
@@ -187,12 +192,14 @@ class HTTPSDistributorTests(unittest.TestCase):
 
         self.assertEqual(len(ipv4subrings), len(ipv6subrings))
 
-    def test_HTTPSDistributor_with_blocked_bridges(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
-        [dist.insert(bridge) for bridge in self.bridges]
+    def test_HTTPSDistributor_getBridges_with_blocked_bridges(self):
+        dist = Dist.HTTPSDistributor(1, self.key)
+        bridges = self.bridges[:]
 
-        for bridge in dist.hashring.bridges:
+        for bridge in bridges:
             bridge.setBlockedIn('cn')
+
+        [dist.insert(bridge) for bridge in bridges]
 
         for _ in range(5):
             clientRequest1 = self.randomClientRequestForNotBlockedIn('cn')
@@ -203,14 +210,14 @@ class HTTPSDistributorTests(unittest.TestCase):
             b = dist.getBridges(clientRequest2, 1)
             self.assertEqual(len(b), 3)
 
-    def test_HTTPSDistributor_with_some_blocked_bridges(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
-        [dist.insert(bridge) for bridge in self.bridges]
+    def test_HTTPSDistributor_getBridges_with_some_blocked_bridges(self):
+        dist = Dist.HTTPSDistributor(1, self.key)
+        bridges = self.bridges[:]
 
         blockedCN = []
         blockedIR = []
 
-        for bridge in dist.hashring.bridges:
+        for bridge in bridges:
             if self.coinFlip():
                 bridge.setBlockedIn('cn')
                 blockedCN.append(bridge.fingerprint)
@@ -218,6 +225,8 @@ class HTTPSDistributorTests(unittest.TestCase):
             if self.coinFlip():
                 bridge.setBlockedIn('ir')
                 blockedIR.append(bridge.fingerprint)
+
+        [dist.insert(bridge) for bridge in bridges]
 
         for _ in range(5):
             clientRequest1 = self.randomClientRequestForNotBlockedIn('cn')
