@@ -606,9 +606,6 @@ class FilteredBridgeSplitter(object):
         # I suppose since it contains memory addresses, it *is* technically
         # likely to be a unique string, but it is messy.
 
-        logging.debug("Adding '%s' subring to %s..."
-                      % (ringname, self.__class__.__name__))
-
         if ringname in self.filterRings.keys():
             logging.fatal("%s hashring already has a subring named '%s'!"
                           % (self.distributorName, ringname))
