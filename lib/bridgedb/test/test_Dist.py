@@ -54,9 +54,10 @@ def _generateFakeBridges(n=500):
             pt = PluggableTransport(fpr, method, addr, port - j, {})
             transports.append(pt)
 
-        bridge = Bridge(nick, addr, port, fpr, or_addresses=addrs)
+        bridge = Bridge(nick, addr, port, fpr)
         bridge.flags.update("Running Stable")
         bridge.transports = transports
+        bridge.orAddresses = addrs
         bridges.append(bridge)
 
     return bridges
