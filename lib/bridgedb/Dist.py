@@ -371,7 +371,7 @@ class EmailBasedDistributor(Distributor):
         :param whitelist: A dictionary that maps whitelisted email addresses
             to GnuPG fingerprints.
         """
-        super(EmailBasedDistributor, self).__init__('Email', key)
+        super(EmailBasedDistributor, self).__init__(key)
 
         key1 = getHMAC(key, "Map-Addresses-To-Ring")
         self.emailHmac = getHMACFunc(key1, hex=False)
@@ -385,6 +385,7 @@ class EmailBasedDistributor(Distributor):
 
         #XXX cache options not implemented
         self.hashring = FilteredBridgeSplitter(key2, max_cached_rings=5)
+        self.name = "Email"
 
     def bridgesPerResponse(self, hashring=None):
         return super(EmailBasedDistributor, self).bridgesPerResponse(hashring)
