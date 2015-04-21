@@ -8,6 +8,7 @@ bridgedb.email
 
 .. automodule:: bridgedb.email.__init__
 .. automodule:: bridgedb.email.autoresponder
+.. automodule:: bridgedb.email.distributor
 .. automodule:: bridgedb.email.dkim
 .. automodule:: bridgedb.email.request
 .. automodule:: bridgedb.email.server
