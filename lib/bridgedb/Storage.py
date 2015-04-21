@@ -130,11 +130,8 @@ class BridgeData:
         self.last_seen = last_seen
 
 class Database(object):
-    def __init__(self, sqlite_fname, db_fname=None):
-        if db_fname is None:
-            self._conn = openDatabase(sqlite_fname)
-        else:
-            self._conn = openOrConvertDatabase(sqlite_fname, db_fname)
+    def __init__(self, sqlite_fname):
+        self._conn = openDatabase(sqlite_fname)
         self._cur = self._conn.cursor()
         self.sqlite_fname = sqlite_fname
 
@@ -326,62 +323,6 @@ def openDatabase(sqlite_file):
     return conn
 
 
-def openOrConvertDatabase(sqlite_file, db_file):
-    """Open a sqlite database, converting it from a db file if needed."""
-    if os.path.exists(sqlite_file):
-        return openDatabase(sqlite_file)
-
-    conn = sqlite3.Connection(sqlite_file)
-    cur = conn.cursor()
-    cur.executescript(SCHEMA3_SCRIPT)
-    conn.commit()
-
-    import anydbm
-
-    try:
-        db = anydbm.open(db_file, 'r')
-    except anydbm.error:
-        return conn
-
-    try:
-        # We handle all the sp| keys first, since other tables have
-        # dependencies on Bridges.
-        for k in db.keys():
-            v = db[k]
-            if k.startswith("sp|"):
-                assert len(k) == 23
-                cur.execute("INSERT INTO Bridges ( hex_key, distributor ) "
-                            "VALUES (?, ?)", (toHex(k[3:]),v))
-        # Now we handle the other key types.
-        for k in db.keys():
-            v = db[k]
-            if k.startswith("fs|"):
-                assert len(k) == 23
-                cur.execute("UPDATE Bridges SET first_seen = ? "
-                            "WHERE hex_key = ?", (v, toHex(k[3:])))
-            elif k.startswith("ls|"):
-                assert len(k) == 23
-                cur.execute("UPDATE Bridges SET last_seen = ? "
-                            "WHERE hex_key = ?", (v, toHex(k[3:])))
-            #elif k.startswith("em|"):
-            #    keys = list(toHex(i) for i in
-            #        bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
-            #    cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
-            #                    "SELECT ?, id FROM Bridges WHERE hex_key = ?",
-            #                    [(k[3:],i) for i in keys])
-            elif k.startswith("sp|") or k.startswith("em|"):
-                pass
-            else:
-                logging.warn("Unrecognized key %r", k)
-    except:
-        conn.rollback()
-        conn.close()
-        os.unlink(sqlite_file)
-        raise
-
-    conn.commit()
-    return conn
-
 class DBGeneratorContextManager(GeneratorContextManager):
     """Helper for @contextmanager decorator.
 
@@ -469,9 +410,6 @@ def initializeDBLock():
     if not _LOCK:
         _LOCK = threading.RLock()
     assert _LOCK
-
-def checkAndConvertDB(sqlite_file, db_file):
-    openOrConvertDatabase(sqlite_file, db_file).close()
 
 def setDBFilename(sqlite_fname):
     global _DB_FNAME
