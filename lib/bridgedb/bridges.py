@@ -470,10 +470,11 @@ class PluggableTransport(BridgeAddressBase):
 
         :param str value: The new methodname.
         """
-        try:
-            self._methodname = value.lower()
-        except (AttributeError, TypeError):
-            raise TypeError("methodname must be a str or unicode")
+        if value:
+            try:
+                self._methodname = value.lower()
+            except (AttributeError, TypeError):
+                raise TypeError("methodname must be a str or unicode")
 
     def getTransportLine(self, includeFingerprint=True, bridgePrefix=False):
         """Get a Bridge Line for this :class:`PluggableTransport`.
