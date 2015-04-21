@@ -418,8 +418,7 @@ def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
 
-    for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  BridgeStabilityTests]:
+    for klass in [SQLStorageTests, EmailBridgeDistTests, BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
     return suite
 
