@@ -43,6 +43,7 @@ import bridgedb.email.templates
 import bridgedb.filters
 import bridgedb.geo
 import bridgedb.https
+import bridgedb.https.distributor
 import bridgedb.https.request
 import bridgedb.https.server
 import bridgedb.Main
