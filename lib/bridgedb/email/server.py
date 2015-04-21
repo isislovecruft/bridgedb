@@ -103,7 +103,7 @@ class MailServerContext(object):
         """Create a context for storing configs for email bridge distribution.
 
         :type config: :class:`bridgedb.persistent.Conf`
-        :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
+        :type distributor: :class:`~bridgedb.email.distributor.EmailDistributor`
         :param distributor: The distributor will handle getting the correct
             bridges (or none) for a client for us.
         :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
@@ -466,7 +466,7 @@ def addServer(config, distributor):
 
     :type config: :class:`bridgedb.configure.Conf`
     :param config: A configuration object.
-    :type distributor: :class:`bridgedb.Dist.EmailBasedDistributor`
+    :type distributor: :class:`bridgedb.email.distributor.EmailDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
     """

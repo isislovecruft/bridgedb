@@ -30,7 +30,7 @@ import os
 from datetime import datetime
 
 from bridgedb import strings
-from bridgedb.Dist import MAX_EMAIL_RATE
+from bridgedb.email.distributor import MAX_EMAIL_RATE
 
 
 def addCommands(template):
