@@ -30,6 +30,7 @@ from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
+from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 
 import bridgedb.Storage
@@ -186,16 +187,17 @@ def createBridgeRings(cfg, proxyList, key):
     """Create the bridge distributors defined by the config file
 
     :type cfg:  :class:`Conf`
-    :param cfg: The current configuration, including any in-memory
-                settings (i.e. settings whose values were not obtained from the
-                config file, but were set via a function somewhere)
+    :param cfg: The current configuration, including any in-memory settings
+        (i.e. settings whose values were not obtained from the config file,
+        but were set via a function somewhere)
     :type proxyList: :class:`~bridgedb.proxy.ProxySet`
     :param proxyList: The container for the IP addresses of any currently
-                      known open proxies.
+        known open proxies.
     :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter hashring, an HTTPSDistributor or None,
-              and an EmailBasedDistributor or None.
+    :returns: A BridgeSplitter hashring, an
+        :class:`~bridgedb.https.distributor.HTTPSDistributor` or None, and an
+        EmailBasedDistributor or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -210,7 +212,7 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        ipDistributor = Dist.HTTPSDistributor(
+        ipDistributor = HTTPSDistributor(
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             proxyList,
@@ -328,8 +330,9 @@ def run(options, reactor=reactor):
             into their hashring assignments.
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
-             known open proxies.
-        :ivar ipDistributor: A :class:`Dist.HTTPSDistributor`.
+            known open proxies.
+        :ivar ipDistributor: A
+            :class:`~bridgedb.https.distributor.HTTPSDistributor`.
         :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
