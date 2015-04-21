@@ -613,13 +613,21 @@ class FilteredBridgeSplitter(object):
 
         filterNames = self.extractFilterNames(ringname)
         subringName = [self.distributorName]
+        subringNumber = None
         for filterName in filterNames:
-            if filterName != 'filterAssignBridgesToRing':
-                subringName.append(filterName.strip('filterBridgesBy'))
+            if filterName.startswith('filterAssignBridgesToRing'):
+                subringNumber = filterName.lstrip('filterAssignBridgesToRing')
+            else:
+                subringName.append(filterName.lstrip('filterBridgesBy'))
+        if subring.name and 'Proxy' in subring.name:
+            subringName.append('Proxy')
+        elif subringNumber:
+            subringName.append(subringNumber)
         subringName = '-'.join([x for x in subringName])
         subring.setName(subringName)
 
-        logging.info("Adding subring to %s hashring..." % subring.name)
+        logging.info("Adding %s subring %s to the %s Distributor's hashring..." %
+                     (subring.name, subringNumber, self.distributorName))
         logging.info("  Subring filters: %s" % filterNames)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
@@ -631,8 +639,8 @@ class FilteredBridgeSplitter(object):
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     subring.insert(bridge)
                     inserted += 1
-            logging.info("Bridges inserted into %s subring: %d"
-                         % (subring.name, inserted))
+            logging.info("Bridges inserted into %s subring %s: %d"
+                         % (subring.name, subringNumber, inserted))
 
         return True
 
