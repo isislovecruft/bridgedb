@@ -252,22 +252,6 @@ class IPBridgeDistTests(unittest.TestCase):
             assert type(ipaddr.IPAddress(address)) is ipaddr.IPv6Address
             assert filterBridgesByIP6(random.choice(bridges))
 
-    def testDistWithFilterIP4(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(500):
-            bridges = d.getBridges(randomIPv4String(),
-                                   "faketimestamp",
-                                   bridgeFilterRules=[filterBridgesByIP4])
-            bridge = random.choice(bridges)
-            bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
-            address, portlist = networkstatus.parseALine(bridge_line)
-            assert type(ipaddr.IPAddress(address)) is ipaddr.IPv4Address
-            assert filterBridgesByIP4(random.choice(bridges))
-
     def testDistWithFilterBlockedCountriesAdvanced(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
