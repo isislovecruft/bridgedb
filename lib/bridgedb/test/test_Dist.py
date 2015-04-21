@@ -24,9 +24,8 @@ from bridgedb.bridges import Bridge
 from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
 from bridgedb.Bridges import BridgeRingParameters
-from bridgedb.Filters import filterBridgesByNotBlockedIn
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.filters import byIPv4
+from bridgedb.filters import byIPv6
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
 from bridgedb.test.util import randomHighPort
@@ -355,7 +354,7 @@ class HTTPSDistributorTests(unittest.TestCase):
 
         bridgeRequest = self.randomClientRequest()
         bridgeRequest.withIPv4()
-        bridgeRequest.filters.append(filterBridgesByIP6)
+        bridgeRequest.filters.append(byIPv6)
         bridgeRequest.generateFilters()
 
         bridges = dist.getBridges(bridgeRequest, 1)
@@ -367,7 +366,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         address, port = addrport.rsplit(':', 1)
         address = address.strip('[]')
         self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv4Address)
-        self.assertIsNotNone(filterBridgesByIP4(random.choice(bridges)))
+        self.assertIsNotNone(byIPv4(random.choice(bridges)))
 
     def test_HTTPSDistributor_getBridges_ipv6_ipv4(self):
         """Asking for bridge addresses which are simultaneously IPv6 and IPv4
@@ -379,7 +378,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         bridgeRequest = self.randomClientRequest()
         bridgeRequest.withIPv6()
         bridgeRequest.generateFilters()
-        bridgeRequest.filters.append(filterBridgesByIP4)
+        bridgeRequest.filters.append(byIPv4)
 
         bridges = dist.getBridges(bridgeRequest, 1)
         self.assertEqual(len(bridges), 3)
@@ -390,7 +389,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         address, port = addrport.rsplit(':', 1)
         address = address.strip('[]')
         self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv6Address)
-        self.assertIsNotNone(filterBridgesByIP6(random.choice(bridges)))
+        self.assertIsNotNone(byIPv6(random.choice(bridges)))
 
     def test_HTTPSDistributor_getBridges_ipv6(self):
         """A request for IPv6 bridges should return IPv6 bridges."""
@@ -412,7 +411,7 @@ class HTTPSDistributorTests(unittest.TestCase):
             address, port = addrport.rsplit(':', 1)
             address = address.strip('[]')
             self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv6Address)
-            self.assertIsNotNone(filterBridgesByIP6(random.choice(bridges)))
+            self.assertIsNotNone(byIPv6(random.choice(bridges)))
 
     def test_HTTPSDistributor_getBridges_ipv4(self):
         """A request for IPv4 bridges should return IPv4 bridges."""
@@ -432,4 +431,4 @@ class HTTPSDistributorTests(unittest.TestCase):
             addrport, fingerprint = bridgeLine.split()
             address, port = addrport.rsplit(':', 1)
             self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv4Address)
-            self.assertIsNotNone(filterBridgesByIP4(random.choice(bridges)))
+            self.assertIsNotNone(byIPv4(random.choice(bridges)))

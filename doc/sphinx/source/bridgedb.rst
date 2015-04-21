@@ -15,7 +15,7 @@ BridgeDB Package and Module Documentation
     bridgedb.crypto
     bridgedb.Dist
     bridgedb.email
-    bridgedb.Filters
+    bridgedb.filters
     bridgedb.geo
     bridgedb.https
     bridgedb.interfaces
