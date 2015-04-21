@@ -334,6 +334,4 @@ def testSuite():
     return suite
 
 def main():
-    suppressWarnings()
-
     unittest.TextTestRunner(verbosity=1).run(testSuite())
