@@ -71,19 +71,19 @@ def filterBridgesByTransport(methodname, addressClass=None):
     if not ((addressClass is IPv4Address) or (addressClass is IPv6Address)):
         addressClass = IPv4Address
 
+    # Ignore case
+    methodname = methodname.lower()
+
     ruleset = frozenset([methodname, addressClass])
     try:
         return funcs[ruleset]
     except KeyError:
-
         def _filterByTransport(bridge):
             for transport in bridge.transports:
-                if isinstance(transport.address, addressClass):
-                    # ignore method name case
-                    if transport.methodname.lower() == methodname.lower():
-                        return True
+                if (transport.methodname == methodname and
+                    isinstance(transport.address, addressClass)):
+                    return True
             return False
-
         _filterByTransport.__name__ = ("filterBridgesByTransport(%s,%s)"
                                        % (methodname, addressClass))
         setattr(_filterByTransport, "description", "transport=%s" % methodname)
