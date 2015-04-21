@@ -510,7 +510,7 @@ class FilteredBridgeSplitter(object):
         :ivar bridges: DOCDOC
         :type distributorName: str
         :ivar distributorName: The name of this splitter's distributor. See
-             :meth:`bridgedb.Dist.HTTPSDistributor.setDistributorName`.
+             :meth:`~bridgedb.https.distributor.HTTPSDistributor.setDistributorName`.
         """
         self.key = key
         self.filterRings = {}

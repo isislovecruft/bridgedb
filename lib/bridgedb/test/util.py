@@ -168,6 +168,39 @@ randomValidIPv4String = valid(randomIPv4String)
 randomValidIPv6String = valid(randomIPv6String)
 randomValidIPString   = valid(randomIPString)
 
+def generateFakeBridges(n=500):
+    """Generate a set of **n** :class:`~bridgedb.bridges.Bridges` with random
+    data.
+    """
+    from bridgedb.bridges import Bridge
+    from bridgedb.bridges import PluggableTransport
+
+    bridges = []
+
+    for i in range(n):
+        addr = randomValidIPv4String()
+        nick = 'bridge-%d' % i
+        port = randomHighPort()
+        # Real tor currently only supports one extra ORAddress, and it can
+        # only be IPv6.
+        addrs = [(randomValidIPv6(), randomHighPort(), 6)]
+        fpr = "".join(random.choice('abcdef0123456789') for _ in xrange(40))
+
+        # We only support the ones without PT args, because they're easier to fake.
+        supported = ["obfs2", "obfs3", "fte"]
+        transports = []
+        for j, method in zip(range(1, len(supported) + 1), supported):
+            pt = PluggableTransport(fpr, method, addr, port - j, {})
+            transports.append(pt)
+
+        bridge = Bridge(nick, addr, port, fpr)
+        bridge.flags.update("Running Stable")
+        bridge.transports = transports
+        bridge.orAddresses = addrs
+        bridges.append(bridge)
+
+    return bridges
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be
