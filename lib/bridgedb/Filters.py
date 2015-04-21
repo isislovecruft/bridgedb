@@ -90,6 +90,67 @@ def filterBridgesByTransport(methodname, addressClass=None):
         funcs[ruleset] = _filterByTransport
         return _filterByTransport
 
+def filterBridgesByUnblockedTransport(methodname, countryCode=None, addressClass=None):
+    """Return a filter function for :class:`~bridgedb.bridges.Bridge`s.
+
+    The returned filter function should be called on a
+    :class:`~bridgedb.bridges.Bridge`.  It returns ``True`` if the ``Bridge``
+    has a :class:`~bridgedb.bridges.PluggableTransport` such that:
+
+      1. The :data:`~bridge.bridges.PluggableTransport.methodname` matches
+         **methodname**,
+
+      2. The :data:`~bridgedb.bridges.PluggableTransport.address`` is an
+         instance of **addressClass**, and isn't known to be blocked in
+         **countryCode**.
+
+    :param str methodname: A Pluggable Transport
+        :data:`~bridge.bridges.PluggableTransport.methodname`.
+    :type countryCode: str or ``None``
+    :param countryCode: A two-letter country code which the filtered
+        :class:`PluggableTransport`s should not be blocked in.
+    :type addressClass: ``ipaddr.IPAddress``
+    :param addressClass: The IP version that the ``Bridge``'s
+        ``PluggableTransport``
+        :data:`~bridgedb.bridges.PluggableTransport.address`` should have.
+    :rtype: callable
+    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    """
+    if not countryCode:
+        return filterBridgesByTransport(methodname, addressClass)
+
+    if not ((addressClass is IPv4Address) or (addressClass is IPv6Address)):
+        addressClass = IPv4Address
+
+    # Ignore case
+    methodname = methodname.lower()
+    countryCode = countryCode.lower()
+
+    ruleset = frozenset([methodname, countryCode, addressClass.__name__])
+    try:
+        return funcs[ruleset]
+    except KeyError:
+        def _filterByUnblockedTransport(bridge):
+            # Since bridge.transportIsBlockedIn() will return True if the
+            # bridge has that type of transport AND that transport is blocked,
+            # we can "fail fast" here by doing this faster check before
+            # iterating over all the transports testing for the other
+            # conditions.
+            if bridge.transportIsBlockedIn(countryCode, methodname):
+                return False
+            else:
+                for transport in bridge.transports:
+                    if (transport.methodname == methodname and
+                        isinstance(transport.address, addressClass)):
+                        return True
+            return False
+        _filterByUnblockedTransport.__name__ = ("filterBridgesByUnblockedTransport(%s,%s,%s)"
+                                                % (methodname, countryCode, addressClass))
+        setattr(_filterByUnblockedTransport, "description",
+                "transport=%s unblocked=%s" % (methodname, countryCode))
+        funcs[ruleset] = _filterByUnblockedTransport
+        return _filterByUnblockedTransport
+
 def filterBridgesByNotBlockedIn(countryCode):
     """Return ``True`` if at least one of a bridge's (transport) bridgelines isn't
     known to be blocked in **countryCode**.
