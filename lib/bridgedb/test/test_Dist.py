@@ -244,6 +244,45 @@ class HTTPSDistributorTests(unittest.TestCase):
                 self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
 
+    def test_HTTPSDistributor_getBridges_with_varied_blocked_bridges(self):
+        dist = Dist.HTTPSDistributor(1, self.key)
+        bridges = self.bridges[:]
+
+        for bridge in bridges:
+            # Pretend that China blocks all vanilla bridges:
+            bridge.setBlockedIn('cn', methodname='vanilla')
+            # Pretend that China blocks all obfs2:
+            bridge.setBlockedIn('cn', methodname='obfs2')
+            # Pretend that China blocks some obfs3:
+            if self.coinFlip():
+                bridge.setBlockedIn('cn', methodname='obfs3')
+
+        [dist.insert(bridge) for bridge in bridges]
+
+        for i in xrange(5):
+            bridgeRequest1 = self.randomClientRequestForNotBlockedIn('cn')
+            bridgeRequest1.transports.append('obfs2')
+            bridgeRequest1.generateFilters()
+            # We shouldn't get any obfs2 bridges, since they're all blocked in
+            # China:
+            bridges = dist.getBridges(bridgeRequest1, "faketimestamp")
+            self.assertEqual(len(bridges), 0)
+
+            bridgeRequest2 = self.randomClientRequestForNotBlockedIn('cn')
+            bridgeRequest2.transports.append('obfs3')
+            bridgeRequest2.generateFilters()
+            # We probably will get at least one bridge back!  It's pretty
+            # unlikely to lose a coin flip 500 times in a row.
+            bridges = dist.getBridges(bridgeRequest2, "faketimestamp")
+            self.assertGreater(len(bridges), 0)
+
+            bridgeRequest3 = self.randomClientRequestForNotBlockedIn('nl')
+            bridgeRequest3.transports.append('obfs3')
+            bridgeRequest3.generateFilters()
+            # We should get bridges, since obfs3 isn't blocked in netherlands:
+            bridges = dist.getBridges(bridgeRequest3, "faketimestamp")
+            self.assertGreater(len(bridges), 0)
+
     def test_HTTPSDistributor_getBridges_with_proxy_and_nonproxy_users(self):
         """An HTTPSDistributor should give separate bridges to proxy users."""
         proxies = ProxySet(['.'.join(['1.1.1', str(x)]) for x in range(1, 256)])
