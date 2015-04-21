@@ -13,7 +13,6 @@
 from __future__ import print_function
 
 import ipaddr
-import logging
 
 from twisted.trial import unittest
 
@@ -22,35 +21,8 @@ from bridgedb.bridges import Bridge
 from bridgedb.bridges import PluggableTransport
 
 
-l = logging.getLogger()
-l.handlers[0].setLevel(10)
-for h in l.handlers[1:]:
-    h.setLevel(50)
-
-
 class FiltersTests(unittest.TestCase):
     """Tests for :mod:`bridgedb.filters`."""
-
-    def makeBridges(self):
-        bridges = []
-
-        # A bridge with an IPv4 address for its main orPort address
-        bridgeIPv4 = Bridge()
-        bridgeIPv4.address = '1.1.1.1'
-        bridges.append(bridgeIPv4)
-
-        # A bridge with an IPv6 address for its main orPort address
-        bridgeIPv6 = Bridge()
-        bridgeIPv6.address = '2006:2222::2222'
-        bridges.append(bridgeIPv6)
-
-        # A bridge with an IPv4 orPort address and an IPv6 address
-        bridgeIPv4and6 = Bridge()
-        bridgeIPv4and6.address = '3.3.3.3'
-        bridgeIPv4and6.orAddresses = [(ipaddr.IPv6Address('2006:3333::3333'), 3333, 6)]
-        bridges.append(bridgeIPv4and6)
-
-        return bridges
 
     def test_byIPv4_address(self):
         """A bridge with an IPv4 address for its main orPort address should
