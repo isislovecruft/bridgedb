@@ -26,6 +26,7 @@ from twisted.spread import jelly
 from bridgedb import Bridges
 from bridgedb import Dist
 from bridgedb import filters
+from bridgedb.https import distributor as httpsDistributor
 from bridgedb.configure import Conf
 #from bridgedb.proxy import ProxySet
 
@@ -34,7 +35,7 @@ _state = None
 #: Types and classes which are allowed to be jellied:
 _security = jelly.SecurityOptions()
 #_security.allowInstancesOf(ProxySet)
-_security.allowModules(filters, Bridges, Dist)
+_security.allowModules(filters, Bridges, Dist, httpsDistributor)
 
 
 class MissingState(Exception):

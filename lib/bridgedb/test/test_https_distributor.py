@@ -9,7 +9,7 @@
 #             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Tests for :mod:`bridgedb.Dist`."""
+"""Tests for :mod:`bridgedb.https.distributor`."""
 
 from __future__ import print_function
 

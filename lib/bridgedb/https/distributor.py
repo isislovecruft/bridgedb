@@ -111,7 +111,7 @@ class HTTPSDistributor(Distributor):
         ``1.2.178.234``) are placed within the same cluster, but Carol (with
         address ``1.3.11.33``) *might* end up in a different cluster.
 
-        >>> from bridgedb.Dist import HTTPSDistributor
+        >>> from bridgedb.https.distributor import HTTPSDistributor
         >>> HTTPSDistributor.getSubnet('1.2.3.4')
         '1.2.0.0/16'
         >>> HTTPSDistributor.getSubnet('1.2.211.154')
