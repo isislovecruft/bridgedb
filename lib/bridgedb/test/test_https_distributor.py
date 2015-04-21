@@ -13,15 +13,12 @@
 
 from __future__ import print_function
 
-import hashlib
 import ipaddr
 import logging
 import random
 
 from twisted.trial import unittest
 
-from bridgedb.bridges import Bridge
-from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
 from bridgedb.Bridges import BridgeRingParameters
 from bridgedb.filters import byIPv4
@@ -29,43 +26,14 @@ from bridgedb.filters import byIPv6
 from bridgedb.https import distributor
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
-from bridgedb.test.util import randomHighPort
 from bridgedb.test.util import randomValidIPv4String
-from bridgedb.test.util import randomValidIPv6
+from bridgedb.test.util import generateFakeBridges
 from bridgedb.test.https_helpers import DummyRequest
 
 logging.disable(50)
 
 
-def _generateFakeBridges(n=500):
-    bridges = []
-
-    for i in range(n):
-        addr = randomValidIPv4String()
-        nick = 'bridge-%d' % i
-        port = randomHighPort()
-        # Real tor currently only supports one extra ORAddress, and it can
-        # only be IPv6.
-        addrs = [(randomValidIPv6(), randomHighPort(), 6)]
-        fpr = "".join(random.choice('abcdef0123456789') for _ in xrange(40))
-
-        # We only support the ones without PT args, because they're easier to fake.
-        supported = ["obfs2", "obfs3", "fte"]
-        transports = []
-        for j, method in zip(range(1, len(supported) + 1), supported):
-            pt = PluggableTransport(fpr, method, addr, port - j, {})
-            transports.append(pt)
-
-        bridge = Bridge(nick, addr, port, fpr)
-        bridge.flags.update("Running Stable")
-        bridge.transports = transports
-        bridge.orAddresses = addrs
-        bridges.append(bridge)
-
-    return bridges
-
-
-BRIDGES = _generateFakeBridges()
+BRIDGES = generateFakeBridges()
 
 
 class HTTPSDistributorTests(unittest.TestCase):
