@@ -13,9 +13,9 @@
 
 import io
 
-from bridgedb.Dist import IgnoreEmail
-from bridgedb.Dist import TooSoonEmail
 from bridgedb.persistent import Conf
+from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.email.server import MailServerContext
 from bridgedb.schedule import Unscheduled
 from bridgedb.test import util
@@ -120,8 +120,8 @@ def _createMailServerContext(config=None, distributor=None):
 
 
 class DummyEmailDistributor(object):
-    """A mocked :class:`bridgedb.Dist.EmailBasedDistributor` which is used to
-    test :class:`bridgedb.EmailServer`.
+    """A mocked :class:`bridgedb.email.distributor.EmailDistributor` which is used
+    to test :class:`bridgedb.EmailServer`.
     """
 
     _bridgesPerResponseMin = 3
@@ -144,9 +144,9 @@ class DummyEmailDistributor(object):
 
 
 class DummyEmailDistributorWithState(DummyEmailDistributor):
-    """A mocked :class:`bridgedb.Dist.EmailBasedDistributor` which raises
-    :exc:`bridgedb.Dist.TooSoonEmail` on the second email and
-    :exc:`bridgedb.Dist.IgnoreEmail` on the third.
+    """A mocked :class:`bridgedb.email.distributor.EmailDistributor` which raises
+    :exc:`bridgedb.email.distributor.TooSoonEmail` on the second email and
+    :exc:`bridgedb.email.distributor.IgnoreEmail` on the third.
 
     Note that the state tracking is done in a really dumb way. For example, we
     currently don't consider requests for help text or GnuPG keys to be a
