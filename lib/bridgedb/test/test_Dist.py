@@ -288,3 +288,23 @@ class HTTPSDistributorTests(unittest.TestCase):
         address = address.strip('[]')
         self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv6Address)
         self.assertIsNotNone(filterBridgesByIP6(random.choice(bridges)))
+
+    def test_HTTPSDistributor_getBridges_ipv4(self):
+        """A request for IPv4 bridges should return IPv4 bridges."""
+        dist = Dist.HTTPSDistributor(1, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        for i in xrange(500):
+            bridgeRequest = self.randomClientRequest()
+            bridgeRequest.generateFilters()
+
+            bridges = dist.getBridges(bridgeRequest, "faketimestamp")
+            self.assertTrue(type(bridges) is list)
+            self.assertGreater(len(bridges), 0)
+
+            bridge = random.choice(bridges)
+            bridgeLine = bridge.getBridgeLine(bridgeRequest)
+            addrport, fingerprint = bridgeLine.split()
+            address, port = addrport.rsplit(':', 1)
+            self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv4Address)
+            self.assertIsNotNone(filterBridgesByIP4(random.choice(bridges)))
