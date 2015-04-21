@@ -24,6 +24,8 @@ from bridgedb.bridges import Bridge
 from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
 from bridgedb.Filters import filterBridgesByNotBlockedIn
+from bridgedb.Filters import filterBridgesByIP4
+from bridgedb.Filters import filterBridgesByIP6
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
 from bridgedb.test.util import randomHighPort
@@ -240,3 +242,49 @@ class HTTPSDistributorTests(unittest.TestCase):
                 self.assertFalse(b.isBlockedIn('ir'))
                 self.assertNotIn(b.fingerprint, blockedIR)
             self.assertGreater(len(bridges), 0)
+
+    def test_HTTPSDistributor_getBridges_ipv4_ipv6(self):
+        """Asking for bridge addresses which are simultaneously IPv4 and IPv6
+        (in that order) should return IPv4 bridges.
+        """
+        dist = Dist.HTTPSDistributor(1, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        bridgeRequest = self.randomClientRequest()
+        bridgeRequest.withIPv4()
+        bridgeRequest.filters.append(filterBridgesByIP6)
+        bridgeRequest.generateFilters()
+
+        bridges = dist.getBridges(bridgeRequest, 1)
+        self.assertEqual(len(bridges), 3)
+
+        bridge = random.choice(bridges)
+        bridgeLine = bridge.getBridgeLine(bridgeRequest)
+        addrport, fingerprint = bridgeLine.split()
+        address, port = addrport.rsplit(':', 1)
+        address = address.strip('[]')
+        self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv4Address)
+        self.assertIsNotNone(filterBridgesByIP4(random.choice(bridges)))
+
+    def test_HTTPSDistributor_getBridges_ipv6_ipv4(self):
+        """Asking for bridge addresses which are simultaneously IPv6 and IPv4
+        (in that order) should return IPv6 bridges.
+        """
+        dist = Dist.HTTPSDistributor(1, self.key)
+        [dist.insert(bridge) for bridge in self.bridges[:250]]
+
+        bridgeRequest = self.randomClientRequest()
+        bridgeRequest.withIPv6()
+        bridgeRequest.generateFilters()
+        bridgeRequest.filters.append(filterBridgesByIP4)
+
+        bridges = dist.getBridges(bridgeRequest, 1)
+        self.assertEqual(len(bridges), 3)
+
+        bridge = random.choice(bridges)
+        bridgeLine = bridge.getBridgeLine(bridgeRequest)
+        addrport, fingerprint = bridgeLine.split()
+        address, port = addrport.rsplit(':', 1)
+        address = address.strip('[]')
+        self.assertIsInstance(ipaddr.IPAddress(address), ipaddr.IPv6Address)
+        self.assertIsNotNone(filterBridgesByIP6(random.choice(bridges)))

@@ -268,41 +268,6 @@ class IPBridgeDistTests(unittest.TestCase):
             assert type(ipaddr.IPAddress(address)) is ipaddr.IPv4Address
             assert filterBridgesByIP4(random.choice(bridges))
 
-    def testDistWithFilterBoth(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(50):
-            bridges = d.getBridges(randomIPv4String(),
-                                   "faketimestamp",
-                                   bridgeFilterRules=[
-                                       filterBridgesByIP4,
-                                       filterBridgesByIP6])
-            if bridges:
-                t = bridges.pop()
-                assert filterBridgesByIP4(t)
-                assert filterBridgesByIP6(t)
-                address, portlist = networkstatus.parseALine(
-                    t.getConfigLine(addressClass=ipaddr.IPv4Address))
-                assert type(address) is ipaddr.IPv4Address
-                address, portlist = networkstatus.parseALine(
-                    t.getConfigLine(addressClass=ipaddr.IPv6Address))
-                assert type(address) is ipaddr.IPv6Address
-
-
-    def testDistWithFilterAll(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", bridgeFilterRules=[
-                filterBridgesByIP4, filterBridgesByIP6])
-            assert len(b) == 0
-
     def testDistWithFilterBlockedCountriesAdvanced(self):
         d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
         for _ in xrange(250):
