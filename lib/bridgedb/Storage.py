@@ -189,14 +189,12 @@ class Database(object):
     def cleanEmailedBridges(self, expireBefore):
         cur = self._cur
         t = timeToStr(expireBefore)
-
         cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,))
 
     def getEmailTime(self, addr):
         addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
-        cur.execute("SELECT when_mailed FROM EmailedBridges WHERE "
-                    "email = ?", (addr,))
+        cur.execute("SELECT when_mailed FROM EmailedBridges WHERE email = ?", (addr,))
         v = cur.fetchone()
         if v is None:
             return None
@@ -246,8 +244,7 @@ class Database(object):
     def getWarnedEmail(self, addr):
         addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
-        cur.execute("SELECT * FROM WarnedEmails WHERE "
-                    " email = ?", (addr,))
+        cur.execute("SELECT * FROM WarnedEmails WHERE email = ?", (addr,))
         v = cur.fetchone()
         if v is None:
             return False
@@ -261,8 +258,7 @@ class Database(object):
             cur.execute("INSERT INTO WarnedEmails"
                         "(email,when_warned) VALUES (?,?)", (addr, t,))
         elif warned == False:
-            cur.execute("DELETE FROM WarnedEmails WHERE "
-                        "email = ?", (addr,))
+            cur.execute("DELETE FROM WarnedEmails WHERE email = ?", (addr,))
 
     def cleanWarnedEmails(self, expireBefore):
         cur = self._cur
@@ -302,10 +298,13 @@ class Database(object):
 
     def getBridgesLastUpdatedBefore(self, statusPublicationMillis):
         cur = self._cur
-        v = cur.execute("SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime < ?", (statusPublicationMillis,))
+        v = cur.execute("SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime < ?",
+                        (statusPublicationMillis,))
         if v is None: return
         for h in v:
             yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
+
+
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
