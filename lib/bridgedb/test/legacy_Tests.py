@@ -183,44 +183,6 @@ class EmailBridgeDistTests(unittest.TestCase):
                           {'example.com':'example.com'},
                           {'example.com':[]})
 
-class IPBridgeDistTests(unittest.TestCase):
-
-    def testDistWithFilterBlockedCountriesAdvanced(self):
-        d = bridgedb.Dist.HTTPSDistributor(3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True, transports=True))
-            d.insert(fakeBridge(or_addresses=True, transports=True))
-
-        for b in d.hashring.bridges:
-            # china blocks some transports
-            for pt in b.transports:
-                if random.choice(xrange(2)) > 0:
-                    key = "%s:%s" % (pt.address, pt.port)
-                    b.blockingCountries[key] = set(['cn'])
-            for address, portlist in b.or_addresses.items():
-                # china blocks some transports
-                for port in portlist:
-                    if random.choice(xrange(2)) > 0:
-                        key = "%s:%s" % (address, port)
-                        b.blockingCountries[key] = set(['cn'])
-            key = "%s:%s" % (b.ip, b.orport)
-            b.blockingCountries[key] = set(['cn'])
-
-        # we probably will get at least one bridge back!
-        # it's pretty unlikely to lose a coin flip 250 times in a row
-        for i in xrange(5):
-            b = d.getBridges(randomIPString(), "x",
-                    bridgeFilterRules=[
-                        filterBridgesByNotBlockedIn("cn"),
-                        filterBridgesByTransport('obfs2'),
-                        ])
-            try: assert len(b) > 0
-            except AssertionError:
-                print("epic fail")
-            b = d.getBridges(randomIPString(), "x", bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("us")])
-            assert len(b) > 0
-
 
 class SQLStorageTests(unittest.TestCase):
     def setUp(self):
@@ -450,8 +412,7 @@ def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
 
-    for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  BridgeStabilityTests]:
+    for klass in [SQLStorageTests, EmailBridgeDistTests, BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
     return suite
 
