@@ -171,15 +171,22 @@ class BridgeRequestBase(object):
         return ptType
 
     def generateFilters(self):
-        if self.addressClass is ipaddr.IPv6Address:
-            self.addFilter(Filters.filterBridgesByIP6)
-        else:
-            self.addFilter(Filters.filterBridgesByIP4)
+        self.clearFilters()
 
         transport = self.justOnePTType()
+
         if transport:
-            self.clearFilters()
-            self.addFilter(Filters.filterBridgesByTransport(transport,
-                                                            self.addressClass))
-        for country in self.notBlockedIn:
-            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))
+            if self.notBlockedIn:
+                for country in self.notBlockedIn:
+                    self.addFilter(Filters.filterBridgesByUnblockedTransport(
+                        transport, country, self.addressClass))
+            else:
+                self.addFilter(Filters.filterBridgesByTransport(
+                    transport, self.addressClass))
+        else:
+            if self.addressClass is ipaddr.IPv6Address:
+                self.addFilter(Filters.filterBridgesByIP6)
+            else:
+                self.addFilter(Filters.filterBridgesByIP4)
+            for country in self.notBlockedIn:
+                self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))
