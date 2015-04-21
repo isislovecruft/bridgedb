@@ -25,11 +25,6 @@ import bridgedb.Storage
 import re
 import ipaddr
 
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport
-from bridgedb.Filters import filterBridgesByNotBlockedIn
-
 from bridgedb.Stability import BridgeHistory
 
 from bridgedb.parse import addr

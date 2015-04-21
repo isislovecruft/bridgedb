@@ -40,7 +40,7 @@ import bridgedb.email.dkim
 import bridgedb.email.request
 import bridgedb.email.server
 import bridgedb.email.templates
-import bridgedb.Filters
+import bridgedb.filters
 import bridgedb.geo
 import bridgedb.https
 import bridgedb.https.request
