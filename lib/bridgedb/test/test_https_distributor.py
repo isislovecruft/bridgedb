@@ -15,6 +15,7 @@ from __future__ import print_function
 
 import hashlib
 import ipaddr
+import logging
 import random
 
 from twisted.trial import unittest
@@ -32,6 +33,8 @@ from bridgedb.test.util import randomHighPort
 from bridgedb.test.util import randomValidIPv4String
 from bridgedb.test.util import randomValidIPv6
 from bridgedb.test.https_helpers import DummyRequest
+
+logging.disable(50)
 
 
 def _generateFakeBridges(n=500):
