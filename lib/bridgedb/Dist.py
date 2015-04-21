@@ -25,10 +25,10 @@ from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.distribute import Distributor
-from bridgedb.Filters import filterAssignBridgesToRing
-from bridgedb.Filters import filterBridgesByRules
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
+from bridgedb.filters import byFilters
+from bridgedb.filters import byIPv4
+from bridgedb.filters import byIPv6
+from bridgedb.filters import bySubring
 from bridgedb.parse import addr
 
 
@@ -259,7 +259,7 @@ class HTTPSDistributor(Distributor):
         """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
 
-        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
+        for filterFn in [byIPv4, byIPv6]:
             for subring in range(1, self.totalSubrings + 1):
                 filters = self._buildHashringFilters([filterFn,], subring)
                 key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
@@ -269,8 +269,7 @@ class HTTPSDistributor(Distributor):
                 # distributor's proxies:
                 if subring == self.proxySubring:
                     ring.setName('{0} Proxy Ring'.format(self.name))
-                self.hashring.addRing(ring, filters,
-                                      filterBridgesByRules(filters),
+                self.hashring.addRing(ring, filters, byFilters(filters),
                                       populate_from=self.hashring.bridges)
 
     def insert(self, bridge):
@@ -278,7 +277,7 @@ class HTTPSDistributor(Distributor):
         self.hashring.insert(bridge)
 
     def _buildHashringFilters(self, previousFilters, subring):
-        f = filterAssignBridgesToRing(self.hashring.hmac, self.totalSubrings, subring)
+        f = bySubring(self.hashring.hmac, subring, self.totalSubrings)
         previousFilters.append(f)
         return frozenset(previousFilters)
 
@@ -337,7 +336,7 @@ class HTTPSDistributor(Distributor):
             logging.debug("Cache miss %s" % filters)
             key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
             ring = BridgeRing(key1, self.answerParameters)
-            self.hashring.addRing(ring, filters, filterBridgesByRules(filters),
+            self.hashring.addRing(ring, filters, byFilters(filters),
                                   populate_from=self.hashring.bridges)
 
         # Determine the appropriate number of bridges to give to the client:
@@ -457,8 +456,7 @@ class EmailBasedDistributor(Distributor):
                 # add new ring
                 key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
                 ring = BridgeRing(key1, self.answerParameters)
-                self.hashring.addRing(ring, ruleset,
-                                      filterBridgesByRules(ruleset),
+                self.hashring.addRing(ring, ruleset, byFilters(ruleset),
                                       populate_from=self.hashring.bridges)
 
             returnNum = self.bridgesPerResponse(ring)
@@ -482,10 +480,9 @@ class EmailBasedDistributor(Distributor):
 
     def prepopulateRings(self):
         # populate all rings (for dumping assignments and testing)
-        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
+        for filterFn in [byIPv4, byIPv6]:
             ruleset = frozenset([filterFn])
             key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
             ring = BridgeRing(key1, self.answerParameters)
-            self.hashring.addRing(ring, ruleset,
-                                  filterBridgesByRules([filterFn]),
+            self.hashring.addRing(ring, ruleset, byFilters([filterFn]),
                                   populate_from=self.hashring.bridges)

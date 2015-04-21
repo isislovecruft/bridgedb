@@ -4,9 +4,9 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2013 Isis Lovecruft
-#             (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2013-2015 Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
 """Module for functionality to persistently store state."""
@@ -23,7 +23,9 @@ except (ImportError, NameError):  # pragma: no cover
 from twisted.python.reflect import safe_repr
 from twisted.spread import jelly
 
-from bridgedb import Filters, Bridges, Dist
+from bridgedb import Bridges
+from bridgedb import Dist
+from bridgedb import filters
 from bridgedb.configure import Conf
 #from bridgedb.proxy import ProxySet
 
@@ -32,7 +34,7 @@ _state = None
 #: Types and classes which are allowed to be jellied:
 _security = jelly.SecurityOptions()
 #_security.allowInstancesOf(ProxySet)
-_security.allowModules(Filters, Bridges, Dist)
+_security.allowModules(filters, Bridges, Dist)
 
 
 class MissingState(Exception):

@@ -1,7 +1,7 @@
-bridgedb.Filters
+bridgedb.filters
 ----------------
 
-.. automodule:: bridgedb.Filters
+.. automodule:: bridgedb.filters
     :members:
     :undoc-members:
     :private-members:

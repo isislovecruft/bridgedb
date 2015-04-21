@@ -47,7 +47,7 @@ DistributorContext {   # should go in bridgedb.py
 }
 
 Hashring {
-    assignBridgesToRings()   FORMERLY filterAssignBridgesToRing()
+    assignBridgesToSubrings()   FORMERLY bridgedb.filters.assignBridgesToSubring()
         + filters bridges uniformly into subrings
     clear() / __del__()
     isEmpty property
