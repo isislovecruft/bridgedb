@@ -1196,9 +1196,13 @@ class Bridge(BridgeBackwardsCompatibility):
             address and port.
         """
         addresses = self.orAddresses
-        # Add the default ORPort address (it will always be IPv4, otherwise
-        # Stem should have raised a ValueError during parsing):
-        addresses.append((self.address, self.orPort, 4))
+        # Add the default ORPort address.  It will always be IPv4, otherwise
+        # Stem should have raised a ValueError during parsing.  But for
+        # testability, check which type it is:
+        version = 4
+        if isIPv6(self.address):
+            version = 6
+        addresses.append((self.address, self.orPort, version))
         return addresses
 
     def assertOK(self):

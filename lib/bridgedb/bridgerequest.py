@@ -19,8 +19,12 @@ from zope.interface import implements
 from zope.interface import Attribute
 from zope.interface import Interface
 
-from bridgedb import Filters
 from bridgedb.crypto import getHMACFunc
+from bridgedb.filters import byIPv4
+from bridgedb.filters import byIPv6
+from bridgedb.filters import byNotBlockedIn
+from bridgedb.filters import byTransport
+from bridgedb.filters import byTransportNotBlockedIn
 
 
 class IRequestBridges(Interface):
@@ -178,15 +182,15 @@ class BridgeRequestBase(object):
         if transport:
             if self.notBlockedIn:
                 for country in self.notBlockedIn:
-                    self.addFilter(Filters.filterBridgesByUnblockedTransport(
-                        transport, country, self.addressClass))
+                    self.addFilter(byTransportNotBlockedIn(transport,
+                                                           country.lower(),
+                                                           self.addressClass))
             else:
-                self.addFilter(Filters.filterBridgesByTransport(
-                    transport, self.addressClass))
+                self.addFilter(byTransport(transport, self.addressClass))
         else:
             if self.addressClass is ipaddr.IPv6Address:
-                self.addFilter(Filters.filterBridgesByIP6)
+                self.addFilter(byIPv6)
             else:
-                self.addFilter(Filters.filterBridgesByIP4)
+                self.addFilter(byIPv4)
             for country in self.notBlockedIn:
-                self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))
+                self.addFilter(byNotBlockedIn(country.lower()))
