@@ -50,7 +50,6 @@ def byIPv6(bridge):
         for address, port, version in bridge.allVanillaAddresses:
             if version == 6 or isIPv6(address):
                 return True
-            logging.debug("%s is not ipv6" % address)
     return False
 setattr(byIPv6, "description", "ip=6")
 
