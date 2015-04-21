@@ -8,11 +8,9 @@ import logging
 funcs = {}
 
 def filterAssignBridgesToRing(hmac, numRings, assignedRing):
-    #XXX: ruleset should have a key unique to this function
-    # ruleset ensures that the same 
-    logging.debug("Creating a filter for assigning bridges to hashrings...")
+    logging.debug(("Creating a filter for assigning bridges to subhashring "
+                   "%s-of-%s...") % (assignedRing, numRings))
     ruleset = frozenset([hmac, numRings, assignedRing]) 
-
     try: 
         return funcs[ruleset]
     except KeyError:
@@ -24,8 +22,8 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
             if which == assignedRing:
                 return True
             return False
-        _assignBridgesToRing.__name__ = ("filterAssignBridgesToRing(%s, %s, %s)"
-                                         % (hmac, numRings, assignedRing))
+        _assignBridgesToRing.__name__ = ("filterAssignBridgesToRing%sof%s"
+                                         % (assignedRing, numRings))
         # XXX The `description` attribute must contain an `=`, or else
         # dumpAssignments() will not work correctly.
         setattr(_assignBridgesToRing, "description", "ring=%d" % assignedRing)
