@@ -316,14 +316,13 @@ class PluggableTransport(BridgeAddressBase):
         super(PluggableTransport, self).__init__()
         self._port = None
         self._methodname = None
-        self._arguments = None
+        self._blockedIn = {}
 
         self.fingerprint = fingerprint
         self.address = address
         self.port = port
         self.methodname = methodname
         self.arguments = arguments
-        self._blockedIn = {}
 
         # Because we can intitialise this class with the __init__()
         # parameters, or use the ``updateFromStemTransport()`` method, we'll
@@ -463,6 +462,30 @@ class PluggableTransport(BridgeAddressBase):
     def port(self):
         """Reset this ``PluggableTransport``'s port to ``None``."""
         self._port = None
+
+    @property
+    def methodname(self):
+        """Get this :class:`PluggableTransport`'s methodname.
+
+        :rtype: str
+        :returns: The (lowercased) methodname of this ``PluggableTransport``,
+            i.e. ``"obfs3"``, ``"scramblesuit"``, etc.
+        """
+        return self._methodname
+
+    @methodname.setter
+    def methodname(self, value):
+        """Set this ``PluggableTransport``'s methodname.
+
+        .. hint:: The **value** will be automatically lowercased.
+
+        :param str value: The new methodname.
+        """
+        if value:
+            try:
+                self._methodname = value.lower()
+            except (AttributeError, TypeError):
+                raise TypeError("methodname must be a str or unicode")
 
     def getTransportLine(self, includeFingerprint=True, bridgePrefix=False):
         """Get a Bridge Line for this :class:`PluggableTransport`.
@@ -1317,7 +1340,7 @@ class Bridge(BridgeBackwardsCompatibility):
             **countryCode**, ``False`` otherwise.
         """
         for pt in self.transports:
-            if pt.methodname.lower() == methodname.lower():
+            if pt.methodname == methodname.lower():
                 if self.addressIsBlockedIn(countryCode, pt.address, pt.port):
                     logging.info("Transport %s of bridge %s is blocked in %s."
                                  % (pt.methodname, self, countryCode))
