@@ -30,13 +30,13 @@ from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
+from bridgedb.email.distributor import EmailDistributor
 from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 
 import bridgedb.Storage
 
 from bridgedb import Bridges
-from bridgedb import Dist
 from bridgedb.Stability import updateBridgeHistory
 
 
@@ -197,7 +197,7 @@ def createBridgeRings(cfg, proxyList, key):
     :rtype: tuple
     :returns: A BridgeSplitter hashring, an
         :class:`~bridgedb.https.distributor.HTTPSDistributor` or None, and an
-        EmailBasedDistributor or None.
+        :class:`~bridgedb.email.distributor.EmailDistributor` or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -222,7 +222,7 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         logging.debug("Setting up Email Distributor...")
-        emailDistributor = Dist.EmailBasedDistributor(
+        emailDistributor = EmailDistributor(
             crypto.getHMAC(key, "Email-Dist-Key"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
@@ -333,7 +333,8 @@ def run(options, reactor=reactor):
             known open proxies.
         :ivar ipDistributor: A
             :class:`~bridgedb.https.distributor.HTTPSDistributor`.
-        :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
+        :ivar emailDistributor: A
+            :class:`~bridgedb.email.distributor.EmailDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
             scheduled event, repetitive or otherwise, for the :class:`reactor

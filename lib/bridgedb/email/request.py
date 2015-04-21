@@ -40,8 +40,8 @@ import logging
 import re
 
 from bridgedb import bridgerequest
-from bridgedb.Dist import EmailRequestedHelp
-from bridgedb.Dist import EmailRequestedKey
+from bridgedb.email.distributor import EmailRequestedHelp
+from bridgedb.email.distributor import EmailRequestedKey
 
 
 #: A regular expression for matching the Pluggable Transport method TYPE in
@@ -105,7 +105,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
 
     def __init__(self):
         """Process a new bridge request received through the
-        :class:`~bridgedb.Dist.EmailBasedDistributor`.
+        :class:`~bridgedb.email.distributor.EmailDistributor`.
         """
         super(EmailBridgeRequest, self).__init__()
         self._wantsKey = False

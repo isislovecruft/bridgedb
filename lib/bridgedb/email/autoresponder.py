@@ -47,13 +47,13 @@ from twisted.python import failure
 
 from bridgedb import safelog
 from bridgedb.crypto import NEW_BUFFER_INTERFACE
-from bridgedb.Dist import EmailRequestedHelp
-from bridgedb.Dist import EmailRequestedKey
-from bridgedb.Dist import TooSoonEmail
-from bridgedb.Dist import IgnoreEmail
 from bridgedb.email import dkim
 from bridgedb.email import request
 from bridgedb.email import templates
+from bridgedb.email.distributor import EmailRequestedHelp
+from bridgedb.email.distributor import EmailRequestedKey
+from bridgedb.email.distributor import TooSoonEmail
+from bridgedb.email.distributor import IgnoreEmail
 from bridgedb.parse import addr
 from bridgedb.parse.addr import canonicalizeEmailDomain
 from bridgedb.util import levenshteinDistance
