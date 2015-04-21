@@ -12,11 +12,17 @@
 from __future__ import print_function
 
 import logging
+import tempfile
+import os
 
 from twisted.trial import unittest
 
-from bridgedb import Storage
-from bridgedb.email import distributor
+import bridgedb.Storage
+
+from bridgedb.bridges import Bridge
+from bridgedb.email.distributor import EmailDistributor
+from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.email.request import EmailBridgeRequest
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import normalizeEmail
@@ -33,24 +39,34 @@ class EmailDistributorTests(unittest.TestCase):
 
     def setUp(self):
         self.fd, self.fname = tempfile.mkstemp()
-        self.db = bridgedb.Storage.Database(self.fname)
-        Storage.setDB(self.db)
-        self.cur = self.db._conn.cursor()
+        bridgedb.Storage.initializeDBLock()
+        self.db = bridgedb.Storage.openDatabase(self.fname)
+        bridgedb.Storage.setDBFilename(self.fname)
+        self.cur = self.db.cursor()
+        self.db.close()
 
         self.bridges = BRIDGES
         self.key = 'aQpeOFIj8q20s98awfoiq23rpOIjFaqpEWFoij1X'
         self.domainmap = {
             'example.com':      'example.com',
-            'dkim.example.com': 'dkim.example.com'},
+            'dkim.example.com': 'dkim.example.com',
         }
         self.domainrules = {
             'example.com':      ['ignore_dots'],
-            'dkim.example.com': ['dkim', 'ignore_dots']}
+            'dkim.example.com': ['dkim', 'ignore_dots']
+        }
 
     def tearDown(self):
         self.db.close()
         os.close(self.fd)
         os.unlink(self.fname)
+
+    def makeClientRequest(self, clientEmailAddress):
+        bridgeRequest = EmailBridgeRequest()
+        bridgeRequest.client = clientEmailAddress
+        bridgeRequest.isValid(True)
+        bridgeRequest.generateFilters()
+        return bridgeRequest
 
     def test_EmailDistributor_rate_limit(self):
         """A client's first email should return bridges.  The second should
@@ -59,16 +75,17 @@ class EmailDistributorTests(unittest.TestCase):
         dist = EmailDistributor(self.key, self.domainmap, self.domainrules)
         [dist.hashring.insert(bridge) for bridge in self.bridges]
 
+        bridgeRequest = self.makeClientRequest('abc@example.com')
+
         # The first request should get a response with bridges
-        bridges = d.getBridges('abc@example.com', 1)
+        bridges = dist.getBridges(bridgeRequest, 1)
         self.assertGreater(len(bridges), 0)
-        for b in bridges:
-            self.assertIsInstance(b, Bridge)
+        [self.assertIsInstance(b, Bridge) for b in bridges]
         self.assertEqual(len(bridges), 3)
 
         # The second gets a warning, and the third is ignored
-        self.assertRaises(TooSoonEmail, d.getBridges, 'abc@example.com', 1)
-        self.assertRaises(IgnoreEmail,  d.getBridges, 'abc@example.com', 1)
+        self.assertRaises(TooSoonEmail, dist.getBridges, bridgeRequest, 1)
+        self.assertRaises(IgnoreEmail,  dist.getBridges, bridgeRequest, 1)
 
     def test_EmailDistributor_unsupported_domain(self):
         """An unsupported domain should raise an UnsupportedDomain exception."""

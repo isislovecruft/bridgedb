@@ -100,10 +100,6 @@ class EmailDistributor(Distributor):
     def bridgesPerResponse(self, hashring=None):
         return super(EmailDistributor, self).bridgesPerResponse(hashring)
 
-    def insert(self, bridge):
-        """Assign a bridge to this distributor."""
-        self.hashring.insert(bridge)
-
     def getBridges(self, bridgeRequest, interval):
         """Return a list of bridges to give to a user.
 
@@ -166,7 +162,7 @@ class EmailDistributor(Distributor):
                 logging.debug("Cache hit %s" % filtres)
                 _, ring = self.hashring.filterRings[filtres]
             else:
-                logging.debug("Cache miss %s" % ruleset)
+                logging.debug("Cache miss %s" % filtres)
                 key = getHMAC(self.key, "Order-Bridges-In-Ring")
                 ring = BridgeRing(key, self.answerParameters)
                 self.hashring.addRing(ring, filtres, byFilters(filtres),

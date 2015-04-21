@@ -329,8 +329,7 @@ class BridgeStabilityTests(unittest.TestCase):
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
-
-    for klass in [SQLStorageTests, EmailBridgeDistTests, BridgeStabilityTests]:
+    for klass in [SQLStorageTests, BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
     return suite
 
