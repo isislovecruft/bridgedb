@@ -1,4 +1,4 @@
-# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Dist -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_email_distributor -*-
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
@@ -8,9 +8,11 @@
 # :copyright: (c) 2013-2015, Isis Lovecruft
 #             (c) 2013-2015, Matthew Finkel
 #             (c) 2007-2015, The Tor Project, Inc.
-# :license: 3-Clause BSD, see LICENSE for licensing information
+# :license: see LICENSE for licensing information
 
-"""This module has functions to decide which bridges to hand out to whom."""
+"""A :class:`~bridgedb.distribute.Distributor` which hands out
+:class:`bridges <bridgedb.bridges.Bridge>` to clients via an email interface.
+"""
 
 import logging
 import time
@@ -29,28 +31,40 @@ from bridgedb.filters import bySubring
 from bridgedb.parse import addr
 
 
-MAX_EMAIL_RATE = 3*3600
+#: The minimum amount of time (in seconds) which must pass before a client who
+#: has previously been given an email response must wait before being eligible
+#: to receive another response.
+MAX_EMAIL_RATE = 3 * 3600
+
 
 class IgnoreEmail(addr.BadEmail):
     """Raised when we get requests from this address after rate warning."""
 
+
 class TooSoonEmail(addr.BadEmail):
     """Raised when we got a request from this address too recently."""
 
+
 class EmailRequestedHelp(Exception):
     """Raised when a client has emailed requesting help."""
+
 
 class EmailRequestedKey(Exception):
     """Raised when an incoming email requested a copy of our GnuPG keys."""
 
 
-class EmailBasedDistributor(Distributor):
+class EmailDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
     request and the current time period.
 
     :type hashring: :class:`~bridgedb.Bridges.BridgeRing`
     :ivar hashring: A hashring to hold all the bridges we hand out.
     """
+
+    #: The minimum amount of time (in seconds) which must pass before a client
+    #: who has previously been given an email response must wait before being
+    #: eligible to receive another response.
+    emailRateMax = MAX_EMAIL_RATE
 
     def __init__(self, key, domainmap, domainrules,
                  answerParameters=None, whitelist=None):
@@ -68,48 +82,48 @@ class EmailBasedDistributor(Distributor):
         :param whitelist: A dictionary that maps whitelisted email addresses
             to GnuPG fingerprints.
         """
-        super(EmailBasedDistributor, self).__init__(key)
+        super(EmailDistributor, self).__init__(key)
 
-        key1 = getHMAC(key, "Map-Addresses-To-Ring")
-        self.emailHmac = getHMACFunc(key1, hex=False)
-
-        key2 = getHMAC(key, "Order-Bridges-In-Ring")
-        # XXXX clear the store when the period rolls over!
         self.domainmap = domainmap
         self.domainrules = domainrules
         self.whitelist = whitelist or dict()
         self.answerParameters = answerParameters
 
+        key1 = getHMAC(key, "Map-Addresses-To-Ring")
+        key2 = getHMAC(key, "Order-Bridges-In-Ring")
+
+        self.emailHmac = getHMACFunc(key1, hex=False)
         #XXX cache options not implemented
         self.hashring = FilteredBridgeSplitter(key2, max_cached_rings=5)
+
         self.name = "Email"
 
     def bridgesPerResponse(self, hashring=None):
-        return super(EmailBasedDistributor, self).bridgesPerResponse(hashring)
-
-    def insert(self, bridge):
-        """Assign a bridge to this distributor."""
-        self.hashring.insert(bridge)
+        return super(EmailDistributor, self).bridgesPerResponse(hashring)
 
     def getBridges(self, bridgeRequest, interval):
         """Return a list of bridges to give to a user.
 
-        :type bridgeRequest: :class:`~bridgedb.email.request.EmailBridgeRequest`
-        :param bridgeRequest: A :class:`~bridgedb.bridgerequest.BridgeRequestBase`
-            with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
-            attribute set to a string containing the client's full, canonicalized
-            email address.
+        .. hint:: All checks on the email address (which should be stored in
+            the ``bridgeRequest.client`` attribute), such as checks for
+            whitelisting and canonicalization of domain name, are done in
+            :meth:`bridgedb.email.autoresponder.getMailTo` and
+            :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+
+        :type bridgeRequest:
+            :class:`~bridgedb.email.request.EmailBridgeRequest`
+        :param bridgeRequest: A
+            :class:`~bridgedb.bridgerequest.BridgeRequestBase` with the
+            :data:`~bridgedb.bridgerequest.BridgeRequestBase.client` attribute
+            set to a string containing the client's full, canonicalized email
+            address.
         :param interval: The time period when we got this request. This can be
             any string, so long as it changes with every period.
         """
-        # All checks on the email address, such as checks for whitelisting and
-        # canonicalization of domain name, are done in
-        # :meth:`bridgedb.email.autoresponder.getMailTo` and
-        # :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
         if (not bridgeRequest.client) or (bridgeRequest.client == 'default'):
             raise addr.BadEmail(
-                ("%s distributor can't get bridges for invalid email email "
-                 " address: %s") % (self.name, bridgeRequest.client))
+                ("%s distributor can't get bridges for invalid email address: "
+                 "%s") % (self.name, bridgeRequest.client), bridgeRequest.client)
 
         logging.info("Attempting to get bridges for %s..." % bridgeRequest.client)
 
@@ -119,17 +133,18 @@ class EmailBasedDistributor(Distributor):
             wasWarned = db.getWarnedEmail(bridgeRequest.client)
             lastSaw = db.getEmailTime(bridgeRequest.client)
             if lastSaw is not None:
-                if bridgeRequest.client in self.whitelist.keys():
-                    logging.info(("Whitelisted email address %s was last seen "
-                                  "%d seconds ago.")
-                                 % (bridgeRequest.client, now - lastSaw))
-                elif (lastSaw + MAX_EMAIL_RATE) >= now:
-                    wait = (lastSaw + MAX_EMAIL_RATE) - now
+                if bridgeRequest.client in self.whitelist:
+                    logging.info(
+                        "Whitelisted address %s was last seen %d seconds ago."
+                        % (bridgeRequest.client, now - lastSaw))
+                elif (lastSaw + self.emailRateMax) >= now:
+                    wait = (lastSaw + self.emailRateMax) - now
                     logging.info("Client %s must wait another %d seconds."
                                  % (bridgeRequest.client, wait))
                     if wasWarned:
-                        raise IgnoreEmail("Client was warned.",
-                                          bridgeRequest.client)
+                        raise IgnoreEmail(
+                            "Client %s was warned." % bridgeRequest.client,
+                            bridgeRequest.client)
                     else:
                         logging.info("Sending duplicate request warning.")
                         db.setWarnedEmail(bridgeRequest.client, True, now)
@@ -143,18 +158,15 @@ class EmailBasedDistributor(Distributor):
             pos = self.emailHmac("<%s>%s" % (interval, bridgeRequest.client))
 
             ring = None
-            ruleset = frozenset(bridgeRequest.filters)
-            if ruleset in self.hashring.filterRings.keys():
-                logging.debug("Cache hit %s" % ruleset)
-                _, ring = self.hashring.filterRings[ruleset]
+            filtres = frozenset(bridgeRequest.filters)
+            if filtres in self.hashring.filterRings:
+                logging.debug("Cache hit %s" % filtres)
+                _, ring = self.hashring.filterRings[filtres]
             else:
-                # cache miss, add new ring
-                logging.debug("Cache miss %s" % ruleset)
-
-                # add new ring
-                key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
-                ring = BridgeRing(key1, self.answerParameters)
-                self.hashring.addRing(ring, ruleset, byFilters(ruleset),
+                logging.debug("Cache miss %s" % filtres)
+                key = getHMAC(self.key, "Order-Bridges-In-Ring")
+                ring = BridgeRing(key, self.answerParameters)
+                self.hashring.addRing(ring, filtres, byFilters(filtres),
                                       populate_from=self.hashring.bridges)
 
             returnNum = self.bridgesPerResponse(ring)
@@ -166,10 +178,13 @@ class EmailBasedDistributor(Distributor):
         return result
 
     def cleanDatabase(self):
+        """Clear all emailed response and warning times from the database."""
+        logging.info(("Cleaning all response and warning times for the %s "
+                      "distributor from the database...") % self.name)
         with bridgedb.Storage.getDB() as db:
             try:
-                db.cleanEmailedBridges(time.time() - MAX_EMAIL_RATE)
-                db.cleanWarnedEmails(time.time() - MAX_EMAIL_RATE)
+                db.cleanEmailedBridges(time.time() - self.emailRateMax)
+                db.cleanWarnedEmails(time.time() - self.emailRateMax)
             except:
                 db.rollback()
                 raise
@@ -177,10 +192,18 @@ class EmailBasedDistributor(Distributor):
                 db.commit()
 
     def prepopulateRings(self):
-        # populate all rings (for dumping assignments and testing)
+        """Prepopulate this distributor's hashrings and subhashrings with
+        bridges.
+        """
+        logging.info("Prepopulating %s distributor hashrings..." % self.name)
+
         for filterFn in [byIPv4, byIPv6]:
             ruleset = frozenset([filterFn])
-            key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
-            ring = BridgeRing(key1, self.answerParameters)
+            key = getHMAC(self.key, "Order-Bridges-In-Ring")
+            ring = BridgeRing(key, self.answerParameters)
             self.hashring.addRing(ring, ruleset, byFilters([filterFn]),
                                   populate_from=self.hashring.bridges)
+
+        # Since prepopulateRings is called every half hour when the bridge
+        # descriptors are re-parsed, we should clean the database then.
+        self.cleanDatabase()

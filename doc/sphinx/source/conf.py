@@ -33,9 +33,9 @@ import bridgedb.captcha
 import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
-import bridgedb.Dist
 import bridgedb.email
 import bridgedb.email.autoresponder
+import bridgedb.email.distributor
 import bridgedb.email.dkim
 import bridgedb.email.request
 import bridgedb.email.server
