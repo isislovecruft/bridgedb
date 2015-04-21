@@ -569,7 +569,7 @@ class FilteredBridgeSplitter(object):
         filterNames = []
 
         for filterName in [x.func_name for x in list(ringname)]:
-            # Using `filterAssignBridgesToRing.func_name` gives us a messy
+            # Using `assignBridgesToSubring.func_name` gives us a messy
             # string which includes all parameters and memory addresses. Get
             # rid of this by partitioning at the first `(`:
             realFilterName = filterName.partition('(')[0]
@@ -599,8 +599,8 @@ class FilteredBridgeSplitter(object):
         # hashring '%s'!" % (inserted, ringname))`, this log message appears:
         #
         # Jan 04 23:18:37 [INFO] Inserted 12 bridges into hashring
-        # frozenset([<function filterBridgesByIP4 at 0x2d67cf8>, <function
-        # filterAssignBridgesToRing(<function hmac_fn at 0x3778398>, 4, 0) at
+        # frozenset([<function byIPv4 at 0x2d67cf8>, <function
+        # assignBridgesToSubring(<function hmac_fn at 0x3778398>, 4, 0) at
         # 0x37de578>])!
         #
         # I suppose since it contains memory addresses, it *is* technically
@@ -615,10 +615,10 @@ class FilteredBridgeSplitter(object):
         subringName = [self.distributorName]
         subringNumber = None
         for filterName in filterNames:
-            if filterName.startswith('filterAssignBridgesToRing'):
-                subringNumber = filterName.lstrip('filterAssignBridgesToRing')
+            if filterName.startswith('assignBridgesToSubring'):
+                subringNumber = filterName.lstrip('assignBridgesToSubring')
             else:
-                subringName.append(filterName.lstrip('filterBridgesBy'))
+                subringName.append(filterName.lstrip('by'))
         if subring.name and 'Proxy' in subring.name:
             subringName.append('Proxy')
         elif subringNumber:

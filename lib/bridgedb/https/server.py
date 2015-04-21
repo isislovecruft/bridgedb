@@ -47,10 +47,6 @@ from bridgedb import crypto
 from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport
-from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
