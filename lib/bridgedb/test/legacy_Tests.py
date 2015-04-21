@@ -35,15 +35,13 @@ from bridgedb.test.util import randomIPv6
 from bridgedb.test.util import randomIPString
 from bridgedb.test.util import randomIPv4String
 from bridgedb.test.util import randomIPv6String
+from bridgedb.test.util import randomPort
+from bridgedb.test.util import randomValidIPv6
 
 from math import log
 
+warnings.filterwarnings('ignore', '.*tmpnam.*')
 
-def suppressWarnings():
-    warnings.filterwarnings('ignore', '.*tmpnam.*')
-
-def randomPort():
-    return random.randint(1,65535)
 
 def randomPortSpec():
     """
@@ -57,8 +55,8 @@ def randomPortSpec():
 
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
-    nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIPv4())
+    ip = randomIPv4()
+    nn = "bridge-%s" % int(ip)
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -66,21 +64,7 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
     oraddrs = []
     if or_addresses:
         for i in xrange(8):
-            # Only add or_addresses if they are valid. Otherwise, the test
-            # will randomly fail if an invalid address is chosen:
-            address = randomIPv4String()
-            portlist = addr.PortList(randomPortSpec())
-            if addr.isValidIP(address):
-                oraddrs.append((address, portlist,))
-
-    for address, portlist in oraddrs:
-        networkstatus.parseALine("{0}:{1}".format(address, portlist))
-        try:
-            portlist.add(b.or_addresses[address])
-        except KeyError:
-            pass
-        finally:
-            b.or_addresses[address] = portlist
+            b.orAddresses.append((randomValidIPv6(), randomPort(), 6))
 
     if transports:
         for i in xrange(0,8):
@@ -91,8 +75,8 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
 
 def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
-    nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIPv6())
+    ip = randomIPv6()
+    nn = "bridge-%s" % int(ip)
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -100,47 +84,15 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
     oraddrs = []
     if or_addresses:
         for i in xrange(8):
-            # Only add or_addresses if they are valid. Otherwise, the test
-            # will randomly fail if an invalid address is chosen:
-            address = randomIPv6()
-            portlist = addr.PortList(randomPortSpec())
-            if addr.isValidIP(address):
-                address = bracketIPv6(address)
-                oraddrs.append((address, portlist,))
-
-    for address, portlist in oraddrs:
-        networkstatus.parseALine("{0}:{1}".format(address, portlist))
-        try:
-            portlist.add(b.or_addresses[address])
-        except KeyError:
-            pass
-        finally:
-            b.or_addresses[address] = portlist
-
-            try:
-                portlist.add(b.or_addresses[address])
-            except KeyError:
-                pass
-            finally:
-                b.or_addresses[address] = portlist
+            b.orAddresses.append((randomValidIPv6(), randomPort(), 6))
 
     if transports:
         for i in xrange(0,8):
             b.transports.append(bridgedb.Bridges.PluggableTransport(b,
                 random.choice(["obfs", "obfs2", "pt1"]),
                 randomIP(), randomPort()))
-
     return b
 
-simpleDesc = "router Unnamed %s %s 0 9030\n"\
-"opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-"opt @purpose bridge\n"
-orAddress = "or-address %s:%s\n"
-
-
-class RhymesWith255ProxySet:
-    def __contains__(self, ip):
-        return ip.endswith(".255")
 
 class EmailBridgeDistTests(unittest.TestCase):
     def setUp(self):
@@ -412,6 +364,4 @@ def testSuite():
     return suite
 
 def main():
-    suppressWarnings()
-
     unittest.TextTestRunner(verbosity=1).run(testSuite())

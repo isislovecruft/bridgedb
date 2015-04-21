@@ -794,7 +794,7 @@ class HTTPSServerServiceTests(unittest.TestCase):
     """Unittests for :func:`bridgedb.email.server.addWebServer`."""
 
     def setUp(self):
-        """Create a server.MailServerContext and EmailBasedDistributor."""
+        """Create a config and an HTTPSDistributor."""
         self.config = _createConfig()
         self.distributor = DummyHTTPSDistributor()
 

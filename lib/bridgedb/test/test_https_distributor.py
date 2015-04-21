@@ -9,60 +9,31 @@
 #             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Tests for :mod:`bridgedb.Dist`."""
+"""Tests for :mod:`bridgedb.https.distributor`."""
 
 from __future__ import print_function
 
-import hashlib
 import ipaddr
+import logging
 import random
 
 from twisted.trial import unittest
 
-from bridgedb import Dist
-from bridgedb.bridges import Bridge
-from bridgedb.bridges import PluggableTransport
 from bridgedb.Bridges import BridgeRing
 from bridgedb.Bridges import BridgeRingParameters
 from bridgedb.filters import byIPv4
 from bridgedb.filters import byIPv6
+from bridgedb.https import distributor
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
-from bridgedb.test.util import randomHighPort
 from bridgedb.test.util import randomValidIPv4String
-from bridgedb.test.util import randomValidIPv6
+from bridgedb.test.util import generateFakeBridges
 from bridgedb.test.https_helpers import DummyRequest
 
-
-def _generateFakeBridges(n=500):
-    bridges = []
-
-    for i in range(n):
-        addr = randomValidIPv4String()
-        nick = 'bridge-%d' % i
-        port = randomHighPort()
-        # Real tor currently only supports one extra ORAddress, and it can
-        # only be IPv6.
-        addrs = [(randomValidIPv6(), randomHighPort(), 6)]
-        fpr = "".join(random.choice('abcdef0123456789') for _ in xrange(40))
-
-        # We only support the ones without PT args, because they're easier to fake.
-        supported = ["obfs2", "obfs3", "fte"]
-        transports = []
-        for j, method in zip(range(1, len(supported) + 1), supported):
-            pt = PluggableTransport(fpr, method, addr, port - j, {})
-            transports.append(pt)
-
-        bridge = Bridge(nick, addr, port, fpr)
-        bridge.flags.update("Running Stable")
-        bridge.transports = transports
-        bridge.orAddresses = addrs
-        bridges.append(bridge)
-
-    return bridges
+logging.disable(50)
 
 
-BRIDGES = _generateFakeBridges()
+BRIDGES = generateFakeBridges()
 
 
 class HTTPSDistributorTests(unittest.TestCase):
@@ -99,34 +70,34 @@ class HTTPSDistributorTests(unittest.TestCase):
         """The HTTPSDistributor, when initialised with proxies, should add an
         extra hashring for proxy users.
         """
-        dist = Dist.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
+        dist = distributor.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
         self.assertIsNotNone(dist.proxies)
         self.assertGreater(dist.proxySubring, 0)
         self.assertEqual(dist.proxySubring, 4)
         self.assertEqual(dist.totalSubrings, 4)
 
     def test_HTTPSDistributor_bridgesPerResponse_120(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:120]]
         self.assertEqual(dist.bridgesPerResponse(), 3)
 
     def test_HTTPSDistributor_bridgesPerResponse_100(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.hashring.insert(bridge) for bridge in self.bridges[:100]]
         self.assertEqual(dist.bridgesPerResponse(), 3)
 
     def test_HTTPSDistributor_bridgesPerResponse_50(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:60]]
         self.assertEqual(dist.bridgesPerResponse(), 2)
 
     def test_HTTPSDistributor_bridgesPerResponse_15(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:15]]
         self.assertEqual(dist.bridgesPerResponse(), 1)
 
     def test_HTTPSDistributor_bridgesPerResponse_100_max_5(self):
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         dist._bridgesPerResponseMax = 5
         [dist.insert(bridge) for bridge in self.bridges[:100]]
         self.assertEqual(dist.bridgesPerResponse(), 5)
@@ -137,7 +108,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """
         clientRequest = self.randomClientRequest()
         expectedGroup = (int(ipaddr.IPAddress(clientRequest.client)) % 4) + 1
-        subnet = Dist.HTTPSDistributor.getSubnet(clientRequest.client, usingProxy=True)
+        subnet = distributor.HTTPSDistributor.getSubnet(clientRequest.client, usingProxy=True)
         self.assertTrue(subnet.startswith('proxy-group-'))
         self.assertEqual(int(subnet[-1]), expectedGroup)
 
@@ -145,7 +116,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """HTTPSDistributor.mapSubnetToSubring() when the client was using a
         proxy should map the client to the proxy subhashring.
         """
-        dist = Dist.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
+        dist = distributor.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
         subnet = 'proxy-group-3'
         subring = dist.mapSubnetToSubring(subnet, usingProxy=True)
         self.assertEqual(subring, dist.proxySubring)
@@ -155,7 +126,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         a proxy, but the distributor does have some known proxies and a
         proxySubring, should not map the client to the proxy subhashring.
         """
-        dist = Dist.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
+        dist = distributor.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
         # Note that if they were actually from a proxy, their subnet would be
         # something like "proxy-group-3".
         subnet = '15.1.0.0/16'
@@ -166,7 +137,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """An HTTPSDistributor with proxies should prepopulate two extra
         subhashrings (one for each of HTTP-Proxy-IPv4 and HTTP-Proxy-IPv6).
         """
-        dist = Dist.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
+        dist = distributor.HTTPSDistributor(3, self.key, ProxySet(['1.1.1.1', '2.2.2.2']))
         [dist.insert(bridge) for bridge in self.bridges]
         dist.prepopulateRings()
         self.assertEqual(len(dist.hashring.filterRings), 8)
@@ -175,7 +146,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """An HTTPSDistributor without proxies should prepopulate
         totalSubrings * 2 subrings.
         """
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges]
         dist.prepopulateRings()
         self.assertEqual(len(dist.hashring.filterRings), 6)
@@ -192,7 +163,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         self.assertEqual(len(ipv4subrings), len(ipv6subrings))
 
     def test_HTTPSDistributor_getBridges_with_blocked_bridges(self):
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         bridges = self.bridges[:]
 
         for bridge in bridges:
@@ -210,7 +181,7 @@ class HTTPSDistributorTests(unittest.TestCase):
             self.assertEqual(len(b), 3)
 
     def test_HTTPSDistributor_getBridges_with_some_blocked_bridges(self):
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         bridges = self.bridges[:]
 
         blockedCN = []
@@ -244,7 +215,7 @@ class HTTPSDistributorTests(unittest.TestCase):
             self.assertGreater(len(bridges), 0)
 
     def test_HTTPSDistributor_getBridges_with_varied_blocked_bridges(self):
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         bridges = self.bridges[:]
 
         for bridge in bridges:
@@ -285,7 +256,7 @@ class HTTPSDistributorTests(unittest.TestCase):
     def test_HTTPSDistributor_getBridges_with_proxy_and_nonproxy_users(self):
         """An HTTPSDistributor should give separate bridges to proxy users."""
         proxies = ProxySet(['.'.join(['1.1.1', str(x)]) for x in range(1, 256)])
-        dist = Dist.HTTPSDistributor(3, self.key, proxies)
+        dist = distributor.HTTPSDistributor(3, self.key, proxies)
         [dist.insert(bridge) for bridge in self.bridges]
 
         for _ in range(10):
@@ -311,7 +282,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         multiple times in a row should get the same bridges in response each
         time.
         """
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
         bridgeRequest = self.randomClientRequest()
@@ -323,7 +294,7 @@ class HTTPSDistributorTests(unittest.TestCase):
 
     def test_HTTPSDistributor_getBridges_with_BridgeRingParameters(self):
        param = BridgeRingParameters(needPorts=[(443, 1)])
-       dist = Dist.HTTPSDistributor(3, self.key, answerParameters=param)
+       dist = distributor.HTTPSDistributor(3, self.key, answerParameters=param)
 
        bridges = self.bridges[:32]
        for b in self.bridges:
@@ -349,7 +320,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """Asking for bridge addresses which are simultaneously IPv4 and IPv6
         (in that order) should return IPv4 bridges.
         """
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
         bridgeRequest = self.randomClientRequest()
@@ -372,7 +343,7 @@ class HTTPSDistributorTests(unittest.TestCase):
         """Asking for bridge addresses which are simultaneously IPv6 and IPv4
         (in that order) should return IPv6 bridges.
         """
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
         bridgeRequest = self.randomClientRequest()
@@ -393,7 +364,7 @@ class HTTPSDistributorTests(unittest.TestCase):
 
     def test_HTTPSDistributor_getBridges_ipv6(self):
         """A request for IPv6 bridges should return IPv6 bridges."""
-        dist = Dist.HTTPSDistributor(3, self.key)
+        dist = distributor.HTTPSDistributor(3, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
         for i in xrange(500):
@@ -415,7 +386,7 @@ class HTTPSDistributorTests(unittest.TestCase):
 
     def test_HTTPSDistributor_getBridges_ipv4(self):
         """A request for IPv4 bridges should return IPv4 bridges."""
-        dist = Dist.HTTPSDistributor(1, self.key)
+        dist = distributor.HTTPSDistributor(1, self.key)
         [dist.insert(bridge) for bridge in self.bridges[:250]]
 
         for i in xrange(500):
