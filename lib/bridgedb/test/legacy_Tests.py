@@ -19,7 +19,6 @@ from datetime import datetime
 
 import bridgedb.Bridges
 import bridgedb.Main
-import bridgedb.Dist
 import bridgedb.schedule
 import bridgedb.Storage
 import re
@@ -27,6 +26,9 @@ import ipaddr
 
 from bridgedb.Stability import BridgeHistory
 
+from bridgedb.email.distributor import EmailDistributor
+from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse import addr
 from bridgedb.test import deprecated_networkstatus as networkstatus
 from bridgedb.test.util import bracketIPv6
@@ -147,42 +149,6 @@ orAddress = "or-address %s:%s\n"
 class RhymesWith255ProxySet:
     def __contains__(self, ip):
         return ip.endswith(".255")
-
-class EmailBridgeDistTests(unittest.TestCase):
-    def setUp(self):
-        self.fd, self.fname = tempfile.mkstemp()
-        self.db = bridgedb.Storage.Database(self.fname)
-        bridgedb.Storage.setDB(self.db)
-        self.cur = self.db._conn.cursor()
-
-    def tearDown(self):
-        self.db.close()
-        os.close(self.fd)
-        os.unlink(self.fname)
-
-    def testEmailRateLimit(self):
-        db = self.db
-        EMAIL_DOMAIN_MAP = {'example.com':'example.com'}
-        d = bridgedb.Dist.EmailBasedDistributor(
-                "Foo",
-                {'example.com': 'example.com',
-                    'dkim.example.com': 'dkim.example.com'},
-                {'example.com': [], 'dkim.example.com': ['dkim']})
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-        d.getBridges('abc@example.com', 1)
-        self.assertRaises(bridgedb.Dist.TooSoonEmail,
-                d.getBridges, 'abc@example.com', 1)
-        self.assertRaises(bridgedb.Dist.IgnoreEmail,
-                d.getBridges, 'abc@example.com', 1)
-
-    def testUnsupportedDomain(self):
-        db = self.db
-        self.assertRaises(bridgedb.parse.addr.UnsupportedDomain,
-                          bridgedb.parse.addr.normalizeEmail,
-                          'bad@email.com',
-                          {'example.com':'example.com'},
-                          {'example.com':[]})
 
 
 class SQLStorageTests(unittest.TestCase):

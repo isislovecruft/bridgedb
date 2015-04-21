@@ -31,9 +31,9 @@ from twisted.trial import unittest
 
 from zope.interface import implementedBy
 
-from bridgedb.Dist import EmailBasedDistributor
-from bridgedb.Dist import TooSoonEmail
 from bridgedb.email import server
+from bridgedb.email.distributor import EmailDistributor
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse.addr import BadEmail
 from bridgedb.schedule import Unscheduled
 from bridgedb.test import util
@@ -504,7 +504,7 @@ class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
     """Unittests for :func:`bridgedb.email.server.addServer`."""
 
     def setUp(self):
-        """Create a server.MailServerContext and EmailBasedDistributor."""
+        """Create a MailServerContext and EmailDistributor."""
         self.config = _createConfig()
         self.context = _createMailServerContext(self.config)
         self.smtpFromAddr = self.context.smtpFromAddr  # 'bridges@localhost'
