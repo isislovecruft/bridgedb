@@ -101,7 +101,7 @@ class EmailDistributor(Distributor):
     def bridgesPerResponse(self, hashring=None):
         return super(EmailDistributor, self).bridgesPerResponse(hashring)
 
-    def getBridges(self, bridgeRequest, interval):
+    def getBridges(self, bridgeRequest, interval, clock=None):
         """Return a list of bridges to give to a user.
 
         .. hint:: All checks on the email address (which should be stored in
@@ -119,6 +119,13 @@ class EmailDistributor(Distributor):
             address.
         :param interval: The time period when we got this request. This can be
             any string, so long as it changes with every period.
+        :type clock: :api:`twisted.internet.task.Clock`
+        :param clock: If given, use the clock to ask what time it is, rather
+            than :api:`time.time`. This should likely only be used for
+            testing.
+        :rtype: list or ``None``
+        :returns: A list of :class:`~bridgedb.bridges.Bridges` for the
+            ``bridgeRequest.client``, if allowed.  Otherwise, returns ``None``.
         """
         if (not bridgeRequest.client) or (bridgeRequest.client == 'default'):
             raise addr.BadEmail(
@@ -128,6 +135,9 @@ class EmailDistributor(Distributor):
         logging.info("Attempting to get bridges for %s..." % bridgeRequest.client)
 
         now = time.time()
+
+        if clock:
+            now = clock.seconds()
 
         with bridgedb.Storage.getDB() as db:
             wasWarned = db.getWarnedEmail(bridgeRequest.client)
