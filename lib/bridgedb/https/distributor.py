@@ -36,7 +36,7 @@ class HTTPSDistributor(Distributor):
     :type proxies: :class:`~bridgedb.proxies.ProxySet`
     :ivar proxies: All known proxies, which we treat differently. See
         :param:`proxies`.
-    :type hashring: :class:`bridgedb.Bridges.FixedBridgeSplitter`
+    :type hashring: :class:`bridgedb.Bridges.FilteredBridgeSplitter`
     :ivar hashring: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
         distributor.
