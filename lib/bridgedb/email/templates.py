@@ -53,7 +53,7 @@ def addCommands(template):
     # And include the currently supported transports:
     commands += template.gettext(strings.EMAIL_MISC_TEXT.get(5))
     commands += "\n"
-    for pt in strings.CURRENT_TRANSPORTS:
+    for pt in strings._getSupportedTransports():
         commands += '  ' + pt + "\n"
 
     return commands
@@ -150,7 +150,7 @@ def addFooter(template, clientAddress=None):
               % (clientAddr,
                  now.strftime('%A, %d %B, %Y'),
                  now.strftime('%H:%M:%S'))
-    footer += u'\n'
+    footer += u'\n\n'
 
     return footer
 

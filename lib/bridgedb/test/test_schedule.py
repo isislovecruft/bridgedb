@@ -68,40 +68,40 @@ class ScheduledIntervalTests(unittest.TestCase):
 
     def test_ScheduledInterval_providesISchedule(self):
         """ScheduledInterval should implement the ISchedule interface."""
-        self.assertTrue(schedule.ISchedule.providedBy(self.sched('month', 1)))
+        self.assertTrue(schedule.ISchedule.providedBy(self.sched(1, 'month')))
 
     def _check_init(self, sched):
         """The instance should be an instance of its class."""
         self.assertIsInstance(sched, schedule.ScheduledInterval)
 
     def test_ScheduledInterval_init_month(self):
-        self._check_init(self.sched('month', 1))
+        self._check_init(self.sched(1, 'month'))
 
     def test_ScheduledInterval_init_week(self):
-        self._check_init(self.sched('week', 2))
+        self._check_init(self.sched(2, 'week'))
 
     def test_ScheduledInterval_init_day(self):
-        self._check_init(self.sched('days', 5))
+        self._check_init(self.sched(5, 'days'))
 
     def test_ScheduledInterval_init_hour(self):
-        self._check_init(self.sched('hours', 12))
+        self._check_init(self.sched(12, 'hours'))
 
     def test_ScheduledInterval_init_minute(self):
-        self._check_init(self.sched('minute', 10))
+        self._check_init(self.sched(10, 'minute'))
 
     def test_ScheduledInterval_init_seconds(self):
-        self._check_init(self.sched('seconds', 30))
+        self._check_init(self.sched(30, 'seconds'))
 
     def test_ScheduledInterval_init_badIntervalPeriod(self):
         self.assertRaises(schedule.UnknownInterval,
-                          self.sched, 'decades', 2)
+                          self.sched, 2, 'decades')
 
     def test_ScheduledInterval_init_badIntervalCount(self):
         self.assertRaises(schedule.UnknownInterval,
-                          self.sched, 'minutes', 'd20')
+                          self.sched, 'd20', 'minutes')
 
     def test_ScheduledInterval_init_negativeIntervalCount(self):
-        sched = self.sched('days', -100000)
+        sched = self.sched(-100000, 'days')
         self.assertEquals(sched.intervalCount, 1)
         self.assertEquals(sched.intervalPeriod, 'day')
 
@@ -111,48 +111,60 @@ class ScheduledIntervalTests(unittest.TestCase):
         self.assertEquals(sched.intervalCount, 1)
         self.assertEquals(sched.intervalPeriod, 'hour')
 
-    def _check_intervalStart(self, period='second', count=30, variance=30):
+    def _check_intervalStart(self, count=30, period='second', variance=30):
         """Test the ScheduledInterval.intervalStart() method.
 
-        :param str period: The interval type for the period.
         :param int count: The number of **period**s within an interval.
+        :param str period: The interval type for the period.
         :param int variance: The amount of variance (in seconds) to tolerate
             between the start of the interval containing now, and now.
         """
         now = int(self.now())
-        sched = self.sched(period, count)
+        sched = self.sched(count, period)
         time = sched.intervalStart(now)
         self.assertIsInstance(time, int)
         self.assertApproximates(now, time, variance)
 
     def test_ScheduledInterval_intervalStart_month(self):
-        self._check_intervalStart('month', 1, 31*24*60*60)
+        self._check_intervalStart(1, 'month', 31*24*60*60)
 
     def test_ScheduledInterval_intervalStart_week(self):
-        self._check_intervalStart('week', 2, 14*24*60*60)
+        self._check_intervalStart(2, 'week', 14*24*60*60)
 
     def test_ScheduledInterval_intervalStart_day(self):
-        self._check_intervalStart('days', 5, 5*24*60*60)
+        self._check_intervalStart(5, 'days', 5*24*60*60)
 
     def test_ScheduledInterval_intervalStart_hour(self):
-        self._check_intervalStart('hours', 12, 12*60*60)
+        self._check_intervalStart(12, 'hours', 12*60*60)
 
     def test_ScheduledInterval_intervalStart_minute(self):
-        self._check_intervalStart('minute', 10, 10*60)
+        self._check_intervalStart(10, 'minute', 10*60)
 
     def test_ScheduledInterval_intervalStart_seconds(self):
-        self._check_intervalStart('seconds', 30, 30)
+        self._check_intervalStart(30, 'seconds', 30)
 
-    def _check_getInterval(self, period='second', count=30, variance=30):
+    def test_ScheduledInterval_intervalStart_time_time(self):
+        """Calling ScheduledInterval.intervalStart(time.time()) should only
+        return ints, not floats.
+        """
+        import time
+
+        timestamp = time.time()
+        sched = self.sched(5, 'minutes')
+
+        self.assertIsInstance(timestamp, float)
+        self.assertIsInstance(sched.intervalStart(timestamp), int)
+
+    def _check_getInterval(self, count=30, period='second', variance=30):
         """Test the ScheduledInterval.getInterval() method.
 
-        :param str period: The interval type for the period.
         :param int count: The number of **period**s within an interval.
+        :param str period: The interval type for the period.
         :param int variance: The amount of variance (in seconds) to tolerate
             between the start of the interval containing now, and now.
         """
         now = int(self.now())
-        sched = self.sched(period, count)
+        sched = self.sched(count, period)
         ts = sched.getInterval(now)
         self.assertIsInstance(ts, str)
         secs = [int(x) for x in ts.replace('-', ' ').replace(':', ' ').split()]
@@ -161,52 +173,52 @@ class ScheduledIntervalTests(unittest.TestCase):
         self.assertApproximates(now, secs, variance)
 
     def test_ScheduledInterval_getInterval_month(self):
-        self._check_getInterval('month', 2, 2*31*24*60*60)
+        self._check_getInterval(2, 'month', 2*31*24*60*60)
 
     def test_ScheduledInterval_getInterval_week(self):
-        self._check_getInterval('week', 1, 7*24*60*60)
+        self._check_getInterval(1, 'week', 7*24*60*60)
 
     def test_ScheduledInterval_getInterval_day(self):
-        self._check_getInterval('days', 4, 4*24*60*60)
+        self._check_getInterval(4, 'days', 4*24*60*60)
 
     def test_ScheduledInterval_getInterval_hour(self):
-        self._check_getInterval('hours', 23, 23*60*60)
+        self._check_getInterval(23, 'hours', 23*60*60)
 
     def test_ScheduledInterval_getInterval_minute(self):
-        self._check_getInterval('minutes', 15, 15*60)
+        self._check_getInterval(15, 'minutes', 15*60)
 
     def test_ScheduledInterval_getInterval_seconds(self):
-        self._check_getInterval('seconds', 10, 60)
+        self._check_getInterval(10, 'seconds', 60)
 
-    def _check_nextIntervalStarts(self, period='second', count=30, variance=30):
+    def _check_nextIntervalStarts(self, count=30, period='second', variance=30):
         """Test the ScheduledInterval.nextIntervalStarts() method.
 
-        :param str period: The interval type for the period.
         :param int count: The number of **period**s within an interval.
+        :param str period: The interval type for the period.
         :param int variance: The amount of variance (in seconds) to tolerate
             between the start of the interval containing now, and now.
         """
         now = int(self.now())
-        sched = self.sched(period, count)
+        sched = self.sched(count, period)
         time = sched.nextIntervalStarts(now)
         self.assertIsInstance(time, int)
         # (now + variance - time) should be > variance
         self.assertApproximates(now + variance, time, variance)
 
     def test_ScheduledInterval_nextIntervalStarts_month(self):
-        self._check_nextIntervalStarts('month', 2, 2*31*24*60*60)
+        self._check_nextIntervalStarts(2, 'month', 2*31*24*60*60)
 
     def test_ScheduledInterval_nextIntervalStarts_week(self):
-        self._check_nextIntervalStarts('week', 1, 7*24*60*60)
+        self._check_nextIntervalStarts(1, 'week', 7*24*60*60)
 
     def test_ScheduledInterval_nextIntervalStarts_day(self):
-        self._check_nextIntervalStarts('days', 4, 4*24*60*60)
+        self._check_nextIntervalStarts(4, 'days', 4*24*60*60)
 
     def test_ScheduledInterval_nextIntervalStarts_hour(self):
-        self._check_nextIntervalStarts('hours', 23, 23*60*60)
+        self._check_nextIntervalStarts(23, 'hours', 23*60*60)
 
     def test_ScheduledInterval_nextIntervalStarts_minute(self):
-        self._check_nextIntervalStarts('minutes', 15, 15*60)
+        self._check_nextIntervalStarts(15, 'minutes', 15*60)
 
     def test_ScheduledInterval_nextIntervalStarts_seconds(self):
-        self._check_nextIntervalStarts('seconds', 10, 10)
+        self._check_nextIntervalStarts(10, 'seconds', 10)

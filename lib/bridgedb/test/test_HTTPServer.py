@@ -518,7 +518,7 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.root = Resource()
 
         self.dist = DummyIPBasedDistributor()
-        self.sched = ScheduledInterval('hour', 1)
+        self.sched = ScheduledInterval(1, 'hour')
         self.nBridgesPerRequest = 2
         self.bridgesResource = HTTPServer.WebResourceBridges(
             self.dist, self.sched, N=2,

@@ -12,6 +12,8 @@
 
 import calendar
 
+import math
+
 from datetime import datetime
 
 from zope import interface
@@ -64,15 +66,35 @@ class ISchedule(interface.Interface):
 
 
 class Unscheduled(object):
-    """A base ``Schedule`` that has only one period that contains all time."""
+    """A base ``Schedule`` that has only one period that contains all time.
 
+    >>> from bridgedb.schedule import fromUnixSeconds
+    >>> from bridgedb.schedule import Unscheduled
+    >>> timestamp = 1427769526
+    >>> str(fromUnixSeconds(timestamp))
+    '2015-03-31 02:38:46'
+    >>> sched = Unscheduled()
+    >>> start = sched.intervalStart(timestamp)
+    >>> start
+    -62135596800
+    >>> str(fromUnixSeconds(start))
+    '0001-01-01 00:00:00'
+    >>> sched.getInterval(timestamp)
+    '1970-01-01 00:00:00'
+    >>> next = sched.nextIntervalStarts(timestamp)
+    >>> next
+    253402300799
+    >>> str(fromUnixSeconds(next))
+    '9999-12-31 23:59:59'
+
+    """
     implements(ISchedule)
 
-    def __init__(self, period=None, count=None):
+    def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
-        :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         :param int count: The number of **period**s in an interval.
+        :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         """
         self.intervalCount = count
         self.intervalPeriod = period
@@ -102,7 +124,6 @@ class Unscheduled(object):
             specificity depends on what type of interval we're using. For
             example, if using ``"month"``, the return value would be something
             like ``"2013-12"``.
-
         """
         return fromUnixSeconds(0).strftime('%04Y-%02m-%02d %02H:%02M:%02S')
 
@@ -119,19 +140,45 @@ class ScheduledInterval(Unscheduled):
     """An class that splits time into periods, based on seconds, minutes,
     hours, days, weeks, or months.
 
+    >>> from bridgedb.schedule import fromUnixSeconds
+    >>> from bridgedb.schedule import ScheduledInterval
+    >>> timestamp = 1427769526
+    >>> str(fromUnixSeconds(timestamp))
+    '2015-03-31 02:38:46'
+    >>> sched = ScheduledInterval(5, 'minutes')
+    >>> start = sched.intervalStart(timestamp)
+    >>> start
+    1427769300
+    >>> current = sched.getInterval(timestamp)
+    >>> current
+    '2015-03-31 02:35:00'
+    >>> current == str(fromUnixSeconds(start))
+    True
+    >>> next = sched.nextIntervalStarts(timestamp)
+    >>> next
+    1427769600
+    >>> str(fromUnixSeconds(next))
+    '2015-03-31 02:40:00'
+    >>> later = 1427771057
+    >>> str(fromUnixSeconds(later))
+    '2015-03-31 03:04:17'
+    >>> sched.getInterval(later)
+    '2015-03-31 03:00:00'
+
     :ivar str intervalPeriod: One of the :data:`KNOWN_INTERVALS`.
     :ivar int intervalCount: The number of times **intervalPeriod** should be
         repeated within an interval.
     """
     implements(ISchedule)
 
-    def __init__(self, period=None, count=None):
+    def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
+        :type count: int or str
+        :param count: The number of **period**s in an interval.
         :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
-        :param int count: The number of **period**s in an interval.
         """
-        super(ScheduledInterval, self).__init__(period, count)
+        super(ScheduledInterval, self).__init__(count, period)
         self._setIntervalCount(count)
         self._setIntervalPeriod(period)
 
@@ -192,6 +239,9 @@ class ScheduledInterval(Unscheduled):
         :returns: The Unix epoch timestamp for the start time of the interval
             that contains **when**.
         """
+        # Convert `when`s which are floats, i.e. from time.time(), to ints:
+        when = int(math.ceil(when))
+
         if self.intervalPeriod == 'month':
             # For months, we always start at the beginning of the month.
             date = fromUnixSeconds(when)
@@ -219,7 +269,7 @@ class ScheduledInterval(Unscheduled):
 
         >>> import calendar
         >>> from bridgedb.schedule import ScheduledInterval
-        >>> sched = ScheduledInterval('month', 1)
+        >>> sched = ScheduledInterval(1, 'month')
         >>> when = calendar.timegm((2007, 12, 12, 0, 0, 0))
         >>> sched.getInterval(when)
         '2007-12'

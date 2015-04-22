@@ -87,6 +87,7 @@ BridgeDB requires the following OS-level dependencies:
 -  libgeoip-dev
 -  geoip-database
 -  `python-setuptools <https://pypi.python.org/pypi/setuptools>`__
+-  libjpeg-dev
 
 As well as any Python dependencies in the ``requirements.txt`` file.
 

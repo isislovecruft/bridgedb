@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_strings ; -*-
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
@@ -9,6 +9,12 @@
 # :license: 3-clause BSD, see included LICENSE for information
 
 from __future__ import unicode_literals
+
+# This won't work on Python2.6, however
+#     1) We don't use Python2.6, and
+#     2) We don't care about supporting Python2.6, because Python 2.6 (and,
+#        honestly, all of Python2) should die.
+from collections import OrderedDict
 
 
 def _(text):
@@ -166,21 +172,85 @@ EMAIL_COMMANDS = {
 #           All of the following containers are untranslated!
 #-----------------------------------------------------------------------------
 
-#: A list of all currently available pluggable transports. By "currently
-#: available" we mean:
+#: SUPPORTED TRANSPORTS is dictionary mapping all Pluggable Transports
+#: methodname to whether or not we actively distribute them. The ones which we
+#: distribute SHOULD have the following properties:
 #:
 #:   1. The PT is in a widely accepted, usable state for most Tor users.
 #:   2. The PT is currently publicly deployed *en masse*".
 #:   3. The PT is included within the transports which Tor Browser offers in
 #:      the stable releases.
 #:
-CURRENT_TRANSPORTS = [
-    "obfs2",
-    "obfs3",
-    "obfs4",
-    "scramblesuit",
-    "fte",
-]
+#: These will be sorted by methodname in alphabetical order.
+#:
+#: ***Don't change this setting here; change it in :file:`bridgedb.conf`.***
+SUPPORTED_TRANSPORTS = {}
+
+#: DEFAULT_TRANSPORT is a string. It should be the PT methodname of the
+#: transport which is selected by default (e.g. in the webserver dropdown
+#: menu).
+#:
+#: ***Don't change this setting here; change it in :file:`bridgedb.conf`.***
+DEFAULT_TRANSPORT = ''
+
+def _getSupportedTransports():
+    """Get the list of currently supported transports.
+
+    :rtype: list
+    :returns: A list of strings, one for each supported Pluggable Transport
+        methodname, sorted in alphabetical order.
+    """
+    supported = [name.lower() for name,w00t in SUPPORTED_TRANSPORTS.items() if w00t]
+    supported.sort()
+    return supported
+
+def _setDefaultTransport(transport):
+    global DEFAULT_TRANSPORT
+    DEFAULT_TRANSPORT = transport
+
+def _getDefaultTransport():
+    return DEFAULT_TRANSPORT
+
+def _setSupportedTransports(transports):
+    """Set the list of currently supported transports.
+
+    .. note: You shouldn't need to touch this. This is used by the config file
+        parser. You should change the SUPPORTED_TRANSPORTS dictionary in
+        :file:`bridgedb.conf`.
+
+    :param dict transports: A mapping of Pluggable Transport methodnames
+        (strings) to booleans.  If the boolean is ``True``, then the Pluggable
+        Transport is one which we will (more easily) distribute to clients.
+        If ``False``, then we (sort of) don't distribute it.
+    """
+    global SUPPORTED_TRANSPORTS
+    SUPPORTED_TRANSPORTS = transports
+
+def _getSupportedAndDefaultTransports():
+    """Get a dictionary of currently supported transports, along with a boolean
+    marking which transport is the default.
+
+    It is returned as a :class:`collections.OrderedDict`, because if it is a
+    regular dict, then the dropdown menu would populated in random order each
+    time the page is rendered.  It is sorted in alphabetical order.
+
+    :rtype: :class:`collections.OrderedDict`
+    :returns: An :class:`~collections.OrderedDict` of the Pluggable Transport
+        methodnames from :data:`SUPPORTED_TRANSPORTS` whose value in
+        ``SUPPORTED_TRANSPORTS`` is ``True``.  If :data:`DEFAULT_TRANSPORT` is
+        set, then the PT methodname in the ``DEFAULT_TRANSPORT`` setting is
+        added to the :class:`~collections.OrderedDict`, with the value
+        ``True``. Every other transport in the returned ``OrderedDict`` has
+        its value set to ``False``, so that only the one which should be the
+        default PT is ``True``.
+    """
+    supported = _getSupportedTransports()
+    transports = OrderedDict(zip(supported, [False for _ in range(len(supported))]))
+
+    if DEFAULT_TRANSPORT:
+        transports[DEFAULT_TRANSPORT] = True
+
+    return transports
 
 EMAIL_SPRINTF = {
     # Goes into the "%s types of Pluggable Transports %s" part of ``WELCOME[0]``

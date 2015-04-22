@@ -24,14 +24,11 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
 
             if which == assignedRing:
                 return True
-            else:
-                logging.debug(("Bridge %s has calculated assignment %d; not "
-                               "in correct ring %d.")
-                              % (bridge, which, assignedRing))
-                return False
-
+            return False
         _assignBridgesToRing.__name__ = ("filterAssignBridgesToRing(%s, %s, %s)"
                                          % (hmac, numRings, assignedRing))
+        # XXX The `description` attribute must contain an `=`, or else
+        # dumpAssignments() will not work correctly.
         setattr(_assignBridgesToRing, "description", "ring=%d" % assignedRing)
         funcs[ruleset] = _assignBridgesToRing
         return _assignBridgesToRing
@@ -88,13 +85,6 @@ def filterBridgesByTransport(methodname, addressClass=None):
                     # ignore method name case
                     if transport.methodname.lower() == methodname.lower():
                         return True
-                    else:
-                        logging.debug(("Transport methodname '%s' doesn't match "
-                                       "requested methodname: '%s'.")
-                                      % (transport.methodname, methodname))
-                else:
-                    logging.debug(("Transport %s has incorrect address version "
-                                   "(%s).") % (transport, addressClass))
             return False
 
         _filterByTransport.__name__ = ("filterBridgesByTransport(%s,%s)"

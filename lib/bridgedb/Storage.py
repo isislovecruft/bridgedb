@@ -130,11 +130,8 @@ class BridgeData:
         self.last_seen = last_seen
 
 class Database(object):
-    def __init__(self, sqlite_fname, db_fname=None):
-        if db_fname is None:
-            self._conn = openDatabase(sqlite_fname)
-        else:
-            self._conn = openOrConvertDatabase(sqlite_fname, db_fname)
+    def __init__(self, sqlite_fname):
+        self._conn = openDatabase(sqlite_fname)
         self._cur = self._conn.cursor()
         self.sqlite_fname = sqlite_fname
 
@@ -189,14 +186,12 @@ class Database(object):
     def cleanEmailedBridges(self, expireBefore):
         cur = self._cur
         t = timeToStr(expireBefore)
-
         cur.execute("DELETE FROM EmailedBridges WHERE when_mailed < ?", (t,))
 
     def getEmailTime(self, addr):
         addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
-        cur.execute("SELECT when_mailed FROM EmailedBridges WHERE "
-                    "email = ?", (addr,))
+        cur.execute("SELECT when_mailed FROM EmailedBridges WHERE email = ?", (addr,))
         v = cur.fetchone()
         if v is None:
             return None
@@ -243,57 +238,10 @@ class Database(object):
         cur.execute("UPDATE Bridges SET distributor = ? WHERE hex_key = ?",
                     (distributor, hex_key))
 
-    def addBridgeBlock(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("INSERT OR REPLACE INTO BlockedBridges "
-                    "(hex_key,blocking_country) VALUES (?,?)",
-                    (fingerprint, countryCode))
-
-    def delBridgeBlock(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("DELETE FROM BlockedBridges WHERE hex_key = ? "
-                    "AND blocking_country = ?", (fingerprint, countryCode))
-
-    def cleanBridgeBlocks(self):
-        cur = self._cur
-        cur.execute("DELETE FROM BlockedBridges")
-
-    def getBlockingCountries(self, fingerprint):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE hex_key = ? ",
-                    (fingerprint,))
-        v = cur.fetchall()
-        if v is None:
-            return None
-
-        # return list of country-codes
-        return [ str(result[1]) for (result) in v ]
-
-    def getBlockedBridges(self, countryCode):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE blocking_country = ? ",
-                    (countryCode,))
-        v = cur.fetchall()
-        if v is None:
-            return None
-        # return list of fingerprints
-        return [ str(result[0]) for (result) in v ]
-
-    def isBlocked(self, fingerprint, countryCode):
-        cur = self._cur
-        cur.execute("SELECT hex_key, blocking_country FROM BlockedBridges WHERE "
-                    "hex_key = ? AND blocking_country = ?",
-                    (fingerprint, countryCode))
-        v = cur.fetchone()
-        if v is None:
-            return False
-        return True 
-
     def getWarnedEmail(self, addr):
         addr = hashlib.sha1(addr).hexdigest()
         cur = self._cur
-        cur.execute("SELECT * FROM WarnedEmails WHERE "
-                    " email = ?", (addr,))
+        cur.execute("SELECT * FROM WarnedEmails WHERE email = ?", (addr,))
         v = cur.fetchone()
         if v is None:
             return False
@@ -307,8 +255,7 @@ class Database(object):
             cur.execute("INSERT INTO WarnedEmails"
                         "(email,when_warned) VALUES (?,?)", (addr, t,))
         elif warned == False:
-            cur.execute("DELETE FROM WarnedEmails WHERE "
-                        "email = ?", (addr,))
+            cur.execute("DELETE FROM WarnedEmails WHERE email = ?", (addr,))
 
     def cleanWarnedEmails(self, expireBefore):
         cur = self._cur
@@ -348,10 +295,13 @@ class Database(object):
 
     def getBridgesLastUpdatedBefore(self, statusPublicationMillis):
         cur = self._cur
-        v = cur.execute("SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime < ?", (statusPublicationMillis,))
+        v = cur.execute("SELECT * FROM BridgeHistory WHERE lastUpdatedWeightedTime < ?",
+                        (statusPublicationMillis,))
         if v is None: return
         for h in v:
             yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
+
+
 def openDatabase(sqlite_file):
     conn = sqlite3.Connection(sqlite_file)
     cur = conn.cursor()
@@ -372,62 +322,6 @@ def openDatabase(sqlite_file):
         cur.close()
     return conn
 
-
-def openOrConvertDatabase(sqlite_file, db_file):
-    """Open a sqlite database, converting it from a db file if needed."""
-    if os.path.exists(sqlite_file):
-        return openDatabase(sqlite_file)
-
-    conn = sqlite3.Connection(sqlite_file)
-    cur = conn.cursor()
-    cur.executescript(SCHEMA3_SCRIPT)
-    conn.commit()
-
-    import anydbm
-
-    try:
-        db = anydbm.open(db_file, 'r')
-    except anydbm.error:
-        return conn
-
-    try:
-        # We handle all the sp| keys first, since other tables have
-        # dependencies on Bridges.
-        for k in db.keys():
-            v = db[k]
-            if k.startswith("sp|"):
-                assert len(k) == 23
-                cur.execute("INSERT INTO Bridges ( hex_key, distributor ) "
-                            "VALUES (?, ?)", (toHex(k[3:]),v))
-        # Now we handle the other key types.
-        for k in db.keys():
-            v = db[k]
-            if k.startswith("fs|"):
-                assert len(k) == 23
-                cur.execute("UPDATE Bridges SET first_seen = ? "
-                            "WHERE hex_key = ?", (v, toHex(k[3:])))
-            elif k.startswith("ls|"):
-                assert len(k) == 23
-                cur.execute("UPDATE Bridges SET last_seen = ? "
-                            "WHERE hex_key = ?", (v, toHex(k[3:])))
-            #elif k.startswith("em|"):
-            #    keys = list(toHex(i) for i in
-            #        bridgedb.Bridges.chopString(v, bridgedb.Bridges.ID_LEN))
-            #    cur.executemany("INSERT INTO EmailedBridges ( email, id ) "
-            #                    "SELECT ?, id FROM Bridges WHERE hex_key = ?",
-            #                    [(k[3:],i) for i in keys])
-            elif k.startswith("sp|") or k.startswith("em|"):
-                pass
-            else:
-                logging.warn("Unrecognized key %r", k)
-    except:
-        conn.rollback()
-        conn.close()
-        os.unlink(sqlite_file)
-        raise
-
-    conn.commit()
-    return conn
 
 class DBGeneratorContextManager(GeneratorContextManager):
     """Helper for @contextmanager decorator.
@@ -516,9 +410,6 @@ def initializeDBLock():
     if not _LOCK:
         _LOCK = threading.RLock()
     assert _LOCK
-
-def checkAndConvertDB(sqlite_file, db_file):
-    openOrConvertDatabase(sqlite_file, db_file).close()
 
 def setDBFilename(sqlite_fname):
     global _DB_FNAME

@@ -110,6 +110,10 @@ def load(state, splitter, clear=False):
 
     logging.info("Loading bridges...")
 
+    ignoreNetworkstatus = state.IGNORE_NETWORKSTATUS
+    if ignoreNetworkstatus:
+        logging.info("Ignoring BridgeAuthority networkstatus documents.")
+
     bridges = {}
     timestamps = {}
 
@@ -120,9 +124,7 @@ def load(state, splitter, clear=False):
     logging.info("Processing networkstatus descriptors...")
     for router in networkstatuses:
         bridge = Bridge()
-        bridge.updateFromNetworkStatus(router)
-        bridge.flags.update(router.flags)
-
+        bridge.updateFromNetworkStatus(router, ignoreNetworkstatus)
         try:
             bridge.assertOK()
         except MalformedBridgeInfo as error:
@@ -137,12 +139,18 @@ def load(state, splitter, clear=False):
 
         for router in serverdescriptors:
             try:
-                bridges[router.fingerprint].updateFromServerDescriptor(router)
+                bridge = bridges[router.fingerprint]
             except KeyError:
                 logging.warn(
                     ("Received server descriptor for bridge '%s' which wasn't "
                      "in the networkstatus!") % router.fingerprint)
-                continue
+                if ignoreNetworkstatus:
+                    bridge = Bridge()
+                else:
+                    continue
+
+            try:
+                bridge.updateFromServerDescriptor(router, ignoreNetworkstatus)
             except (ServerDescriptorWithoutNetworkstatus,
                     MissingServerDescriptorDigest,
                     ServerDescriptorDigestMismatch) as error:
@@ -174,26 +182,6 @@ def load(state, splitter, clear=False):
             logging.warn(("Received extrainfo descriptor for bridge '%s', "
                           "but could not find bridge with that fingerprint.")
                          % router.fingerprint)
-
-    # XXX TODO refactor the next block according with new parsers for OONI
-    # bridge-reachability reports:
-    if state.COUNTRY_BLOCK_FILE:  # pragma: no cover
-        logging.info("Opening Blocking Countries file %s"
-                     % state.COUNTRY_BLOCK_FILE)
-        f = open(state.COUNTRY_BLOCK_FILE)
-        # Identity digest, primary OR address, portlist, country codes
-        for ID, addr, portlist, cc in Bridges.parseCountryBlockFile(f):
-            if ID in bridges.keys() and bridges[ID].running:
-                for port in portlist:
-                    addrport = "{0}:{1}".format(addr, port)
-                    logging.debug(":'( Tears! %s blocked bridge %s at %s"
-                                  % (cc, bridges[ID].fingerprint, addrport))
-                    try:
-                        bridges[ID].blockingCountries[addrport].update(cc)
-                    except KeyError:
-                        bridges[ID].blockingCountries[addrport] = set(cc)
-        logging.debug("Closing blocking-countries document")
-        f.close()
 
     inserted = 0
     logging.info("Inserting %d bridges into splitter..." % len(bridges))
@@ -369,6 +357,7 @@ def run(options, reactor=reactor):
     # Get a proxy list.
     proxyList = proxy.ProxySet()
     for proxyfile in config.PROXY_LIST_FILES:
+        logging.info("Loading proxies from: %s" % proxyfile)
         proxy.loadProxiesFromFile(proxyfile, proxyList)
 
     emailDistributor = ipDistributor = None
@@ -431,7 +420,7 @@ def run(options, reactor=reactor):
 
         # Initialize our DB.
         bridgedb.Storage.initializeDBLock()
-        db = bridgedb.Storage.openOrConvertDatabase(cfg.DB_FILE + ".sqlite", cfg.DB_FILE)
+        db = bridgedb.Storage.openDatabase(cfg.DB_FILE + ".sqlite")
         bridgedb.Storage.setDBFilename(cfg.DB_FILE + ".sqlite")
         load(state, splitter, clear=False)
 
@@ -511,13 +500,9 @@ def run(options, reactor=reactor):
 
         # Configure all servers:
         if config.HTTPS_DIST and config.HTTPS_SHARE:
-            #webSchedule = schedule.ScheduledInterval("day", 2)
-            webSchedule = schedule.Unscheduled()
-            HTTPServer.addWebServer(config, ipDistributor, webSchedule)
+            HTTPServer.addWebServer(config, ipDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:
-            #emailSchedule = schedule.ScheduledInterval("day", 1)
-            emailSchedule = schedule.Unscheduled()
-            addSMTPServer(config, emailDistributor, emailSchedule)
+            addSMTPServer(config, emailDistributor)
 
         tasks = {}
 

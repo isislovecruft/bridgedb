@@ -94,53 +94,6 @@ def generateDescriptors(count=None, rundir=None):
         del subprocess
         return statuscode
 
-def runTrial(options):
-    """Run Twisted trial based unittests, optionally with coverage.
-
-    :type options: :class:`~bridgedb.opt.TestOptions`
-    :param options: Parsed options for controlling the twisted.trial test
-        run. All unrecognised arguments after the known options will be passed
-        along to trial.
-    """
-    from twisted.scripts import trial
-
-    # Insert 'trial' as the first system cmdline argument:
-    sys.argv = ['trial']
-
-    if options['coverage']:
-        try:
-            from coverage import coverage
-        except ImportError as ie:
-            print(ie.message)
-        else:
-            cov = coverage()
-            cov.start()
-            sys.argv.append('--coverage')
-            sys.argv.append('--reporter=bwverbose')
-
-    # Pass all arguments along to its options parser:
-    if 'test_args' in options:
-        for arg in options['test_args']:
-            sys.argv.append(arg)
-    # Tell trial to test the bridgedb package:
-    sys.argv.append('bridgedb.test')
-    trial.run()
-
-    if options['coverage']:
-        cov.stop()
-        cov.html_report('_trial_temp/coverage/')
-
-def runTests(options):
-    """Run unittest based tests.
-
-    :type options: :class:`~bridgedb.opt.TestOptions`
-    :param options: Parsed options for controlling the twisted.trial test
-        run. All unrecognised arguments after the known options will be passed
-        along to trial.
-    """
-    testModule = __import__('bridgedb.Tests', globals(), '', [])
-    testModule.Tests.main()
-
 def doDumpBridges(config):
     """Dump bridges by assignment to a file.
 

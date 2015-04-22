@@ -15,7 +15,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import errno
+import ipaddr
 import os
+import random
+import time
 
 from functools import wraps
 
@@ -111,6 +114,32 @@ def getBridgeDBPID(pidfile="bridgedb.pid"):
 
     return pid
 
+def bracketIPv6(ip):
+    """Put brackets around an IPv6 address, just as tor does."""
+    return "[%s]" % ip
+
+def randomIPv4():
+    return ipaddr.IPv4Address(random.getrandbits(32))
+
+def randomIPv6():
+    return ipaddr.IPv6Address(random.getrandbits(128))
+
+def randomIP():
+    if random.choice(xrange(2)):
+        return randomIPv4()
+    return randomIPv6()
+
+def randomIPv4String():
+    return randomIPv4().compressed
+
+def randomIPv6String():
+    return bracketIPv6(randomIPv6().compressed)
+
+def randomIPString():
+    if random.choice(xrange(2)):
+        return randomIPv4String()
+    return randomIPv6String()
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be
@@ -118,3 +147,33 @@ def getBridgeDBPID(pidfile="bridgedb.pid"):
 #: being run as a ``TestCase`` by ``twisted.trial``.
 TestCaseMixin = bdbutil.mixin
 TestCaseMixin.register(unittest.TestCase)
+
+
+class Benchmarker(object):
+    """Wrap a context with a timer to benchmark execution time.
+
+    .. hint:: Use like so::
+
+            with Benchmarker():
+                 foo(bar, baz)
+
+        Once the ``with`` context exits, something like::
+
+            Benchmark: 180.269957ms (0s)
+
+        will be printed to stdout (if **verbose** is set to ``True``).
+    """
+
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.seconds = self.end - self.start
+        self.milliseconds = self.seconds * 1000
+        if self.verbose:
+            print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))

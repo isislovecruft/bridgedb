@@ -107,6 +107,38 @@ XILT4o+SveEQUG72R4bENsKxqV4rRNh1g6CNAbYhAITqrU9B+jImDgrBBW+XWT5K
 -----END SIGNATURE-----
 '''
 
+# The timestamps have changed, and the IP:port for obfs3 changed
+BRIDGE_EXTRAINFO_NEW = '''\
+extra-info FourfoldQuirked 2C3225C4805331025E211F4B6E5BF45C333FDD2C
+published 2014-12-22 22:51:27
+write-history 2014-12-22 22:51:27 (900 s) 3188736,2226176,2866176
+read-history 2014-12-22 22:51:27 (900 s) 3891200,2483200,2698240
+dirreq-write-history 2014-12-22 22:51:27 (900 s) 1024,0,2048
+dirreq-read-history 2014-12-22 22:51:27 (900 s) 0,0,0
+geoip-db-digest 51AE9611B53880B2BCF9C71E735D73F33FAD2DFE
+geoip6-db-digest 26B0D55B20BEB496A3ADE7C6FDD866F5A81027F7
+dirreq-stats-end 2014-12-22 22:51:27 (86400 s)
+dirreq-v3-ips
+dirreq-v3-reqs
+dirreq-v3-resp ok=16,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=12,timeout=0,running=0
+transport obfs3 11.11.11.11:1111
+transport obfs2 179.178.155.140:36491
+transport scramblesuit 179.178.155.140:36492 password=ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
+transport obfs4 179.178.155.140:36493 iat-mode=0,node-id=25293f2761d658cc70c19515861842d712751bdc,public-key=02d20bbd7e394ad5999a4cebabac9619732c343a4cac99470c03e23ba2bdc2bc
+bridge-stats-end 2014-12-22 22:51:27 (86400 s)
+bridge-ips ca=8
+bridge-ip-versions v4=8,v6=0
+bridge-ip-transports <OR>=8
+router-signature
+-----BEGIN SIGNATURE-----
+cn4+8pQwCMPnHcp1s8wm7ZYsnd9AXJH6ysNlvQ63jsPCG9JdE5E8BwCThEgUccJI
+XILT4o+SveEQUG72R4bENsKxqV4rRNh1g6CNAbYhAITqrU9B+jImDgrBBW+XWT5K
+78ECRPn6Y4KsxFb0TIn7ddv9QjApyBJNIDMihH80Yng=
+-----END SIGNATURE-----
+'''
+
 
 class BridgeIntegrationTests(unittest.TestCase):
     """Integration tests to ensure that the new :class:`bridgedb.bridges.Bridge`
@@ -480,6 +512,61 @@ class PluggableTransportTests(unittest.TestCase):
         self.assertItemsEqual(args, {"sharedsecret": "foobar",
                                      "publickey": "1234"})
 
+    def test_PluggableTransport_checkArguments_scramblesuit_missing_password(self):
+        """Calling _checkArguments on a scramblesuit PT without a password should
+        raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'scramblesuit', ('34.230.223.87', 37341, []))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_iatmode(self):
+        """Calling _checkArguments on an obfs4 PT without an iat-mode argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                'cert=UXj/cWm0qolGrROYpkl0UyD/7PEhzkoZkZXrOpjRKwImvkpQZwmF0nSzBXfyfbT9afBZEw']))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_cert(self):
+        """Calling _checkArguments on an obfs4 PT without a cert argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, ['iat-mode=1']))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_publickey(self):
+        """Calling _checkArguments on an obfs4 PT without a public-key argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                ('iat-mode=1,'
+                 'node-id=2a79f14120945873482b7823caabe2fcde848722')]))
+
+    def test_PluggableTransport_checkArguments_obfs4_missing_nodeid(self):
+        """Calling _checkArguments on an obfs4 PT without a public-key argument
+        should raise a MalformedPluggableTransport exception.
+        """
+        pt = bridges.PluggableTransport()
+        self.assertRaises(
+            bridges.MalformedPluggableTransport,
+            pt.updateFromStemTransport,
+            self.fingerprint, 'obfs4', ('34.230.223.87', 37341, [
+                ('iat-mode=1,'
+                 'public-key=0a5b046d07f6f971b7776de682f57c5b9cdc8fa060db7ef59de82e721c8098f4')]))
+
     def test_PluggableTransport_runChecks_invalid_fingerprint(self):
         """Calling _runChecks() on a PluggableTransport with an invalid
         fingerprint should raise a MalformedPluggableTransport exception.
@@ -674,6 +761,24 @@ class BridgeBackwardsCompatibilityTests(unittest.TestCase):
         self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
         self.assertEqual(len(bridge.orAddresses), 1)
 
+    def test_BridgeBackwardsCompatibility_setStatus_stable(self):
+        """Using setStatus() to set the Stable flag should set Bridge.stable
+        and Bridge.flags.stable to True.
+        """
+        bridge = bridges.BridgeBackwardsCompatibility(
+            nickname=self.nickname,
+            ip=self.address,
+            orport=self.orPort,
+            fingerprint=self.fingerprint,
+            or_addresses={"2006:42::123F": 443, "2006:42::123E": 9001})
+        self.assertIsInstance(bridge, bridges.BridgeBackwardsCompatibility)
+        self.assertFalse(bridge.stable)
+        self.assertFalse(bridge.flags.stable)
+
+        bridge.setStatus(stable=True)
+        self.assertTrue(bridge.stable)
+        self.assertTrue(bridge.flags.stable)
+
     def test_BridgeBackwardsCompatibility_setStatus_running(self):
         """Using setStatus() to set the Running flag should set Bridge.running
         and Bridge.flags.running to True.
@@ -692,7 +797,7 @@ class BridgeBackwardsCompatibilityTests(unittest.TestCase):
         self.assertTrue(bridge.running)
         self.assertTrue(bridge.flags.running)
 
-    def test_BridgeBackwardsCompatibility_setStatus_running(self):
+    def test_BridgeBackwardsCompatibility_setStatus_running_stable(self):
         """Using setStatus() to set the Running and Stable flags should set
         Bridge.running, Bridge.flags.running, Bridge.stable, and
         Bridge.flags.stable.
@@ -726,6 +831,8 @@ class BridgeTests(unittest.TestCase):
             self._serverDescriptorFile)[0]
         self.extrainfo = descriptors.parseExtraInfoFiles(
             self._extrainfoFile).values()[0]
+        self.extrainfoNew = descriptors.parseExtraInfoFiles(
+            self._extrainfoNewFile).values()[0]
 
     def _writeNetworkstatus(self, networkstatus):
         with open(self._networkstatusFile, 'w') as fh:
@@ -742,10 +849,16 @@ class BridgeTests(unittest.TestCase):
             fh.write(extrainfo)
             fh.flush()
 
-    def _writeDescriptorFiles(self, networkstatus, serverdesc, extrainfo):
+    def _writeExtrainfoNew(self, extrainfo):
+        with open(self._extrainfoNewFile, 'w') as fh:
+            fh.write(extrainfo)
+            fh.flush()
+
+    def _writeDescriptorFiles(self, networkstatus, serverdesc, extrainfo, extrainfoNew):
         self._writeNetworkstatus(networkstatus)
         self._writeServerdesc(serverdesc)
         self._writeExtrainfo(extrainfo)
+        self._writeExtrainfoNew(extrainfoNew)
 
     def setUp(self):
         def _cwd(filename):
@@ -754,10 +867,12 @@ class BridgeTests(unittest.TestCase):
         self._networkstatusFile = _cwd('BridgeTests-networkstatus-bridges')
         self._serverDescriptorFile = _cwd('BridgeTests-bridge-descriptors')
         self._extrainfoFile = _cwd('BridgeTests-cached-extrainfo')
+        self._extrainfoNewFile = _cwd('BridgeTests-cached-extrainfo.new')
 
         self._writeDescriptorFiles(BRIDGE_NETWORKSTATUS,
                                    BRIDGE_SERVER_DESCRIPTOR,
-                                   BRIDGE_EXTRAINFO)
+                                   BRIDGE_EXTRAINFO,
+                                   BRIDGE_EXTRAINFO_NEW)
         self._parseAllDescriptorFiles()
 
         self.bridge = bridges.Bridge()
@@ -852,6 +967,44 @@ class BridgeTests(unittest.TestCase):
                          ''.join(['$', '0'*40,
                                   '~', bridge.nickname]))
 
+    def test_Bridge_str_without_fingerprint_without_nickname(self):
+        """Calling str(Bridge) on a Bridge whose fingerprint and nickname were
+        not set should return a Bridge identifier string where the fingerprint
+        is all 0's and the nickname is "Unnamed".
+        """
+        bridge = bridges.Bridge()
+        identifier = str(bridge)
+        self.assertEqual(identifier, ''.join(['$', '0'*40, '~', 'Unnamed']))
+
+    def test_Bridge_constructBridgeLine_IPv6(self):
+        """Bridge._constructBridgeLine() called with an IPv6 address should
+        wrap the IPv6 address in '[]' in the returned bridge line.
+        """
+        bridge = bridges.Bridge()
+        addrport = (u'6bf3:806b:78cd::4ced:cfad:dad4', 36488, 6)
+
+        bridgeline = bridge._constructBridgeLine(addrport,
+                                                 includeFingerprint=False,
+                                                 bridgePrefix=True)
+        self.assertEqual(bridgeline, 'Bridge [6bf3:806b:78cd::4ced:cfad:dad4]:36488')
+
+    def test_Bridge_updateORAddresses_valid_and_invalid(self):
+        """Bridge._updateORAddresses() called with a mixture of valid and
+        invalid ORAddress tuples should only retain the valid ones.
+        """
+        orAddresses = [
+            (u'1.1.1.1', 1111, False),    # valid
+            (u'127.0.0.1', 2222, False),  # invalid IPv4 loopback
+            (u'FE80::1234', 3333, True)]  # invalid IPv6 link local
+        bridge = bridges.Bridge()
+        bridge._updateORAddresses(orAddresses)
+
+        self.assertEqual(len(bridge.orAddresses), 1)
+        addr, port, version = bridge.orAddresses[0]
+        self.assertEqual(addr, ipaddr.IPAddress('1.1.1.1'))
+        self.assertEqual(port, 1111)
+        self.assertEqual(version, 4)
+
     def test_Bridge_updateFromNetworkStatus_IPv4_ORAddress(self):
         """Calling updateFromNetworkStatus() with a descriptor which has an
         IPv4 address as an additional ORAddress should result in a
@@ -876,6 +1029,25 @@ class BridgeTests(unittest.TestCase):
         self.assertIn((ipaddr.IPAddress('123.34.56.78'), 36488, 4),
                       self.bridge.allVanillaAddresses)
 
+    def test_Bridge_updateFromNetworkStatus_ignoreNetworkstatus(self):
+        """Calling updateFromNetworkStatus([…], ignoreNetworkstatus=True)
+        should update the Bridge's flags, its fingerprint, and its
+        descriptorDigest, and nothing else.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus,
+                                            ignoreNetworkstatus=True)
+
+        self.assertTrue(self.bridge.flags.running)
+        self.assertTrue(self.bridge.flags.stable)
+        self.assertIsNotNone(self.bridge.descriptorDigest)
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+
+        self.assertIsNone(self.bridge.nickname)
+        self.assertIsNone(self.bridge.address)
+        self.assertIsNone(self.bridge.orPort)
+        self.assertIsNone(self.bridge.orPort)
+
     def test_Bridge_updateFromServerDescriptor(self):
         """ """
         self.bridge.updateFromNetworkStatus(self.networkstatus)
@@ -892,6 +1064,16 @@ class BridgeTests(unittest.TestCase):
         self.assertRaises(bridges.ServerDescriptorWithoutNetworkstatus,
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
+
+    def test_Bridge_updateFromServerDescriptor_ignoreNetworkstatus_no_networkstatus(self):
+        """Parsing a server descriptor for a bridge which wasn't included in
+        the networkstatus document from the BridgeAuthority, when
+        ignoreNetworkstatus=True, should not raise any warnings.
+        """
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor,
+                                               ignoreNetworkstatus=True)
+        self.assertIsNone(self.bridge.descriptors['networkstatus'])
+        self.assertIsNotNone(self.bridge.descriptors['server'])
 
     def test_Bridge_verifyExtraInfoSignature_good_signature(self):
         """Calling _verifyExtraInfoSignature() with a descriptor which has a
@@ -1190,6 +1372,25 @@ class BridgeTests(unittest.TestCase):
         self.assertNotIn('179.178.155.140:36493', line)
         self.assertIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
 
+    def test_Bridge_getBridgeLine_IPv6_no_fingerprint(self):
+        """Calling getBridgeLine(includeFingerprint=False) with a valid request
+        for IPv6 bridges should return a bridge line without the fingerprint.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        request = BridgeRequestBase()
+        request.isValid(True)
+        request.withIPv6()
+        line = self.bridge.getBridgeLine(request, includeFingerprint=False)
+
+        self.assertIsNotNone(line)
+        self.assertTrue(
+            line.startswith('[6bf3:806b:78cd:d4b4:f6a7:4ced:cfad:dad4]:36488'))
+        self.assertNotIn('179.178.155.140:36493', line)
+        self.assertNotIn('2C3225C4805331025E211F4B6E5BF45C333FDD2C', line)
+
     def test_Bridge_getBridgeLine_obfs4(self):
         """ """
         self.bridge.updateFromNetworkStatus(self.networkstatus)
@@ -1355,3 +1556,92 @@ class BridgeTests(unittest.TestCase):
         self.assertTrue(self.bridge.transportIsBlockedIn('GB', 'obfs4'))
         self.assertTrue(self.bridge.addressIsBlockedIn('GB', '179.178.155.140', 36493))
         self.assertFalse(self.bridge.addressIsBlockedIn('gb', '179.178.155.140', 36488))
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_no_verify(self):
+        """A changed extrainfo descriptor should log that a transport's
+        IP and/or port changed.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        changedExtrainfo = BRIDGE_EXTRAINFO
+        changedExtrainfo.replace('transport obfs3 179.178.155.140:36490',
+                                 'transport obfs3 179.178.155.14:3649')
+        self._writeExtrainfo(changedExtrainfo)
+
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo, verify=False)
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_verify(self):
+        """A changed extrainfo descriptor with verify=True should raise an
+        InvalidExtraInfoSignature exception.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfoNew)
+
+        # We should have hit the return just after the
+        # `except InvalidExtraInfoSignature` line, and so the
+        # bridge.descriptors['extrainfo'] shouldn't have been updated.
+        # Therefore, the one we stored should be older, that is, we shouldn't
+        # have kept the new one.
+        self.assertLess(self.bridge.descriptors['extrainfo'].published,
+                        self.extrainfoNew.published)
+        # And the one we stored should be the older one, with the same
+        # published timestamp:
+        self.assertEqual(self.bridge.descriptors['extrainfo'], self.extrainfo)
+        self.assertEqual(self.bridge.descriptors['extrainfo'].published,
+                         self.extrainfo.published)
+
+    def test_Bridge_updateFromExtraInfoDescriptor_obfs4_no_iatmode(self):
+        """An extrainfo descriptor with an obfs4 transport missing the
+        `iat-mode=[…]` argument should not add the obfs4 transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        obfs4 = self.extrainfo.transport['obfs4']
+        obfs4 = (u'1.1.1.1', 1111, obfs4[-1][-1].replace('iat-mode=0,', ''))
+
+        self.extrainfo.transport['obfs4'] = obfs4
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('obfs4',
+                         [pt.methodname for pt in self.bridge.transports])
+
+    def test_Bridge_updateFromExtraInfoDescriptor_scramblesuit_no_password(self):
+        """An extrainfo descriptor with `transport scramblesuit 1.1.1.1:1111`
+        (i.e. missing the `password=[…]` argument) should not add the
+        scramblesuit transport.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+
+        self.extrainfo.transport['scramblesuit'] = (u'1.1.1.1', 1111, [])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('scramblesuit',
+                         [pt.methodname for pt in self.bridge.transports])
+
+    def test_Bridge_updateFromExtraInfoDescriptor_changed_scramblesuit_no_password(self):
+        """An extrainfo descriptor whose scramblesuit transport was previously
+        valid and is now missing the `password=[…]` argument should be removed
+        from the Bridge.transports list.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus)
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor)
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 4)
+        self.assertIn('scramblesuit',
+                      [pt.methodname for pt in self.bridge.transports])
+
+        self.extrainfo.transport['scramblesuit'] = (u'1.1.1.1', 1111, [])
+        self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
+
+        self.assertTrue(len(self.bridge.transports), 3)
+        self.assertNotIn('scramblesuit',
+                         [pt.methodname for pt in self.bridge.transports])

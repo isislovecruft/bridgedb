@@ -372,6 +372,31 @@ class PluggableTransport(BridgeAddressBase):
                 ("Cannot create PluggableTransport with arguments type: %s")
                 % type(self.arguments))
 
+        if not self._checkArguments():
+            raise MalformedPluggableTransport(
+                ("Can't use %s transport with missing arguments. Arguments: "
+                 "%s") % (self.methodname, ' '.join(self.arguments.keys())))
+
+    def _checkArguments(self):
+        """This method is a temporary fix for PTs with missing arguments
+        (see `#13202 <https://bugs.torproject.org/13202`_).  This method can
+        be removed after Tor-0.2.4.x is deprecated.
+        """
+        # obfs4 requires (iat-mode && (cert || (node-id && public-key))):
+        if self.methodname == 'obfs4':
+            if self.arguments.get('iat-mode'):
+                if (self.arguments.get('cert') or \
+                    (self.arguments.get('node-id') and self.arguments.get('public-key'))):
+                    return True
+        # scramblesuit requires (password):
+        elif self.methodname == 'scramblesuit':
+            if self.arguments.get('password'):
+                return True
+        else:
+            return True
+
+        return False
+
     @property
     def port(self):
         """Get the port number which this ``PluggableTransport`` is listening
@@ -668,7 +693,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
             self.flags.running = bool(running)
         if stable is not None:
             self.stable = bool(stable)
-            self.flags.stable = bool(running)
+            self.flags.stable = bool(stable)
 
     def getConfigLine(self, includeFingerprint=False, addressClass=None,
                       request=None, transport=None):
@@ -690,10 +715,10 @@ class BridgeBackwardsCompatibility(BridgeBase):
         :type addressClass: :class:`ipaddr.IPv4Address` or
             :class:`ipaddr.IPv6Address`.
         :param addressClass: Type of address to choose.
-        :param str request: A string unique to this request e.g. email-address
-            or ``uniformMap(ip)`` or ``'default'``. In this case, this is not
-            a :class:`~bridgerequest.BridgeRequestBase` (as might be expected)
-            but the equivalent of
+        :param str request: A string (somewhat) unique to this request,
+            e.g. email-address or ``IPBasedDistributor.getSubnet(ip)``.  In
+            this case, this is not a :class:`~bridgerequest.BridgeRequestBase`
+            (as might be expected) but the equivalent of
             :data:`bridgerequest.BridgeRequestBase.client`.
         :param str transport: A pluggable transport method name.
         """
@@ -1354,32 +1379,38 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         return list(set([pt.methodname for pt in self.transports]))
 
-    def updateFromNetworkStatus(self, descriptor):
+    def updateFromNetworkStatus(self, descriptor, ignoreNetworkstatus=False):
         """Update this bridge's attributes from a parsed networkstatus
-        descriptor.
+        document.
 
-        :type ns: :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
-        :param ns:
+        :type descriptor:
+            :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
+        :param descriptor: The networkstatus document for this bridge.
+        :param bool ignoreNetworkstatus: If ``True``, then ignore most of the
+           information in the networkstatus document.
         """
         self.descriptors['networkstatus'] = descriptor
 
         # These fields are *only* found in the networkstatus document:
-        self.descriptorDigest = descriptor.digest
         self.flags.update(descriptor.flags)
-        self.bandwidth = descriptor.bandwidth
+        self.descriptorDigest = descriptor.digest
+
+        if not ignoreNetworkstatus:
+            self.bandwidth = descriptor.bandwidth
 
         # These fields are also found in the server-descriptor. We will prefer
         # to use the information taken later from the server-descriptor
         # because it is signed by the bridge. However, for now, we harvest all
         # the info we can:
         self.fingerprint = descriptor.fingerprint
-        self.nickname = descriptor.nickname
-        self.address = descriptor.address
-        self.orPort = descriptor.or_port
 
-        self._updateORAddresses(descriptor.or_addresses)
+        if not ignoreNetworkstatus:
+            self.nickname = descriptor.nickname
+            self.address = descriptor.address
+            self.orPort = descriptor.or_port
+            self._updateORAddresses(descriptor.or_addresses)
 
-    def updateFromServerDescriptor(self, descriptor):
+    def updateFromServerDescriptor(self, descriptor, ignoreNetworkstatus=False):
         """Update this bridge's info from an ``@type bridge-server-descriptor``.
 
         .. info::
@@ -1399,7 +1430,16 @@ class Bridge(BridgeBackwardsCompatibility):
             networkstatus entry, or its **descriptor** digest didn't match the
             expected digest (from the networkstatus entry).
         """
-        self._checkServerDescriptor(descriptor)
+        if ignoreNetworkstatus:
+            try:
+                self._checkServerDescriptor(descriptor)
+            except (ServerDescriptorWithoutNetworkstatus,
+                    MissingServerDescriptorDigest,
+                    ServerDescriptorDigestMismatch) as ignored:
+                logging.warn(ignored)
+        else:
+            self._checkServerDescriptor(descriptor)
+
         self.descriptors['server'] = descriptor
 
         # Replace the values which we harvested from the networkstatus
@@ -1574,10 +1614,16 @@ class Bridge(BridgeBackwardsCompatibility):
                                      % (methodname, self, pt.address, pt.port,
                                         address, port))
 
-                    oldTransports.remove(pt)
-                    pt.updateFromStemTransport(str(self.fingerprint),
-                                               methodname,
-                                               (address, port, args,))
+                    original = pt
+                    try:
+                        pt.updateFromStemTransport(str(self.fingerprint),
+                                                   methodname,
+                                                   (address, port, args,))
+                    except MalformedPluggableTransport as error:
+                        logging.info(str(error))
+                    else:
+                        oldTransports.remove(original)
+
                     updated = True
                     break
 
@@ -1590,11 +1636,14 @@ class Bridge(BridgeBackwardsCompatibility):
                 logging.info(
                     "Received new %s pluggable transport for bridge %s."
                     % (methodname, self))
-                transport = PluggableTransport()
-                transport.updateFromStemTransport(str(self.fingerprint),
-                                                  methodname,
-                                                  (address, port, args,))
-                self.transports.append(transport)
+                try:
+                    transport = PluggableTransport()
+                    transport.updateFromStemTransport(str(self.fingerprint),
+                                                      methodname,
+                                                      (address, port, args,))
+                    self.transports.append(transport)
+                except MalformedPluggableTransport as error:
+                    logging.info(str(error))
 
         # These are the pluggable transports which we knew about before, which
         # however were not updated in this descriptor, ergo the bridge must

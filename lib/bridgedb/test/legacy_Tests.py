@@ -9,7 +9,6 @@ separate from the production codebase.
 
 from __future__ import print_function
 
-import doctest
 import os
 import random
 import sqlite3
@@ -36,37 +35,19 @@ from bridgedb.Stability import BridgeHistory
 
 from bridgedb.parse import addr
 from bridgedb.test import deprecated_networkstatus as networkstatus
+from bridgedb.test.util import bracketIPv6
+from bridgedb.test.util import randomIP
+from bridgedb.test.util import randomIPv4
+from bridgedb.test.util import randomIPv6
+from bridgedb.test.util import randomIPString
+from bridgedb.test.util import randomIPv4String
+from bridgedb.test.util import randomIPv6String
 
 from math import log
 
+
 def suppressWarnings():
     warnings.filterwarnings('ignore', '.*tmpnam.*')
-
-def randomIP():
-    if random.choice(xrange(2)):
-        return randomIP4()
-    return randomIP6()
-
-def randomIP4():
-    return ipaddr.IPv4Address(random.getrandbits(32))
-
-def randomIP4String():
-    return randomIP4().compressed
-
-def randomIP6():
-    return ipaddr.IPv6Address(random.getrandbits(128))
-
-def randomIP6String():
-    return bracketIP6(randomIP6().compressed)
-
-def randomIPString():
-    if random.choice(xrange(2)):
-        return randomIP4String()
-    return randomIP6String()
-
-def bracketIP6(ip):
-    """Put brackets around an IPv6 address, just as tor does."""
-    return "[%s]" % ip
 
 def random16IP():
     upper = "123.123." # same 16
@@ -111,7 +92,7 @@ def randomCountrySpec():
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
     nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIP4())
+    ip = ipaddr.IPAddress(randomIPv4())
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -121,7 +102,7 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
         for i in xrange(8):
             # Only add or_addresses if they are valid. Otherwise, the test
             # will randomly fail if an invalid address is chosen:
-            address = randomIP4String()
+            address = randomIPv4String()
             portlist = addr.PortList(randomPortSpec())
             if addr.isValidIP(address):
                 oraddrs.append((address, portlist,))
@@ -145,7 +126,7 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
 def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
     nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIP6())
+    ip = ipaddr.IPAddress(randomIPv6())
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -155,10 +136,10 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
         for i in xrange(8):
             # Only add or_addresses if they are valid. Otherwise, the test
             # will randomly fail if an invalid address is chosen:
-            address = randomIP6()
+            address = randomIPv6()
             portlist = addr.PortList(randomPortSpec())
             if addr.isValidIP(address):
-                address = bracketIP6(address)
+                address = bracketIPv6(address)
                 oraddrs.append((address, portlist,))
 
     for address, portlist in oraddrs:
@@ -317,7 +298,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
-            bridges = d.getBridgesForIP(randomIP4String(),
+            bridges = d.getBridgesForIP(randomIPv4String(),
                                         "faketimestamp",
                                         bridgeFilterRules=[filterBridgesByIP6])
             bridge = random.choice(bridges)
@@ -333,7 +314,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(500):
-            bridges = d.getBridgesForIP(randomIP4String(),
+            bridges = d.getBridgesForIP(randomIPv4String(),
                                         "faketimestamp",
                                         bridgeFilterRules=[filterBridgesByIP4])
             bridge = random.choice(bridges)
@@ -349,7 +330,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(50):
-            bridges = d.getBridgesForIP(randomIP4String(),
+            bridges = d.getBridgesForIP(randomIPv4String(),
                                         "faketimestamp", 1,
                                         bridgeFilterRules=[
                                             filterBridgesByIP4,
@@ -373,7 +354,7 @@ class IPBridgeDistTests(unittest.TestCase):
             d.insert(fakeBridge(or_addresses=True))
 
         for i in xrange(5):
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridgesForIP(randomIPv4String(), "x", 1, bridgeFilterRules=[
                 filterBridgesByIP4, filterBridgesByIP6])
             assert len(b) == 0
 
@@ -396,10 +377,10 @@ class IPBridgeDistTests(unittest.TestCase):
             b.blockingCountries[key] = set(['cn'])
 
         for i in xrange(5):
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridgesForIP(randomIPv4String(), "x", 1, bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("cn")])
             assert len(b) == 0
-            b = d.getBridgesForIP(randomIP4String(), "x", 1, bridgeFilterRules=[
+            b = d.getBridgesForIP(randomIPv4String(), "x", 1, bridgeFilterRules=[
                 filterBridgesByNotBlockedIn("us")])
             assert len(b) > 0
 
@@ -519,23 +500,6 @@ class SQLStorageTests(unittest.TestCase):
         cur.execute("SELECT * FROM EmailedBridges")
         self.assertEquals(len(cur.fetchall()), 1)
 
-        db.addBridgeBlock(b2.fingerprint, 'us')
-        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), True)
-        db.delBridgeBlock(b2.fingerprint, 'us')
-        self.assertEquals(db.isBlocked(b2.fingerprint, 'us'), False)
-        db.addBridgeBlock(b2.fingerprint, 'uk')
-        db.addBridgeBlock(b3.fingerprint, 'uk')
-        self.assertEquals(set([b2.fingerprint, b3.fingerprint]),
-                set(db.getBlockedBridges('uk')))
-
-        db.addBridgeBlock(b2.fingerprint, 'cn')
-        db.addBridgeBlock(b2.fingerprint, 'de')
-        db.addBridgeBlock(b2.fingerprint, 'jp')
-        db.addBridgeBlock(b2.fingerprint, 'se')
-        db.addBridgeBlock(b2.fingerprint, 'kr')
-
-        self.assertEquals(set(db.getBlockingCountries(b2.fingerprint)),
-                set(['uk', 'cn', 'de', 'jp', 'se', 'kr']))
         self.assertEquals(db.getWarnedEmail("def@example.com"), False)
         db.setWarnedEmail("def@example.com")
         self.assertEquals(db.getWarnedEmail("def@example.com"), True)
@@ -547,27 +511,6 @@ class SQLStorageTests(unittest.TestCase):
         db.cleanWarnedEmails(t+200)
         self.assertEquals(db.getWarnedEmail("def@example.com"), False)
 
-class ParseCountryBlockFileTests(unittest.TestCase):
-
-    def testParseCountryBlockFile(self):
-        simpleBlock = "%s:%s %s\n"
-        countries = ['us', 'nl', 'de', 'cz', 'sk', 'as', 'si', 'it']
-        test = str()
-        for i in range(100):
-            test += simpleBlock % (randomIPString(), randomPort(),
-                    randomCountrySpec())
-            test+=gettimestamp()
-
-        for a,p,c in bridgedb.Bridges.parseCountryBlockFile(test.split('\n')):
-            assert type(a) in (ipaddr.IPv6Address, ipaddr.IPv4Address)
-            assert isinstance(p, addr.PortList)
-            assert isinstance(c, list)
-            assert len(c) > 0
-            for y in c:
-                assert y in countries
-            #print "address: %s" % a
-            #print "portlist: %s" % p
-            #print "countries: %s" % c
 
 class BridgeStabilityTests(unittest.TestCase):
     def setUp(self):
@@ -707,19 +650,11 @@ def testSuite():
     loader = unittest.TestLoader()
 
     for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  ParseCountryBlockFileTests, BridgeStabilityTests]:
+                  BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
-
-    for module in [ bridgedb.Bridges,
-                    bridgedb.Main,
-                    bridgedb.Dist,
-                    bridgedb.schedule ]:
-        suite.addTest(doctest.DocTestSuite(module))
-
     return suite
 
 def main():
     suppressWarnings()
 
     unittest.TextTestRunner(verbosity=1).run(testSuite())
-

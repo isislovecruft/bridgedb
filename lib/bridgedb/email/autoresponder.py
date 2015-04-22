@@ -634,6 +634,10 @@ class SMTPAutoresponder(smtp.SMTPClient):
             self.incoming.canonicalFromEmail = client.domain
             logging.info("'From:' header contained whitelisted address: %s"
                          % str(client))
+        # Straight up reject addresses in the EMAIL_BLACKLIST config option:
+        elif str(client) in self.incoming.context.blacklist:
+            logging.info("'From:' header contained blacklisted address: %s")
+            return False
         else:
             logging.debug("Canonicalizing client email domain...")
             try:
@@ -652,12 +656,12 @@ class SMTPAutoresponder(smtp.SMTPClient):
 
         # The canonical domains from the SMTP ``MAIL FROM:`` and the email
         # ``From:`` header should match:
-        #if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
-        #    logging.error("SMTP/Email canonical domain mismatch!")
-        #    logging.debug("Canonical domain mismatch: %s != %s"
-        #                  % (self.incoming.canonicalFromSMTP,
-        #                     self.incoming.canonicalFromEmail))
-        #    return False
+        if self.incoming.canonicalFromSMTP != self.incoming.canonicalFromEmail:
+            logging.error("SMTP/Email canonical domain mismatch!")
+            logging.debug("Canonical domain mismatch: %s != %s"
+                          % (self.incoming.canonicalFromSMTP,
+                             self.incoming.canonicalFromEmail))
+            #return False
 
         self.incoming.domainRules = self.incoming.context.domainRules.get(
             self.incoming.canonicalFromEmail, list())
@@ -672,8 +676,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         # :func:`~bridgedb.util.levenshteinDistance`):
         if self.incoming.context.fuzzyMatch != 0:
             for blacklistedAddress in self.incoming.context.blacklist:
-                distance = levenshteinDistance(self.incoming.canonicalFromEmail,
-                                               blacklistedAddress)
+                distance = levenshteinDistance(str(client), blacklistedAddress)
                 if distance <= self.incoming.context.fuzzyMatch:
                     logging.info("Fuzzy-matched %s to blacklisted address %s!"
                                  % (self.incoming.canonicalFromEmail,
