@@ -1379,33 +1379,38 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         return list(set([pt.methodname for pt in self.transports]))
 
-    def updateFromNetworkStatus(self, descriptor):
+    def updateFromNetworkStatus(self, descriptor, ignoreNetworkstatus=False):
         """Update this bridge's attributes from a parsed networkstatus
         document.
 
         :type descriptor:
             :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
         :param descriptor: The networkstatus document for this bridge.
+        :param bool ignoreNetworkstatus: If ``True``, then ignore most of the
+           information in the networkstatus document.
         """
         self.descriptors['networkstatus'] = descriptor
 
         # These fields are *only* found in the networkstatus document:
-        self.descriptorDigest = descriptor.digest
         self.flags.update(descriptor.flags)
-        self.bandwidth = descriptor.bandwidth
+        self.descriptorDigest = descriptor.digest
+
+        if not ignoreNetworkstatus:
+            self.bandwidth = descriptor.bandwidth
 
         # These fields are also found in the server-descriptor. We will prefer
         # to use the information taken later from the server-descriptor
         # because it is signed by the bridge. However, for now, we harvest all
         # the info we can:
         self.fingerprint = descriptor.fingerprint
-        self.nickname = descriptor.nickname
-        self.address = descriptor.address
-        self.orPort = descriptor.or_port
 
-        self._updateORAddresses(descriptor.or_addresses)
+        if not ignoreNetworkstatus:
+            self.nickname = descriptor.nickname
+            self.address = descriptor.address
+            self.orPort = descriptor.or_port
+            self._updateORAddresses(descriptor.or_addresses)
 
-    def updateFromServerDescriptor(self, descriptor):
+    def updateFromServerDescriptor(self, descriptor, ignoreNetworkstatus=False):
         """Update this bridge's info from an ``@type bridge-server-descriptor``.
 
         .. info::
@@ -1425,7 +1430,16 @@ class Bridge(BridgeBackwardsCompatibility):
             networkstatus entry, or its **descriptor** digest didn't match the
             expected digest (from the networkstatus entry).
         """
-        self._checkServerDescriptor(descriptor)
+        if ignoreNetworkstatus:
+            try:
+                self._checkServerDescriptor(descriptor)
+            except (ServerDescriptorWithoutNetworkstatus,
+                    MissingServerDescriptorDigest,
+                    ServerDescriptorDigestMismatch) as ignored:
+                logging.warn(ignored)
+        else:
+            self._checkServerDescriptor(descriptor)
+
         self.descriptors['server'] = descriptor
 
         # Replace the values which we harvested from the networkstatus

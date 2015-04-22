@@ -120,6 +120,10 @@ def loadConfig(configFile=None, configCls=None):
         setting = getattr(config, attr, None) # Default to None
         setattr(config, attr, setting)
 
+    for attr in ["IGNORE_NETWORKSTATUS"]:
+        setting = getattr(config, attr, True) # Default to True
+        setattr(config, attr, setting)
+
     for attr in ["FORCE_PORTS", "FORCE_FLAGS", "NO_DISTRIBUTION_COUNTRIES"]:
         setting = getattr(config, attr, []) # Default to empty lists
         setattr(config, attr, setting)

@@ -1029,6 +1029,25 @@ class BridgeTests(unittest.TestCase):
         self.assertIn((ipaddr.IPAddress('123.34.56.78'), 36488, 4),
                       self.bridge.allVanillaAddresses)
 
+    def test_Bridge_updateFromNetworkStatus_ignoreNetworkstatus(self):
+        """Calling updateFromNetworkStatus([…], ignoreNetworkstatus=True)
+        should update the Bridge's flags, its fingerprint, and its
+        descriptorDigest, and nothing else.
+        """
+        self.bridge.updateFromNetworkStatus(self.networkstatus,
+                                            ignoreNetworkstatus=True)
+
+        self.assertTrue(self.bridge.flags.running)
+        self.assertTrue(self.bridge.flags.stable)
+        self.assertIsNotNone(self.bridge.descriptorDigest)
+        self.assertEqual(self.bridge.fingerprint,
+                         '2C3225C4805331025E211F4B6E5BF45C333FDD2C')
+
+        self.assertIsNone(self.bridge.nickname)
+        self.assertIsNone(self.bridge.address)
+        self.assertIsNone(self.bridge.orPort)
+        self.assertIsNone(self.bridge.orPort)
+
     def test_Bridge_updateFromServerDescriptor(self):
         """ """
         self.bridge.updateFromNetworkStatus(self.networkstatus)
@@ -1045,6 +1064,16 @@ class BridgeTests(unittest.TestCase):
         self.assertRaises(bridges.ServerDescriptorWithoutNetworkstatus,
                           self.bridge.updateFromServerDescriptor,
                           self.serverdescriptor)
+
+    def test_Bridge_updateFromServerDescriptor_ignoreNetworkstatus_no_networkstatus(self):
+        """Parsing a server descriptor for a bridge which wasn't included in
+        the networkstatus document from the BridgeAuthority, when
+        ignoreNetworkstatus=True, should not raise any warnings.
+        """
+        self.bridge.updateFromServerDescriptor(self.serverdescriptor,
+                                               ignoreNetworkstatus=True)
+        self.assertIsNone(self.bridge.descriptors['networkstatus'])
+        self.assertIsNotNone(self.bridge.descriptors['server'])
 
     def test_Bridge_verifyExtraInfoSignature_good_signature(self):
         """Calling _verifyExtraInfoSignature() with a descriptor which has a

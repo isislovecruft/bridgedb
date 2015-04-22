@@ -110,6 +110,10 @@ def load(state, splitter, clear=False):
 
     logging.info("Loading bridges...")
 
+    ignoreNetworkstatus = state.IGNORE_NETWORKSTATUS
+    if ignoreNetworkstatus:
+        logging.info("Ignoring BridgeAuthority networkstatus documents.")
+
     bridges = {}
     timestamps = {}
 
@@ -120,8 +124,7 @@ def load(state, splitter, clear=False):
     logging.info("Processing networkstatus descriptors...")
     for router in networkstatuses:
         bridge = Bridge()
-        bridge.updateFromNetworkStatus(router)
-
+        bridge.updateFromNetworkStatus(router, ignoreNetworkstatus)
         try:
             bridge.assertOK()
         except MalformedBridgeInfo as error:
@@ -136,12 +139,18 @@ def load(state, splitter, clear=False):
 
         for router in serverdescriptors:
             try:
-                bridges[router.fingerprint].updateFromServerDescriptor(router)
+                bridge = bridges[router.fingerprint]
             except KeyError:
                 logging.warn(
                     ("Received server descriptor for bridge '%s' which wasn't "
                      "in the networkstatus!") % router.fingerprint)
-                continue
+                if ignoreNetworkstatus:
+                    bridge = Bridge()
+                else:
+                    continue
+
+            try:
+                bridge.updateFromServerDescriptor(router, ignoreNetworkstatus)
             except (ServerDescriptorWithoutNetworkstatus,
                     MissingServerDescriptorDigest,
                     ServerDescriptorDigestMismatch) as error:
