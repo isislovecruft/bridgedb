@@ -28,8 +28,7 @@ INSTALL_DIR=$(INSTALL_BASE)/lib/python2.7/site-packages
 INSTALL_FILES:=$(shell find "$(strip $(INSTALL_DIR))" -name "bridgedb-*")
 INSTALL_LOG:=installed-files.txt
 
-all:
-	python setup.py build
+all: uninstall clean install coverage-test
 
 test:
 	python setup.py test
