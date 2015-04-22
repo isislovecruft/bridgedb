@@ -11,6 +11,12 @@ endif
 TRIAL:=$(shell which trial)
 VERSION:=$(shell git describe)
 
+BUILD_DIR:=build
+DIST_DIR:=dist
+DOC_BUILD_DIR:=$(BUILD_DIR)/sphinx
+COVERAGE_HTML_DIR:=doc/coverage-html
+TEST_FILES:=_trial_temp
+DESCRIPTOR_FILES:=bridge-descriptors cached-extrainfo cached-extrainfo.new networkstatus-bridges
 VIRTUALENV:=$$VIRTUAL_ENV
 INSTALL_BASE=/usr/local
 ifneq		($(strip $(VIRTUAL_ENV)),)
@@ -75,17 +81,18 @@ docs:
 		zip -r ../"$(VERSION)"-docs.zip ./ && \
 		echo "Your package documents are in build/sphinx/$(VERSION)-docs.zip"
 
-clean-docs:
-	-rm -rf build/sphinx
-
-clean-coverage-html:
-	-rm -rf doc/coverage-html
-
-clean: clean-docs clean-coverage-html
-	-rm -rf build
-	-rm -rf dist
+clean-build:
+	-rm -rf $(BUILD_DIR)
 	-rm -rf lib/bridgedb.egg-info
-	-rm -rf _trial_temp
+clean-coverage-html:
+	-rm -rf $(COVERAGE_HTML_DIR)
+clean-dist:
+	-rm -rf $(DIST_DIR)
+clean-docs:
+	-rm -rf $(DOC_BUILD_DIR)
+clean-test:
+	-rm -rf $(TEST_FILES) $(DESCRIPTOR_FILES)
+clean: clean-build clean-coverage-html clean-dist clean-docs clean-test
 
 coverage-test:
 	coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
