@@ -5,8 +5,7 @@
 TRIAL:=$(shell which trial)
 VERSION:=$(shell git describe)
 
-all:
-	python setup.py build
+all: uninstall clean install coverage-test
 
 test:
 	python setup.py test
