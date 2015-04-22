@@ -1,9 +1,18 @@
-Changes in version 0.3.2 - 2015-03-??
+Changes in version 0.3.2 - 2015-05-01
 
         * FIXES a problem with the calculation of Levenshtein distances
         between blacklisted email addresses and those on incoming
         email. This fixes a problem with the fuzzy matching implemented in
         #9385: https://bugs.torproject.org/9385.
+
+        * FIXES #1839 https://bugs.torproject.org/1839
+        BridgeDB's distributors now rotate their hashrings at
+        configurable scheduled intervals.
+
+        * FIXES #4771 https://bugs.torproject.org/4771
+        BridgeDB now records which of the HTTPS Distributor's
+        sub-hashrings are used for clients coming from Tor Exit nodes and
+        other known proxies.
 
         * FIXES #12504 https://bugs.torproject.org/12504
         Which Pluggable Transports BridgeDB distributes is now easily
@@ -24,10 +33,30 @@ Changes in version 0.3.2 - 2015-03-??
         work.  This fixes the issue by excluding broken transports from
         being distributed to clients.
 
+        * FIXES #15522 https://bugs.torproject.org/15522
+        For all clients who are coming from IPv6 addresses and are not
+        using Tor, who go to https://bridges.torproject.org, BridgeDB now
+        groups these clients together by /32.  This "grouping" causes all
+        IPv6 clients within the same IPv6 /32 to get the same bridges.
+        Previously, BridgeDB grouped IPv6 clients by /64 (which is
+        ridiculously small, considering standard IPv6 allocation sizes).
+
+        For all clients who are coming from IPv4 addresses and are not
+        using Tor, BridgeDB now groups these clients together by /16.
+        Previously, BridgeDB grouped IPv4 clients by /24.  (This latter
+        change was technically made as part of #4771.)
+
         * FIXES #15464 https://bugs.torproject.org/15464
         The setup procedure for creating a BridgeDB Continuous Integration
         build machine is now simplified and generalised to include build
         environments like Jenkins, not just TravisCI.
+
+        * FIXES #15866 https://bugs.torproject.org/15866
+        BridgeDB now ignores nearly all the information in the
+        networkstatus-bridges file created by the BridgeAuthority.
+
+        * ADDS benchmark tests to BridgeDB's test suite, and some of
+        BridgeDB's algorithms have been revised to improve their speed.
 
 
 Changes in version 0.3.1 - 2015-03-24
