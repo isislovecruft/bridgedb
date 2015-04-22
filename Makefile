@@ -1,9 +1,24 @@
 
+SHELL=/bin/bash
+
+ifneq		(,$(findstring $(SHELLOPTS),extglob))
+SHELLOPTS+=:extglob
+endif
+
 .PHONY: install test
 .DEFAULT: install test
 
 TRIAL:=$(shell which trial)
 VERSION:=$(shell git describe)
+
+VIRTUALENV:=$$VIRTUAL_ENV
+INSTALL_BASE=/usr/local
+ifneq		($(strip $(VIRTUAL_ENV)),)
+INSTALL_BASE=$(strip $(VIRTUAL_ENV))
+endif
+INSTALL_DIR=$(INSTALL_BASE)/lib/python2.7/site-packages
+INSTALL_FILES:=$(shell find "$(strip $(INSTALL_DIR))" -name "bridgedb-*")
+INSTALL_LOG:=installed-files.txt
 
 all:
 	python setup.py build
@@ -28,10 +43,23 @@ force-install:
 	-python setup.py compile_catalog
 	BRIDGEDB_INSTALL_DEPENDENCIES=0	python setup.py install --force --record installed-files.txt
 
+ifneq		($(shell find "$$PWD" -name "$(strip $(INSTALL_LOG))"),)
 uninstall:
-	touch installed-files.txt
-	cat installed-files.txt | xargs rm -rf
-	rm installed-files.txt
+	@if test -f "installed-files.txt" ; then \
+		printf "Uninstalling bridgedb-%s...\n" $(VERSION) ; \
+		cat installed-files.txt | xargs rm -rf ; \
+		rm installed-files.txt ; \
+		if test -d "$$VIRTUAL_ENV" ; then \
+			echo "Detected that we're inside a virtualenv..." ; \
+		fi ; \
+		if test -n "$(INSTALL_FILES)" ; then \
+			echo "Removing $(INSTALL_FILES)..." ; \
+			rm -r $(INSTALL_FILES) ; \
+		fi ; \
+	fi
+else
+uninstall:
+endif
 
 reinstall: uninstall force-install
 
