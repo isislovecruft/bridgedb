@@ -15,6 +15,8 @@ BUILD_DIR:=build
 DIST_DIR:=dist
 DOC_BUILD_DIR:=$(BUILD_DIR)/sphinx
 COVERAGE_HTML_DIR:=doc/coverage-html
+SOURCE_DIR:=lib/bridgedb
+PYC_FILES:=$(shell find "$(strip $(SOURCE_DIR))" -name "*.pyc")
 TEST_FILES:=_trial_temp
 DESCRIPTOR_FILES:=bridge-descriptors cached-extrainfo cached-extrainfo.new networkstatus-bridges
 VIRTUALENV:=$$VIRTUAL_ENV
@@ -90,9 +92,11 @@ clean-dist:
 	-rm -rf $(DIST_DIR)
 clean-docs:
 	-rm -rf $(DOC_BUILD_DIR)
+clean-pyc:
+	-rm -rf $(PYC_FILES)
 clean-test:
 	-rm -rf $(TEST_FILES) $(DESCRIPTOR_FILES)
-clean: clean-build clean-coverage-html clean-dist clean-docs clean-test
+clean: clean-build clean-coverage-html clean-dist clean-docs clean-pyc clean-test
 
 coverage-test:
 	coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
