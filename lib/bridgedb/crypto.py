@@ -60,7 +60,7 @@ from twisted.python.procutils import which
 
 
 #: The hash digest to use for HMACs.
-DIGESTMOD = hashlib.sha1
+DIGEST = hashlib.sha1
 
 # Test to see if we have the old or new style buffer() interface. Trying
 # to use an old-style buffer on Python2.7 prior to version 2.7.5 will produce:
@@ -208,19 +208,32 @@ def getKey(filename):
         fh.close()
     return key
 
-def getHMAC(key, value):
-    """Return the HMAC of **value** using the **key**."""
-    h = hmac.new(key, value, digestmod=DIGESTMOD)
+def getHMAC(key, value, digest=DIGEST):
+    """Return the HMAC of **value** using the **key**.
+
+    :param bytes key: The key to use to HMAC the **value**.
+    :param str value: The data to HMAC.
+    :param digest: A function which provides an :api:`hashlib`-like interface
+        to a hash digest. The default is :data:`DIGEST`,
+        i.e. :api:`hashlib.sha1`.
+    """
+    h = hmac.new(key, value, digestmod=digest)
     return h.digest()
 
-def getHMACFunc(key, hex=True):
+def getHMACFunc(key, hex=True, digest=DIGEST):
     """Return a function that computes the HMAC of its input using the **key**.
 
+    :param bytes key: The key to embed into the returned HMAC function. This
+        key will always be used, every time the returned function is called to
+        compute an HMAC.
     :param bool hex: If True, the output of the function will be hex-encoded.
+    :param digest: A function which provides an :api:`hashlib`-like interface
+        to a hash digest. The default is :data:`DIGEST`,
+        i.e. :api:`hashlib.sha1`.
     :rtype: callable
     :returns: A function which can be uses to generate HMACs.
     """
-    h = hmac.new(key, digestmod=DIGESTMOD)
+    h = hmac.new(key, digestmod=digest)
     def hmac_fn(value):
         h_tmp = h.copy()
         h_tmp.update(value)
