@@ -200,6 +200,41 @@ def htmlify_string(s):
     """
     return ''.join(map((lambda ch: htmlify_string_map.get(ch, ch)), s))
 
+def isascii(s):
+    """Return True if there are no non-ASCII characters in s, False otherwise.
+
+    Note that this function differs from the str.is* methods in that
+    it returns True for the empty string, rather than False.
+
+    >>> isascii('\x80')
+    False
+    >>> isascii('foo\tbar\rbaz\n')
+    True
+    >>> isascii('foo bar')
+    True
+
+    :param str s: The string to check for non-ASCII characters.
+    """
+    return all(map((lambda ch: ord(ch) < 128), s))
+
+def isascii_noncontrol(s):
+    """Return True if there are no non-ASCII or control characters in
+    s, False otherwise.
+
+    Note that this function differs from the str.is* methods in that
+    it returns True for the empty string, rather than False.
+
+    >>> isascii_noncontrol('\x80')
+    False
+    >>> isascii_noncontrol('foo\tbar\rbaz\n')
+    False
+    >>> isascii_noncontrol('foo bar')
+    True
+
+    :param str s: The string to check for non-ASCII or control characters.
+    """
+    return all(map((lambda ch: 32 <= ord(ch) < 127), s))
+
 
 class JustifiedLogFormatter(logging.Formatter):
     """A logging formatter which pretty prints thread and calling function
