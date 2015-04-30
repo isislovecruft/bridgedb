@@ -1381,10 +1381,11 @@ class Bridge(BridgeBackwardsCompatibility):
 
     def updateFromNetworkStatus(self, descriptor):
         """Update this bridge's attributes from a parsed networkstatus
-        descriptor.
+        document.
 
-        :type ns: :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
-        :param ns:
+        :type descriptor:
+            :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
+        :param descriptor: The networkstatus document for this bridge.
         """
         self.descriptors['networkstatus'] = descriptor
 
