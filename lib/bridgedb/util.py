@@ -180,6 +180,26 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
     memo[key] = distance
     return distance
 
+htmlify_string_map = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '&': '&amp;',
+    '"': '&quot;',
+    "'": '&apos;',
+    '\n': '<br/>'
+    }
+def htmlify_string(s):
+    """Encode HTML special characters, and newlines, in s.
+
+    >>> htmlify_string('<script>alert("badthink");</script>')
+    '&lt;script&gt;alert(&quot;badthink&quot;);&lt;/script&gt;'
+    >>> htmlify_string('bridge 1\nbridge 2')
+    'bridge 1<br/>bridge 2'
+
+    :param str s: The string to encode.
+    """
+    return ''.join(map((lambda ch: htmlify_string_map.get(ch, ch)), s))
+
 
 class JustifiedLogFormatter(logging.Formatter):
     """A logging formatter which pretty prints thread and calling function
