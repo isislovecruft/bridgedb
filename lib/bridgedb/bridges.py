@@ -356,6 +356,10 @@ class PluggableTransport(BridgeAddressBase):
               characters or double quotes or backslashes, in keys or
               in values.
 
+          3. The :data:`fingerprint` and :data:`address` do not
+              contain non-ASCII or control characters or double quotes
+              or backslashes.
+
         :raises MalformedPluggableTransport: if any of the above checks fails.
         """
         if not self.fingerprint:
@@ -390,6 +394,28 @@ class PluggableTransport(BridgeAddressBase):
                      "backslashes in arguments: %r=%r")
                     % (k, v))
             pass
+
+        if not isascii_noncontrol(self.fingerprint):
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with non-ASCII or "
+                 "control characters in fingerprint: %r")
+                % self.fingerprint)
+        if '"' in self.fingerprint or '\\' in self.fingerprint:
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with double quotes or "
+                 "backslashes in fingerprint: %r")
+                % self.fingerprint)
+
+        if not isascii_noncontrol(self.address):
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with non-ASCII or "
+                 "control characters in address: %r")
+                % self.address)
+        if '"' in self.address or '\\' in self.address:
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with double quotes or "
+                 "backslashes in address: %r")
+                % self.address)
 
         if not self._checkArguments():
             raise MalformedPluggableTransport(
