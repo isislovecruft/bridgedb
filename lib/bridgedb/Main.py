@@ -121,7 +121,6 @@ def load(state, splitter, clear=False):
     for router in networkstatuses:
         bridge = Bridge()
         bridge.updateFromNetworkStatus(router)
-        bridge.flags.update(router.flags)
 
         try:
             bridge.assertOK()
