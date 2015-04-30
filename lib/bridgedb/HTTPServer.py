@@ -56,6 +56,7 @@ from bridgedb.qrcodes import generateQR
 from bridgedb.safelog import logSafely
 from bridgedb.schedule import Unscheduled
 from bridgedb.schedule import ScheduledInterval
+from bridgedb.util import htmlify_string
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
@@ -786,7 +787,8 @@ class WebResourceBridges(resource.Resource):
                                            rtl=rtl,
                                            lang=langs[0],
                                            answer=bridgeLines,
-                                           qrcode=qrcode)
+                                           qrcode=qrcode,
+                                           htmlify_string=htmlify_string)
             except Exception as err:
                 rendered = replaceErrorPage(err)
 
