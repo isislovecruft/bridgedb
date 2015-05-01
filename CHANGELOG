@@ -33,7 +33,7 @@ Changes in version 0.3.2 - 2015-05-01
         work.  This fixes the issue by excluding broken transports from
         being distributed to clients.
 
-        * FIXES #15522 https://bugs.torproject.org/15522
+        * FIXES #15517 https://bugs.torproject.org/15517
         For all clients who are coming from IPv6 addresses and are not
         using Tor, who go to https://bridges.torproject.org, BridgeDB now
         groups these clients together by /32.  This "grouping" causes all
