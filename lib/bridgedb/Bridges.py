@@ -29,6 +29,7 @@ from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.safelog import logSafely
+from bridgedb.util import remove_prefix
 
 try:
     from cStringIO import StringIO
@@ -650,7 +651,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         subringName = [self.distributorName]
         for filterName in filterNames:
             if filterName != 'filterAssignBridgesToRing':
-                subringName.append(filterName.strip('filterBridgesBy'))
+                subringName.append(remove_prefix(filterName, 'filterBridgesBy'))
         subringName = '-'.join([x for x in subringName])
         subring.setName(subringName)
 

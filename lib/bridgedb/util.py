@@ -302,3 +302,12 @@ class mixin:
         expect mixin classes to end in ``'mixin'``.
     """
     __metaclass__ = abc.ABCMeta
+
+def remove_prefix(s, f):
+    assert s.startswith(f)
+    return s[len(f):]
+
+def remove_suffix(s, f):
+    assert s.endswith(f)
+    return s[:-len(f)]
+
