@@ -29,7 +29,6 @@ from bridgedb.Dist import TooSoonEmail
 from bridgedb.test.email_helpers import _createConfig
 from bridgedb.test.email_helpers import _createMailServerContext
 from bridgedb.test.email_helpers import DummyEmailDistributorWithState
-from bridgedb.util import remove_suffix
 
 
 class CreateResponseBodyTests(unittest.TestCase):
@@ -37,7 +36,7 @@ class CreateResponseBodyTests(unittest.TestCase):
 
     def _moveGPGTestKeyfile(self):
         here          = os.getcwd()
-        topDir        = remove_suffix(here, '_trial_temp')
+        topDir        = here.rstrip('_trial_temp')
         self.gpgFile  = os.path.join(topDir, '.gnupg', 'TESTING.subkeys.sec')
         self.gpgMoved = os.path.join(here, 'TESTING.subkeys.sec')
         shutil.copy(self.gpgFile, self.gpgMoved)

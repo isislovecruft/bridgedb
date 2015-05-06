@@ -29,7 +29,6 @@ from twisted.trial import unittest
 
 from bridgedb.test import legacy_Tests as Tests
 from bridgedb.test import deprecated
-from bridgedb.util import remove_suffix
 
 
 warnings.filterwarnings('ignore', module="bridgedb\.test\.legacy_Tests")
@@ -181,7 +180,7 @@ class DynamicTestCaseMeta(type):
                     origFunc = origName.split('.')[-2:]
                     origName = '_'.join(origFunc)
                 if origName.endswith('_py'):  # this happens with doctests
-                    origName = remove_suffix(origName, '_py')
+                    origName = origName.strip('_py')
                 methName = str(methodPrefix + origName).replace('.', '_')
                 meth = testMethodFactory(test, methName)
                 logging.debug("Set %s.%s=%r" % (cls.__name__, methName, meth))

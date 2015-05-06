@@ -38,8 +38,6 @@ from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.nickname import isValidRouterNickname
-from bridgedb.util import remove_prefix
-from bridgedb.util import remove_suffix
 
 
 class PluggableTransportUnavailable(Exception):
@@ -1499,8 +1497,8 @@ class Bridge(BridgeBackwardsCompatibility):
             sequence = asn1.DerSequence()
 
             key = self.signingKey
-            key = remove_prefix(key, TOR_SIGNING_KEY_HEADER)
-            key = remove_suffix(key, TOR_SIGNING_KEY_FOOTER)
+            key = key.strip(TOR_SIGNING_KEY_HEADER)
+            key = key.strip(TOR_SIGNING_KEY_FOOTER)
             key = key.replace('\n', '')
             key = base64.b64decode(key)
 

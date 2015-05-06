@@ -35,7 +35,6 @@ from bridgedb import txrecaptcha
 from bridgedb.persistent import Conf
 from bridgedb.test.util import fileCheckDecorator
 from bridgedb.test.email_helpers import _createConfig
-from bridgedb.util import remove_suffix
 
 
 logging.disable(50)
@@ -101,7 +100,7 @@ class InitializeGnuPGTests(unittest.TestCase):
         :returns: The full path to the new gnupg home directory.
         """
         here         = os.getcwd()
-        topDir       = remove_suffix(here, '_trial_temp')
+        topDir       = here.rstrip('_trial_temp')
         gnupghome    = os.path.join(topDir, '.gnupg')
         gnupghomeNew = os.path.join(here, '.gnupg')
 

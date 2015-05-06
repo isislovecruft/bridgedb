@@ -17,7 +17,6 @@ from twisted.trial.unittest import SkipTest
 
 from bridgedb.test.util import processExists
 from bridgedb.test.util import getBridgeDBPID
-from bridgedb.util import remove_suffix
 
 # ------------- SMTP Client Config
 SMTP_DEBUG_LEVEL = 0  # set to 1 to see SMTP message exchange
@@ -119,7 +118,7 @@ class SMTPTests(unittest.TestCase):
         running.
         '''
         here = os.getcwd()
-        topdir = remove_suffix(here, '_trial_temp')
+        topdir = here.rstrip('_trial_temp')
         self.rundir = os.path.join(topdir, 'run')
         self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
         self.pid = getBridgeDBPID(self.pidfile)

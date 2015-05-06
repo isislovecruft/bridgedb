@@ -29,14 +29,13 @@ from twisted.trial import unittest
 from bridgedb import Main
 from bridgedb.Bridges import BridgeHolder
 from bridgedb.parse.options import parseOptions
-from bridgedb.util import remove_suffix
 
 
 logging.getLogger().disabled = True
 
 
 HERE = os.getcwd()
-TOPDIR = remove_suffix(HERE, '_trial_temp')
+TOPDIR = HERE.rstrip('_trial_temp')
 CI_RUNDIR = os.path.join(TOPDIR, 'run')
 
 # A networkstatus descriptor with two invalid ORAddress (127.0.0.1 and ::1)

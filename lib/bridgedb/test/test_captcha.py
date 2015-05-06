@@ -23,7 +23,6 @@ from zope.interface import providedBy
 
 from bridgedb import captcha
 from bridgedb import crypto
-from bridgedb.util import remove_suffix
 
 
 class CaptchaTests(unittest.TestCase):
@@ -98,7 +97,7 @@ class GimpCaptchaTests(unittest.TestCase):
 
     def setUp(self):
         here             = os.getcwd()
-        self.topDir      = remove_suffix(here, '_trial_temp')
+        self.topDir      = here.rstrip('_trial_temp')
         self.cacheDir    = os.path.join(self.topDir, 'captchas')
         self.badCacheDir = os.path.join(here, 'capt')
 
@@ -132,7 +131,7 @@ class GimpCaptchaTests(unittest.TestCase):
         """GimpCaptcha with bad cacheDir should raise GimpCaptchaError."""
         self.assertRaises(captcha.GimpCaptchaError, captcha.GimpCaptcha,
                           self.publik, self.sekrit, self.hmacKey,
-                          remove_suffix(self.cacheDir, 'chas'))
+                          self.cacheDir.rstrip('chas'))
 
     def test_init(self):
         """Test that __init__ correctly initialised all the values."""
@@ -239,7 +238,7 @@ class GimpCaptchaTests(unittest.TestCase):
         c = captcha.GimpCaptcha(self.publik, self.sekrit, self.hmacKey,
                                 self.cacheDir)
         image, challenge = c.get()
-        challengeBadB64 = remove_suffix(challenge, '==') + "\x42\x42\x42"
+        challengeBadB64 = challenge.rstrip('==') + "\x42\x42\x42"
         self.assertEquals(
             c.check(challenge, c.answer, c.secretKey, c.hmacKey),
             True)
