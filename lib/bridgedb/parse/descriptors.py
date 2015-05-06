@@ -172,7 +172,7 @@ def deduplicate(descriptors, statistics=False):
     .. note:: If two descriptors for the same router are discovered, AND both
         descriptors have the **same** published timestamp, then the router's
         fingerprint WILL BE LOGGED ON PURPOSE, because we assume that router
-        to be malicious (deliberately, or unintentionally).
+        to be broken or malicious.
 
     :param list descriptors: A list of
         :api:`stem.descriptor.server_descriptor.RelayDescriptor`s,
