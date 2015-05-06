@@ -38,6 +38,7 @@ from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.nickname import isValidRouterNickname
+from bridgedb.util import isascii_noncontrol
 
 
 class PluggableTransportUnavailable(Exception):
@@ -346,6 +347,14 @@ class PluggableTransport(BridgeAddressBase):
 
           2. The :data:`arguments` is a dictionary.
 
+          3. The :data:`arguments` do not contain non-ASCII or control
+              characters or double quotes or backslashes, in keys or
+              in values.
+
+          3. The :data:`fingerprint` and :data:`address` do not
+              contain non-ASCII or control characters or double quotes
+              or backslashes.
+
         :raises MalformedPluggableTransport: if any of the above checks fails.
         """
         if not self.fingerprint:
@@ -366,6 +375,42 @@ class PluggableTransport(BridgeAddressBase):
             raise MalformedPluggableTransport(
                 ("Cannot create PluggableTransport with arguments type: %s")
                 % type(self.arguments))
+
+        for k, v in self.arguments.items():
+            kv = ''.join((k, v))
+            if not isascii_noncontrol(kv):
+                raise MalformedPluggableTransport(
+                    ("Cannot create PluggableTransport with non-ASCII or "
+                     "control characters in arguments: %r=%r")
+                    % (k, v))
+            if '"' in kv or '\\' in kv:
+                raise MalformedPluggableTransport(
+                    ("Cannot create PluggableTransport with double quotes or "
+                     "backslashes in arguments: %r=%r")
+                    % (k, v))
+            pass
+
+        if not isascii_noncontrol(self.fingerprint):
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with non-ASCII or "
+                 "control characters in fingerprint: %r")
+                % self.fingerprint)
+        if '"' in self.fingerprint or '\\' in self.fingerprint:
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with double quotes or "
+                 "backslashes in fingerprint: %r")
+                % self.fingerprint)
+
+        if not isascii_noncontrol(self.address):
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with non-ASCII or "
+                 "control characters in address: %r")
+                % self.address)
+        if '"' in self.address or '\\' in self.address:
+            raise MalformedPluggableTransport(
+                ("Cannot create PluggableTransport with double quotes or "
+                 "backslashes in address: %r")
+                % self.address)
 
         if not self._checkArguments():
             raise MalformedPluggableTransport(
