@@ -770,7 +770,10 @@ class WebResourceBridges(resource.Resource):
 
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
-            rendered = bridgeLines
+            try:
+                rendered = bytes(bridgeLines)
+            except Exception as err:
+                rendered = replaceErrorPage(err)
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
             qrcode = None
