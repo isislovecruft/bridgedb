@@ -1105,10 +1105,23 @@ class Bridge(BridgeBackwardsCompatibility):
         :returns: All of this bridge's ORAddresses, as well as its ORPort IP
             address and port.
         """
-        addresses = self.orAddresses
-        # Add the default ORPort address (it will always be IPv4, otherwise
-        # Stem should have raised a ValueError during parsing):
-        addresses.append((self.address, self.orPort, 4))
+        # Force deep-copying of the orAddresses.  Otherwise, the later use of
+        # ``addresses.append()`` is both non-reentrant and non-idempotent, as
+        # it would change the value of ``Bridge.orAddresses``, as well as
+        # append a (possibly updated, if ``Bridge.address`` or
+        # ``Bridge.orPort`` changed!) new copy of the bridge's primary
+        # ORAddress each time this property is called.
+        addresses = self.orAddresses[:]
+
+        # Add the default ORPort address.  It will always be IPv4, otherwise
+        # Stem should have raised a ValueError during parsing.  But for
+        # testability, check which type it is:
+        version = 4
+        if isIPv6(self.address):
+            version = 6
+
+        addresses.append((self.address, self.orPort, version))
+
         return addresses
 
     def assertOK(self):
