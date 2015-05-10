@@ -1,19 +1,37 @@
-"""
-This module provides functionality for tracking bridge stability metrics, using
-the model introduced in [1] and implemented in [2].
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Stability -*-
+#
+# This file is part of BridgeDB, a Tor bridge distribution system.
+#
+# :authors: please see the AUTHORS file for attributions
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2013-2015, Matthew Finkel
+#             (c) 2012-2015, Aaron Gibson
+#             (c) 2007-2015, Nick Mathewson
+#             (c) 2007-2015, The Tor Project, Inc.
+# :license: see LICENSE for licensing information
 
-[1] Karsten Loesing, An Analysis of Tor Bridge Stability. Technical Report.
-The Tor Project, October 2011.
-https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf
+"""This module provides functionality for tracking bridge stability metrics.
 
-[2] https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java
+Bridge stability metrics are calculated using the model introduced in
+`"An Analysis of Tor Bridge Stability"`_ and
+`implemented in the Tor Metrics library`_.
+
+.. An Analysis of Tor Bridge Stability:
+    https://metrics.torproject.org/papers/bridge-stability-2011-10-31.pdf
+    Karsten Loesing, An Analysis of Tor Bridge Stability. Technical Report.
+    The Tor Project, October 2011.
+
+.. implemented in the Tor Metrics library:
+    https://gitweb.torproject.org/metrics-tasks/task-4255/SimulateBridgeStability.java
 """
+
 import logging
 import bridgedb.Storage
 
 # tunables 
 weighting_factor = float(19)/float(20)
 discountIntervalMillis = long(60*60*12*1000)
+
 
 class BridgeHistory(object):
     """ Record Class that tracks a single Bridge
