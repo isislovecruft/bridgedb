@@ -1715,7 +1715,8 @@ class BridgeTests(unittest.TestCase):
         self.bridge.updateFromServerDescriptor(self.serverdescriptor)
 
         obfs4 = self.extrainfo.transport['obfs4']
-        obfs4 = (u'1.1.1.1', 1111, obfs4[-1][-1].replace('iat-mode=0,', ''))
+        ptargs = [str(obfs4[-1][-1].replace('iat-mode=0', '')),]
+        obfs4 = (u'1.1.1.1', 1111, ptargs)
 
         self.extrainfo.transport['obfs4'] = obfs4
         self.bridge.updateFromExtraInfoDescriptor(self.extrainfo)
