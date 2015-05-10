@@ -28,6 +28,9 @@ Bridge stability metrics are calculated using the model introduced in
 import logging
 import bridgedb.Storage
 
+from bridgedb.schedule import toUnixSeconds
+
+
 # tunables 
 weighting_factor = float(19)/float(20)
 discountIntervalMillis = long(60*60*12*1000)
@@ -253,3 +256,40 @@ def updateWeightedTime(statusPublicationMillis):
 
         for bh in bhToUpdate:
             db.updateIntoBridgeHistory(bh)
+
+def updateBridgeHistory(bridges, timestamps):
+    """Process all the timestamps and update the bridge stability statistics in
+    the database.
+
+    .. warning: This function is extremely expensive, and will keep getting
+        more and more expensive, on a linearithmic scale, every time it is
+        called. Blame the :mod:`bridgedb.Stability` module.
+
+    :param dict bridges: All bridges from the descriptors, parsed into
+        :class:`bridgedb.bridges.Bridge`s.
+    :param dict timestamps: A dictionary whose keys are bridge fingerprints,
+        and whose values are lists of integers, each integer being a timestamp
+        (in seconds since Unix Epoch) for when a descriptor for that bridge
+        was published.
+    :rtype: dict
+    :returns: The original **timestamps**, but which each list of integers
+        (re)sorted.
+    """
+    logging.debug("Beginning bridge stability calculations")
+    sortedTimestamps = {}
+
+    for fingerprint, stamps in timestamps.items()[:]:
+        stamps.sort()
+        bridge = bridges[fingerprint]
+        for timestamp in stamps:
+            logging.debug(
+                ("Adding/updating timestamps in BridgeHistory for %s in "
+                 "database: %s") % (fingerprint, timestamp))
+            timestamp = toUnixSeconds(timestamp.timetuple())
+            addOrUpdateBridgeHistory(bridge, timestamp)
+        # Replace the timestamps so the next sort is (hopefully) less
+        # expensive:
+        sortedTimestamps[fingerprint] = stamps
+
+    logging.debug("Stability calculations complete")
+    return sortedTimestamps

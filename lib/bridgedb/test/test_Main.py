@@ -48,13 +48,15 @@ w Bandwidth=2094050
 p reject 1-65535
 '''
 
-def mockAddOrUpdateBridgeHistory(bridge, timestamp):
-    """A mocked version of :func:`bridgedb.Stability.addOrUpdateBridgeHistory`
+def mockUpdateBridgeHistory(bridges, timestamps):
+    """A mocked version of :func:`bridgedb.Stability.updateBridgeHistory`
     which doesn't access the database (so that we can test functions which
-    call it, like :func:`bridgedb.Main.updateBridgeHistory`).
+    call it, like :func:`bridgedb.Main.load`).
     """
-    print("Pretending to update Bridge %s with timestamp %s..." %
-          (bridge.fingerprint, timestamp))
+    for fingerprint, stamps in timestamps.items()[:]:
+        for timestamp in stamps:
+            print("Pretending to update Bridge %s with timestamp %s..." %
+                  (fingerprint, timestamp))
 
 
 class MockBridgeHolder(BridgeHolder):
@@ -170,23 +172,23 @@ class MainTests(unittest.TestCase):
 
         # Functions which some tests mock, which we'll need to re-replace
         # later in tearDown():
-        self._orig_addOrUpdateBridgeHistory = Main.addOrUpdateBridgeHistory
+        self._orig_updateBridgeHistory = Main.updateBridgeHistory
         self._orig_sys_argv = sys.argv
 
     def tearDown(self):
-        """Replace the mocked mockAddOrUpdateBridgeHistory() function with the
-        real function, Stability.addOrUpdateBridgeHistory().
+        """Replace the mocked mockUpdateBridgeHistory() function with the
+        real function, Stability.updateBridgeHistory().
         """
-        Main.addOrUpdateBridgeHistory = self._orig_addOrUpdateBridgeHistory
+        Main.updateBridgeHistory = self._orig_updateBridgeHistory
         sys.argv = self._orig_sys_argv
 
     def test_Main_updateBridgeHistory(self):
         """Main.updateBridgeHistory should update some timestamps for some
         bridges.
         """
-        # Mock the addOrUpdateBridgeHistory() function so that we don't try to
+        # Mock the updateBridgeHistory() function so that we don't try to
         # access the database:
-        Main.addOrUpdateBridgeHistory = mockAddOrUpdateBridgeHistory
+        Main.updateBridgeHistory = mockUpdateBridgeHistory
 
         # Get the bridges into the mocked splitter
         d = deferToThread(Main.load, self.state, self.splitter)
@@ -222,12 +224,12 @@ class MainTests(unittest.TestCase):
         """
         # Mock the addOrUpdateBridgeHistory() function so that we don't try to
         # access the database:
-        Main.addOrUpdateBridgeHistory = mockAddOrUpdateBridgeHistory
+        Main.updateBridgeHistory = mockUpdateBridgeHistory
         state = self.state
         state.COLLECT_TIMESTAMPS = True
 
         # The reactor is deferring this to a thread, so the test execution
-        # here isn't actually covering the Main.updateBridgeHistory()
+        # here isn't actually covering the Storage.updateBridgeHistory()
         # function:
         Main.load(state, self.splitter)
 

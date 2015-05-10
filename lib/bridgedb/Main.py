@@ -40,51 +40,13 @@ from bridgedb.configure import Conf
 from bridgedb.parse import descriptors
 from bridgedb.parse import options
 from bridgedb.parse.addr import isIPAddress
-from bridgedb.schedule import toUnixSeconds
 
 import bridgedb.Storage
 
 from bridgedb import Bridges
 from bridgedb import Dist
-from bridgedb.Stability import addOrUpdateBridgeHistory
+from bridgedb.Stability import updateBridgeHistory
 
-
-def updateBridgeHistory(bridges, timestamps):
-    """Process all the timestamps and update the bridge stability statistics in
-    the database.
-
-    .. warning: This function is extremely expensive, and will keep getting
-        more and more expensive, on a linearithmic scale, every time it is
-        called. Blame the :mod:`bridgedb.Stability` module.
-
-    :param dict bridges: All bridges from the descriptors, parsed into
-        :class:`bridgedb.bridges.Bridge`s.
-    :param dict timestamps: A dictionary whose keys are bridge fingerprints,
-        and whose values are lists of integers, each integer being a timestamp
-        (in seconds since Unix Epoch) for when a descriptor for that bridge
-        was published.
-    :rtype: dict
-    :returns: The original **timestamps**, but which each list of integers
-        (re)sorted.
-    """
-    logging.debug("Beginning bridge stability calculations")
-    sortedTimestamps = {}
-
-    for fingerprint, stamps in timestamps.items()[:]:
-        stamps.sort()
-        bridge = bridges[fingerprint]
-        for timestamp in stamps:
-            logging.debug(
-                ("Adding/updating timestamps in BridgeHistory for %s in "
-                 "database: %s") % (fingerprint, timestamp))
-            timestamp = toUnixSeconds(timestamp.timetuple())
-            addOrUpdateBridgeHistory(bridge, timestamp)
-        # Replace the timestamps so the next sort is (hopefully) less
-        # expensive:
-        sortedTimestamps[fingerprint] = stamps
-
-    logging.debug("Stability calculations complete")
-    return sortedTimestamps
 
 def load(state, splitter, clear=False):
     """Read and parse all descriptors, and load into a bridge splitter.
