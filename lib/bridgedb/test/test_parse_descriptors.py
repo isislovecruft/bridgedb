@@ -499,6 +499,9 @@ class ParseDescriptorsTests(unittest.TestCase):
 
     def test_parse_descriptors_parseExtraInfoFiles_benchmark_1000_bridges(self):
         """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``."""
+        raise SkipTest(("This test can take several minutes to complete. "
+                        "Run it on your own free time."))
+
         print()
         for i in range(1, 6):
             descFiles = self.createDuplicatesForBenchmark(b=1000, n=i)
@@ -509,7 +512,7 @@ class ParseDescriptorsTests(unittest.TestCase):
         """Benchmark test for ``b.p.descriptors.parseExtraInfoFiles``.
         The algorithm should grow linearly in the number of duplicates.
         """
-        raise SkipTest(("This test takes ~7 minutes to complete. "
+        raise SkipTest(("This test can take several minutes to complete. "
                         "Run it on your own free time."))
 
         print()
