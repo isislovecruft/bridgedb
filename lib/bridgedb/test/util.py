@@ -168,12 +168,19 @@ randomValidIPv4String = valid(randomIPv4String)
 randomValidIPv6String = valid(randomIPv6String)
 randomValidIPString   = valid(randomIPString)
 
+_FAKE_BRIDGES = []
+
 def generateFakeBridges(n=500):
     """Generate a set of **n** :class:`~bridgedb.bridges.Bridges` with random
     data.
     """
     from bridgedb.bridges import Bridge
     from bridgedb.bridges import PluggableTransport
+
+    global _FAKE_BRIDGES
+
+    if _FAKE_BRIDGES:
+        return _FAKE_BRIDGES
 
     bridges = []
 
@@ -199,6 +206,7 @@ def generateFakeBridges(n=500):
         bridge.orAddresses = addrs
         bridges.append(bridge)
 
+    _FAKE_BRIDGES = bridges
     return bridges
 
 
