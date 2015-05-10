@@ -988,6 +988,119 @@ class BridgeTests(unittest.TestCase):
                                                  bridgePrefix=True)
         self.assertEqual(bridgeline, 'Bridge [6bf3:806b:78cd::4ced:cfad:dad4]:36488')
 
+    def test_Bridge_allVanillaAddresses_idempotency_self(self):
+        """Bridge.allVanillaAddresses should be idempotent, i.e. calling
+        allVanillaAddresses should not affect the results of subsequent calls.
+        """
+        self.bridge.address = '1.1.1.1'
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+
+    def test_Bridge_allVanillaAddresses_idempotency_others(self):
+        """Bridge.allVanillaAddresses should be idempotent, i.e. calling
+        allVanillaAddresses should not affect any of the Bridge's other
+        attributes (such as Bridge.orAddresses).
+        """
+        self.bridge.address = '1.1.1.1'
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+    def test_Bridge_allVanillaAddresses_reentrancy_all(self):
+        """Bridge.allVanillaAddresses should be reentrant, i.e. updating the
+        Bridge's address, orPort, or orAddresses should update the value
+        returned by allVanillaAddresses.
+        """
+        self.bridge.address = '1.1.1.1'
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), None, 4)])
+        self.assertEqual(self.bridge.address, ipaddr.IPv4Address('1.1.1.1'))
+        self.assertEqual(self.bridge.orPort, None)
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertEqual(self.bridge.address, ipaddr.IPv4Address('1.1.1.1'))
+        self.assertEqual(self.bridge.orPort, 443)
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+        self.bridge.address = '2.2.2.2'
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('2.2.2.2'), 443, 4)])
+        self.assertEqual(self.bridge.address, ipaddr.IPv4Address('2.2.2.2'))
+        self.assertEqual(self.bridge.orPort, 443)
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+        self.bridge.orAddresses.append(
+            (ipaddr.IPv6Address('200::6ffb:11bb:a129'), 4443, 6))
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('2.2.2.2'), 443, 4),
+                               (ipaddr.IPv6Address('200::6ffb:11bb:a129'), 4443, 6)])
+        self.assertEqual(self.bridge.address, ipaddr.IPv4Address('2.2.2.2'))
+        self.assertEqual(self.bridge.orPort, 443)
+        self.assertItemsEqual(self.bridge.orAddresses,
+                         [(ipaddr.IPv6Address('200::6ffb:11bb:a129'), 4443, 6)])
+
+    def test_Bridge_allVanillaAddresses_reentrancy_orPort(self):
+        """Calling Bridge.allVanillaAddresses before Bridge.orPort is set
+        should return ``None`` for the port value, and after Bridge.orPort is
+        set, it should return the orPort.
+        """
+        self.bridge.address = '1.1.1.1'
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), None, 4)])
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+
+    def test_Bridge_allVanillaAddresses_reentrancy_address(self):
+        """Calling Bridge.allVanillaAddresses before Bridge.address is set
+        should return ``None`` for the address value, and after Bridge.address
+        is set, it should return the address.
+        """
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(None, 443, 4)])
+        self.bridge.address = '1.1.1.1'
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+
+    def test_Bridge_allVanillaAddresses_reentrancy_orAddresses(self):
+        """Calling Bridge.allVanillaAddresses before Bridge.orAddresses is set
+        should return only the Bridge's address and orPort.
+        """
+        self.bridge.address = '1.1.1.1'
+        self.bridge.orPort = 443
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+        self.assertItemsEqual(self.bridge.orAddresses, [])
+        self.bridge.orAddresses.append(
+            (ipaddr.IPv4Address('2.2.2.2'), 4443, 4))
+        self.assertItemsEqual(self.bridge.orAddresses,
+                              [(ipaddr.IPv4Address('2.2.2.2'), 4443, 4)])
+        self.assertItemsEqual(self.bridge.allVanillaAddresses,
+                              [(ipaddr.IPv4Address('2.2.2.2'), 4443, 4),
+                               (ipaddr.IPv4Address('1.1.1.1'), 443, 4)])
+
     def test_Bridge_updateORAddresses_valid_and_invalid(self):
         """Bridge._updateORAddresses() called with a mixture of valid and
         invalid ORAddress tuples should only retain the valid ones.
