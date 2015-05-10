@@ -120,11 +120,6 @@ class Flags(object):
         self.stable = 'Stable' in flags
         self.valid = 'Valid' in flags
 
-        if not self.running:
-            logging.debug("Bridge doesn't have the Running flag.")
-        if not self.stable:
-            logging.debug("Bridge doesn't have the Stable flag.")
-
 
 class BridgeAddressBase(object):
     """A base class for describing one of a :class:`Bridge`'s or a
