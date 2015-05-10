@@ -349,7 +349,7 @@ Changes in version 0.2.4 - 2015-02-03
         * FIXES #13123 https://bugs.torproject.org/13123
         Previously, there were two additional whitespace characters at the
         beginning of bridge lines handed out by BridgeDB's HTTPS
-        distributor, which would be annoying copy+pasted into TorLauncher
+        distributor, which would be annoyingly copy+pasted into TorLauncher
         and torrcs, etc.  These are now gone.
 
         * FIXES #12664 https://bugs.torproject.org/12664
@@ -389,7 +389,7 @@ And includes the following general changes:
 Changes in version 0.2.3 - 2014-07-26
 
         * FIXES #5463 https://bugs.torproject.org/5463
-        XXX
+        BridgeDB can now OpenPGP sign outgoing emails.
 
         * FIXES #9385 https://bugs.torproject.org/9385
         BridgeDB now has the ability to blacklist email addresses, and
@@ -543,7 +543,7 @@ Changes in version 0.2.2 - 2014-06-06
         If a user refreshed https://bridges.torproject.org/bridges after
         successfully solving a CAPTCHA, BridgeDB would reply with a new
         set of bridges for each page refresh. This was due to the use of
-        `getIterval()` in `IPBasedDistributor.getBridgesForIP()`.The
+        `getInterval()` in `IPBasedDistributor.getBridgesForIP()`.  The
         correct function to use is `getIntervalStart()`.  This had been
         noted in a "XXX FIXME" comment above the call for quite some time,
         however, when the `bridgedb.schedule` (previously called
