@@ -4,7 +4,6 @@
 
 import re
 
-from twisted.internet import defer
 from twisted.test.proto_helpers import StringTransport
 from twisted.trial import unittest
 
