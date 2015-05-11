@@ -19,6 +19,8 @@ import logging.config
 import logging.handlers
 import os
 
+from twisted.python import components
+
 
 class CacheError(Exception):
     """Raised when there is an error inserting or removing an item from a
@@ -185,6 +187,20 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
     )
     memo[key] = distance
     return distance
+
+def registerAdapter(adapter, adapted, interface):
+    """Register a Zope interface adapter for global use.
+
+    See :api:`twisted.python.components.registerAdapter` and the Twisted
+    Matrix Labs `howto documentation for components`_.
+
+    .. howto documentation for components:
+        https://twistedmatrix.com/documents/current/core/howto/components.html
+    """
+    try:
+        components.registerAdapter(adapter, adapted, interface)
+    except ValueError:  # An adapter class was already registered
+        pass
 
 
 class JustifiedLogFormatter(logging.Formatter):
