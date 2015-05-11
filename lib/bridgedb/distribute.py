@@ -103,8 +103,7 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
-# XXX
-#from bridgedb.hashring import IHashring
+from bridgedb.hashring import IHashring
 from bridgedb.interfaces import IName
 from bridgedb.interfaces import Named
 

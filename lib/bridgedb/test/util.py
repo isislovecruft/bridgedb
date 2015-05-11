@@ -25,6 +25,8 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.bridges import AdaptedBridge
+from bridgedb.interfaces import IName
 from bridgedb.parse.addr import isIPAddress
 
 
@@ -182,6 +184,8 @@ def generateFakeBridges(n=500):
     if _FAKE_BRIDGES:
         return _FAKE_BRIDGES
 
+    bdbutil.registerAdapter(AdaptedBridge, Bridge, IName)
+
     bridges = []
 
     for i in range(n):
@@ -294,3 +298,6 @@ class DummyMaliciousBridge(DummyBridge):
         "bad": "\nBridge 6.6.6.6:6666 0123456789abcdef0123456789abcdef01234567",
         "evil": "<script>alert('fuuuu');</script>",
     }
+
+
+bdbutil.registerAdapter(AdaptedBridge, DummyBridge, IName)
