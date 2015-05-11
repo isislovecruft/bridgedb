@@ -103,6 +103,8 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
+from bridgedb.crypto import getHMAC
+from bridgedb.crypto import getHMACFunc
 from bridgedb.hashring import IHashring
 from bridgedb.interfaces import IName
 from bridgedb.interfaces import Named
