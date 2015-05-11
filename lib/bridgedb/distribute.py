@@ -103,6 +103,8 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
+from bridgedb.crypto import getHMAC
+from bridgedb.crypto import getHMACFunc
 from bridgedb.hashring import IHashring
 from bridgedb.interfaces import IName
 from bridgedb.interfaces import Named
@@ -160,15 +162,16 @@ class Distributor(Named):
     _hashringLevelMin = 20
     _hashringLevelMax = 100
 
-    def __init__(self, key=None):
+    def __init__(self, key=str()):
         """Create a new bridge Distributor.
 
-        :param key: A master key for this Distributor. This is used to HMAC
+        :param str key: A master key for this Distributor. This is used to HMAC
             bridge and client data in order to arrange them into hashring
             structures.
         """
         super(Distributor, self).__init__()
         self._hashring = None
+        self._positionHMAC = getHMACFunc(getHMAC(key, "Hashring-Position"))
         self.key = key
 
     def __str__(self):
@@ -273,3 +276,20 @@ class Distributor(Named):
             :class:`~bridgedb.bridges.PluggableTransport` they wanted, etc.
         """
         # XXX generalise the getBridges() method
+
+    def getHashringPosition(self, interval, client):
+        """Map the **client** to a position on a (sub-)hashring, based upon
+        some data about the client and the **interval** in which the client's
+        request occurred.
+
+        :param str interval: The interval which this client's request for
+            bridges took place within.
+        :param str client: Some (possibly uniquely identifying) data about the
+            client who is requesting bridges.
+        :rtype: int
+        :returns: The results of keyed HMAC, which should determine the
+            client's position in a (sub)hashring of bridges (and thus
+            determine which bridges they receive).
+        """
+        position = "<%s>%s" % (interval, client)
+        return self._positionHMAC(position)
