@@ -264,8 +264,8 @@ class MainTests(unittest.TestCase):
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
-        # and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        # and an UnallocatedDistributor ring:
+        self.assertEqual(len(hashring.subrings), 3)
 
     def test_Main_createBridgeRings_with_proxyList(self):
         """Main.createBridgeRings() should add three hashrings to the
@@ -279,7 +279,7 @@ class MainTests(unittest.TestCase):
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        self.assertEqual(len(hashring.subrings), 3)
         self.assertGreater(len(httpsDist.proxies), 0)
         self.assertItemsEqual(exitRelays, httpsDist.proxies)
 
@@ -293,10 +293,15 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an EmailDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
-        self.assertNotIn('https', hashring.rings)
-        self.assertNotIn(httpsDist, hashring.ringsByName.values())
+        subringNames = [subring.name for subring in hashring.subrings]
+
+        # Should have an EmailDistributor ring, and an UnallocatedDistributor
+        # ring:
+        self.assertEqual(len(hashring.subrings), 2)
+        self.assertNotIn('(https)', subringNames)
+        self.assertIn('(email)', subringNames)
+        self.assertIn('(unallocated)', subringNames)
+        self.assertNotIn(httpsDist, hashring.subrings)
 
     def test_Main_createBridgeRings_no_email_dist(self):
         """When EMAIL_DIST=False, Main.createBridgeRings() should add only
@@ -308,10 +313,15 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                proxyList,
                                                                self.key)
-        # Should have an HTTPSDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
-        self.assertNotIn('email', hashring.rings)
-        self.assertNotIn(emailDist, hashring.ringsByName.values())
+        subringNames = [subring.name for subring in hashring.subrings]
+
+        # Should have an HTTPSDistributor ring, and an UnallocatedDistributor
+        # ring:
+        self.assertEqual(len(hashring.subrings), 2)
+        self.assertIn('(https)', subringNames)
+        self.assertNotIn('(email)', subringNames)
+        self.assertIn('(unallocated)', subringNames)
+        self.assertNotIn(emailDist, hashring.subrings)
 
     def test_Main_createBridgeRings_no_reserved_share(self):
         """When RESERVED_SHARE=0, Main.createBridgeRings() should add only
@@ -323,9 +333,13 @@ class MainTests(unittest.TestCase):
         (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
+        subringNames = [subring.name for subring in hashring.subrings]
+
         # Should have an HTTPSDistributor ring, and an EmailDistributor ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
-        self.assertNotIn('unallocated', hashring.rings)
+        self.assertEqual(len(hashring.subrings), 2)
+        self.assertIn('(https)', subringNames)
+        self.assertIn('(email)', subringNames)
+        self.assertNotIn('unallocated', subringNames)
 
     def test_Main_createBridgeRings_two_file_buckets(self):
         """When FILE_BUCKETS has two filenames in it, Main.createBridgeRings()
@@ -342,13 +356,17 @@ class MainTests(unittest.TestCase):
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor, and an
-        # UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        # UnallocatedDistributor ring:
+        self.assertEqual(len(hashring.subrings), 3)
 
-        # Should have two pseudoRings:
-        self.assertEqual(len(hashring.pseudoRings), 2)
-        self.assertIn('pseudo_bridges-for-support-desk', hashring.pseudoRings)
-        self.assertIn('pseudo_bridges-for-ooni-tests', hashring.pseudoRings)
+        for subring in hashring.subrings:
+            if "unallocated" in subring.name:
+                unallocated = subring
+
+        # The unallocated subring should exist, but it won't have any subrings
+        # until we export them from the databases:
+        self.assertIsNotNone(unallocated)
+        self.assertEqual(len(unallocated), 0)
 
     def test_Main_run(self):
         """Main.run() should run and then finally raise SystemExit."""
