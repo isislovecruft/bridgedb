@@ -93,17 +93,3 @@ def generateDescriptors(count=None, rundir=None):
                 print("Sucessfully generated %s descriptors." % str(count))
         del subprocess
         return statuscode
-
-def doDumpBridges(config):
-    """Dump bridges by assignment to a file.
-
-    This function handles the commandline '--dump-bridges' option.
-
-    :type config: :class:`bridgedb.Main.Conf`
-    :param config: The current configuration.
-    """
-    import bridgedb.Bucket as bucket
-
-    bucketManager = bucket.BucketManager(config)
-    bucketManager.assignBridgesToBuckets()
-    bucketManager.dumpBridges()
