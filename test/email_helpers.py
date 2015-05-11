@@ -127,15 +127,13 @@ class DummyEmailDistributor(object):
 
     _bridgesPerResponseMin = 3
 
-    def __init__(self, key=None, domainmap=None, domainrules=None,
-                 answerParameters=None):
+    def __init__(self, key=None, domainmap=None, domainrules=None, constraints=None):
         """None of the parameters are really used, ― they are just there to retain an
         identical method signature.
         """
         self.key = self.__class__.__name__
         self.domainmap = domainmap
         self.domainrules = domainrules
-        self.answerParameters = answerParameters
 
     def getBridges(self, bridgeRequest, epoch):
         return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
