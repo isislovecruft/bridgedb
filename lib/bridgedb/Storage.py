@@ -384,7 +384,7 @@ _OPENED_DB = None
 _REFCOUNT = 0
 
 def clearGlobalDB():
-    """Start from scratch
+    """Start from scratch.
 
     This is currently only used in unit tests.
     """
