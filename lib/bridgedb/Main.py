@@ -172,19 +172,6 @@ def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callInThread(_reloadFn)
 
-def _handleSIGUSR1(*args):
-    """Handler for SIGUSR1. Calls :func:`~bridgedb.runner.doDumpBridges`."""
-    logging.debug("Caught SIGUSR1 signal")
-
-    from bridgedb import runner
-
-    logging.info("Loading saved state...")
-    state = persistent.load()
-    cfg = loadConfig(state.CONFIG_FILE, state.config)
-
-    logging.info("Dumping bridge assignments to files...")
-    reactor.callInThread(runner.doDumpBridges, cfg)
-
 def replaceBridgeRings(current, replacement):
     """Replace the current thing with the new one"""
     current.hashring = replacement.hashring
@@ -282,7 +269,7 @@ def run(options, reactor=reactor):
     # :func:`logging.basicConfig` will be ignored.
     util.configureLogging(config)
 
-    if options['dump-bridges'] or (options.subCommand is not None):
+    if options.subCommand:
         runSubcommand(options, config)
 
     # Write the pidfile only after any options.subCommands are run (because
@@ -435,7 +422,6 @@ def run(options, reactor=reactor):
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
-    signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
     if reactor:
         # And actually load it to start parsing. Get back our distributors.
