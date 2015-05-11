@@ -82,22 +82,3 @@ class BridgeDBCliTest(unittest.TestCase):
         os.kill(self.pid, signal.SIGHUP)
         self.doSleep()
         self.assertTrue(os.path.isfile(self.assignmentsFile))
-
-    def test_bridgedb_SIGUSR1_buckets(self):
-        """Test that BridgeDB dumps buckets appropriately after a SIGUSR1."""
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        if not self.pid or not processExists(self.pid):
-            raise SkipTest("Can't run test: no BridgeDB process running.")
-
-        os.kill(self.pid, signal.SIGUSR1)
-        self.doSleep()
-        buckets = [['email', False], ['https', False], ['unallocated', False]]
-        for rundirfile in os.listdir(self.rundir):
-            for bucket in buckets:
-                if rundirfile.startswith(bucket[0]):
-                    bucket[1] = True
-                    break
-        for bucket in buckets:
-            self.assertTrue(bucket[1], "%s bucket was not dumped!" % bucket[0])
