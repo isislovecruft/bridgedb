@@ -17,9 +17,11 @@ from ipaddr import IPv4Address
 from ipaddr import IPv6Address
 
 from bridgedb.parse.addr import isIPv
+from bridgedb.util import Cache
 
 
-_cache = {}
+_cacheSize = 25
+_cache = Cache(_cacheSize)
 
 
 def bySubring(hmac, assigned, total):
