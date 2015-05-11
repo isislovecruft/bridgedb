@@ -171,8 +171,7 @@ class Distributor(Named):
         """
         super(Distributor, self).__init__()
         self._hashring = None
-        self._positionHMAC = getHMACFunc(
-            getHMAC(key, "Hashring-Position"), hex=False)
+        self._positionHMAC = getHMACFunc(getHMAC(key, "Hashring-Position"))
         self.key = key
 
     def __str__(self):
