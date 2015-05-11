@@ -174,7 +174,7 @@ class EmailDistributorTests(unittest.TestCase):
         clock.advance(2 * dist.emailRateMax)
 
         # The client should again a response with bridges.
-        self.assertEqual(len(dist.getBridges(bridgeRequest, 1)), 3)
+        self.assertEqual(len(dist.getBridges(bridgeRequest, 1)), 3, clock)
 
     def test_EmailDistributor_cleanDatabase(self):
         """Calling cleanDatabase() should cleanup email times in database, but
