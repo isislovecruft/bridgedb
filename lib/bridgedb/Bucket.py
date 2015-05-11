@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""
-This module is responsible for everything concerning file bucket bridge 
+"""This module is responsible for everything concerning file bucket bridge
 distribution. File bucket bridge distribution means that unallocated bridges 
-are allocated to a certain pseudo-distributor and later written to a file.
+are allocated to a certain bucket and later written to a file.
 
-For example, the following is a dict of pseudo-distributors (also called 
-'bucket identifiers') with numbers of bridges assigned to them:
+For example, the following is a dict of bridge buckets with the total number
+of bridges which each bucket should contain:
 
         FILE_BUCKETS = { "name1": 10, "name2": 15, "foobar": 3 }
 
@@ -19,23 +18,19 @@ trusted parties via mail or fed to other distribution mechanisms such as
 twitter.
 
 Note that in BridgeDB slang, the _distributor_ would still be 'unallocated',
-even though in the database, there would now by 'name1', 'name2' or 'foobar'
-instead of 'unallocated'. This is why they are called pseudo-distributors.
+even though in the database, the 'distributor' for a bridge within one of
+these buckets would be :data:`BUCKET_PREFIX` + 'name1', etc.
 """
 
 import logging
 import time
+
+from sqlite3 import DatabaseError
+
 import bridgedb.Storage
-import bridgedb.Bridges 
-import binascii
-import sqlite3
-from gettext import gettext as _
-toHex = binascii.b2a_hex
 
+from bridgedb.unallocated import BUCKET_PREFIX
 
-# What should pseudo distributors be prefixed with in the database so we can
-# distinguish them from real distributors?
-PSEUDO_DISTRI_PREFIX = "pseudo_"
 
 # Set to rediculously high number
 BUCKET_MAX_BRIDGES = 1000000
@@ -46,7 +41,7 @@ class BucketData(object):
     allocated, the name of the bucket, and other similar data.
 
     :param str name: The name of this bucket (from the config file). This will
-        be prefixed by the :data:`PSEUDO_DISTRIBUTOR_PREFIX`.
+        be prefixed by the :data:`BUCKET_PREFIX`.
     :type needed: str or int
     :param needed: The number of bridges needed for this bucket (also from the
         config file).
@@ -58,6 +53,7 @@ class BucketData(object):
             needed = BUCKET_MAX_BRIDGES
         self.needed = int(needed)
         self.allocated = 0
+
 
 class BucketManager(object):
     """BucketManager reads a number of file bucket identifiers from the config.
@@ -104,9 +100,9 @@ class BucketManager(object):
     :ivar list unallocatedList: Holds all bridges from the 'unallocated' pool.
     :ivar bool unallocated_available: Is at least one unallocated bridge
         available?
-    :ivar str distributor_prefix: The 'distributor' field in the database will
-        hold the name of our pseudo-distributor, prefixed by this string. By
-        default, this uses :data:`PSEUDO_DISTRIBUTOR_PREFIX`.
+    :ivar str _prefix: The 'distributor' field in the database will
+        hold the name of this bucket, prefixed by this string. By default,
+        this uses :data:`BUCKET_PREFIX`.
     :ivar db: The bridge database instance.
     """
 
@@ -120,7 +116,7 @@ class BucketManager(object):
         self.bucketList = []
         self.unallocatedList = []
         self.unallocated_available = False
-        self.distributor_prefix = PSEUDO_DISTRI_PREFIX
+        self.distributor_prefix = BUCKET_PREFIX
 
     def addToUnallocatedList(self, hex_key):
         """Add a bridge by **hex_key** into the unallocated pool."""
@@ -229,60 +225,3 @@ class BucketManager(object):
                     # from list
                     self.bucketList.remove(d)
 
-    def dumpBridgesToFile(self, filename, bridges):
-        """Dump a list of given **bridges** into **filename**."""
-        logging.debug("Dumping bridge assignments to file: %r" % filename)
-        # get the bridge histories and sort by Time On Same Address
-        bridgeHistories = []
-        with bridgedb.Storage.getDB() as db:
-            for b in bridges:
-                if self.cfg.COLLECT_TIMESTAMPS:
-                    bh = db.getBridgeHistory(b.hex_key)
-                    if bh: bridgeHistories.append(bh)
-                    bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
-                                     y.weightedFractionalUptime))
-
-            try:
-                f = open(filename, 'w')
-                if self.cfg.COLLECT_TIMESTAMPS:
-                    for bh in bridgeHistories:
-                        days = bh.tosa / long(60*60*24)
-                        line = "%s:%s\t(%d days at this address)" %  \
-                               (bh.ip, bh.port, days)
-                        if str(bh.fingerprint) in blocklist.keys():
-                            line = line + "\t(Might be blocked): (%s)" % \
-                                   ",".join(blocklist[bh.fingerprint])
-                        f.write(line + '\n')
-                else:
-                    for bridge in bridges:
-                        line = "%s:%d %s" \
-                               % (bridge.address, bridge.or_port, bridge.hex_key)
-                        f.write(line + '\n')
-                f.close()
-            except IOError:
-                print "I/O error: %s" % filename
-
-    def dumpBridges(self):
-        """Dump all known file distributors to files, sorted by distributor."""
-        logging.info("Dumping all distributors to file.")
-        with bridgedb.Storage.getDB() as db:
-            allBridges = db.getAllBridges()
-        bridgeDict = {}
-        # Sort returned bridges by distributor
-        for bridge in allBridges:
-            dist = str(bridge.distributor)
-            if dist in bridgeDict.keys():
-                bridgeDict[dist].append(bridge)
-            else:
-                bridgeDict[dist] = [bridge]
-
-        # Now dump to file(s)
-        for k in bridgeDict.keys():
-            dist = k
-            if (dist.startswith(self.distributor_prefix)):
-                # Subtract the pseudo distributor prefix
-                dist = dist.replace(self.distributor_prefix, "")
-            # Be safe. Replace all '/' in distributor names
-            dist = dist.replace("/", "_")
-            filename = dist + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
-            self.dumpBridgesToFile(filename, bridgeDict[k])
