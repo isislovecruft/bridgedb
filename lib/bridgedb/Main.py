@@ -524,12 +524,6 @@ def runSubcommand(options, config):
             statuscode = runner.generateDescriptors(
                 options.subOptions['descriptors'], config.RUN_IN_DIR)
 
-        if options.subCommand == 'test':
-            if options.subOptions['trial']:
-                runner.runTrial(options.subOptions)
-            if options.subOptions['unittests']:
-                runner.runTests(options.subOptions)
-
         logging.info("Subcommand '%s' finished with status %s."
                      % (options.subCommand, statuscode))
         sys.exit(statuscode)

@@ -36,7 +36,6 @@ bridgedb.parse.options
        |
        |__ MockOptions - Suboptions for creating fake bridge descriptors for
        |                 testing purposes.
-       |__ TestOptions - Suboptions for running twisted.trial based unittests.
        \__ MainOptions - Main commandline options parser for BridgeDB.
 ..
 """
