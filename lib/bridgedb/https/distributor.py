@@ -23,10 +23,9 @@ from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.distribute import Distributor
-from bridgedb.filters import assignBridgesToSubring
-from bridgedb.filters import byFilters
 from bridgedb.filters import byIPv4
 from bridgedb.filters import byIPv6
+from bridgedb.filters import bySubring
 
 
 class HTTPSDistributor(Distributor):
