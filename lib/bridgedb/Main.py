@@ -42,6 +42,7 @@ from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 from bridgedb.parse import options
 from bridgedb.parse.addr import isIPAddress
+from bridgedb.unallocated import UnallocatedDistributor
 
 import bridgedb.Storage
 
@@ -233,13 +234,10 @@ def createBridgeRings(cfg, proxyList, key):
 
     # As appropriate, tell the hashring to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
-        hashring.addRing(Bridges.UnallocatedHolder(),
-                         "unallocated",
-                         cfg.RESERVED_SHARE)
-
-    # Add pseudo distributors to hashring
-    for pseudoRing in cfg.FILE_BUCKETS.keys():
-        hashring.addPseudoRing(pseudoRing)
+        unallocatedDistributor = UnallocatedDistributor(
+            crypto.getHMAC(key, "Unallocated-Distributor-Key"))
+        hashring.addSubring(unallocatedDistributor.hashring,
+                            "unallocated", proportion=cfg.RESERVED_SHARE)
 
     return hashring, emailDistributor, ipDistributor
 
