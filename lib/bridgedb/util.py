@@ -199,7 +199,7 @@ def registerAdapter(adapter, adapted, interface):
     """
     try:
         components.registerAdapter(adapter, adapted, interface)
-    except Exception:
+    except ValueError:  # An adapter class was already registered
         pass
 
 
