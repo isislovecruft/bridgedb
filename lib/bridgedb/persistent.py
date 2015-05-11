@@ -23,7 +23,6 @@ except (ImportError, NameError):  # pragma: no cover
 from twisted.python.reflect import safe_repr
 from twisted.spread import jelly
 
-from bridgedb import Bridges
 from bridgedb import filters
 from bridgedb.email import distributor as emailDistributor
 from bridgedb.https import distributor as httpsDistributor
@@ -35,7 +34,7 @@ _state = None
 #: Types and classes which are allowed to be jellied:
 _security = jelly.SecurityOptions()
 #_security.allowInstancesOf(ProxySet)
-_security.allowModules(filters, Bridges, emailDistributor, httpsDistributor)
+_security.allowModules(filters, emailDistributor, httpsDistributor)
 
 
 class MissingState(Exception):
