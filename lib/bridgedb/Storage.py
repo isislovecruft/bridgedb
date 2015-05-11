@@ -9,7 +9,6 @@ import binascii
 import sqlite3
 import time
 import hashlib
-from contextlib import contextmanager
 from contextlib import GeneratorContextManager
 from functools import wraps
 from ipaddr import IPAddress, IPv6Address, IPv4Address
