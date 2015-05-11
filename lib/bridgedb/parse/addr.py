@@ -318,7 +318,7 @@ def isIPAddress(ip, compressed=True):
                 return ip
     return False
 
-def _isIPv(version, ip):
+def isIPv(version, ip):
     """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
     .. warning: Do *not* put any calls to the logging module in this function,
@@ -352,7 +352,7 @@ def isIPv4(ip):
     :rtype: boolean
     :returns: True if the address is an IPv4 address.
     """
-    return _isIPv(4, ip)
+    return isIPv(4, ip)
 
 def isIPv6(ip):
     """Check if an address is IPv6.
@@ -364,7 +364,7 @@ def isIPv6(ip):
     :rtype: boolean
     :returns: True if the address is an IPv6 address.
     """
-    return _isIPv(6, ip)
+    return isIPv(6, ip)
 
 def isValidIP(ip):
     """Check that an IP (v4 or v6) is valid.

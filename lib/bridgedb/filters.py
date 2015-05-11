@@ -16,44 +16,13 @@ import logging
 from ipaddr import IPv4Address
 from ipaddr import IPv6Address
 
-from bridgedb.parse.addr import isIPv4
-from bridgedb.parse.addr import isIPv6
+from bridgedb.parse.addr import isIPv
 
 
 _cache = {}
 
 
-def byIPv4(bridge):
-    """Return ``True`` if at least one of the **bridge**'s addresses is IPv4.
-
-    :type bridge: :class:`~bridgedb.bridges.Bridge`.
-    :param bridge: The bridge to check.
-    """
-    if isIPv4(bridge.address):
-        return True
-    else:
-        for address, port, version in bridge.allVanillaAddresses:
-            if version == 4 or isIPv4(address):
-                return True
-    return False
-setattr(byIPv4, "description", "ip=4")
-
-def byIPv6(bridge):
-    """Return ``True`` if at least one of the **bridge**'s addresses is IPv6.
-
-    :type bridge: :class:`~bridgedb.bridges.Bridge`.
-    :param bridge: The bridge to check.
-    """
-    if isIPv6(bridge.address):
-        return True
-    else:
-        for address, port, version in bridge.allVanillaAddresses:
-            if version == 6 or isIPv6(address):
-                return True
-    return False
-setattr(byIPv6, "description", "ip=6")
-
-def assignBridgesToSubring(hmac, assigned, total):
+def bySubring(hmac, assigned, total):
     """Create a filter function which filters for only the bridges which fall
     into the same **assigned** subhashring (based on the results of an **hmac**
     function).
@@ -71,21 +40,23 @@ def assignBridgesToSubring(hmac, assigned, total):
     """
     logging.debug(("Creating a filter for assigning bridges to subhashring "
                    "%s-of-%s...") % (assigned, total))
-    ruleset = frozenset([hmac, "%sof%s" % (assigned, total)])
+
+    name = "-".join([str(hmac("")[:8]).encode('hex'),
+                     str(assigned), "of", str(total)])
     try:
-        return _cache[ruleset]
+        return _cache[name]
     except KeyError:
-        def _assignBridgesToSubring(bridge):
-            position = long(hmac(bridge.identity)[:8], 16)
+        def _bySubring(bridge):
+            position = int(hmac(bridge.identity)[:8], 16)
             which = (position % total) + 1
             return True if which == assigned else False
-        _assignBridgesToSubring.__name__ = ("assignBridgesToSubring%sof%s"
-                                            % (assigned, total))
         # The `description` attribute must contain an `=`, or else
         # dumpAssignments() will not work correctly.
-        setattr(_assignBridgesToSubring, "description", "ring=%d" % assigned)
-        _cache[ruleset] = _assignBridgesToSubring
-        return _assignBridgesToSubring
+        setattr(_bySubring, "description", "ring=%d" % assigned)
+        _bySubring.__name__ = ("bySubring%sof%s" % (assigned, total))
+        _bySubring.name = name
+        _cache[name] = _bySubring
+        return _bySubring
 
 def byFilters(filtres):
     """Returns a filter which filters by multiple **filtres**.
@@ -96,9 +67,13 @@ def byFilters(filtres):
     :rtype: callable
     :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
     """
-    ruleset = frozenset(filtres)
+    name = []
+    for filtre in filtres:
+        name.extend(filtre.name.split(" "))
+    name = " ".join(set(name))
+
     try:
-        return _cache[ruleset]
+        return _cache[name]
     except KeyError:
         def _byFilters(bridge):
             results = [f(bridge) for f in filtres]
@@ -107,37 +82,41 @@ def byFilters(filtres):
             return True
         setattr(_byFilters, "description",
                 " ".join([getattr(f, "description", "") for f in filtres]))
-        _cache[ruleset] = _byFilters
+        _byFilters.name = name
+        _cache[name] = _byFilters
         return _byFilters
 
-def byNotBlockedIn(countryCode):
-    """Returns a filter function for :class:`~bridgedb.bridges.Bridge`s.
+def byIPv(ipVersion=None):
+    """Return ``True`` if at least one of the **bridge**'s addresses has the
+    specified **ipVersion**.
 
-    The returned filter function should be called on a
-    :class:`~bridgedb.bridges.Bridge`.  It returns ``True`` if any of the
-    ``Bridge``'s addresses or :class:`~bridgedb.bridges.PluggableTransport`
-    addresses aren't blocked in **countryCode**.  See
-    :meth:`~bridgedb.bridges.Bridge.isBlockedIn`.
-
-    :param str countryCode: A two-letter country code.
-    :rtype: callable
-    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    :param int ipVersion: Either ``4`` or ``6``.
     """
-    countryCode = countryCode.lower()
-    ruleset = frozenset([countryCode])
-    try:
-        return _cache[ruleset]
-    except KeyError:
-        def _byNotBlockedIn(bridge):
-            if bridge.isBlockedIn(countryCode):
-                return False
-            return True
-        _byNotBlockedIn.__name__ = "byNotBlockedIn(%s)" % countryCode
-        setattr(_byNotBlockedIn, "description", "unblocked=%s" % countryCode)
-        _cache[ruleset] = _byNotBlockedIn
-        return _byNotBlockedIn
+    if not ipVersion in (4, 6):
+        ipVersion = 4
 
-def byTransport(methodname, addressClass=None):
+    name = "ipv%d" % ipVersion
+    try:
+        return _cache[name]
+    except KeyError:
+        def _byIPv(bridge):
+            if isIPv(ipVersion, bridge.address):
+                return True
+            else:
+                for address, port, version in bridge.allVanillaAddresses:
+                    if version == ipVersion or isIPv(ipVersion, address):
+                        return True
+            return False
+        setattr(_byIPv, "description", "ip=%d" % ipVersion)
+        _byIPv.__name__ = "byIPv%d()" % ipVersion
+        _byIPv.name = name
+        _cache[name] = _byIPv
+        return _byIPv
+
+byIPv4 = byIPv(4)
+byIPv6 = byIPv(6)
+
+def byTransport(methodname=None, ipVersion=None):
     """Returns a filter function for :class:`~bridgedb.bridges.Bridge`s.
 
     The returned filter function should be called on a
@@ -152,91 +131,108 @@ def byTransport(methodname, addressClass=None):
 
     :param str methodname: A Pluggable Transport
         :data:`~bridge.bridges.PluggableTransport.methodname`.
-    :type addressClass: ``ipaddr.IPAddress``
-    :param addressClass: The IP version that the ``Bridge``'s
-        ``PluggableTransport``
+    :param int ipVersion: Either ``4`` or ``6``. The IP version that the
+        ``Bridge``'s ``PluggableTransport``
         :data:`~bridgedb.bridges.PluggableTransport.address`` should have.
     :rtype: callable
     :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
     """
-    if not ((addressClass is IPv4Address) or (addressClass is IPv6Address)):
-        addressClass = IPv4Address
+    if not ipVersion in (4, 6):
+        ipVersion = 4
+    if not methodname:
+        return byIPv(ipVersion)
 
-    # Ignore case
     methodname = methodname.lower()
+    name = "transport-%s ipv%d" % (methodname, ipVersion)
 
-    ruleset = frozenset([methodname, addressClass.__name__])
     try:
-        return _cache[ruleset]
+        return _cache[name]
     except KeyError:
         def _byTransport(bridge):
             for transport in bridge.transports:
-                if (transport.methodname == methodname and
-                    isinstance(transport.address, addressClass)):
-                    return True
+                if transport.methodname == methodname:
+                    if transport.address.version == ipVersion:
+                        return True
             return False
-        _byTransport.__name__ = "byTransport(%s,%s)" % (methodname, addressClass)
         setattr(_byTransport, "description", "transport=%s" % methodname)
-        _cache[ruleset] = _byTransport
+        _byTransport.__name__ = "byTransport(%s,%s)" % (methodname, ipVersion)
+        _byTransport.name = name
+        _cache[name] = _byTransport
         return _byTransport
 
-def byTransportNotBlockedIn(methodname, countryCode=None, addressClass=None):
+def byNotBlockedIn(countryCode=None, methodname=None, ipVersion=4):
     """Returns a filter function for :class:`~bridgedb.bridges.Bridge`s.
 
-    The returned filter function should be called on a
-    :class:`~bridgedb.bridges.Bridge`.  It returns ``True`` if the ``Bridge``
-    has a :class:`~bridgedb.bridges.PluggableTransport` such that:
+    If a Pluggable Transport **methodname** was not specified, the returned
+    filter function returns ``True`` if any of the ``Bridge``'s addresses or
+    :class:`~bridgedb.bridges.PluggableTransport` addresses aren't blocked in
+    **countryCode**.  See :meth:`~bridgedb.bridges.Bridge.isBlockedIn`.
+
+    Otherwise, if a Pluggable Transport **methodname** was specified, it
+    returns ``True`` if the ``Bridge`` has a
+    :class:`~bridgedb.bridges.PluggableTransport` such that:
 
       1. The :data:`~bridge.bridges.PluggableTransport.methodname` matches
          **methodname**,
 
-      2. The :data:`~bridgedb.bridges.PluggableTransport.address`` is an
-         instance of **addressClass**, and isn't known to be blocked in
+      2. The :data:`~bridgedb.bridges.PluggableTransport.address.version``
+         equals the **ipVersion**, and isn't known to be blocked in
          **countryCode**.
 
-    :param str methodname: A Pluggable Transport
-        :data:`~bridge.bridges.PluggableTransport.methodname`.
     :type countryCode: str or ``None``
     :param countryCode: A two-letter country code which the filtered
         :class:`PluggableTransport`s should not be blocked in.
-    :type addressClass: ``ipaddr.IPAddress``
-    :param addressClass: The IP version that the ``Bridge``'s
-        ``PluggableTransport``
-        :data:`~bridgedb.bridges.PluggableTransport.address`` should have.
+    :param str methodname: A Pluggable Transport
+        :data:`~bridge.bridges.PluggableTransport.methodname`.
+    :param int ipVersion: Either ``4`` or ``6``. The IP version that the
+        ``Bridge``'s addresses should have.
     :rtype: callable
     :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
     """
+    if not ipVersion in (4, 6):
+        ipVersion = 4
     if not countryCode:
-        return byTransport(methodname, addressClass)
+        return byTransport(methodname, ipVersion)
 
-    if not ((addressClass is IPv4Address) or (addressClass is IPv6Address)):
-        addressClass = IPv4Address
-
-    # Ignore case
-    methodname = methodname.lower()
+    methodname = methodname.lower() if methodname else methodname
     countryCode = countryCode.lower()
 
-    ruleset = frozenset([methodname, countryCode, addressClass.__name__])
+    name = []
+    if methodname:
+        name.append("transport-%s" % methodname)
+    name.append("ipv%d" % ipVersion)
+    name.append("not-blocked-in-%s" % countryCode)
+    name = " ".join(name)
+
     try:
-        return _cache[ruleset]
+        return _cache[name]
     except KeyError:
-        def _byTransportNotBlockedIn(bridge):
-            # Since bridge.transportIsBlockedIn() will return True if the
-            # bridge has that type of transport AND that transport is blocked,
-            # we can "fail fast" here by doing this faster check before
-            # iterating over all the transports testing for the other
-            # conditions.
-            if bridge.transportIsBlockedIn(countryCode, methodname):
-                return False
-            else:
-                for transport in bridge.transports:
-                    if (transport.methodname == methodname and
-                        isinstance(transport.address, addressClass)):
+        def _byNotBlockedIn(bridge):
+            if not methodname:
+                return not bridge.isBlockedIn(countryCode)
+            elif methodname == "vanilla":
+                if bridge.address.version == ipVersion:
+                    if not bridge.addressIsBlockedIn(countryCode,
+                                                     bridge.address,
+                                                     bridge.orPort):
                         return True
+            else:
+                # Since bridge.transportIsBlockedIn() will return True if the
+                # bridge has that type of transport AND that transport is
+                # blocked, we can "fail fast" here by doing this faster check
+                # before iterating over all the transports testing for the
+                # other conditions.
+                if bridge.transportIsBlockedIn(countryCode, methodname):
+                    return False
+                else:
+                    for transport in bridge.transports:
+                        if transport.methodname == methodname:
+                            if transport.address.version == ipVersion:
+                                return True
             return False
-        _byTransportNotBlockedIn.__name__ = ("byTransportNotBlockedIn(%s,%s,%s)"
-                                             % (methodname, countryCode, addressClass))
-        setattr(_byTransportNotBlockedIn, "description",
-                "transport=%s unblocked=%s" % (methodname, countryCode))
-        _cache[ruleset] = _byTransportNotBlockedIn
-        return _byTransportNotBlockedIn
+        setattr(_byNotBlockedIn, "description", "unblocked=%s" % countryCode)
+        _byNotBlockedIn.__name__ = ("byTransportNotBlockedIn(%s,%s,%s)"
+                                    % (methodname, countryCode, ipVersion))
+        _byNotBlockedIn.name = name
+        _cache[name] = _byNotBlockedIn
+        return _byNotBlockedIn

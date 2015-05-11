@@ -11,20 +11,17 @@
 #_____________________________________________________________________________
 
 
-import logging
-
 import ipaddr
+import logging
 
 from zope.interface import implements
 from zope.interface import Attribute
 from zope.interface import Interface
 
 from bridgedb.crypto import getHMACFunc
-from bridgedb.filters import byIPv4
-from bridgedb.filters import byIPv6
+from bridgedb.filters import byIPv
 from bridgedb.filters import byNotBlockedIn
 from bridgedb.filters import byTransport
-from bridgedb.filters import byTransportNotBlockedIn
 
 
 class IRequestBridges(Interface):
@@ -177,20 +174,22 @@ class BridgeRequestBase(object):
     def generateFilters(self):
         self.clearFilters()
 
-        transport = self.justOnePTType()
+        pt = self.justOnePTType()
+        msg = ("Adding a filter to %s for %s for IPv%d"
+               % (self.__class__.__name__, self.client, self.ipVersion))
 
-        if transport:
-            if self.notBlockedIn:
-                for country in self.notBlockedIn:
-                    self.addFilter(byTransportNotBlockedIn(transport,
-                                                           country.lower(),
-                                                           self.addressClass))
-            else:
-                self.addFilter(byTransport(transport, self.addressClass))
-        else:
-            if self.addressClass is ipaddr.IPv6Address:
-                self.addFilter(byIPv6)
-            else:
-                self.addFilter(byIPv4)
+        self.ipVersion = 4
+        if self.addressClass is ipaddr.IPv6Address:
+            self.ipVersion = 6
+
+        if self.notBlockedIn:
             for country in self.notBlockedIn:
-                self.addFilter(byNotBlockedIn(country.lower()))
+                logging.info("%s %s bridges not blocked in %s..." %
+                             (msg, pt or "vanilla", country))
+                self.addFilter(byNotBlockedIn(country, pt, self.ipVersion))
+        elif pt:
+            logging.info("%s %s bridges..." % (msg, pt))
+            self.addFilter(byTransport(pt, self.ipVersion))
+        else:
+            logging.info("%s bridges..." % msg)
+            self.addFilter(byIPv(self.ipVersion))

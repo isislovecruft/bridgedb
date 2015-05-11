@@ -98,7 +98,7 @@ class FiltersTests(unittest.TestCase):
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '2006:2222::2222', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransport('voltron', addressClass=ipaddr.IPv6Address)
+        filtre = filters.byTransport('voltron', ipVersion=6)
         self.assertTrue(filtre(bridge))
 
     def test_byTransport_no_transports(self):
@@ -119,106 +119,104 @@ class FiltersTests(unittest.TestCase):
         filtre = filters.byTransport('voltron')
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_no_countryCode_with_transport_ipv4(self):
+    def test_byNotBlockedIn_no_countryCode_with_transport_ipv4(self):
         """A bridge with an IPv4 voltron transport should cause
-        byTransportNotBlockedIn('voltron') to return True (because it calls
+        byNotBlockedIn('voltron') to return True (because it calls
         filters.byTransport).
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '1.1.1.1', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransportNotBlockedIn('voltron')
+        filtre = filters.byNotBlockedIn(None, methodname='voltron')
         self.assertTrue(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_no_countryCode_with_transport_ipv6(self):
+    def test_byNotBlockedIn_no_countryCode_with_transport_ipv6(self):
         """A bridge with an IPv6 voltron transport should cause
-        byTransportNotBlockedIn('voltron') to return True (because it calls
+        byNotBlockedIn('voltron') to return True (because it calls
         filters.byTransport).
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '2006:2222::2222', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransportNotBlockedIn('voltron', addressClass=ipaddr.IPv6Address)
+        filtre = filters.byNotBlockedIn(None, methodname='voltron', ipVersion=6)
         self.assertTrue(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_with_transport_ipv4(self):
+    def test_byNotBlockedIn_with_transport_ipv4(self):
         """A bridge with an IPv4 voltron transport should cause
-        byTransportNotBlockedIn('voltron') to return True.
+        byNotBlockedIn('voltron') to return True.
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '1.1.1.1', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransportNotBlockedIn('voltron', 'CN')
+        filtre = filters.byNotBlockedIn('CN', methodname='voltron')
         self.assertTrue(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_with_transport_ipv4_blocked(self):
+    def test_byNotBlockedIn_with_transport_ipv4_blocked(self):
         """A bridge with an IPv4 voltron transport which is blocked should
-        cause byTransportNotBlockedIn('voltron') to return False.
+        cause byNotBlockedIn('voltron') to return False.
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '1.1.1.1', 1111, {})
         bridge.transports.append(pt)
         bridge.setBlockedIn('CN')
-        filtre = filters.byTransportNotBlockedIn('voltron', 'CN')
+        filtre = filters.byNotBlockedIn('CN', methodname='voltron')
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_with_transport_ipv6(self):
+    def test_byNotBlockedIn_with_transport_ipv6(self):
         """A bridge with an IPv6 voltron transport should cause
-        byTransportNotBlockedIn('voltron') to return True.
+        byNotBlockedIn('voltron') to return True.
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '2006:2222::2222', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn',
-                                                 addressClass=ipaddr.IPv6Address)
+        filtre = filters.byNotBlockedIn('cn', 'voltron', ipVersion=6)
         self.assertTrue(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_with_transport_ipv6_blocked(self):
+    def test_byNotBlockedIn_with_transport_ipv6_blocked(self):
         """A bridge with an IPv6 voltron transport which is blocked should
-        cause byTransportNotBlockedIn('voltron') to return False.
+        cause byNotBlockedIn('voltron') to return False.
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'voltron', '2006:2222::2222', 1111, {})
         bridge.transports.append(pt)
         bridge.setBlockedIn('CN')
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn',
-                                                 addressClass=ipaddr.IPv6Address)
+        filtre = filters.byNotBlockedIn('cn', 'voltron', ipVersion=6)
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_no_countryCode_no_transports(self):
+    def test_byNotBlockedIn_no_countryCode_no_transports(self):
         """A bridge without any transports should cause
-        byTransportNotBlockedIn('voltron') to return False (because it calls
+        byNotBlockedIn('voltron') to return False (because it calls
         filters.byTransport()).
         """
         bridge = Bridge()
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn')
+        filtre = filters.byNotBlockedIn(None, methodname='voltron')
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_no_transports(self):
+    def test_byNotBlockedIn_no_transports(self):
         """A bridge without any transports should cause
-        byTransportNotBlockedIn('voltron') to return False.
+        byNotBlockedIn('voltron') to return False.
         """
         bridge = Bridge()
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn')
+        filtre = filters.byNotBlockedIn('cn', methodname='voltron')
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_no_transports_blocked(self):
+    def test_byNotBlockedIn_no_transports_blocked(self):
         """A bridge without any transports which is also blocked should cause
-        byTransportNotBlockedIn('voltron') to return False.
+        byNotBlockedIn('voltron') to return False.
         """
         bridge = Bridge()
         bridge.address = '1.1.1.1'
         bridge.orPort = 1111
         bridge.setBlockedIn('cn')
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn')
+        filtre = filters.byNotBlockedIn('cn', methodname='voltron')
         self.assertFalse(filtre(bridge))
 
-    def test_byTransportNotBlockedIn_wrong_transport(self):
+    def test_byNotBlockedIn_wrong_transport(self):
         """A bridge with only an obfs3 transport should cause
-        byTransportNotBlockedIn('voltron') to return False.
+        byNotBlockedIn('voltron') to return False.
         """
         bridge = Bridge()
         pt = PluggableTransport('a'*40, 'obfs3', '2.2.2.2', 1111, {})
         bridge.transports.append(pt)
-        filtre = filters.byTransportNotBlockedIn('voltron', 'cn')
+        filtre = filters.byNotBlockedIn('cn', methodname='voltron')
         self.assertFalse(filtre(bridge))
