@@ -12,36 +12,50 @@
 
 """A Distributor that hands out bridges through a web interface."""
 
+from __future__ import print_function
+
 import ipaddr
 import logging
+import math
 
 import bridgedb.Storage
 
 from bridgedb import proxy
-from bridgedb.Bridges import BridgeRing
-from bridgedb.Bridges import FilteredBridgeSplitter
+from bridgedb import strings
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
 from bridgedb.distribute import Distributor
 from bridgedb.filters import byIPv4
 from bridgedb.filters import byIPv6
 from bridgedb.filters import bySubring
+from bridgedb.filters import byTransport
+from bridgedb.hashring import ConstrainedHashring
+from bridgedb.hashring import Hashring
+from bridgedb.hashring import ProportionalHashring
 
 
 class HTTPSDistributor(Distributor):
     """A Distributor that hands out bridges based on the IP address of an
     incoming request and the current time period.
 
+    The bridges which are distributed to a client by this :class:`Distributor`
+    are deterministically computed via relation to the interval in which the
+    client's request occurred, as well as the subnet of the client's IP
+    address.
+
+    .. note:: For an explanation of how **subnet** is determined, see
+        :staticmethod:`getSubnet`.
+
     :type proxies: :class:`~bridgedb.proxies.ProxySet`
     :ivar proxies: All known proxies, which we treat differently. See
         :param:`proxies`.
-    :type hashring: :class:`bridgedb.Bridges.FilteredBridgeSplitter`
+    :type hashring: :class:`bridgedb.hashring.ProportionalHashring`
     :ivar hashring: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
         distributor.
     """
 
-    def __init__(self, totalSubrings, key, proxies=None, answerParameters=None):
+    def __init__(self, totalSubrings, key, proxies=None, constraints=None):
         """Create a Distributor that decides which bridges to distribute based
         upon the client's IP address and the current time.
 
@@ -59,38 +73,85 @@ class HTTPSDistributor(Distributor):
             the extra cluster, and any client requesting bridges from one of
             these **proxies** will be distributed bridges from a separate
             subhashring that is specific to Tor/proxy users.
-        :type answerParameters: :class:`bridgedb.Bridges.BridgeRingParameters`
-        :param answerParameters: A mechanism for ensuring that the set of
-            bridges that this distributor answers a client with fit certain
-            parameters, i.e. that an answer has "at least two obfsproxy
-            bridges" or "at least one bridge on port 443", etc.
+        :param list constraints: A list of 3-tuples, where each tuple
+            contains::
+                (CATEGORY, VALUE, COUNT)
+            where:
+              * CATEGORY is one of the keys in bridgedb.hashring.CONSTRAINTS,
+                i.e. currently one of "FLAG", "PORT", "COUNTRY", or
+                "NOT_COUNTRY".
+              * VALUE is the arguments to pass to the constraint function,
+                i.e. for the "FLAG" constraint, this should be "Stable" or
+                "Running", and for the "PORT" constraint this should be a port
+                number like 443 or 9001.
+              * COUNT is an integer specifying the number of bridges, per
+                answer, which should meet this constraint.
         """
         super(HTTPSDistributor, self).__init__(key)
         self.totalSubrings = totalSubrings
-        self.answerParameters = answerParameters
+        self.constraints = constraints
+
+        self._proxySubring = None
+        self._nonProxySubring = None
+        self._cacheSize = int(math.e * self.totalSubrings)
+        self._subringHMAC = getHMACFunc(getHMAC(key, "Subnets-To-Subrings"))
+        self.hashring = ProportionalHashring(getHMAC(key, "Hashring"))
+        self.hashring.setCacheSize(self._cacheSize)
+        self.hashring.name = "HTTPS"
 
         if proxies:
             logging.info("Added known proxies to HTTPS distributor...")
             self.proxies = proxies
-            self.totalSubrings += 1
-            self.proxySubring = self.totalSubrings
         else:
             logging.warn("No known proxies were added to HTTPS distributor!")
             self.proxies = proxy.ProxySet()
-            self.proxySubring = 0
 
-        self.ringCacheSize = self.totalSubrings * 3
-
-        key2 = getHMAC(key, "Assign-Bridges-To-Rings")
-        key3 = getHMAC(key, "Order-Areas-In-Rings")
-        key4 = getHMAC(key, "Assign-Areas-To-Rings")
-
-        self._clientToPositionHMAC = getHMACFunc(key3, hex=False)
-        self._subnetToSubringHMAC = getHMACFunc(key4, hex=True)
-        self.hashring = FilteredBridgeSplitter(key2, self.ringCacheSize)
+        self.buildHashrings()
         self.name = 'HTTPS'
-        logging.debug("Added %s to %s distributor." %
-                      (self.hashring.__class__.__name__, self.name))
+
+    @property
+    def nonProxySubring(self):
+        if not self._nonProxySubring:
+            for subring in self.hashring.subrings:
+                if subring.name == "{0} (Non-Proxy)".format(self.name):
+                    self._nonProxySubring = subring
+        return self._nonProxySubring
+
+    @property
+    def proxySubring(self):
+        if not self._proxySubring:
+            for subring in self.hashring.subrings:
+                if subring.name == "{0} (Proxy)".format(self.name):
+                    self._proxySubring = subring
+        return self._proxySubring
+
+    def buildHashrings(self):
+        if self.hashring.subrings:
+            logging.debug(("But the HTTPS Distributor's hashrings were "
+                           "already built!"))
+            return
+
+        # Subring names/purposes to their relative proportions
+        subrings = {"Non-Proxy": 3}
+
+        if self.proxies:
+            logging.debug("Allocating some bridges to proxy users...")
+            subrings["Proxy"] = 1
+
+        for name, proportion in subrings.items():
+            subkey = getHMAC(self.hashring.key, "%s-Subring" % name)
+            subring = Hashring(subkey)
+            for index in range(self.totalSubrings):
+                assigned = index + 1
+                #subkey = getHMAC(subkey, "%s-Subring-%d-" % (name, assigned))
+                hmac = getHMACFunc(subkey)
+                constraint = bySubring(hmac, assigned, self.totalSubrings)
+                subsubring = ConstrainedHashring(subkey, constraint)
+                subsubring.setCacheSize(self.hashring.cache.size)
+                subring.addSubring(subsubring)
+            self.hashring.addSubring(subring, name, proportion=proportion)
+
+        logging.info(self.hashring.tree())
 
     def bridgesPerResponse(self, hashring=None):
         return super(HTTPSDistributor, self).bridgesPerResponse(hashring)
@@ -150,117 +211,22 @@ class HTTPSDistributor(Distributor):
         logging.debug("Client IP was within area: %s" % subnet)
         return subnet
 
-    def mapSubnetToSubring(self, subnet, usingProxy=False):
+    def findSubringFor(self, client, usingProxy=False):
         """Determine the correct subhashring for a client, based upon the
         **subnet**.
 
-        :param str subnet: The subnet which contains the client's IP.  See
-            :staticmethod:`getSubnet`.
+        :param str client: The client's IP address.
         :param bool usingProxy: Set to ``True`` if the client was using one of
             the known :data:`proxies`.
         """
-        # If the client wasn't using a proxy, select the client's subring
-        # based upon the client's subnet (modulo the total subrings):
-        if not usingProxy:
-            mod = self.totalSubrings
-            # If there is a proxy subring, don't count it for the modulus:
-            if self.proxySubring:
-                mod -= 1
-            return (int(self._subnetToSubringHMAC(subnet)[:8], 16) % mod) + 1
+        if usingProxy:
+            subring = self.proxySubring
         else:
-            return self.proxySubring
+            subring = self.nonProxySubring
 
-    def mapClientToHashringPosition(self, interval, subnet):
-        """Map the client to a position on a (sub)hashring, based upon the
-        **interval** which the client's request occurred within, as well as
-        the **subnet** of the client's IP address.
-
-        .. note:: For an explanation of how **subnet** is determined, see
-            :staticmethod:`getSubnet`.
-
-        :param str interval: The interval which this client's request for
-            bridges took place within.
-        :param str subnet: A string representing the subnet containing the
-            client's IP address.
-        :rtype: int
-        :returns: The results of keyed HMAC, which should determine the
-            client's position in a (sub)hashring of bridges (and thus
-            determine which bridges they receive).
-        """
-        position = "<%s>%s" % (interval, subnet)
-        mapping = self._clientToPositionHMAC(position)
-        return mapping
-
-    def prepopulateRings(self):
-        """Prepopulate this distributor's hashrings and subhashrings with
-        bridges.
-
-        The hashring structure for this distributor is influenced by the
-        ``N_IP_CLUSTERS`` configuration option, as well as the number of
-        ``PROXY_LIST_FILES``.
-
-        Essentially, :data:`totalSubrings` is set to the specified
-        ``N_IP_CLUSTERS``.  All of the ``PROXY_LIST_FILES``, plus the list of
-        Tor Exit relays (downloaded into memory with :script:`get-tor-exits`),
-        are stored in :data:`proxies`, and the latter is added as an
-        additional cluster (such that :data:`totalSubrings` becomes
-        ``N_IP_CLUSTERS + 1``).  The number of subhashrings which this
-        :class:`Distributor` has active in its hashring is then
-        :data:`totalSubrings`, where the last cluster is reserved for all
-        :data:`proxies`.
-
-        As an example, if BridgeDB was configured with ``N_IP_CLUSTERS=4`` and
-        ``PROXY_LIST_FILES=["open-socks-proxies.txt"]``, then the total number
-        of subhashrings is five — four for the "clusters", and one for the
-        :data:`proxies`. Thus, the resulting hashring-subhashring structure
-        would look like:
-
-        +------------------+---------------------------------------------------+--------------
-        |                  |               Directly connecting users           | Tor / known |
-        |                  |                                                   | proxy users |
-        +------------------+------------+------------+------------+------------+-------------+
-        | Clusters         | Cluster-1  | Cluster-2  | Cluster-3  | Cluster-4  | Cluster-5   |
-        +==================+============+============+============+============+=============+
-        | Subhashrings     |            |            |            |            |             |
-        | (total, assigned)| (5,1)      | (5,2)      | (5,3)      | (5,4)      | (5,5)       |
-        +------------------+------------+------------+------------+------------+-------------+
-        | Filtered         | (5,1)-IPv4 | (5,2)-IPv4 | (5,3)-IPv4 | (5,4)-IPv4 | (5,5)-IPv4  |
-        | Subhashrings     |            |            |            |            |             |
-        | bBy requested    +------------+------------+------------+------------+-------------+
-        | bridge type)     | (5,1)-IPv6 | (5,2)-IPv6 | (5,3)-IPv6 | (5,4)-IPv6 | (5,5)-IPv6  |
-        |                  |            |            |            |            |             |
-        +------------------+------------+------------+------------+------------+-------------+
-
-        The "filtered subhashrings" are essentially filtered copies of their
-        respective subhashring, such that they only contain bridges which
-        support IPv4 or IPv6, respectively.  Additionally, the contents of
-        ``(5,1)-IPv4`` and ``(5,1)-IPv6`` sets are *not* disjoint.
-
-        Thus, in this example, we end up with **10 total subhashrings**.
-        """
-        logging.info("Prepopulating %s distributor hashrings..." % self.name)
-
-        for filterFn in [byIPv4, byIPv6]:
-            for subring in range(1, self.totalSubrings + 1):
-                filters = self._buildHashringFilters([filterFn,], subring)
-                key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
-                ring = BridgeRing(key1, self.answerParameters)
-                # For consistency with previous implementation of this method,
-                # only set the "name" for "clusters" which are for this
-                # distributor's proxies:
-                if subring == self.proxySubring:
-                    ring.setName('{0} Proxy Ring'.format(self.name))
-                self.hashring.addRing(ring, filters, byFilters(filters),
-                                      populate_from=self.hashring.bridges)
-
-    def insert(self, bridge):
-        """Assign a bridge to this distributor."""
-        self.hashring.insert(bridge)
-
-    def _buildHashringFilters(self, previousFilters, subring):
-        f = assignBridgesToSubring(self.hashring.hmac, subring, self.totalSubrings)
-        previousFilters.append(f)
-        return frozenset(previousFilters)
+        subnet = self.getSubnet(client, usingProxy)
+        index = int(self._subringHMAC(subnet)[:8], 16) % self.totalSubrings
+        return subring.subrings[index]
 
     def getBridges(self, bridgeRequest, interval):
         """Return a list of bridges to give to a user.
@@ -272,7 +238,7 @@ class HTTPSDistributor(Distributor):
         :param str interval: The time period when we got this request.  This
             can be any string, so long as it changes with every period.
         :rtype: list
-        :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
+        :return: A list of :class:`~bridgedb.bridges.Bridge`s to include in
             the response. See
             :meth:`bridgedb.https.server.WebResourceBridges.getBridgeRequestAnswer`
             for an example of how this is used.
@@ -285,7 +251,6 @@ class HTTPSDistributor(Distributor):
 
         usingProxy = False
 
-        # First, check if the client's IP is one of the known :data:`proxies`:
         if bridgeRequest.client in self.proxies:
             # The tag is a tag applied to a proxy IP address when it is added
             # to the bridgedb.proxy.ProxySet. For Tor Exit relays, the default
@@ -298,30 +263,71 @@ class HTTPSDistributor(Distributor):
                          (tag, bridgeRequest.client))
 
         subnet = self.getSubnet(bridgeRequest.client, usingProxy)
-        subring = self.mapSubnetToSubring(subnet, usingProxy)
-        position = self.mapClientToHashringPosition(interval, subnet)
-        filters = self._buildHashringFilters(bridgeRequest.filters, subring)
+        subring = self.findSubringFor(bridgeRequest.client, usingProxy)
+        position = self.getHashringPosition(interval, subnet)
+        filters = bridgeRequest.filters
 
         logging.debug("Client request within time interval: %s" % interval)
-        logging.debug("Assigned client to subhashring %d/%d" % (subring, self.totalSubrings))
-        logging.debug("Assigned client to subhashring position: %s" % position.encode('hex'))
-        logging.debug("Total bridges: %d" % len(self.hashring))
-        logging.debug("Bridge filters: %s" % ' '.join([x.func_name for x in filters]))
+        logging.debug("Bridge filters: %s" % ", ".join([f.name for f in filters]))
+        logging.debug("Assigned client to sub-hashring: %s" % subring.name)
+        logging.debug("Assigned client to sub-hashring position: %s" % position.encode('hex'))
+        logging.debug("Total bridges in sub-hashring: %d" % len(subring))
 
-        # Check wheth we have a cached copy of the hashring:
-        if filters in self.hashring.filterRings.keys():
-            logging.debug("Cache hit %s" % filters)
-            _, ring = self.hashring.filterRings[filters]
-        # Otherwise, construct a new hashring and populate it:
-        else:
-            logging.debug("Cache miss %s" % filters)
-            key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
-            ring = BridgeRing(key1, self.answerParameters)
-            self.hashring.addRing(ring, filters, byFilters(filters),
-                                  populate_from=self.hashring.bridges)
+        filtered = subring.reduce(*filters)
+        answer = filtered.retrieve(position, self.bridgesPerResponse(filtered))
 
-        # Determine the appropriate number of bridges to give to the client:
-        returnNum = self.bridgesPerResponse(ring)
-        answer = ring.getBridges(position, returnNum)
+        logging.debug("Total filtered bridges: %d" % len(filtered))
 
         return answer
+
+    def regenerateCaches(self):
+        """Regenerate this distributor's hashring and sub-hashring caches with
+        any new bridges which should belong in them.
+
+        The hashring structure for this distributor is influenced by the
+        ``N_IP_CLUSTERS`` configuration option, which is stored in
+        :data:`totalSubrings`.
+
+        For an :class:`HTTPSDistributor` with 500 bridges, no Tor Exit relays
+        or other known proxies stored in :data:`proxies`, and
+        ``N_IP_CLUSTERS = 3``, the hashring structure and distribution of
+        bridges would be::
+
+                               ProportionalHashring [500]
+                                         (0:4)
+                  Hashring [0]                           Hashring [500]
+            ConstrainedHashring [0]                ConstrainedHashring [145]
+            ConstrainedHashring [0]                ConstrainedHashring [181]
+            ConstrainedHashring [0]                ConstrainedHashring [174]
+
+        Whereas, if it had stored :data:`proxies`, the hashring structure and
+        distribution of bridges would look something like::
+
+                               ProportionalHashring [500]
+                                         (1:4)
+                 Hashring [106]                          Hashring [394]
+           ConstrainedHashring [37]                ConstrainedHashring [131]
+           ConstrainedHashring [34]                ConstrainedHashring [136]
+           ConstrainedHashring [35]                ConstrainedHashring [127]
+
+        Within each :class:`ConstrainedHashring` is an LRU
+        :class:`~bridgedb.util.Cache` that is configured to retain filtered
+        copies of its :class:`ConstrainedHashring` as a new :class:`Hashring`,
+        the latter of which only contains items from the
+        :class:`ConstrainedHashring` which passed some set of filters.  This
+        can be used to accelerate answers to common types of bridge requests,
+        i.e. "only bridges which are IPv6" or "only bridges which have the
+        ``Stable`` flag", etc.
+        """
+        logging.info("Regenerating caches for %s distributor hashrings..." %
+                     self.name)
+
+        filters = [byIPv4, byIPv6]
+        defaultTransport = strings._getDefaultTransport()
+        if defaultTransport:
+            filters.append(byTransport(defaultTransport))
+
+        for subring in self.hashring.subrings:
+            for subsubring in subring.subrings:
+                for filtre in filters:
+                    subsubring.addToCache(filtre)
