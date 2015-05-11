@@ -32,8 +32,6 @@ bridgedb.parse.options
        |                                suitable defaults.
        |
        |__ SIGHUPOptions - Menu to explain SIGHUP signal handling and usage.
-       |__ SIGUSR1Options - Menu to explain SIGUSR1 handling and usage.
-       |
        |__ MockOptions - Suboptions for creating fake bridge descriptors for
        |                 testing purposes.
        \__ MainOptions - Main commandline options parser for BridgeDB.
@@ -270,26 +268,12 @@ class SIGHUPOptions(BaseOptions):
     signal(7) and kill(1) for additional help."""
 
 
-class SIGUSR1Options(BaseOptions):
-    """Options menu to explain usage and handling of SIGUSR1 signals."""
-
-    longdesc = """If you send a SIGUSR1 to a running BridgeDB process, the
-    servers will dump all bridge assignments by distributor from the
-    databases to files.
-
-    Note that this command WILL NOT handle sending the signal for you; see
-    signal(7) and kill(1) for additional help."""
-
-
 class MainOptions(BaseOptions):
     """Main commandline options parser for BridgeDB."""
 
     optFlags = [
-        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
         ['reload', 'R', 'Reload bridge descriptors into running servers']]
     subCommands = [
         ['mock', None, MockOptions, "Generate a testing environment"],
         ['SIGHUP', None, SIGHUPOptions,
-         "Reload bridge descriptors into running servers"],
-        ['SIGUSR1', None, SIGUSR1Options,
-         "Dump bridges by hashring assignment into files"]]
+         "Reload bridge descriptors into running servers"]]
