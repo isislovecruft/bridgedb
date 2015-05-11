@@ -22,8 +22,8 @@ import warnings
 from twisted.trial import unittest
 
 from bridgedb import bridges
-from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.bridgerequest import BridgeRequestBase
+from bridgedb.hashring import Hashring
 from bridgedb.parse import descriptors
 from bridgedb.parse.addr import PortList
 from bridgedb.parse.nickname import InvalidRouterNickname
@@ -320,7 +320,7 @@ class BridgeIntegrationTests(unittest.TestCase):
 
     def test_integration_hashringBridgeInsertion(self):
         key = "Testing-Bridges-To-Rings"
-        hashring = FilteredBridgeSplitter(key)
+        hashring = Hashring(key)
 
         bridge1 = bridges.Bridge('unamed1', '1.2.3.5', 9100,
                                  'a1cc8dfef1fa11af9c40af1054df9daf45250550')

@@ -25,6 +25,8 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.bridges import AdaptedBridge
+from bridgedb.interfaces import IName
 from bridgedb.parse.addr import isIPAddress
 
 
@@ -182,6 +184,8 @@ def generateFakeBridges(n=500):
     if _FAKE_BRIDGES:
         return _FAKE_BRIDGES
 
+    bdbutil.registerAdapter(AdaptedBridge, Bridge, IName)
+
     bridges = []
 
     for i in range(n):
@@ -277,3 +281,5 @@ class DummyBridge(object):
         if includeFingerprint is True:
             line.append(self.fingerprint)
         return " ".join([item for item in line])
+
+bdbutil.registerAdapter(AdaptedBridge, DummyBridge, IName)

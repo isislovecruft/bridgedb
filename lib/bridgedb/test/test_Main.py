@@ -67,7 +67,9 @@ class MockHashring(object):
         self._bridges[bridge.fingerprint] = bridge
     def clear(self):
         pass
-    def dumpAssignments(self):
+    def exportToFile(self):
+        pass
+    def tree(self):
         pass
 
 
