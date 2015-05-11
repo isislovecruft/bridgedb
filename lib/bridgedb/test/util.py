@@ -273,7 +273,7 @@ class DummyBridge(object):
         line = []
         if bridgeRequest.transports:
             line.append(bridgeRequest.transports[-1])  # Just the last PT
-        if bridgeRequest.addressClass is ipaddr.IPv6Address:
+        if bridgeRequest.ipVersion is 6:
             line.append("[%s]:%s" % self.orAddresses[0][:2])
         else:
             line.append("%s:%s" % (self.address, self.orPort))

@@ -55,7 +55,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         self.assertEqual(reqvest.isValid(), False)
         self.assertFalse(reqvest.wantsKey())
         # Though they did request IPv6, technically.
-        self.assertIs(reqvest.addressClass, ipaddr.IPv6Address)
+        self.assertIs(reqvest.ipVersion, 6)
         # And they did request a transport, technically.
         self.assertEqual(len(reqvest.transports), 1)
         self.assertEqual(reqvest.transports[0], 'obfs3')
@@ -71,7 +71,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         self.assertEqual(reqvest.isValid(), True)
         self.assertFalse(reqvest.wantsKey())
         # Though they didn't request IPv6, so it should default to IPv4.
-        self.assertIs(reqvest.addressClass, ipaddr.IPv4Address)
+        self.assertIs(reqvest.ipVersion, 4)
         # And they requested two transports.
         self.assertEqual(len(reqvest.transports), 2)
         self.assertEqual(reqvest.transports[0], 'obfs3')
@@ -93,7 +93,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         self.assertEqual(reqvest.isValid(), True)
         self.assertFalse(reqvest.wantsKey())
         # Though they didn't request IPv6, so it should default to IPv4.
-        self.assertIs(reqvest.addressClass, ipaddr.IPv4Address)
+        self.assertIs(reqvest.ipVersion, 4)
         # And they requested two transports.
         self.assertEqual(len(reqvest.transports), 2)
         self.assertEqual(reqvest.transports[0], 'obfs3')
@@ -116,7 +116,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines = ['',
                  'get ipv6']
         reqvest = request.determineBridgeRequestOptions(lines)
-        self.assertIs(reqvest.addressClass, ipaddr.IPv6Address)
+        self.assertIs(reqvest.ipVersion, 6)
         self.assertEqual(reqvest.isValid(), True)
 
 
@@ -128,7 +128,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.request = request.EmailBridgeRequest()
 
     def tearDown(self):
-        """Reset cached 'unblocked'/'transport' lists and addressClass between
+        """Reset cached 'unblocked'/'transport' lists and ipVersion between
         tests.
         """
         self.request.withIPv4()
@@ -174,10 +174,10 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.assertEqual(self.request.wantsKey(), False)
 
     def test_EmailBridgeRequest_withIPv6(self):
-        """IPv6 requests should have ``addressClass = ipaddr.IPv6Address``."""
-        self.assertEqual(self.request.addressClass, ipaddr.IPv4Address)
+        """IPv6 requests should have ``ipVersion == 6``."""
+        self.assertEqual(self.request.ipVersion, 4)
         self.request.withIPv6()
-        self.assertEqual(self.request.addressClass, ipaddr.IPv6Address)
+        self.assertEqual(self.request.ipVersion, 6)
 
     def test_EmailBridgeRequest_withoutBlockInCountry_CN(self):
         """Country codes that aren't lowercase should be ignored."""
