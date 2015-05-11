@@ -252,7 +252,8 @@ class Hashring(Named):
         subring.name = "{0} ({1})".format(self.name, ' '.join(name).strip()).strip()
             
         if importFrom:
-            logging.debug("Importing items from %s %r" % (importFrom, importFrom))
+            logging.debug("Importing items from %s with length %d" %
+                          (importFrom.__class__.__name__, len(importFrom)))
             subring.insert(*importFrom)
 
         logging.info("Adding %s subring to %s." % (subring.name, self.name))
