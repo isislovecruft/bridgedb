@@ -23,6 +23,7 @@ from Crypto.Util import asn1
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.number import long_to_bytes
 
+from twisted.python import components
 from zope.interface import implementer
 from zope.interface import Attribute
 from zope.interface import Interface
@@ -33,6 +34,7 @@ from bridgedb import geo
 from bridgedb import safelog
 from bridgedb import bridgerequest
 from bridgedb.crypto import removePKCS1Padding
+from bridgedb.interfaces import IName
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.parse.addr import isIPv4
 from bridgedb.parse.addr import isIPv6
@@ -43,6 +45,7 @@ from bridgedb.parse.fingerprint import toHex
 from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.nickname import isValidRouterNickname
 from bridgedb.util import isascii_noncontrol
+from bridgedb.util import registerAdapter
 
 
 class PluggableTransportUnavailable(Exception):
@@ -860,6 +863,33 @@ class BridgeBackwardsCompatibility(BridgeBase):
         """Weighted Uptime"""
         with bridgedb.Storage.getDB() as db:  # pragma: no cover
             return db.getBridgeHistory(self.fingerprint).weightedUptime
+
+
+@implementer(IName)
+class AdaptedBridge(object, components.Adapter):
+    """Dynamically adapt a :class:`~bridgedb.bridges.Bridge` to be
+    :class:`~bridgedb.interfaces.Named`.
+
+    .. note:: This adapter is registered with
+        :api:`twisted.python.components.registerAdapter` in
+        :func:`~bridgedb.Main.run`.
+
+    This is necessary because only :class:`~bridgedb.interfaces.Named` objects
+    may be arranged into :class:`bridgedb.hashrings.Hashring`s, since the
+    object's ``name`` determines its position in the hashring.
+    """
+    def __init__(self, original):
+        """Adapt the **original** :class:`~bridgedb.bridges.Bridge` to be
+        suitable for placing into a hashring by name.
+
+        :type original: :class:`~bridgedb.bridges.Bridge`
+        :param original: The original, unadapted bridge.
+        """
+        self.original = original
+
+    @property
+    def name(self):
+        return self.original.fingerprint
 
 
 @implementer(IBridge)
@@ -1767,3 +1797,5 @@ class Bridge(BridgeBackwardsCompatibility):
             logging.info("Removing dead transport for bridge %s: %s %s:%s %s" %
                          (self, pt.methodname, pt.address, pt.port, pt.arguments))
             self.transports.remove(pt)
+
+registerAdapter(AdaptedBridge, Bridge, IName)

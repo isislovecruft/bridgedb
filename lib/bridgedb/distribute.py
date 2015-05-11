@@ -103,7 +103,9 @@ from zope import interface
 from zope.interface import Attribute
 from zope.interface import implements
 
-# from bridgedb.hashring import IHashring
+from bridgedb.crypto import getHMAC
+from bridgedb.crypto import getHMACFunc
+from bridgedb.hashring import IHashring
 from bridgedb.interfaces import IName
 from bridgedb.interfaces import Named
 
@@ -198,8 +200,8 @@ class Distributor(Named):
         :raises TypeError: if the **ring** does not implement the
             :interface:`~bridgedb.hashring.IHashring` interface.
         """
-        # if not IHashring.providedBy(ring):
-        #     raise TypeError("%r doesn't implement the IHashring interface." % ring)
+        if not IHashring.providedBy(ring):
+            raise TypeError("%r doesn't implement the IHashring interface." % ring)
 
         self._hashring = ring
 

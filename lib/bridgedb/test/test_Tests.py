@@ -84,9 +84,9 @@ def monkeypatchTests():
               patches from :mod:`bridgedb.test.deprecated`.
     """
     patcher = monkey.MonkeyPatcher()
-    patcher.addPatch(Tests.bridgedb.Bridges, 'PluggableTransport',
+    patcher.addPatch(Tests.bridgedb.bridges, 'PluggableTransport',
                      deprecated.PluggableTransport)
-    patcher.addPatch(Tests.bridgedb.Bridges, 'Bridge',
+    patcher.addPatch(Tests.bridgedb.bridges, 'Bridge',
                      deprecated.Bridge)
     return patcher
 
