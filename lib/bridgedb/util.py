@@ -20,6 +20,12 @@ import logging.handlers
 import os
 
 
+class CacheError(Exception):
+    """Raised when there is an error inserting or removing an item from a
+    :class:`Cache`.
+    """
+
+
 def _getLogHandlers(logToFile=True, logToStderr=True):
     """Get the appropriate list of log handlers.
 
@@ -252,6 +258,304 @@ class JustifiedLogFormatter(logging.Formatter):
         """
         record = self._formatCallingFuncName(record)
         return super(JustifiedLogFormatter, self).format(record)
+
+
+class DoublyLinked(object):
+    """An item in a doubly-linked list."""
+
+    def __init__(self):
+        self.next = None
+        self.prev = None
+
+        self.key = None
+        self.value = None
+
+    @property
+    def empty(self):
+        """Determine if there is an item in this slot."""
+        return not (bool(self.key) or bool(self.value))
+
+    def clear(self):
+        """Clear this item's :data:`key` and :data:`value`."""
+        self.key = None
+        self.value = None
+
+
+class Cache(object):
+    """A cache for objects which automatically trims itself to the specified
+    cache size.
+    """
+    def __init__(self, size, callback=None):
+        """Create a new :class:`Cache`
+
+        :param int size: The number of sub-hashrings (usually particular to a
+            certain :class:`Constraint` or set of ``Constraint``s) to keep
+            cached. Later, if a constrained sub-hashring is needed, and it is
+            found within the cache, the cached sub-hashring will be used
+            rather than generating a new one.
+        :type callback: callable
+        :param callback: If set, this will be called with a 2-tuple of
+            (item.key, item.value), whenever an item is added or removed from
+            this cache.
+        """
+        self._cache = {}
+        self.callback = callback
+
+        self._mru = DoublyLinked()
+        self._mru.next = self._mru
+        self._mru.prev = self._mru
+
+        self._size = 1
+        self.size = size
+
+    @property
+    def lru(self):
+        """Get the least recently used (LRU) item in this cache."""
+        return self._mru.prev
+
+    @property
+    def mru(self):
+        """Get the most recently used (MRU) item in this cache."""
+        return self._mru
+
+    @property
+    def size(self):
+        """Get the current size of this :class:`Cache`.
+
+        The ``Cache`` will store up to this many items before :property:`lru`
+        items are deleted.
+
+        :rtype: int
+        :returns: The current size of this cache.
+        """
+        return self._size
+
+    @size.setter
+    def size(self, size):
+        """Set the size of this :class:`Cache`.
+
+        :param int size: The maximum number of items to keep in this ``Cache``.
+        :raises CacheError: If resizing the ``Cache`` failed.
+        :raises TypeError: If **size** is anything other than an ``int``.
+        """
+        if isinstance(size, int) and size >= 0:
+            if size > self._size:
+                self.grow(size - self._size)
+            elif size < self._size:
+                self.shrink(self._size - size)
+            if not self._size == size:  # pragma: no cover
+                raise CacheError(("Failure to update cache size to %d! "
+                                  "Current size: %d") % (size, self._size))
+        else:
+            raise TypeError("Cache size must be an int (got %s)" % type(size))
+
+    def __contains__(self, key):
+        """Cache.__contains__(key) ←→ key in Cache"""
+        return key in self._cache.keys()
+
+    def __delitem__(self, key):
+        """Cache.__delitem__(key) ←→ del Cache[key]
+
+        .. warn:: This method updates the :class:`Cache` order.
+        """
+        item = self._cache[key]
+
+        # Update this item so that it is now the :data:`head` of the internal
+        # doubly-linked list, then shift the head to the item following it.
+        self.mtf(item)
+        self._mru = item.next
+
+        item.next = None
+        item.prev = None
+        item.clear()
+
+        del self._cache[key]
+
+    def __getitem__(self, key):
+        """Cache.__getitem__(key) ←→ Cache[key]
+
+        .. warn:: This method updates the :class:`Cache` order.
+        """
+        item = self._cache[key]
+
+        # Update this item so that it is now the :data:`head` of the internal
+        # doubly-linked list (since it is the most recently used).
+        self.mtf(item)
+        self._mru = item
+
+        return item.value
+
+    def __iter__(self):
+        """Cache.__iter__() ←→ iter(Cache)"""
+        return iter([item.key for item in self.all()])
+
+    def __len__(self):
+        """Cache.__len__() ←→ len(Cache)"""
+        return len(self._cache)
+
+    def __setitem__(self, key, value):
+        """Cache.__setitem__(key, value) ←→ Cache[key] = value
+
+        If any value is stored under **key** in the cache already, then it
+        will be updated with the new value.  Otherwise, a slot for the new
+        item will be chosen.  There are two cases:
+
+          * If the cache is full, the least recently used (LRU) item will be
+            pushed out of the cache.
+
+          * If the cache is not full, we want to choose a slot that is empty.
+            Because of the way the internal doubly-linked list is managed, the
+            empty slots are always grouped together at the tail end of the
+            list.  Since the list is circular, the LRU item always directly
+            preceeds the :data:`head` item.
+
+        Thus, regardless of whether the cache is full or not, our conditions
+        are satisfied by choosing the slot directly preceeding the
+        :data:`head` item.
+        """
+        if key in self._cache:
+            item = self._cache[key]
+            item.value = value
+
+            self.mtf(item)
+            self._mru = item
+            return
+
+        item = self._mru.prev
+
+        # If the slot already contains something, then remove the old item
+        # from the cache.
+        if not item.empty:
+            if self.callback:
+                self.callback(item.key, item.value)
+            del self._cache[item.key]
+
+        item.key = key
+        item.value = value
+        self._cache[key] = item
+
+        # We need to move the item to the head of the list. The item is at
+        # the tail, so it directly preceeds the :data:`_head`.  Therefore,
+        # the ordering is already correct, we just need to point the
+        # :data:`_head` to the new item.
+        self._mru = item
+
+    def all(self):
+        """All items stored in this :class:`Cache`.
+
+        :rtype: iterator
+        :returns: An iterator over the
+            :class:`items <bridgedb.hashring.DoublyLinked>` stored in this
+            ``Cache``, in order from the most recently used item to the least
+            recently used item.
+        """
+        item = self._mru
+        for _ in range(len(self)):
+            yield item
+            item = item.next
+
+    def clear(self):
+        """Remove all items stored in this :class:`Cache`."""
+        [item.clear() for item in self.all()]
+        self._cache.clear()
+
+    def get(self, key, default=None):
+        """Get an item from this :class:`Cache` by its **key**, and return
+        the **default** value if we could not find the item.
+        """
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def grow(self, count):
+        """Increase the size of this cache by insert **count** empty item slots
+        at the tail of the internal doubly-linked list.
+        """
+        logging.debug("Growing cache size by %d..." % count)
+        for _ in range(count):
+            item = DoublyLinked()
+            item.next = self._mru
+            item.prev = self._mru.prev
+
+            self._mru.prev.next = item
+            self._mru.prev = item
+            self._size += 1
+
+    def items(self):
+        """The keys and values of all items stored in this :class:`Cache`.
+
+        :rtype: iterator
+        :returns: An iterator over the (key, value) tuples for all items
+            stored in this ``Cache``, in order from the most recently used
+            item to the least recently used item.
+        """
+        return [(item.key, item.value) for item in self.all()]
+
+    def keys(self):
+        """The keys of all items stored in this :class:`Cache`.
+
+        :rtype: iterator
+        :returns: An iterator over the keys of the items stored in this
+            ``Cache``, in order from the most recently used item to the least
+            recently used item.
+        """
+        return [item.key for item in self.all()]
+
+    def mtf(self, item):
+        """Move the **item** to the front.
+
+        Update the ordering of the internal doubly-linked list such that the
+        **item** directly precedes the :data:`head` item.
+
+        .. info:: Because of the order of operations, if **item** already
+            directly precedes the :data:`head`, or if **item** is the
+            :data:`head`, then the order of the internal doubly-linked list
+            will be unchanged.
+
+        .. warn:: This method updates the :class:`Cache` order.
+        """
+        item.prev.next = item.next
+        item.next.prev = item.prev
+
+        item.prev = self._mru.prev
+        item.next = self._mru.prev.next
+
+        item.next.prev = item
+        item.prev.next = item
+
+    def peek(self, key):
+        """Retrieve an item in the cache without effecting the cache order."""
+        return self._cache[key].value
+
+    def shrink(self, count):
+        """Decrease this cache's size by removing **count** items from the tail.
+
+        .. warn:: This method updates the :class:`Cache` order.
+
+        :param int count: The number of items to shrink this cache by.
+        """
+        logging.debug("Shrinking cache size by %d..." % count)
+        for _ in range(count):
+            item = self._mru.prev
+            if not item.empty:
+                if self.callback:
+                    self.callback(item.key, item.value)
+                del self._cache[item.key]
+
+            self._mru.prev = item.prev
+            item.prev.next = self._mru
+            self._size -= 1
+
+    def values(self):
+        """The values of all items stored in this :class:`Cache`.
+
+        :rtype: iterator
+        :returns: An iterator over the values of the items stored in this
+            ``Cache``, in order from the most recently used item to the least
+            recently used item.
+        """
+        return [item.value for item in self.all()]
 
 
 class mixin:
