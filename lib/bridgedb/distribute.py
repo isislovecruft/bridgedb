@@ -162,10 +162,10 @@ class Distributor(Named):
     _hashringLevelMin = 20
     _hashringLevelMax = 100
 
-    def __init__(self, key=None):
+    def __init__(self, key=str()):
         """Create a new bridge Distributor.
 
-        :param key: A master key for this Distributor. This is used to HMAC
+        :param str key: A master key for this Distributor. This is used to HMAC
             bridge and client data in order to arrange them into hashring
             structures.
         """

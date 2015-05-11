@@ -86,15 +86,6 @@ def monkeypatchTests():
     patcher = monkey.MonkeyPatcher()
     patcher.addPatch(Tests.networkstatus, 'parseALine',
                      deprecated.parseORAddressLine)
-    patcher.addPatch(Tests.addr, 'PortList', deprecated.PortList)
-    patcher.addPatch(Tests.bridgedb.bridges, 'PORTSPEC_LEN', 16)
-    patcher.addPatch(Tests.bridgedb.bridges, 're_ipv4', deprecated.re_ipv4)
-    patcher.addPatch(Tests.bridgedb.bridges, 're_ipv6', deprecated.re_ipv6)
-    patcher.addPatch(Tests.bridgedb.bridges, 'HEX_FP_LEN', 40)
-    patcher.addPatch(Tests.bridgedb.bridges, 'toHex', binascii.b2a_hex)
-    patcher.addPatch(Tests.bridgedb.bridges, 'fromHex', binascii.a2b_hex)
-    patcher.addPatch(Tests.bridgedb.bridges, 'is_valid_fingerprint',
-                     deprecated.is_valid_fingerprint)
     patcher.addPatch(Tests.bridgedb.bridges, 'PluggableTransport',
                      deprecated.PluggableTransport)
     patcher.addPatch(Tests.bridgedb.bridges, 'Bridge',
