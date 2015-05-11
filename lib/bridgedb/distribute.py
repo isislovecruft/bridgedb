@@ -105,9 +105,11 @@ from zope.interface import implements
 
 # XXX
 #from bridgedb.hashring import IHashring
+from bridgedb.interfaces import IName
+from bridgedb.interfaces import Named
 
 
-class IDistribute(interface.Interface):
+class IDistribute(IName):
     """An interface specification for a system which distributes bridges."""
 
     _bridgesPerResponseMin = Attribute(
@@ -126,9 +128,7 @@ class IDistribute(interface.Interface):
          "implementer of IDistribute to distribute _bridgesPerResponseMax "
          "number of bridges, per client request."))
 
-    _name = Attribute("A string which identifies this distributor.")
-
-    _hashring = Attribute(
+    hashring = Attribute(
         ("An implementer of ``bridgedb.hashring.IHashring`` which stores the "
          "entirety of bridges allocated to this ``Distributor`` by the "
          "BridgeDB.  This ``Distributor`` is only capable of distributing "
@@ -149,7 +149,7 @@ class IDistribute(interface.Interface):
         """Get bridges based on a client's **bridgeRequest**."""
 
 
-class Distributor(object):
+class Distributor(Named):
     """A :class:`Distributor` distributes bridges to clients.
 
     Inherit from me to create a new type of ``Distributor``.
@@ -158,8 +158,8 @@ class Distributor(object):
 
     _bridgesPerResponseMin = 1
     _bridgesPerResponseMax = 3
-    _hashringMinLevel = 20
-    _hashringMaxLevel = 100
+    _hashringLevelMin = 20
+    _hashringLevelMax = 100
 
     def __init__(self, key=None):
         """Create a new bridge Distributor.
@@ -169,7 +169,6 @@ class Distributor(object):
             structures.
         """
         super(Distributor, self).__init__()
-        self._name = None
         self._hashring = None
         self.key = key
 
@@ -179,9 +178,37 @@ class Distributor(object):
         :rtype: str
         :returns: This ``Distributor``'s ``name`` attribute.
         """
-        if self.name:
-            return str(self.name)
-        return str()
+        return self.name
+
+    @property
+    def hashring(self):
+        """Get this Distributor's main hashring, which holds all bridges
+        allocated to this Distributor.
+
+        :rtype: :class:`~bridgedb.hashring.Hashring`.
+        :returns: An implementer of :interface:`~bridgedb.hashring.IHashring`.
+        """
+        return self._hashring
+
+    @hashring.setter
+    def hashring(self, ring):
+        """Set this Distributor's main hashring.
+
+        :type ring: :class:`~bridgedb.hashring.Hashring`
+        :param ring: An implementer of :interface:`~bridgedb.hashring.IHashring`.
+        :raises TypeError: if the **ring** does not implement the
+            :interface:`~bridgedb.hashring.IHashring` interface.
+        """
+        if not IHashring.providedBy(ring):
+            raise TypeError("%r doesn't implement the IHashring interface." % ring)
+
+        self._hashring = ring
+
+    @hashring.deleter
+    def hashring(self):
+        """Clear this Distributor's hashring."""
+        if self.hashring:
+            self.hashring.clear()
 
     @property
     def name(self):
@@ -212,43 +239,10 @@ class Distributor(object):
         self._name = name
 
         try:
-            self.hashring.distributorName = name
+            self.hashring.distributor = name
         except AttributeError:
-            logging.debug(("Couldn't set distributorName for %s "
+            logging.debug(("Couldn't set distributor attribute for %s "
                            "Distributor's hashring." % name))
-
-    @property
-    def hashring(self):
-        """Get this Distributor's main hashring, which holds all bridges
-        allocated to this Distributor.
-
-        :rtype: :class:`~bridgedb.hashring.Hashring`.
-        :returns: An implementer of :interface:`~bridgedb.hashring.IHashring`.
-        """
-        return self._hashring
-
-    @hashring.setter
-    def hashring(self, ring):
-        """Set this Distributor's main hashring.
-
-        :type ring: :class:`~bridgedb.hashring.Hashring`
-        :param ring: An implementer of :interface:`~bridgedb.hashring.IHashring`.
-        :raises TypeError: if the **ring** does not implement the
-            :interface:`~bridgedb.hashring.IHashring` interface.
-        """
-        # XXX comment out for now, since nothing implements IHashring yet
-        #if IHashring.providedBy(ring):
-        #     self._hashring = ring
-        #else:
-        #    raise TypeError("%s does not implement the IHashring interface." %
-        #                    type(ring))
-        self._hashring = ring
-
-    @hashring.deleter
-    def hashring(self):
-        """Clear this Distributor's hashring."""
-        if self.hashring:
-            self.hashring.clear()
 
     def bridgesPerResponse(self, hashring=None):
         """Get the current number of bridge to distribute in response to a
@@ -257,12 +251,12 @@ class Distributor(object):
         if hashring is None:
             hashring = self.hashring
 
-        if len(hashring) < self._hashringMinLevel:
+        if len(hashring) < self._hashringLevelMin:
             n = self._bridgesPerResponseMin
-        elif self._hashringMinLevel <= len(hashring) < self._hashringMaxLevel:
+        elif self._hashringLevelMin <= len(hashring) < self._hashringLevelMax:
             n = int(math.ceil(
                 (self._bridgesPerResponseMin + self._bridgesPerResponseMax) / 2.0))
-        elif self._hashringMaxLevel <= len(hashring):
+        elif self._hashringLevelMax <= len(hashring):
             n = self._bridgesPerResponseMax
 
         logging.debug("Returning %d bridges from ring of len: %d" %

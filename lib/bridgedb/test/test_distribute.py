@@ -16,6 +16,8 @@ from __future__ import print_function
 
 from twisted.trial import unittest
 
+from zope.interface.verify import verifyObject
+
 from bridgedb.distribute import IDistribute
 from bridgedb.distribute import Distributor
 
@@ -26,6 +28,7 @@ class DistributorTests(unittest.TestCase):
     def test_Distributor_implements_IDistribute(self):
         IDistribute.namesAndDescriptions()
         IDistribute.providedBy(Distributor)
+        self.assertTrue(verifyObject(IDistribute, Distributor()))
 
     def test_Distributor_str_no_name(self):
         """str(dist) when the distributor doesn't have a name should return a
