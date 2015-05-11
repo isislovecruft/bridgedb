@@ -29,7 +29,6 @@ from bridgedb.email.distributor import EmailDistributor
 from bridgedb.email.distributor import IgnoreEmail
 from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse import addr
-from bridgedb.test import deprecated_networkstatus as networkstatus
 from bridgedb.test.util import bracketIPv6
 from bridgedb.test.util import randomIP
 from bridgedb.test.util import randomIPv4

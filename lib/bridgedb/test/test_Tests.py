@@ -84,8 +84,6 @@ def monkeypatchTests():
               patches from :mod:`bridgedb.test.deprecated`.
     """
     patcher = monkey.MonkeyPatcher()
-    patcher.addPatch(Tests.networkstatus, 'parseALine',
-                     deprecated.parseORAddressLine)
     patcher.addPatch(Tests.bridgedb.bridges, 'PluggableTransport',
                      deprecated.PluggableTransport)
     patcher.addPatch(Tests.bridgedb.bridges, 'Bridge',
