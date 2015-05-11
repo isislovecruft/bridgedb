@@ -344,8 +344,8 @@ def run(options, reactor=reactor):
 
         # Initialize our DB.
         bridgedb.Storage.initializeDBLock()
-        db = bridgedb.Storage.openDatabase(cfg.DB_FILE + ".sqlite")
         bridgedb.Storage.setDBFilename(cfg.DB_FILE + ".sqlite")
+
         load(state, hashring, clear=False)
         logging.info("Bridges loaded: %d" % len(hashring))
 
