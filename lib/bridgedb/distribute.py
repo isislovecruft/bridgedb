@@ -169,6 +169,8 @@ class Distributor(Named):
         """
         super(Distributor, self).__init__()
         self._hashring = None
+        self._positionHMAC = getHMACFunc(
+            getHMAC(key, "Hashring-Position"), hex=False)
         self.key = key
 
     def __str__(self):
@@ -273,3 +275,20 @@ class Distributor(Named):
             :class:`~bridgedb.bridges.PluggableTransport` they wanted, etc.
         """
         # XXX generalise the getBridges() method
+
+    def getHashringPosition(self, interval, client):
+        """Map the **client** to a position on a (sub-)hashring, based upon
+        some data about the client and the **interval** in which the client's
+        request occurred.
+
+        :param str interval: The interval which this client's request for
+            bridges took place within.
+        :param str client: Some (possibly uniquely identifying) data about the
+            client who is requesting bridges.
+        :rtype: int
+        :returns: The results of keyed HMAC, which should determine the
+            client's position in a (sub)hashring of bridges (and thus
+            determine which bridges they receive).
+        """
+        position = "<%s>%s" % (interval, client)
+        return self._positionHMAC(position)
