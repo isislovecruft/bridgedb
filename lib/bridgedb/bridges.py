@@ -785,7 +785,8 @@ class BridgeBackwardsCompatibility(BridgeBase):
             :data:`bridgerequest.BridgeRequestBase.client`.
         :param str transport: A pluggable transport method name.
         """
-        bridgeRequest = bridgerequest.BridgeRequestBase(addressClass)
+        ipVersion = 6 if addressClass is ipaddr.IPv6Address else 4
+        bridgeRequest = bridgerequest.BridgeRequestBase(ipVersion)
         bridgeRequest.client = request if request else bridgeRequest.client
         bridgeRequest.isValid(True)
 
@@ -1087,7 +1088,7 @@ class Bridge(BridgeBackwardsCompatibility):
             type.
         """
         desired = bridgeRequest.justOnePTType()
-        addressClass = bridgeRequest.addressClass
+        ipVersion = bridgeRequest.ipVersion
 
         logging.info("Bridge %s answering request for %s transport..." %
                      (self, desired))
@@ -1096,8 +1097,7 @@ class Bridge(BridgeBackwardsCompatibility):
         # their ``methodname`` matches the requested transport:
         transports = filter(lambda pt: pt.methodname == desired, self.transports)
         # Filter again for whichever of IPv4 or IPv6 was requested:
-        transports = filter(lambda pt: isinstance(pt.address, addressClass),
-                            transports)
+        transports = filter(lambda pt: pt.address.version == ipVersion, transports)
 
         if not transports:
             raise PluggableTransportUnavailable(
@@ -1136,13 +1136,13 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         logging.info(
             "Bridge %s answering request for IPv%s vanilla address..." %
-            (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
+            (self, bridgeRequest.ipVersion))
 
         addresses = []
 
         for address, port, version in self.allVanillaAddresses:
             # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
-            if isinstance(address, bridgeRequest.addressClass):
+            if version == bridgeRequest.ipVersion:
                 # Determine if the address is blocked in any of the country
                 # codes.  Because :meth:`addressIsBlockedIn` returns a bool,
                 # we get a list like: ``[True, False, False, True]``, and

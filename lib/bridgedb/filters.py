@@ -126,8 +126,8 @@ def byTransport(methodname=None, ipVersion=None):
       1. The :data:`~bridge.bridges.PluggableTransport.methodname` matches
          **methodname**, and
 
-      2. The :data:`~bridgedb.bridges.PluggableTransport.address`` is an
-         instance of **addressClass**.
+      2. The :data:`~bridgedb.bridges.PluggableTransport.address`` version
+         matches the **ipVersion**.
 
     :param str methodname: A Pluggable Transport
         :data:`~bridge.bridges.PluggableTransport.methodname`.
