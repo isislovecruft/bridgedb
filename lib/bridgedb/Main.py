@@ -31,13 +31,13 @@ from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
 from bridgedb.email.distributor import EmailDistributor
+from bridgedb.hashring import ProportionalHashring
 from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 from bridgedb.unallocated import UnallocatedDistributor
 
 import bridgedb.Storage
 
-from bridgedb import Bridges
 from bridgedb.Stability import updateBridgeHistory
 
 
@@ -49,9 +49,9 @@ def load(state, hashring, clear=False):
     store them into our ``state.hashring`` instance. The ``state`` will be
     saved again at the end of this function.
 
-    :type hashring: :class:`~bridgedb.Bridges.BridgeSplitter`
-    :param hashring: A class which provides a mechanism for HMACing
-        Bridges in order to assign them to hashrings.
+    :type hashring: :class:`~bridgedb.hashring.ProportionalHashring`
+    :param hashring: A hashring which provides a mechanism for HMACing
+        items in order to assign them to sub-hashrings proportionately.
     :param boolean clear: If True, clear all previous bridges from the
         hashring before parsing for new ones.
     """
@@ -153,6 +153,7 @@ def load(state, hashring, clear=False):
             hashring.insert(bridge)
             inserted += 1
     logging.info("Done inserting %d bridges into hashring." % inserted)
+    logging.info(hashring.tree())
 
     if state.COLLECT_TIMESTAMPS:
         reactor.callInThread(updateBridgeHistory, bridges, timestamps)
@@ -183,49 +184,44 @@ def createBridgeRings(cfg, proxyList, key):
         known open proxies.
     :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter hashring, an
+    :returns: A :class:`~bridgedb.hashring.ProportionalHashring`, an
         :class:`~bridgedb.https.distributor.HTTPSDistributor` or None, and an
         :class:`~bridgedb.email.distributor.EmailDistributor` or None.
     """
-    # Create a BridgeSplitter to assign the bridges to the different
-    # distributors.
-    hashring = Bridges.BridgeSplitter(crypto.getHMAC(key, "Hashring-Key"))
-    logging.debug("Created hashring: %r" % hashring)
+    # Create a ProportionalHashring to assign bridges to the distributors.
+    hashring = ProportionalHashring(crypto.getHMAC(key, "All-Distributors"))
+    logging.debug("Created hashring: %s" % hashring)
 
-    # Create ring parameters.
-    ringParams = Bridges.BridgeRingParameters(needPorts=cfg.FORCE_PORTS,
-                                              needFlags=cfg.FORCE_FLAGS)
+    emailDistributor = httpsDistributor = None
 
-    emailDistributor = ipDistributor = None
-    # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        ipDistributor = HTTPSDistributor(
+        httpsDistributor = HTTPSDistributor(
             cfg.N_IP_CLUSTERS,
-            crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
+            crypto.getHMAC(key, "HTTPS-Distributor-Key"),
             proxyList,
-            answerParameters=ringParams)
-        hashring.addRing(ipDistributor.hashring, "https", cfg.HTTPS_SHARE)
+            cfg.HTTPS_ANSWER_CONSTRAINTS)
+        hashring.addSubring(httpsDistributor.hashring,
+                            "https", proportion=cfg.HTTPS_SHARE)
 
-    # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         logging.debug("Setting up Email Distributor...")
         emailDistributor = EmailDistributor(
-            crypto.getHMAC(key, "Email-Dist-Key"),
+            crypto.getHMAC(key, "Email-Distributor-Key"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
-            answerParameters=ringParams,
+            cfg.EMAIL_ANSWER_CONSTRAINTS,
             whitelist=cfg.EMAIL_WHITELIST.copy())
-        hashring.addRing(emailDistributor.hashring, "email", cfg.EMAIL_SHARE)
+        hashring.addSubring(emailDistributor.hashring,
+                            "email", proportion=cfg.EMAIL_SHARE)
 
-    # As appropriate, tell the hashring to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
         unallocatedDistributor = UnallocatedDistributor(
             crypto.getHMAC(key, "Unallocated-Distributor-Key"))
         hashring.addSubring(unallocatedDistributor.hashring,
                             "unallocated", proportion=cfg.RESERVED_SHARE)
 
-    return hashring, emailDistributor, ipDistributor
+    return hashring, emailDistributor, httpsDistributor
 
 def run(options, reactor=reactor):
     """This is BridgeDB's main entry point and main runtime loop.
@@ -288,7 +284,7 @@ def run(options, reactor=reactor):
     key = crypto.getKey(config.MASTER_KEY_FILE)
     proxies = proxy.ProxySet()
     emailDistributor = None
-    ipDistributor = None
+    httpsDistributor = None
 
     # Save our state
     state.proxies = proxies
@@ -302,7 +298,7 @@ def run(options, reactor=reactor):
         again at the end of it.
 
         The internal variables, ``cfg``, ``hashring``, ``proxyList``,
-        ``ipDistributor``, and ``emailDistributor`` are all taken from a
+        ``httpsDistributor``, and ``emailDistributor`` are all taken from a
         :class:`~bridgedb.persistent.State` instance, which has been saved to
         a statefile with :meth:`bridgedb.persistent.State.save`.
 
@@ -310,15 +306,15 @@ def run(options, reactor=reactor):
         :ivar cfg: The current configuration, including any in-memory
             settings (i.e. settings whose values were not obtained from the
             config file, but were set via a function somewhere)
-        :type hashring: A :class:`~bridgedb.Bridges.BridgeSplitter`
+        :type hashring: A :class:`~bridgedb.hashring.ProportionalHashring`
         :ivar hashring: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
             known open proxies.
-        :ivar ipDistributor: A
+        :ivar httpsDist: A
             :class:`~bridgedb.https.distributor.HTTPSDistributor`.
-        :ivar emailDistributor: A
+        :ivar emailDist: A
             :class:`~bridgedb.email.distributor.EmailDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
@@ -346,73 +342,59 @@ def run(options, reactor=reactor):
             proxy.loadProxiesFromFile(proxyfile, state.proxies, removeStale=True)
 
         logging.info("Reparsing bridge descriptors...")
-        (hashring,
-         emailDistributorTmp,
-         ipDistributorTmp) = createBridgeRings(cfg, state.proxies, key)
-        logging.info("Bridges loaded: %d" % len(hashring))
+        (hashring, emailDist, httpsDist) = createBridgeRings(
+            cfg, state.proxies, key)
 
         # Initialize our DB.
         bridgedb.Storage.initializeDBLock()
         bridgedb.Storage.setDBFilename(cfg.DB_FILE + ".sqlite")
         load(state, hashring, clear=False)
+        logging.info("Bridges loaded: %d" % len(hashring))
 
-        if emailDistributorTmp is not None:
-            emailDistributorTmp.prepopulateRings() # create default rings
+        if emailDist:
+            emailDist.regenerateCaches()
             logging.info("Bridges allotted for %s distribution: %d"
-                         % (emailDistributorTmp.name,
-                            len(emailDistributorTmp.hashring)))
+                         % (emailDist.name, len(emailDist.hashring)))
         else:
             logging.warn("No email distributor created!")
 
-        if ipDistributorTmp is not None:
-            ipDistributorTmp.prepopulateRings() # create default rings
-
+        if httpsDist is not None:
+            httpsDist.regenerateCaches()
             logging.info("Bridges allotted for %s distribution: %d"
-                         % (ipDistributorTmp.name,
-                            len(ipDistributorTmp.hashring)))
-            logging.info("\tNum bridges:\tFilter set:")
+                         % (httpsDist.name, len(httpsDist.hashring)))
+            logging.info("\tNum bridges:\tSubring name:")
 
-            nSubrings  = 0
-            ipSubrings = ipDistributorTmp.hashring.filterRings
-            for (ringname, (filterFn, subring)) in ipSubrings.items():
-                nSubrings += 1
-                filterSet = ' '.join(
-                    ipDistributorTmp.hashring.extractFilterNames(ringname))
-                logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
-
-            logging.info("Total subrings for %s: %d"
-                         % (ipDistributorTmp.name, nSubrings))
+            for subring in httpsDist.hashring.subrings:
+                logging.info("\t%2d bridges\t%s" % (len(subring), subring.name))
+            logging.info("Total subrings for %s: %d" %
+                         (httpsDist.name, len(httpsDist.hashring.subrings)))
         else:
             logging.warn("No HTTP(S) distributor created!")
 
-        # Dump bridge pool assignments to disk.
-        try:
-            logging.debug("Dumping pool assignments to file: '%s'"
-                          % state.ASSIGNMENTS_FILE)
-            fh = open(state.ASSIGNMENTS_FILE, 'a')
-            fh.write("bridge-pool-assignment %s\n" %
-                     time.strftime("%Y-%m-%d %H:%M:%S"))
-            hashring.dumpAssignments(fh)
-            fh.flush()
-            fh.close()
-        except IOError:
-            logging.info("I/O error while writing assignments to: '%s'"
-                         % state.ASSIGNMENTS_FILE)
+        if state.ASSIGNMENTS_FILE:
+            try:
+                now = time.strftime("%Y-%m-%d %H:%M:%S")
+                logging.info("Dumping pool assignments to file: '%s'"
+                             % state.ASSIGNMENTS_FILE)
+                with open(state.ASSIGNMENTS_FILE, 'a') as fh:
+                    fh.write("bridge-pool-assignment %s\n" % now)
+                hashring.exportToFile(state.ASSIGNMENTS_FILE, mode='a')
+            except IOError:
+                logging.info("I/O error while writing assignments to: '%s'"
+                             % state.ASSIGNMENTS_FILE)
         state.save()
 
         if inThread:
             # XXX shutdown the distributors if they were previously running
             # and should now be disabled
-            if ipDistributorTmp:
-                reactor.callFromThread(replaceBridgeRings,
-                                       ipDistributor, ipDistributorTmp)
-            if emailDistributorTmp:
-                reactor.callFromThread(replaceBridgeRings,
-                                       emailDistributor, emailDistributorTmp)
+            if httpsDist:
+                reactor.callFromThread(replaceBridgeRings, httpsDistributor, httpsDist)
+            if emailDist:
+                reactor.callFromThread(replaceBridgeRings, emailDistributor, emailDist)
         else:
             # We're still starting up. Return these distributors so
             # they are configured in the outer-namespace
-            return emailDistributorTmp, ipDistributorTmp
+            return emailDist, httpsDist
 
     global _reloadFn
     _reloadFn = reload
@@ -420,11 +402,11 @@ def run(options, reactor=reactor):
 
     if reactor:
         # And actually load it to start parsing. Get back our distributors.
-        emailDistributor, ipDistributor = reload(False)
+        emailDistributor, httpsDistributor = reload(False)
 
         # Configure all servers:
         if config.HTTPS_DIST and config.HTTPS_SHARE:
-            addWebServer(config, ipDistributor)
+            addWebServer(config, httpsDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:
             addSMTPServer(config, emailDistributor)
 
