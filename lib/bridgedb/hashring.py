@@ -250,7 +250,7 @@ class Hashring(Named):
             name.append('-'.join(subring.constraints))
 
         subring.name = "{0} ({1})".format(self.name, ' '.join(name).strip()).strip()
-            
+
         if importFrom:
             logging.debug("Importing items from %s with length %d" %
                           (importFrom.__class__.__name__, len(importFrom)))
@@ -265,7 +265,7 @@ class Hashring(Named):
         .. todo:: The keys in :data:`_keys`, in this case are 32-bit integers,
             so we take only the first 4-bytes (8 bytes here, since it's
             hexadecimal-encoded), then we convert it into a long.
-        
+
             Python (since 2.2, see :pep:`237`) ``int``s are actually C
             ``long``s, and Python ``long``s are actually C ``long long``s.
             (See ``sys.maxint`` if you don't believe me.)  So why are we still
@@ -445,35 +445,35 @@ class Hashring(Named):
         self.cache.size = size
 
     def tree(self):
-        NL = "\n"
-        SP = " "
+        nl = "\n"
+        sp = " "
         width = 80
-        tree = [NL]
+        tree = [nl]
 
         def typeAndLength(hashring):
             return "{0} [{1}]".format(hashring.__class__.__name__, len(hashring))
 
         formatted = typeAndLength(self)
         tree.append(formatted.center(width))
-        tree.append(NL)
+        tree.append(nl)
 
         if isinstance(self, ProportionalHashring):
             formatted = "(" + ":".join([str(p) for p in self.proportions]) + ")"
             tree.append(formatted.center(width))
-            tree.append(NL)
+            tree.append(nl)
 
         for subring in self.subrings:
             formatted = typeAndLength(subring)
             tree.append(formatted.center(width / len(self.subrings)))
-        tree.append(NL)
+        tree.append(nl)
 
         subsubrings = [subring.subrings for subring in self.subrings]
         rows = zip(*[subsub for subsub in subsubrings])
         for row in rows:
-            separator = SP * (width / int(math.e * len(self.subrings)))
+            separator = sp * (width / int(math.e * len(self.subrings)))
             formatted = separator.join([typeAndLength(item) for item in row])
             tree.append(formatted.center(width))
-            tree.append(NL)
+            tree.append(nl)
 
         return str().join(tree)
 
@@ -617,16 +617,11 @@ class ProportionalHashring(Hashring):
         :returns: The subring from :data:`subrings` which the **item** should
             be inserted into.
         """
-        #print("proportions are %s" % self.proportions)
         # First, deterministically pick an integer within the range
         # [0, totalProportion], inclusive.
         pick = int(int(self.calculateKey(item), 16) % self.totalProportion)
-        #print("picked proportion %d/%d" % (pick, self.totalProportion))
-
         index = bisect.bisect_right(self.proportions, pick)
         totheleft = self.proportions[index - 1]
-        #print("Setting index to %d" % index)
-        #print("Item totheleft is %s" % totheleft)
 
         if self.proportions.count(totheleft) > 1:
             # If totalProportions has several of the same proportion values in
@@ -641,25 +636,18 @@ class ProportionalHashring(Hashring):
             # if ``pick==1``, then we'd always choose ``proportions[2]``).
             # Instead, we pick one of the identical proportion values at
             # random:
-            #first = self.proportions.index(pick)
             first = self.proportions.index(totheleft)
             last = bisect.bisect(self.proportions, totheleft) - 1
-            #print("picking a random number in [%d, %d]" % (first, last))
             which = random.randint(first, last)
-            #print("Setting which to %d" % which)
         else:
             which = bisect.bisect(self.proportions, pick)
-            #print("Setting which to %d" % which)
         # We 1-index subrings (in their names, at least), so add one here to
         # get the real subring number:
-        #which += 1
         if which >= len(self.subrings):
-            #print("which (%d) was above the number of subrings (%d)" % (which, len(self.subrings)))
             which = len(self.subrings) - 1
         logging.debug("Chose subring %d/%d." % (which + 1, len(self.subrings)))
-        #print("Chose subring %d/%d." % (which + 1, len(self.subrings)))
 
-        if not (0 <= which < len(self.subrings)):
+        if not 0 <= which < len(self.subrings):
             raise HashringInsertionError(
                 "Cannot insert %s into subring %s in a hashring with %s subrings!"
                 % (IName(item).name, which + 1, len(self.subrings)))
@@ -778,7 +766,7 @@ class ConstrainedHashring(Hashring):
         name = [n for f in filters for n in f.name.split()]
         name = " ".join(sorted(list(set(name))))
         constrained = self.cache.get(name)
-        
+
         if not constrained:
             logging.debug("Reducing %s by filtering for %s..." %
                           (self.name, name))
