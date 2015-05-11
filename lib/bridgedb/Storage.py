@@ -13,6 +13,9 @@ from functools import wraps
 from ipaddr import IPAddress
 import sys
 
+from twisted.internet import reactor
+
+import bridgedb.Stability as Stability
 from bridgedb.Stability import BridgeHistory
 import threading
 
@@ -216,6 +219,33 @@ class Database(object):
             retBridges.append(bridge)
 
         return retBridges
+
+    def getUnallocated(self, prefix):
+        """Get all bridges in the database which are unallocated.
+
+        :param str prefix: The string prefix for the names of unallocated
+            bridges.
+        :rtype: dict
+        :returns: A mapping from unallocated "bucket" names (which should
+            start with the **prefix**) to the :class:`BridgeData`s within that
+            unallocated "bucket".
+        """
+        unallocated = {}
+        cur = self._cur
+        cur.execute("SELECT hex_key, address, or_port, distributor, "
+                    "first_seen, last_seen  FROM Bridges")
+        for b in cur.fetchall():
+            channel = b[3]
+            if channel.startswith(prefix):
+                channel = channel[len(prefix):]
+            elif channel != "unallocated":
+                continue
+
+            if not channel in unallocated:
+                unallocated[channel] = []
+            unallocated[channel].append(BridgeData(b[0], b[1], b[2],
+                                                   b[3], b[4], b[5]))
+        return unallocated
 
     def getBridgesForDistributor(self, distributor):
         """Return a list of BridgeData value classes of all bridges in the
@@ -464,3 +494,58 @@ def getDB(block=True):
 
 def dbIsLocked():
     return _LOCKED != 0
+
+def dumpBridgesToFile(filename, bridges, collectTimestamps=False):
+    """Dump a list of given **bridges** into **filename**."""
+    logging.debug("Dumping bridge assignments to file: %r" % filename)
+    # Get the bridge histories and sort by weighted fractional uptime
+    bridgeHistories = []
+    for b in bridges:
+        if collectTimestamps:
+            with bridgedb.Storage.getDB() as db:
+                bh = db.getBridgeHistory(b.hex_key)
+                if bh: bridgeHistories.append(bh)
+
+    bridgeHistories.sort(lambda x,y: cmp(x.weightedFractionalUptime,
+                                         y.weightedFractionalUptime))
+    try:
+        with open(filename, 'w') as f:
+            if collectTimestamps:
+                for bh in bridgeHistories:
+                    days = bh.tosa / long(60*60*24)
+                    line = "%s:%s %s\t(%d days at this address)\n" % \
+                           (bh.ip, bh.port, bh.fingerprint, days)
+                    f.write(line + '\n')
+
+            for bridge in bridges:
+                line = "%s:%d %s\n" % \
+                       (bridge.address, bridge.or_port, bridge.hex_key)
+                f.write(line)
+
+            f.flush()
+    except (IOError, OSError) as error:
+        logging.error("Error writing to %s: %s" % (filename, error))
+
+def dumpBridges(collectTimestamps=False):
+    """Dump all known file distributors to files, sorted by distributor."""
+    logging.info("Dumping all distributors to files.")
+
+    from bridgedb.unallocated import BUCKET_PREFIX
+
+    with bridgedb.Storage.getDB() as db:
+        allBridges = db.getAllBridges()
+
+    bridges = {}
+    for bridge in allBridges:
+        # Be safe. Replace all '/' in distributor names
+        distributor = bridge.distributor.replace('/', '_')
+        if distributor.startswith(BUCKET_PREFIX):
+            distributor = distributor[len(BUCKET_PREFIX):]
+        if not distributor in bridges:
+            bridges[distributor] = []
+        bridges[distributor].append(bridge)
+
+    for distributor, brdgs in bridges.items():
+        filename = distributor + "-" + time.strftime("%Y-%m-%d") + ".brdgs"
+        reactor.callInThread(dumpBridgesToFile, filename, brdgs,
+                             collectTimestamps=False)
