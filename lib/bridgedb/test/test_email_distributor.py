@@ -200,57 +200,43 @@ class EmailDistributorTests(unittest.TestCase):
         # which aren't older than EMAIL_MAX_RATE should be cleared.
         self.assertRaises(IgnoreEmail,  dist.getBridges, bridgeRequest, 1)
 
-    def test_EmailDistributor_prepopulateRings(self):
-        """Calling prepopulateRings() should add two rings to the
+    def test_EmailDistributor_regenerateCaches(self):
+        """Calling regenerateCaches() should add two rings to the
         EmailDistributor.hashring.
         """
         dist = EmailDistributor(self.key, self.domainmap, self.domainrules)
+        # There should be subrings equal to the number of supported domains.
+        self.assertEqual(len(dist.hashring.subrings), len(dist.supportedDomains))
 
-        # There shouldn't be any subrings yet.
-        self.assertEqual(len(dist.hashring.filterRings), 0)
+        dist.regenerateCaches()
 
-        dist.prepopulateRings()
-
-        # There should now be two subrings, but the subrings should be empty.
-        self.assertEqual(len(dist.hashring.filterRings), 2)
-        for (filtre, subring) in dist.hashring.filterRings.values():
+        # There should still be subrings equal to the number of supported
+        # domains, and the subrings should be empty.
+        self.assertEqual(len(dist.hashring.subrings), len(dist.supportedDomains))
+        for subring in dist.hashring.subrings:
             self.assertEqual(len(subring), 0)
 
-        # The subrings in this Distributor have gross names, because the
-        # filter functions (including their addresses in memory!) are used as
-        # the subring names.  In this case, we should have something like:
-        #
-        #     frozenset([<function byIPv6 at 0x7eff7ad7fc80>])
-        #
-        # and
-        #
-        #     frozenset([<function byIPv4 at 0x7eff7ad7fc08>])
-        #
-        # So we have to join the strings together and check the whole thing,
-        # since we have no other way to use these stupid subring names to
-        # index into the dictionary they are stored in, because the memory
-        # addresses are unknowable until runtime.
-
-        # There should be an IPv4 subring and an IPv6 ring:
-        ringnames = dist.hashring.filterRings.keys()
-        self.failUnlessIn("IPv4", "".join([str(ringname) for ringname in ringnames]))
-        self.failUnlessIn("IPv6", "".join([str(ringname) for ringname in ringnames]))
+        # There should be an IPv4 subring and an IPv6 ring in the cache:
+        cachenames = [k for sub in dist.hashring.subrings for k in sub.cache.keys()]
+        self.failUnlessIn("ipv6", " ".join(cachenames))
+        self.failUnlessIn("ipv4", " ".join(cachenames))
 
         [dist.hashring.insert(bridge) for bridge in self.bridges]
 
-        # There should still be two subrings.
-        self.assertEqual(len(dist.hashring.filterRings), 2)
-        for (filtre, subring) in dist.hashring.filterRings.values():
+        # There should still be subrings equal to the number of supported
+        # domains.  However, the subrings should not be empty.
+        self.assertEqual(len(dist.hashring.subrings), len(dist.supportedDomains))
+        for subring in dist.hashring.subrings:
             self.assertGreater(len(subring), 0)
 
-        # Ugh, the hashring code is so gross looking.
-        subrings = dist.hashring.filterRings
-        subring1 = subrings.values()[0][1]
-        subring2 = subrings.values()[1][1]
+        # Specifically, it should have length two, for our test cases:
+        self.assertEqual(len(dist.hashring.subrings), 2)
+        subring0 = dist.hashring.subrings[0]
+        subring1 = dist.hashring.subrings[1]
         # Each subring should have roughly the same number of bridges.
-        # (Having ±10 bridges in either ring, out of 500 bridges total, should
+        # (Having ±50 bridges in either ring, out of 500 bridges total, should
         # be so bad.)
-        self.assertApproximates(len(subring1), len(subring2), 10)
+        self.assertApproximates(len(subring0), len(subring1), 50)
 
     def test_EmailDistributor_unsupported_domain(self):
         """An unsupported domain should raise an UnsupportedDomain exception."""
