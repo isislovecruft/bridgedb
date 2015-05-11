@@ -27,19 +27,15 @@ from bridgedb import proxy
 from bridgedb import safelog
 from bridgedb import schedule
 from bridgedb import util
-from bridgedb.bridges import InvalidPluggableTransportIP
 from bridgedb.bridges import MalformedBridgeInfo
-from bridgedb.bridges import MalformedPluggableTransport
 from bridgedb.bridges import MissingServerDescriptorDigest
 from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import PluggableTransport
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
-from bridgedb.configure import Conf
 from bridgedb.parse import descriptors
 from bridgedb.parse import options
-from bridgedb.parse.addr import isIPAddress
 
 import bridgedb.Storage
 
