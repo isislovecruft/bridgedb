@@ -107,7 +107,8 @@ SCHEMA_2TO3_SCRIPT = """
  """
 SCHEMA3_SCRIPT = SCHEMA2_SCRIPT + SCHEMA_2TO3_SCRIPT
 
-class BridgeData:
+
+class BridgeData(object):
     """Value class carrying bridge information:
        hex_key      - The unique hex key of the given bridge
        address      - Bridge IP address
@@ -125,6 +126,7 @@ class BridgeData:
         self.distributor = distributor
         self.first_seen = first_seen
         self.last_seen = last_seen
+
 
 class Database(object):
     def __init__(self, sqlite_fname):
