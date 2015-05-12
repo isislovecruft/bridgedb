@@ -1,5 +1,5 @@
 # -*- coding: utf-8 ; test-case-name: bridgedb.test.test_unallocated ; -*-
-#_____________________________________________________________________________
+# ____________________________________________________________________________
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
@@ -7,10 +7,11 @@
 # :copyright: (c) 2013-2015, Isis Lovecruft
 #             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
-#_____________________________________________________________________________
+# ____________________________________________________________________________
 
 
-"""Functionality for managing unallocated :class:`~bridgedb.bridges.Bridge`s."""
+"""Functionality for managing unallocated :class:`~bridgedb.bridges.Bridge`s.
+"""
 
 import logging
 import time
@@ -31,6 +32,12 @@ BUCKET_PREFIX = "pseudo_"
 
 
 def sortAndExport(filename, lines, mode='w'):
+    """Sort the **lines** and export them to **filename**.
+
+    :param str filename: The path name of the file to the **lines** to.
+    :param list lines: An iterable of lines to write to **filename**.
+    :param str mode: The mode to open **filename** with.
+    """
     lines.sort()
     with open(filename, mode) as fh:
         [fh.write(line) for line in lines]
@@ -43,6 +50,13 @@ class UnallocatedDistributor(Distributor):
     parade.
     """
     def __init__(self, key):
+        """Create a new :class:`Distributor` for storing otherwise unallocated
+        :class:`~bridgedb.bridges.Bridge`s.
+
+        :param str key: A master key for this Distributor. This is used to HMAC
+            bridge and client data in order to arrange them into hashring
+            structures.
+        """
         super(UnallocatedDistributor, self).__init__(key)
         self.hashring = Hashring(getHMAC(key, "Assign-Bridges-To-Hashring"))
         self.hashring.exportToFile = self.exportToFile
@@ -58,16 +72,37 @@ class UnallocatedDistributor(Distributor):
             fingerprints.extend(subring._keyToName.values())
         return fingerprints
 
-    def insert(self, bridge):
-        logging.debug("Leaving %s unallocated..." % bridge)
-        if not bridge.fingerprint in self.fingerprints:
-            self.hashring.insert(bridge)
+    def addChannel(self, channel, bridges=None):
+        """Add a new out-of-band distribution **channel** for some unallocated
+        **bridges**.
 
-    def exportToFile(self, filename, description="", mode='w'):
+        :param str channel: A name for the out-of-band distribution channel.
+        :type bridges: list or ``None``
+        :param bridges: A list of either :class:`~bridgedb.bridges.Bridge`s or
+            :class:`bridgedb.Storage.BridgeData`s (or both types).  If given,
+            these will be imported into the new :class:`Hashring`.
+        """
+        converted = []
+
+        for bridge in bridges:
+            if isinstance(bridge, bridgedb.Storage.BridgeData):
+                brdg = Bridge()
+                brdg.fingerprint = bridge.hex_key
+                brdg.address = bridge.address
+                brdg.orPort = bridge.or_port
+                converted.append(brdg)
+            elif isinstance(bridge, Bridge):
+                converted.append(bridge)
+
+        self.hashring.addSubring(Hashring(self.hashring.key), channel,
+                                 importFrom=converted)
+
+    def exportToFile(self, filename=None, description="", mode='w'):
         """Export all of this distributor's bridges to **filename**, with an
         optional **description**.
 
-        :param str filename: The name of the file to write to.
+        :type filename: str or ``None``
+        :param filename: The name of the file to write to.
         :param str description: A description to add to the line for each
             exported bridge. The distribution channel (a.k.a. "bucket") for
             each bridge is automatically included in the description.
@@ -83,16 +118,8 @@ class UnallocatedDistributor(Distributor):
             describe = description + " channel=%s" % channel
             subrings = [subring.name for subring in self.hashring.subrings]
 
-            if not channel in subrings:
-                converted = []
-                for bridge in bridges:
-                    b = Bridge()
-                    b.fingerprint = bridge.hex_key
-                    b.address = bridge.address
-                    b.orPort = bridge.or_port
-                    converted.append(b)
-                self.hashring.addSubring(Hashring(self.hashring.key),
-                                         channel, converted)
+            if channel not in subrings:
+                self.addChannel(channel, bridges)
 
             for bridge in bridges:
                 if bridge.hex_key not in self.fingerprints:
@@ -100,7 +127,8 @@ class UnallocatedDistributor(Distributor):
                 lines.append("%s %s:%s %s\n" % (bridge.hex_key, bridge.address,
                                                 bridge.or_port, describe))
 
-            fn = ''.join([channel, '-', date, '.brdgs'])
-            logging.info("Exporting bridges to file: %s" % fn)
+            if not filename:
+                filename = ''.join([channel, '-', date, '.brdgs'])
 
-            reactor.callInThread(sortAndExport, fn, lines)
+            logging.info("Exporting bridges to file: %s" % filename)
+            reactor.callInThread(sortAndExport, filename, lines, mode)
