@@ -29,7 +29,6 @@ class DistributorTests(unittest.TestCase):
         IDistribute.namesAndDescriptions()
         IDistribute.providedBy(Distributor)
         self.assertTrue(verifyObject(IDistribute, Distributor()))
-        self.assertTrue(IDistribute.providedBy(Distributor))
 
     def test_Distributor_str_no_name(self):
         """str(dist) when the distributor doesn't have a name should return a
