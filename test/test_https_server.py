@@ -116,12 +116,73 @@ class GetClientIPTests(unittest.TestCase):
 class ReplaceErrorPageTests(unittest.TestCase):
     """Tests for :func:`bridgedb.https.server.replaceErrorPage`."""
 
+    def setUp(self):
+        self.resource500 = server.resource500
+
+    def tearDown(self):
+        server.resource500 = self.resource500
+
     def test_replaceErrorPage(self):
-        """``replaceErrorPage`` should return the expected html."""
+        """``replaceErrorPage`` should return the error-500.html page."""
+        request = DummyRequest([''])
         exc = Exception("vegan gümmibären")
-        errorPage = server.replaceErrorPage(exc)
-        self.assertSubstring("Something went wrong", errorPage)
+        errorPage = server.replaceErrorPage(request, exc)
+        self.assertSubstring("Bad News Bears", errorPage)
         self.assertNotSubstring("vegan gümmibären", errorPage)
+
+    def test_replaceErrorPage_matches_resource500(self):
+        """``replaceErrorPage`` should return the error-500.html page."""
+        request = DummyRequest([''])
+        exc = Exception("vegan gümmibären")
+        errorPage = server.replaceErrorPage(request, exc)
+        error500Page = server.resource500.render(request)
+        self.assertEqual(errorPage, error500Page)
+
+    def test_replaceErrorPage_no_resource500(self):
+        """If ``server.resource500`` is missing/broken, then
+        ``replaceErrorPage`` should return custom hardcoded HTML error text.
+        """
+        request = DummyRequest([''])
+        exc = Exception("vegan gümmibären")
+        server.resource500 = None
+        errorPage = server.replaceErrorPage(request, exc)
+        self.assertNotSubstring("Bad News Bears", errorPage)
+        self.assertNotSubstring("vegan gümmibären", errorPage)
+        self.assertSubstring("Sorry! Something went wrong with your request.",
+                             errorPage)
+
+class ErrorResourceTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.https.server.ErrorResource`."""
+
+    def setUp(self):
+        self.request = DummyRequest([''])
+
+    def test_resource404(self):
+        """``server.resource404`` should display the error-404.html page."""
+        page = server.resource404.render(self.request)
+        self.assertSubstring('We dug around for the page you requested', page)
+
+    def test_resource500(self):
+        """``server.resource500`` should display the error-500.html page."""
+        page = server.resource500.render(self.request)
+        self.assertSubstring('Bad News Bears', page)
+
+    def test_maintenance(self):
+        """``server.maintenance`` should display the error-503.html page."""
+        page = server.maintenance.render(self.request)
+        self.assertSubstring('Under Maintenance', page)
+
+
+class CustomErrorHandlingResourceTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.https.server.CustomErrorHandlingResource`."""
+
+    def test_getChild(self):
+        """``CustomErrorHandlingResource.getChild`` should return a rendered
+        copy of ``server.resource404``.
+        """
+        request = DummyRequest([''])
+        resource = server.CustomErrorHandlingResource()
+        self.assertEqual(server.resource404, resource.getChild('foobar', request))
 
 
 class CSPResourceTests(unittest.TestCase):
@@ -279,7 +340,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
             request = DummyRequest([self.pagename])
             request.method = b'GET'
             page = self.captchaResource.render_GET(request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
@@ -423,7 +484,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
             server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(self.request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
@@ -583,7 +644,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(self.request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
@@ -863,6 +924,26 @@ class BridgesResourceTests(unittest.TestCase):
             self.assertIsInstance(int(port), int)
             self.assertGreater(int(port), 0)
             self.assertLessEqual(int(port), 65535)
+
+    def test_renderAnswer_textplain_error(self):
+        """If we hit some error while returning bridge lines in text/plain
+        format, then our custom plaintext error message (the hardcoded HTML in
+        ``server.replaceErrorPage``) should be returned.
+        """
+        self.useBenignBridges()
+
+        request = DummyRequest([self.pagename])
+        request.args.update({'format': ['plain']})
+        request.getClientIP = lambda: '4.4.4.4'
+        request.method = b'GET'
+
+        # We'll cause a TypeError here due to calling '\n'.join(None)
+        page = self.bridgesResource.renderAnswer(request, bridgeLines=None)
+
+        # We don't want the fancy version:
+        self.assertNotSubstring("Bad News Bears", page)
+        self.assertSubstring("Sorry! Something went wrong with your request.",
+                             page)
 
 
 class OptionsResourceTests(unittest.TestCase):
