@@ -821,7 +821,7 @@ class Bridge(BridgeBackwardsCompatibility):
     _checkServerDescriptorSignature = True
 
     def __init__(self, *args, **kwargs):
-        """Create a and store information for a new ``Bridge``.
+        """Create and store information for a new ``Bridge``.
 
         .. info: For backwards compatibility, `nickname`, `ip`, and `orport`
             must be the first, second, and third arguments, respectively.  The
