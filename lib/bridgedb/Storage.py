@@ -3,7 +3,6 @@
 # See LICENSE for licensing information
 
 import calendar
-import os
 import logging
 import binascii
 import sqlite3
@@ -11,10 +10,9 @@ import time
 import hashlib
 from contextlib import GeneratorContextManager
 from functools import wraps
-from ipaddr import IPAddress, IPv6Address, IPv4Address
+from ipaddr import IPAddress
 import sys
 
-import bridgedb.Stability as Stability
 from bridgedb.Stability import BridgeHistory
 import threading
 
