@@ -1104,7 +1104,6 @@ class Bridge(BridgeBackwardsCompatibility):
                 ("Client requested transport %s, but bridge %s doesn't "
                 "have any of that transport!") % (desired, self))
 
-
         unblocked = []
         for pt in transports:
             if not sum([self.transportIsBlockedIn(cc, pt.methodname)
