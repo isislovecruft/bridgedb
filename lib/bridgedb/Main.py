@@ -11,12 +11,11 @@
 
 """This module sets up BridgeDB and starts the servers running."""
 
+import logging
 import os
 import signal
 import sys
 import time
-import logging
-import gettext
 
 from twisted.internet import reactor
 from twisted.internet import task
@@ -24,18 +23,14 @@ from twisted.internet import task
 from bridgedb import crypto
 from bridgedb import persistent
 from bridgedb import proxy
-from bridgedb import safelog
-from bridgedb import schedule
 from bridgedb import util
 from bridgedb.bridges import MalformedBridgeInfo
 from bridgedb.bridges import MissingServerDescriptorDigest
 from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
-from bridgedb.bridges import PluggableTransport
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
 from bridgedb.parse import descriptors
-from bridgedb.parse import options
 
 import bridgedb.Storage
 
