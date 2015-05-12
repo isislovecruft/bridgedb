@@ -288,7 +288,6 @@ class Database(object):
         cur = self._cur
         v = cur.execute("SELECT * FROM BridgeHistory")
         if v is None: return
-        fp = {}
         for h in v:
             yield BridgeHistory(h[0],IPAddress(h[1]),h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10])
 
