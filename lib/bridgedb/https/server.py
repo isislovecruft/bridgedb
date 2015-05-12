@@ -99,12 +99,15 @@ def getClientIP(request, useForwardedHeader=False):
 
     return ip
 
-def replaceErrorPage(error, template_name=None):
+def replaceErrorPage(request, error, template_name=None):
     """Create a general error page for displaying in place of tracebacks.
 
     Log the error to BridgeDB's logger, and then display a very plain "Sorry!
     Something went wrong!" page to the client.
 
+    :type request: :api:`twisted.web.http.Request`
+    :param request: A ``Request`` object containing the HTTP method, full
+        URI, and any URL/POST arguments and headers present.
     :type error: :exc:`Exception`
     :param error: Any exeption which has occurred while attempting to retrieve
                   a template, render a page, or retrieve a resource.
@@ -118,21 +121,25 @@ def replaceErrorPage(error, template_name=None):
                   % (template_name or 'template',
                      mako.exceptions.text_error_template().render()))
 
-    # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
-    # any string (regardless of capitalization and/or punctuation):
-    #
-    # "BridgeDB"
-    # "pluggable transport"
-    # "pluggable transports"
-    # "obfs2"
-    # "obfs3"
-    # "scramblesuit"
-    # "fteproxy"
-    # "Tor"
-    # "Tor Browser"
-    #
-    errmsg = _("Sorry! Something went wrong with your request.")
-    rendered = """<html>
+    try:
+        rendered = resource500.render(request)
+    except Exception as err:  # pragma: no cover
+        logging.exception(err)
+        # TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+        # any string (regardless of capitalization and/or punctuation):
+        #
+        # "BridgeDB"
+        # "pluggable transport"
+        # "pluggable transports"
+        # "obfs2"
+        # "obfs3"
+        # "scramblesuit"
+        # "fteproxy"
+        # "Tor"
+        # "Tor Browser"
+        #
+        errmsg = _("Sorry! Something went wrong with your request.")
+        rendered = """<html>
                     <head>
                       <link href="/assets/bootstrap.min.css" rel="stylesheet">
                       <link href="/assets/custom.css" rel="stylesheet">
@@ -145,7 +152,47 @@ def replaceErrorPage(error, template_name=None):
     return rendered
 
 
-class TranslatedTemplateResource(resource.Resource):
+class ErrorResource(resource.Resource):
+    """A resource which explains that BridgeDB is under maintenance."""
+
+    isLeaf = True
+
+    def __init__(self, template=None, code=200):
+        """Create a :api:`twisted.web.resource.Resource` for the maintenance page."""
+        resource.Resource.__init__(self)
+        self.template = template
+        self.code = code
+
+    def render_GET(self, request):
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        request.setResponseCode(self.code)
+
+        try:
+            template = lookup.get_template(self.template)
+            rendered = template.render()
+        except Exception as err:  # pragma: no cover
+            rendered = replaceErrorPage(request, err)
+
+        return rendered
+
+    render_POST = render_GET
+
+resource404 = ErrorResource('error-404.html', code=404)
+resource500 = ErrorResource('error-500.html', code=500)
+maintenance = ErrorResource('error-maintenance.html', code=503)
+
+
+class CustomErrorHandlingResource(resource.Resource):
+    """A :api:`twisted.web.resource.Resource` which wraps the
+    :api:`twisted.web.resource.Resource.getChild` method in order to use
+    custom error handling pages.
+    """
+    def getChild(self, path, request):
+        logging.debug("Returning 404 for request: %s" % request)
+        return resource404
+
+
+class TranslatedTemplateResource(CustomErrorHandlingResource):
     """A generalised resource which uses gettext translations and Mako
     templates.
     """
@@ -167,7 +214,7 @@ class TranslatedTemplateResource(resource.Resource):
             template = lookup.get_template(self.template)
             rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            rendered = replaceErrorPage(err)
+            rendered = replaceErrorPage(request, err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
 
@@ -289,7 +336,7 @@ class CaptchaProtectedResource(resource.Resource):
                                        imgstr=imgstr,
                                        challenge_field=challenge)
         except Exception as err:
-            rendered = replaceErrorPage(err, 'captcha.html')
+            rendered = replaceErrorPage(request, err, 'captcha.html')
 
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
@@ -317,7 +364,7 @@ class CaptchaProtectedResource(resource.Resource):
             try:
                 rendered = self.resource.render(request)
             except Exception as err:
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
             return rendered
 
         logging.debug("Client failed a CAPTCHA; returning redirect to %s"
@@ -477,7 +524,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             try:
                 rendered = self.resource.render(request)
             except Exception as err:  # pragma: no cover
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
         else:
             logging.info("Client failed a CAPTCHA; redirecting to %s"
                          % request.uri)
@@ -618,7 +665,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         return NOT_DONE_YET
 
 
-class BridgesResource(resource.Resource):
+class BridgesResource(CustomErrorHandlingResource):
     """This resource displays bridge lines in response to a request."""
 
     isLeaf = True
@@ -782,7 +829,7 @@ class BridgesResource(resource.Resource):
                                            answer=bridgeLines,
                                            qrcode=qrcode)
             except Exception as err:
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
 
         return rendered
 
@@ -832,13 +879,15 @@ def addWebServer(config, distributor):
     assets  = static.File(os.path.join(TEMPLATE_DIR, 'assets/'))
     keys    = static.Data(bytes(strings.BRIDGEDB_OPENPGP_KEY), 'text/plain')
 
-    root = resource.Resource()
+    root = CustomErrorHandlingResource()
     root.putChild('', index)
     root.putChild('robots.txt', robots)
     root.putChild('keys', keys)
     root.putChild('assets', assets)
     root.putChild('options', options)
     root.putChild('howto', howto)
+    root.putChild('maintenance', maintenance)
+    root.putChild('error', resource500)
 
     if config.RECAPTCHA_ENABLED:
         publicKey = config.RECAPTCHA_PUB_KEY

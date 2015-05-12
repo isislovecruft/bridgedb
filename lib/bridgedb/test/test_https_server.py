@@ -87,9 +87,10 @@ class ReplaceErrorPageTests(unittest.TestCase):
 
     def test_replaceErrorPage(self):
         """``replaceErrorPage`` should return the expected html."""
+        request = DummyRequest([''])
         exc = Exception("vegan gümmibären")
-        errorPage = server.replaceErrorPage(exc)
-        self.assertSubstring("Something went wrong", errorPage)
+        errorPage = server.replaceErrorPage(request, exc)
+        self.assertSubstring("Bad News Bears", errorPage)
         self.assertNotSubstring("vegan gümmibären", errorPage)
 
 
@@ -176,7 +177,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
             request = DummyRequest([self.pagename])
             request.method = b'GET'
             page = self.captchaResource.render_GET(request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
@@ -320,7 +321,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
             server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(self.request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
@@ -480,7 +481,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
             server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = server.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(self.request, Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
             server.lookup = oldLookup
