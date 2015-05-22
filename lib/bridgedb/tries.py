@@ -535,23 +535,6 @@ class AdaptiveMetricTree(object):
         :class:`node <bridgedb.tries.AdaptiveMetricTreeNode` containing the
         **key** and the **item** into this
         :class:`tree <bridgedb.tries.AdaptiveMetricTree`.
-
-        XXX Move the following documentation into somewhere in the
-        bridgedb.hashring module.
-
-        When a subring is inserted into sub-hashring (1 1), the tree should
-        create a new node by:
-
-          1. Taking sub-hashring (1 1)'s depth and incrementing it by one to
-             get the new depth,
-          2. Determining the INDEX at which the new sub-hashring will be
-             inserted,
-          3. Telling sub-hashring (1 1)'s node that it is no longer a leaf
-             node,
-          4. Creating a node KEY (in this case, ``[1, 1, INDEX]``),
-          5. Going to the trunk of the tree (i.e. the top-most parent
-             hashring), and
-          6. Recursively inserting the new sub-hashring with the KEY.
         """
         if not node:
             node = self.trunk
