@@ -70,9 +70,9 @@ def toSexp(exp):
 
     >>> from bridgedb.tries import toSexp
     >>> toSexp([1, 2, 3])
-    '(1 2 3)'
+    u'(1 2 3)'
     >>> toSexp('(1 2 3)')
-    '(1 2 3)'
+    u'(1 2 3)'
 
     :type exp: str or list or tuple
     :param exp: The expression to convert to an s-expression.
