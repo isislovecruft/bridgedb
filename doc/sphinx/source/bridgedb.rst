@@ -31,5 +31,6 @@ BridgeDB Package and Module Documentation
     bridgedb.Storage
     bridgedb.strings
     bridgedb.translations
+    bridgedb.tries
     bridgedb.txrecaptcha
     bridgedb.util
