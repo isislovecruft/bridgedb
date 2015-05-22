@@ -30,7 +30,6 @@ import bridgedb
 import bridgedb.bridgerequest
 import bridgedb.bridges
 import bridgedb.captcha
-import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
 import bridgedb.email
@@ -42,6 +41,7 @@ import bridgedb.email.server
 import bridgedb.email.templates
 import bridgedb.filters
 import bridgedb.geo
+import bridgedb.hashring
 import bridgedb.https
 import bridgedb.https.distributor
 import bridgedb.https.request
