@@ -394,8 +394,8 @@ class AdaptiveMetricTree(object):
     other forms of tree traversal on a `possibly‑infinite tree`_ structure.
 
 
-    Time Complexity in Big-O Notation
-    ``````````````````````````````````
+    **Time Complexity in Big-O Notation**
+
     In the following table, *w* is taken to be the width of the tree, *n* is
     the number of nodes in the tree, *d* is the depth of an element in the
     tree (which, in our case, happens to equal the length of the
@@ -406,7 +406,7 @@ class AdaptiveMetricTree(object):
     =================== ==================== ====================
     Space Requirements  O(n)                 O(n)
     :meth:`get`         O(d)                 O(d)
-    :meth:`insert`      O(d²)                O(d³) ???
+    :meth:`insert`      O(d²) ???            O(d³) ???
     :meth:`prune`       O(d)                 O(d)
     =================== ==================== ====================
 
@@ -472,16 +472,15 @@ class AdaptiveMetricTree(object):
 
     def _breadthFirst(self, trunk=None):
         """Traverse the (possibly infinitely-branching) tree comprising all of
-        this :class:`Hashring`'s subrings by conducting a
-        `breadth-first search`_.
+        this :class:`Hashring`'s subrings by conducting a breadth-first search.
 
-        .. info:: The algorithm used for the level-order traversal is
-            non-recursive by using two :api:`Queue`s.
+        .. info: The algorithm used for the level-order traversal is
+            non-recursive by using two ``Queue``s.
 
         :type trunk: :class:`AdaptiveMetricTreeNode`
         :param trunk: The node to begin traversal from.  If given, only the
              subtree from **trunk** downwards will be traversed.
-        :rtype: :api:`Queue.Queue`
+        :rtype: Queue.Queue
         :returns: A queue of all sub-hashrings in level-order.
         """
         if not trunk:
@@ -663,8 +662,8 @@ class AdaptiveMetricTree(object):
         this :class:`Hashring`'s subrings by conducting a
         `breadth-first search`_.
 
-        .. info:: The algorithm used for the level-order traversal is
-            non-recursive by using two :api:`Queue`s.
+        .. info: The algorithm used for the level-order traversal is
+            non-recursive by using two ``Queue``s.
 
         For example, given the following non-binary tree structure for this
         hashring's sub-hashrings, the returned list is ordered in the following
@@ -696,7 +695,7 @@ class AdaptiveMetricTree(object):
         :type trunk: :class:`AdaptiveMetricTreeNode`
         :param trunk: The node to begin traversal from.  If given, only the
              subtree from **trunk** downwards will be traversed.
-        :rtype: :api:`Queue.Queue`
+        :rtype: Queue.Queue
         :returns: A queue of all sub-hashrings in level-order.
         """
         return self._breadthFirst(trunk)
