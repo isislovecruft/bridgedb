@@ -109,7 +109,7 @@ class AdaptiveMetricTreeNode(object):
 
     :type branches: list
     :ivar branches: A list of all other
-        :class:`nodes <bridgdb.tries.AdaptiveMetricTreeNode` which stem from
+        :class:`nodes <bridgdb.tries.AdaptiveMetricTreeNode>` which stem from
         this node.
     """
 
@@ -119,8 +119,8 @@ class AdaptiveMetricTreeNode(object):
         :param key: See :meth:`key` for documentation regarding acceptable
             types and formats for the **key**.
         :param item: The object to store at this
-            :class:`node <bridgedb.tries.AdaptiveMetricTreeNode` in the
-            :class:`tree <bridgedb.tries.AdaptiveMetricTree`.
+            :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` in the
+            :class:`tree <bridgedb.tries.AdaptiveMetricTree>`.
         """
         self.branches = []
         self.key = key
@@ -142,8 +142,8 @@ class AdaptiveMetricTreeNode(object):
         nodes lexographically by their :meth:`key`s.
 
         :rtype: int
-        :returns: Negative if node<other, zero if node node==other, positive if
-            node>other.
+        :returns: Negative if ``node < other``, zero if node ``node == other``,
+            or positive if ``node > other``.
         """
         x = toSexp(node.key)
         y = toSexp(other.key)
@@ -236,9 +236,8 @@ class AdaptiveMetricTreeNode(object):
         method are instead deserialised from their internal s-expression
         format to flat Python lists.  For example, if this
         :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` were node ``17``
-        from the above tree structure, then calling this method would return::
-
-            [4, 1, 3]
+        from the above tree structure, then calling this method would return
+        ``[4, 1, 3]``.
 
         :rtype: list
         :returns: A list representation of the s-expression which represents
@@ -273,16 +272,6 @@ class AdaptiveMetricTreeNode(object):
         """Count how many elements in the s-expressions for our :data:`key` and
         the **other** key are matching.
 
-        :type other: str or list
-        :param list other: Either a flat list — which should be serialisable as
-            an s-expression::
-
-                [1, 2, 1, 1]
-
-            or its equivalent valid s-expression string::
-
-                "(1 2 1 1)"
-
         >>> from bridgedb.tries import AdaptiveMetricTreeNode
         >>> n1 = AdaptiveMetricTreeNode()
         >>> n1.key = [1, 2, 1, 1]
@@ -298,6 +287,16 @@ class AdaptiveMetricTreeNode(object):
         >>> assert n1.countMatching("(1 2 1 4)") == 3
         >>> assert n1.countMatching("(5 4 3 2 1)") == 0
         >>> assert n1.countMatching("(2 2)") == 0
+
+        :type other: str or list
+        :param list other: Either a flat list — which should be serialisable as
+            an s-expression::
+
+                [1, 2, 1, 1]
+
+            Or its equivalent valid s-expression string::
+
+                "(1 2 1 1)"
 
         :rtype: int
         :returns: The number of matching elements in our :data:`key` and the
@@ -396,10 +395,13 @@ class AdaptiveMetricTree(object):
 
     **Time Complexity in Big-O Notation**
 
-    In the following table, *w* is taken to be the width of the tree, *n* is
-    the number of nodes in the tree, *d* is the depth of an element in the
-    tree (which, in our case, happens to equal the length of the
-    :meth:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`):
+    In the following table,
+
+      - *w* is taken to be the width of the tree,
+      - *n* is the number of nodes in the tree, and
+      - *d* is the depth of an element in the tree (which, in our case,
+        happens to equal the length of the
+        :meth:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`)
 
     =================== ==================== ====================
     Operation           Average              Worst Case
@@ -421,7 +423,9 @@ class AdaptiveMetricTree(object):
     """
 
     def __init__(self):
-        """Create a new :class:`AdaptiveMetricTree` with only a trunk node."""
+        """Upon initialisation, an :class:`AdaptiveMetricTree` only has a trunk
+        :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>`.
+        """
         self.trunk = AdaptiveMetricTreeNode()
 
     def __contains__(self, key):
@@ -503,11 +507,11 @@ class AdaptiveMetricTree(object):
         return final
 
     def get(self, key, node=None, default=None):
-        """Get a class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` by its
+        """Get a :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` by its
         **key**.
 
         :type key: str or list or tuple
-        :param key: A :class:`AdaptiveMetricTreeNode`
+        :param key: A :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>`
             :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
         :param default: The return value if the **key** can't be found.
         :rtype: :class:`AdaptiveMetricTreeNode`
@@ -533,9 +537,9 @@ class AdaptiveMetricTree(object):
 
     def insert(self, key, item, node=None):
         """Recursively insert a
-        :class:`node <bridgedb.tries.AdaptiveMetricTreeNode` containing the
+        :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` containing the
         **key** and the **item** into this
-        :class:`tree <bridgedb.tries.AdaptiveMetricTree`.
+        :class:`tree <bridgedb.tries.AdaptiveMetricTree>`.
         """
         if not node:
             node = self.trunk
@@ -605,7 +609,7 @@ class AdaptiveMetricTree(object):
         return [node for node in self.traverse().queue]
 
     def prune(self, key, parent=None):
-        """Remove a :class:`node <bridgedb.tries.AdaptiveMetricTreeNode` (and
+        """Remove a :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>` (and
         all nodes branching from it) by **key** from this tree.
 
         :type key: str or list or tuple
@@ -634,9 +638,9 @@ class AdaptiveMetricTree(object):
         return True
 
     def subtree(self, key):
-        """Get all :class:`nodes <bridgedb.tries.AdaptiveMetricTreeNode` whose
-        :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` equals, or
-        is prefixed with, the the given **key**.
+        """Get all :class:`nodes <bridgedb.tries.AdaptiveMetricTreeNode>` whose
+        :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` is prefixed
+        with the the requested **key**.
 
         :type key: str or list or tuple
         :param key: A :class:`AdaptiveMetricTreeNode`
@@ -658,16 +662,15 @@ class AdaptiveMetricTree(object):
         return subtree
 
     def traverse(self, trunk=None):
-        """Traverse the (possibly infinitely-branching) tree comprising all of
-        this :class:`Hashring`'s subrings by conducting a
+        """Traverse this (possibly infinitely-branching) tree by conducting a
         `breadth-first search`_.
 
         .. info: The algorithm used for the level-order traversal is
             non-recursive by using two ``Queue``s.
 
-        For example, given the following non-binary tree structure for this
-        hashring's sub-hashrings, the returned list is ordered in the following
-        manner::
+        For example, given the following non-binary tree structure, the
+        returned list is ordered in the following manner::
+
                                     +---+                        
                                     | 1 |                        
                                     +-+-+                        
@@ -694,7 +697,8 @@ class AdaptiveMetricTree(object):
 
         :type trunk: :class:`AdaptiveMetricTreeNode`
         :param trunk: The node to begin traversal from.  If given, only the
-             subtree from **trunk** downwards will be traversed.
+             subtree from **trunk** downwards will be traversed (but *not*
+             including the **trunk** node itself).
         :rtype: Queue.Queue
         :returns: A queue of all sub-hashrings in level-order.
         """
