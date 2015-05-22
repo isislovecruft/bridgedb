@@ -66,6 +66,7 @@ import bridgedb.Storage
 import bridgedb.strings
 import bridgedb.test
 import bridgedb.translations
+import bridgedb.tries
 import bridgedb.txrecaptcha
 import bridgedb.util
 
