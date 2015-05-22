@@ -44,6 +44,16 @@ def isSexp(exp):
 def fromSexp(exp):
     """Deserialize a potential s-expression into a list.
 
+    >>> from bridgedb.tries import fromSexp
+    >>> fromSexp([1, 2, 3])
+    [1, 2, 3]
+    >>> fromSexp('(1 2 3)')
+    [1, 2, 3]
+    >>> fromSexp([3, [1, [4, [1]]]])
+    [3, [1, [4, [1]]]]
+    >>> fromSexp(["a", "b", "c"])
+    ["a", "b", "c"]
+
     :type exp: str or list or tuple
     :param exp: A potential s-expression.
     :raises SexpressionError: if **exp** is not a type that can be
@@ -73,6 +83,10 @@ def toSexp(exp):
     u'(1 2 3)'
     >>> toSexp('(1 2 3)')
     u'(1 2 3)'
+    >>> toSexp([3, [1, [4, [1]]]])
+    u'(3 (1 (4 (1))))'
+    >>> toSexp(["a", "b", "c"])
+    u'("a" "b" "c")'
 
     :type exp: str or list or tuple
     :param exp: The expression to convert to an s-expression.
@@ -82,7 +96,7 @@ def toSexp(exp):
     :returns: The **exp**, as an s-expression.
     """
     if isSexp(exp):
-        return exp
+        return type('')(exp)
     elif isinstance(exp, (list, tuple)):
         return sexp.dumps(exp)
     else:
