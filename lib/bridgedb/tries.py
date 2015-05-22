@@ -68,8 +68,10 @@ def fromSexp(exp):
 def toSexp(exp):
     """Serialize **exp** into a s-expression.
 
-    >>> from bridgedb.tries import indicesToSexp
-    >>> indicesToSexp([1, 2, 3])
+    >>> from bridgedb.tries import toSexp
+    >>> toSexp([1, 2, 3])
+    '(1 2 3)'
+    >>> toSexp('(1 2 3)')
     '(1 2 3)'
 
     :type exp: str or list or tuple
@@ -114,7 +116,7 @@ class AdaptiveMetricTreeNode(object):
     def __init__(self, key=[], item=None):
         """Create a new node for an :class:`AdaptiveMetricTree`.
 
-        :param key: See :property:`key` for documentation regarding acceptable
+        :param key: See :meth:`key` for documentation regarding acceptable
             types and formats for the **key**.
         :param item: The object to store at this
             :class:`node <bridgedb.tries.AdaptiveMetricTreeNode` in the
@@ -129,15 +131,15 @@ class AdaptiveMetricTreeNode(object):
         return self._sortByKeys(self, other)
 
     def __str__(self):
-        """Get this :class:`node <bridgedb.tries.AdaptiveMetricTreeNode>`'s
-        :data:`key`, as a s-expression.
+        """Get this :class:`node's <bridgedb.tries.AdaptiveMetricTreeNode>`
+        :meth:`key`, as a s-expression.
         """
         return self._key
 
     @staticmethod
     def _sortByKeys(node, other):
-        """Comparison function for :class:`AdaptiveMetricTreeNode`s that orders
-        nodes lexographically by their :property:`key`s.
+        """Comparison function for :class:`AdaptiveMetricTreeNode` that orders
+        nodes lexographically by their :meth:`key`s.
 
         :rtype: int
         :returns: Negative if node<other, zero if node node==other, positive if
@@ -384,10 +386,10 @@ class AdaptiveMetricTree(object):
     One particular optimization which has been made to the
     :class:`Adaptive Metric Tree <bridgedb.tries.AdaptiveMetricTree>` is that
     its :class:`nodes <bridgedb.tries.AdaptiveMetricTreeNode>` have rather
-    peculiar :property:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`: each
+    peculiar :meth:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`: each
     key is stored as an `s-expression`_ representing the level-order indices
     required to locate the node.  (See the documentation for node
-    :property:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>` for a full
+    :meth:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>` for a full
     description.)  This feature allows for efficient breadth-first search and
     other forms of tree traversal on a `possibly‑infinite tree`_ structure.
 
@@ -397,7 +399,7 @@ class AdaptiveMetricTree(object):
     In the following table, *w* is taken to be the width of the tree, *n* is
     the number of nodes in the tree, *d* is the depth of an element in the
     tree (which, in our case, happens to equal the length of the
-    :property:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`):
+    :meth:`keys <bridgedb.tries.AdaptiveMetricTreeNode.key>`):
 
     =================== ==================== ====================
     Operation           Average              Worst Case
@@ -507,7 +509,7 @@ class AdaptiveMetricTree(object):
 
         :type key: str or list or tuple
         :param key: A :class:`AdaptiveMetricTreeNode`
-            :property:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
+            :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
         :param default: The return value if the **key** can't be found.
         :rtype: :class:`AdaptiveMetricTreeNode`
         :returns: The node whose :data:`key` matches the requested **key**, if
@@ -609,7 +611,7 @@ class AdaptiveMetricTree(object):
 
         :type key: str or list or tuple
         :param key: A :class:`AdaptiveMetricTreeNode`
-            :property:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
+            :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
         :param parent: The suspected parent of the node we're trying to remove.
         :rtype: bool
         :returns: ``True`` if the pruning operation was successful; ``False``
@@ -634,17 +636,17 @@ class AdaptiveMetricTree(object):
 
     def subtree(self, key):
         """Get all :class:`nodes <bridgedb.tries.AdaptiveMetricTreeNode` whose
-        :property:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` equals, or
+        :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` equals, or
         is prefixed with, the the given **key**.
 
         :type key: str or list or tuple
         :param key: A :class:`AdaptiveMetricTreeNode`
-            :property:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
+            :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>`.
         :rtype: list
         :returns: A level-order list of all
             :class:`nodes <bridgedb.tries.AdaptiveMetricTreeNode` which stem
             from the node whose
-            :property:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` matches
+            :meth:`key <bridgedb.tries.AdaptiveMetricTreeNode.key>` matches
             the given **key**.
         """
         key = fromSexp(key)
