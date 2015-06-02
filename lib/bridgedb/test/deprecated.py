@@ -332,7 +332,7 @@ class PluggableTransport(object):
                 {'password': 'NEQGQYLUMUQGK5TFOJ4XI2DJNZTS4LRO'}
 
         .. _pt-spec.txt:
-             https://gitweb.torproject.org/torspec.git/blob/HEAD:/pt-spec.txt
+             https://gitweb.torproject.org/torspec.git/tree/pt-spec.txt
         """
         #XXX: assert are disabled with python -O
         assert isinstance(bridge, Bridge)

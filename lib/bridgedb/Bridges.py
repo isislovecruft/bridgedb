@@ -63,7 +63,7 @@ class BridgeRingParameters(object):
     :ivar list needFlags: List of two-tuples of desired flags_ assigned to a
         Bridge by the Bridge DirAuth.
 
-    .. _flags: https://gitweb.torproject.org/torspec.git/blob/HEAD:/dir-spec.txt#l1696
+    .. _flags: https://gitweb.torproject.org/torspec.git/tree/dir-spec.txt?id=6b557594ef#n1695
     """
 
     def __init__(self, needPorts=[], needFlags=[]):

@@ -240,9 +240,9 @@ Status: Open
 [0]: https://bridges.torproject.org
      mailto:bridges@bridges.torproject.org
 [1]: See proposals 199-bridgefinder-integration.txt at
-     https://gitweb.torproject.org/torspec.git/blob/HEAD:/proposals/199-bridgefinder-integration.txt
+     https://gitweb.torproject.org/torspec.git/tree/proposals/199-bridgefinder-integration.txt
 [2]: See XXX-social-bridge-distribution.txt at
-     https://gitweb.torproject.org/user/isis/bridgedb.git/blob/refs/heads/feature/7520-social-dist-design:/doc/proposals/XXX-bridgedb-social-distribution.txt
+     https://gitweb.torproject.org/user/isis/bridgedb.git/tree/doc/proposals/XXX-bridgedb-social-distribution.txt?h=feature/7520-social-dist-design
 [3]: https://metrics.torproject.org/formats.html#descriptortypes
 [4]: https://github.com/couchbase/couchbase-python-client#twisted-api
 [5]: https://twistedmatrix.com/documents/current/api/twisted.protocols.memcache.MemCacheProtocol.html
