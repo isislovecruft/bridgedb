@@ -109,7 +109,7 @@ class Flags(object):
           |      "Valid" if the router has been 'validated'.
 
         .. _dir-spec.txt:
-            https://gitweb.torproject.org/torspec.git/tree/dir-spec.txt?id=7647f6d4d#n1603
+            https://gitweb.torproject.org/torspec.git/tree/dir-spec.txt?id=7647f6d4d#n1602
 
         :param list flags: A list of strings containing each of the flags
             parsed from the 's'-line.
