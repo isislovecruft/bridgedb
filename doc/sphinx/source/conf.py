@@ -44,6 +44,14 @@ import bridgedb.Filters
 import bridgedb.geo
 import bridgedb.HTTPServer
 import bridgedb.Main
+import bridgedb.parse
+import bridgedb.parse.addr
+import bridgedb.parse.descriptors
+import bridgedb.parse.fingerprint
+import bridgedb.parse.headers
+import bridgedb.parse.nickname
+import bridgedb.parse.options
+import bridgedb.parse.versions
 import bridgedb.persistent
 import bridgedb.proxy
 import bridgedb.qrcodes
