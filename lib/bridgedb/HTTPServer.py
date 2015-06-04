@@ -56,7 +56,7 @@ from bridgedb.qrcodes import generateQR
 from bridgedb.safelog import logSafely
 from bridgedb.schedule import Unscheduled
 from bridgedb.schedule import ScheduledInterval
-from bridgedb.util import htmlify_string
+from bridgedb.util import replaceControlChars
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
@@ -739,12 +739,11 @@ class WebResourceBridges(resource.Resource):
                                                        self.nBridgesToGive,
                                                        countryCode,
                                                        bridgeFilterRules=rules)
-            bridgeLines = "".join("%s\n" % b.getConfigLine(
+            bridgeLines = [replaceControlChars(b.getConfigLine(
                 includeFingerprint=self.includeFingerprints,
                 addressClass=addressClass,
                 transport=transport,
-                request=bridgedb.Dist.uniformMap(ip)
-                ) for b in bridges)
+                request=bridgedb.Dist.uniformMap(ip))) for b in bridges]
 
         answer = self.renderAnswer(request, bridgeLines, format)
         return answer
@@ -772,7 +771,7 @@ class WebResourceBridges(resource.Resource):
         if format == 'plain':
             request.setHeader("Content-Type", "text/plain")
             try:
-                rendered = bytes(bridgeLines)
+                rendered = bytes('\n'.join(bridgeLines))
             except Exception as err:
                 rendered = replaceErrorPage(err)
         else:
@@ -790,8 +789,7 @@ class WebResourceBridges(resource.Resource):
                                            rtl=rtl,
                                            lang=langs[0],
                                            answer=bridgeLines,
-                                           qrcode=qrcode,
-                                           htmlify_string=htmlify_string)
+                                           qrcode=qrcode)
             except Exception as err:
                 rendered = replaceErrorPage(err)
 

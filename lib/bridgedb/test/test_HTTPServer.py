@@ -422,6 +422,8 @@ class DummyBridge(object):
     """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
     ``getConfigLine`` method."""
 
+    ptArgs = {}
+
     def _randORPort(self): return random.randint(9001, 9999)
     def _randPTPort(self): return random.randint(6001, 6666)
     def _returnFour(self): return random.randint(2**24, 2**32-1)
@@ -457,15 +459,31 @@ class DummyBridge(object):
             line.append(str(transport))
         line.append("%s:%s" % (self.ip, self.orport))
         if includeFingerprint is True: line.append(self.fingerprint)
+        if self.ptArgs:
+            line.append(','.join(['='.join(x) for x in self.ptArgs.items()]))
         bridgeLine = " ".join([item for item in line])
         #print "Created config line: %r" % bridgeLine
         return bridgeLine
+
+
+class DummyMaliciousBridge(DummyBridge):
+    """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
+    ``getConfigLine`` method and which maliciously insert an additional fake
+    bridgeline and some javascript into its PT arguments.
+    """
+    ptArgs = {
+        "eww": "\rBridge 1.2.3.4:1234",
+        "bad": "\nBridge 6.6.6.6:6666 0123456789abcdef0123456789abcdef01234567",
+        "evil": "<script>alert('fuuuu');</script>",
+    }
 
 
 class DummyIPBasedDistributor(object):
     """A mocked :class:`bridgedb.Dist.IPBasedDistributor` which is used to test
     :class:`bridgedb.HTTPServer.WebResourceBridges.
     """
+
+    _bridge_class = DummyBridge
 
     def _dumbAreaMapper(ip): return ip
 
@@ -486,7 +504,7 @@ class DummyIPBasedDistributor(object):
         """Needed because it's called in
         :meth:`WebResourceBridges.getBridgesForIP`.
         """
-        return [DummyBridge() for _ in xrange(N)]
+        return [self._bridge_class() for _ in xrange(N)]
 
 
 class DummyRequest(requesthelper.DummyRequest):
@@ -520,11 +538,19 @@ class WebResourceBridgesTests(unittest.TestCase):
         self.dist = DummyIPBasedDistributor()
         self.sched = ScheduledInterval(1, 'hour')
         self.nBridgesPerRequest = 2
-        self.bridgesResource = HTTPServer.WebResourceBridges(
-            self.dist, self.sched, N=2,
-            #useForwardedHeader=True,
-            includeFingerprints=True)
 
+    def useBenignBridges(self):
+        self.dist._bridge_class = DummyBridge
+        self.bridgesResource = HTTPServer.WebResourceBridges(
+            self.dist, self.sched, N=self.nBridgesPerRequest,
+            includeFingerprints=True)
+        self.root.putChild(self.pagename, self.bridgesResource)
+
+    def useMaliciousBridges(self):
+        self.dist._bridge_class = DummyMaliciousBridge
+        self.bridgesResource = HTTPServer.WebResourceBridges(
+            self.dist, self.sched, N=self.nBridgesPerRequest,
+            includeFingerprints=True)
         self.root.putChild(self.pagename, self.bridgesResource)
 
     def parseBridgesFromHTMLPage(self, page):
@@ -550,8 +576,76 @@ class WebResourceBridgesTests(unittest.TestCase):
 
         return bridges
 
+    def test_render_GET_malicious_newlines(self):
+        """Test rendering a request when the some of the bridges returned have
+        malicious (HTML, Javascript, etc., in their) PT arguments.
+        """
+        self.useMaliciousBridges()
+
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.getClientIP = lambda: '1.1.1.1'
+
+        page = self.bridgesResource.render(request)
+        self.assertTrue(
+            'bad=Bridge 6.6.6.6:6666 0123456789abcdef0123456789abcdef01234567' in str(page),
+            "Newlines in bridge lines should be removed.")
+
+    def test_render_GET_malicious_returnchar(self):
+        """Test rendering a request when the some of the bridges returned have
+        malicious (HTML, Javascript, etc., in their) PT arguments.
+        """
+        self.useMaliciousBridges()
+
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.getClientIP = lambda: '1.1.1.1'
+
+        page = self.bridgesResource.render(request)
+        self.assertTrue(
+            'eww=Bridge 1.2.3.4:1234' in str(page),
+            "Return characters in bridge lines should be removed.")
+
+    def test_render_GET_malicious_javascript(self):
+        """Test rendering a request when the some of the bridges returned have
+        malicious (HTML, Javascript, etc., in their) PT arguments.
+        """
+        self.useMaliciousBridges()
+
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.getClientIP = lambda: '1.1.1.1'
+
+        page = self.bridgesResource.render(request)
+        self.assertTrue(
+            "evil=&lt;script&gt;alert(&#39;fuuuu&#39;);&lt;/script&gt;" in str(page),
+            ("The characters &, <, >, ', and \" in bridge lines should be "
+             "replaced with their corresponding HTML special characters."))
+
+    def test_renderAnswer_GET_textplain_malicious(self):
+        """If the request format specifies 'plain', we should return content
+        with mimetype 'text/plain' and ASCII control characters replaced.
+        """
+        self.useMaliciousBridges()
+
+        request = DummyRequest([self.pagename])
+        request.args.update({'format': ['plain']})
+        request.getClientIP = lambda: '4.4.4.4'
+        request.method = b'GET'
+
+        page = self.bridgesResource.render(request)
+        self.assertTrue("html" not in str(page))
+        self.assertTrue(
+            'eww=Bridge 1.2.3.4:1234' in str(page),
+            "Return characters in bridge lines should be removed.")
+        self.assertTrue(
+            'bad=Bridge 6.6.6.6:6666' in str(page),
+            "Newlines in bridge lines should be removed.")
+
     def test_render_GET_vanilla(self):
         """Test rendering a request for normal, vanilla bridges."""
+        self.useBenignBridges()
+
         request = DummyRequest([self.pagename])
         request.method = b'GET'
         request.getClientIP = lambda: '1.1.1.1'
@@ -577,6 +671,8 @@ class WebResourceBridgesTests(unittest.TestCase):
         """The client's IP address should be obtainable from the
         'X-Forwarded-For' header in the request.
         """
+        self.useBenignBridges()
+
         self.bridgesResource.useForwardedHeader = True
         request = DummyRequest([self.pagename])
         request.method = b'GET'
@@ -594,6 +690,8 @@ class WebResourceBridgesTests(unittest.TestCase):
 
     def test_render_GET_RTLlang(self):
         """Test rendering a request for plain bridges in Arabic."""
+        self.useBenignBridges()
+
         request = DummyRequest([b"bridges?transport=obfs3"])
         request.method = b'GET'
         request.getClientIP = lambda: '3.3.3.3'
@@ -614,6 +712,8 @@ class WebResourceBridgesTests(unittest.TestCase):
 
     def test_render_GET_RTLlang_obfs3(self):
         """Test rendering a request for obfs3 bridges in Farsi."""
+        self.useBenignBridges()
+
         request = DummyRequest([b"bridges?transport=obfs3"])
         request.method = b'GET'
         request.getClientIP = lambda: '3.3.3.3'
@@ -643,11 +743,12 @@ class WebResourceBridgesTests(unittest.TestCase):
             self.assertGreater(int(port), 0)
             self.assertLessEqual(int(port), 65535)
 
-
     def test_renderAnswer_textplain(self):
         """If the request format specifies 'plain', we should return content
         with mimetype 'text/plain'.
         """
+        self.useBenignBridges()
+
         request = DummyRequest([self.pagename])
         request.args.update({'format': ['plain']})
         request.getClientIP = lambda: '4.4.4.4'

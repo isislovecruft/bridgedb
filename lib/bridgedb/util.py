@@ -180,26 +180,6 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
     memo[key] = distance
     return distance
 
-htmlify_string_map = {
-    '<': '&lt;',
-    '>': '&gt;',
-    '&': '&amp;',
-    '"': '&quot;',
-    "'": '&apos;',
-    '\n': '<br/>'
-    }
-def htmlify_string(s):
-    """Encode HTML special characters, and newlines, in s.
-
-    >>> htmlify_string('<script>alert("badthink");</script>')
-    '&lt;script&gt;alert(&quot;badthink&quot;);&lt;/script&gt;'
-    >>> htmlify_string('bridge 1\nbridge 2')
-    'bridge 1<br/>bridge 2'
-
-    :param str s: The string to encode.
-    """
-    return ''.join(map((lambda ch: htmlify_string_map.get(ch, ch)), s))
-
 def isascii(s):
     """Return True if there are no non-ASCII characters in s, False otherwise.
 
@@ -234,6 +214,36 @@ def isascii_noncontrol(s):
     :param str s: The string to check for non-ASCII or control characters.
     """
     return all(map((lambda ch: 32 <= ord(ch) < 127), s))
+
+def replaceControlChars(text, replacement=None, encoding="utf-8"):
+    """Remove ASCII control characters [0-31, 92, 127].
+
+    >>> replaceControlChars('foo\n bar\\ baz\r \t\0quux\n')
+    'foo bar baz quux'
+    >>> replaceControlChars("\bI wonder if I'm outside the quotes now")
+    "I wonder if I'm outside the quotes now"
+
+    :param str text: Some text to remove ASCII control characters from.
+    :param int replacement: If given, the **replacement** should be an integer
+        representing the decimal representation of the byte to replace
+        occurences of ASCII control characters with. For example, if they
+        should be replaced with the character ``'a'``, then ``97`` should be
+        used as the **replacement**, because ``ord('a') == 97``.
+    :param str encoding: The encoding of the **text**.
+    :rtype: str
+    :returns: The sanitized **text**.
+    """
+    escaped = bytearray()
+
+    for byte in bytearray(text, encoding):
+        if byte in range(0, 32) + [92, 127]:
+            if replacement:
+                byte = replacement
+            else:
+                continue
+        escaped += bytearray([byte])
+
+    return str(escaped)
 
 
 class JustifiedLogFormatter(logging.Formatter):

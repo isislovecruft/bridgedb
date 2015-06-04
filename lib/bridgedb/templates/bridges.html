@@ -1,8 +1,7 @@
 ## -*- coding: utf-8 -*-
 
 <%inherit file="base.html"/>
-<%page args="strings, rtl=False, lang='en', answer=0, qrcode=0,
-    htmlify_string=None, **kwargs"/>
+<%page args="strings, rtl=False, lang='en', answer=0, qrcode=0, **kwargs"/>
 
   </div>
 </div>
@@ -67,7 +66,10 @@
       <div class="row" id="bridgesrow1">
         <div class="col col-lg-12">
           <div class="bridge-lines" id="bridgelines">
-${htmlify_string(answer)}
+## See http://docs.makotemplates.org/en/latest/filtering.html
+% for bridgeline in answer:
+${bridgeline | h,trim}<br />
+% endfor
           </div>
         </div>
       </div>
