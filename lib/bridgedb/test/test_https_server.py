@@ -534,7 +534,7 @@ class BridgesResourceTests(unittest.TestCase):
 
     def useMaliciousBridges(self):
         self.dist._bridge_class = DummyMaliciousBridge
-        self.bridgesResource = HTTPServer.WebResourceBridges(
+        self.bridgesResource = server.BridgesResource(
             self.dist, self.sched, N=self.nBridgesPerRequest,
             includeFingerprints=True)
         self.root.putChild(self.pagename, self.bridgesResource)
