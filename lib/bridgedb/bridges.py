@@ -372,19 +372,16 @@ class PluggableTransport(BridgeAddressBase):
                 ("Cannot create PluggableTransport with arguments type: %s")
                 % type(self.arguments))
 
-        for k, v in self.arguments.items():
-            kv = ''.join((k, v))
+        for item in self.arguments.items():
+            kv = ''.join(item)
             if not isascii_noncontrol(kv):
                 raise MalformedPluggableTransport(
                     ("Cannot create PluggableTransport with non-ASCII or "
-                     "control characters in arguments: %r=%r")
-                    % (k, v))
+                     "control characters in arguments: %r=%r") % item)
             if '"' in kv or '\\' in kv:
                 raise MalformedPluggableTransport(
                     ("Cannot create PluggableTransport with double quotes or "
-                     "backslashes in arguments: %r=%r")
-                    % (k, v))
-            pass
+                     "backslashes in arguments: %r=%r") % item)
 
         if not self._checkArguments():
             raise MalformedPluggableTransport(
