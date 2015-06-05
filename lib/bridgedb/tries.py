@@ -44,6 +44,7 @@ def isSexp(exp):
 def fromSexp(exp):
     """Deserialize a potential s-expression into a list.
 
+    >>> from __future__ import unicode_literals
     >>> from bridgedb.tries import fromSexp
     >>> fromSexp([1, 2, 3])
     [1, 2, 3]
