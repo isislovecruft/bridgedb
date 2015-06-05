@@ -301,3 +301,4 @@ class DummyMaliciousBridge(DummyBridge):
 
 
 bdbutil.registerAdapter(AdaptedBridge, DummyBridge, IName)
+bdbutil.registerAdapter(AdaptedBridge, DummyMaliciousBridge, IName)
