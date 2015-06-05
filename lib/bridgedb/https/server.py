@@ -709,9 +709,8 @@ class BridgesResource(resource.Resource):
             bridgeRequest.generateFilters()
 
             bridges = self.distributor.getBridges(bridgeRequest, interval)
-            bridgeLines = "".join("%s\n" %
-                bridge.getBridgeLine(bridgeRequest, self.includeFingerprints)
-                for bridge in bridges)
+            bridgeLines = [bridge.getBridgeLine(
+                bridgeRequest, self.includeFingerprints) for bridge in bridges]
 
         return self.renderAnswer(request, bridgeLines)
 
