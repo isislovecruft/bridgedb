@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_interfaces ; -*-
 #_____________________________________________________________________________
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
