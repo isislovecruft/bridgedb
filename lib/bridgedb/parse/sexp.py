@@ -51,8 +51,8 @@ def fromSexp(exp):
     [1, 2, 3]
     >>> fromSexp([3, [1, [4, [1]]]])
     [3, [1, [4, [1]]]]
-    >>> fromSexp(["a", "b", "c"])
-    [u"a", u"b", u"c"]
+    >>> fromSexp(['a', 'b', 'c'])
+    [u'a', u'b', u'c']
 
     :type exp: str or list or tuple
     :param exp: A potential s-expression.
