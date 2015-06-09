@@ -141,12 +141,17 @@ class BridgeAddressBase(object):
 
     :type country: str
     :ivar country: The two-letter GeoIP country code of the :ivar:`address`.
+
+    :type port: int
+    :ivar port: A integer specifying the port which this :class:`Bridge`
+        (or :class:`PluggableTransport`) is listening on.
     """
 
     def __init__(self):
         self._fingerprint = None
         self._address = None
         self._country = None
+        self._port = None
 
     @property
     def fingerprint(self):
@@ -242,6 +247,32 @@ class BridgeAddressBase(object):
         if self.address:
             return geo.getCountryCode(self.address)
 
+    @property
+    def port(self):
+        """Get the port number which this ``Bridge`` is listening
+        for incoming client connections on.
+
+        :rtype: int or None
+        :returns: The port (as an int), if it is known and valid; otherwise,
+            returns ``None``.
+        """
+        return self._port
+
+    @port.setter
+    def port(self, value):
+        """Store the port number which this ``Bridge`` is listening
+        for incoming client connections on.
+
+        :param int value: The transport's port.
+        """
+        if isinstance(value, int) and (0 <= value <= 65535):
+            self._port = value
+
+    @port.deleter
+    def port(self):
+        """Reset this ``Bridge``'s port to ``None``."""
+        self._port = None
+
 
 class PluggableTransport(BridgeAddressBase):
     """A single instance of a Pluggable Transport (PT) offered by a
@@ -314,7 +345,6 @@ class PluggableTransport(BridgeAddressBase):
             :data:`arguments`.
         """
         super(PluggableTransport, self).__init__()
-        self._port = None
         self._methodname = None
         self._blockedIn = {}
 
@@ -436,32 +466,6 @@ class PluggableTransport(BridgeAddressBase):
             return True
 
         return False
-
-    @property
-    def port(self):
-        """Get the port number which this ``PluggableTransport`` is listening
-        for incoming client connections on.
-
-        :rtype: int or None
-        :returns: The port (as an int), if it is known and valid; otherwise,
-            returns ``None``.
-        """
-        return self._port
-
-    @port.setter
-    def port(self, value):
-        """Store the port number which this ``PluggableTransport`` is listening
-        for incoming client connections on.
-
-        :param int value: The transport's port.
-        """
-        if isinstance(value, int) and (0 <= value <= 65535):
-            self._port = value
-
-    @port.deleter
-    def port(self):
-        """Reset this ``PluggableTransport``'s port to ``None``."""
-        self._port = None
 
     @property
     def methodname(self):
@@ -632,7 +636,7 @@ class BridgeBase(BridgeAddressBase):
         :rtype: int
         :returns: This Bridge's default ORPort.
         """
-        return self._orPort
+        return self.port
 
     @orPort.setter
     def orPort(self, value):
@@ -640,13 +644,12 @@ class BridgeBase(BridgeAddressBase):
 
         :param int value: The Bridge's ORPort.
         """
-        if isinstance(value, int) and (0 <= value <= 65535):
-            self._orPort = value
+        self.port = value
 
     @orPort.deleter
     def orPort(self):
         """Reset this Bridge's ORPort."""
-        self._orPort = None
+        del self.port
 
 
 class BridgeBackwardsCompatibility(BridgeBase):
