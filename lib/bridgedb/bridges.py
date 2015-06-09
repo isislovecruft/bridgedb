@@ -25,6 +25,8 @@ from Crypto.Util.number import long_to_bytes
 
 from twisted.python import components
 from zope.interface import implementer
+from zope.interface import Attribute
+from zope.interface import Interface
 
 import bridgedb.Storage
 
@@ -83,6 +85,18 @@ class InvalidExtraInfoSignature(MalformedBridgeInfo):
     """Raised if the signature on an ``@type bridge-extrainfo`` is invalid."""
 
 
+class IBridge(Interface):
+    """I am a (mostly) stub interface whose primary purpose is merely to allow
+    other classes to signify whether or not they can be treated like a
+    :class:`Bridge`.
+    """
+    fingerprint = Attribute(
+        ("The lowercased, hexadecimal-encoded, hash digest of this Bridge's "
+         "public identity key."))
+    address = Attribute("This Bridge's primary public IP address.")
+    port = Attribute("The port which this Bridge is listening on.")
+
+
 class Flags(object):
     """All the flags which a :class:`Bridge` may have."""
 
@@ -127,6 +141,7 @@ class Flags(object):
         self.valid = 'Valid' in flags
 
 
+@implementer(IBridge)
 class BridgeAddressBase(object):
     """A base class for describing one of a :class:`Bridge`'s or a
     :class:`PluggableTransport`'s location, including its identity key
@@ -279,6 +294,8 @@ class BridgeAddressBase(object):
         self._port = None
 
 
+
+@implementer(IBridge)
 class PluggableTransport(BridgeAddressBase):
     """A single instance of a Pluggable Transport (PT) offered by a
     :class:`Bridge`.
@@ -594,6 +611,7 @@ class PluggableTransport(BridgeAddressBase):
         self._runChecks()
 
 
+@implementer(IBridge)
 class BridgeBase(BridgeAddressBase):
     """The base class for all bridge implementations."""
 
@@ -657,6 +675,7 @@ class BridgeBase(BridgeAddressBase):
         del self.port
 
 
+@implementer(IBridge)
 class BridgeBackwardsCompatibility(BridgeBase):
     """Backwards compatibility methods for the old Bridge class."""
 
@@ -873,6 +892,7 @@ class AdaptedBridge(object, components.Adapter):
         return self.original.fingerprint
 
 
+@implementer(IBridge)
 class Bridge(BridgeBackwardsCompatibility):
     """A single bridge, and all the information we have for it.
 
