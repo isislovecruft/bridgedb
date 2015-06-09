@@ -20,6 +20,7 @@ from twisted.internet import reactor
 
 import bridgedb.Storage
 
+from bridgedb.bridges import IBridge
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMAC
 from bridgedb.distribute import Distributor
@@ -78,21 +79,23 @@ class UnallocatedDistributor(Distributor):
 
         :param str channel: A name for the out-of-band distribution channel.
         :type bridges: list or ``None``
-        :param bridges: A list of either :class:`~bridgedb.bridges.Bridge`s or
-            :class:`bridgedb.Storage.BridgeData`s (or both types).  If given,
+        :param bridges: A list of implementers of
+            :class:`~bridgedb.bridges.IBridge`, or
+            :class:`bridgedb.Storage.BridgeData` (or both types).  If given,
             these will be imported into the new :class:`Hashring`.
         """
         converted = []
 
-        for bridge in bridges:
-            if isinstance(bridge, bridgedb.Storage.BridgeData):
-                brdg = Bridge()
-                brdg.fingerprint = bridge.hex_key
-                brdg.address = bridge.address
-                brdg.orPort = bridge.or_port
-                converted.append(brdg)
-            elif isinstance(bridge, Bridge):
-                converted.append(bridge)
+        if bridges:
+            for bridge in bridges:
+                if isinstance(bridge, bridgedb.Storage.BridgeData):
+                    brdg = Bridge()
+                    brdg.fingerprint = bridge.hex_key
+                    brdg.address = bridge.address
+                    brdg.orPort = bridge.or_port
+                    converted.append(brdg)
+                elif IBridge.providedBy(bridge):
+                    converted.append(bridge)
 
         self.hashring.addSubring(Hashring(self.hashring.key), channel,
                                  importFrom=converted)
