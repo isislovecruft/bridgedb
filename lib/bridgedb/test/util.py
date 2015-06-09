@@ -25,9 +25,12 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.bridges import IBridge
 from bridgedb.bridges import AdaptedBridge
 from bridgedb.interfaces import IName
 from bridgedb.parse.addr import isIPAddress
+
+from zope.interface import implementer
 
 
 def fileCheckDecorator(func):
@@ -252,6 +255,7 @@ class Benchmarker(object):
             print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))
 
 
+@implementer(IBridge)
 class DummyBridge(object):
     """A mock :class:`bridgedb.bridges.Bridge` which only supports a mocked
     ``getBridgeLine`` method."""
@@ -288,6 +292,7 @@ class DummyBridge(object):
         return " ".join([item for item in line])
 
 
+@implementer(IBridge)
 class DummyMaliciousBridge(DummyBridge):
     """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
     ``getConfigLine`` method and which maliciously insert an additional fake
