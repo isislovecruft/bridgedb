@@ -179,6 +179,107 @@ U36EY4UoN5ABPowhNZFeyr5A3vKiDr6j0hCOqYOhxPY=
 -----END SIGNATURE-----
 '''
 
+BRIDGE_SERVER_DESCRIPTOR_ED25519 = '''\
+@purpose bridge
+router piratepartei 80.92.79.70 80 0 0
+identity-ed25519
+-----BEGIN ED25519 CERT-----
+AQQABhauAccW2uNOkPPWU7h9x9FFWtUJXCnw423dKqL/89pTHFRcAQAgBADfGmFI
+//1tBiZZxZ2aXNvvLbEdS/0XHYCWY6Oz3lHCU2xHCJzW03U7htLpq95lWStr2bMm
+D9N1MJp8Zufal71nFV5dgCm0DvMoeCN0d1F6zYnrGvyq+2E6p32x/DG33Qs=
+-----END ED25519 CERT-----
+master-key-ed25519 3xphSP/9bQYmWcWdmlzb7y2xHUv9Fx2AlmOjs95RwlM
+platform Tor 0.2.7.1-alpha-dev on Linux
+protocols Link 1 2 Circuit 1
+published 2015-06-09 21:59:40
+fingerprint 312D 6427 4C29 1560 0584 3EEC B19C 6865 FA3C C10C
+uptime 0
+bandwidth 14971520 104857600 64512
+extra-info-digest 30E10A35CCEA6AA1E04C15FD5F99022F4CACEBC6 pph/KzxlcGa20Sl6/nQl7noyKctzcWkRkTbBX7aIapQ
+onion-key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBALRXlkmBc96bz/WFSJ0/NoNYuOivpRBkMDqE0617x63EE9zA+BQGVk81
+5mbF50IQRS12J3F7x+m7USGF7xcUw+id9pe1jzyyqOTo2BPf2Wemif+CvVc9uD0v
+BLO38iImiret0yZtxq3RQ2KaCg2z0y+RPDudR6z/d6V3ASFSlPgBAgMBAAE=
+-----END RSA PUBLIC KEY-----
+signing-key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBALGE2wcWNpWczHlLOa3MbRMKYGDMNe3MsTDKqxftImHuUdMV758q5/4c
+2d0znZ1k5zma7TIKXM1xblVWaHmSZ65jMyy0jgZl7SNbxibP3xM8mfHAJOoWfnQu
+LSj8tKSir2BdA8rncajrDmtQe0C8mxA/RgUHuB6ZF42kAB9lm/33AgMBAAE=
+-----END RSA PUBLIC KEY-----
+onion-key-crosscert
+-----BEGIN CROSSCERT-----
+EPpvZluK8YLLXU00HVskixVqpJfkCeKWXkQPv5Vq87n7E/gtzrVM9A0DasSPHgor
+0Y1jP2K/6G0nuloeDZuNNqPxxz7LEKom5q66UO0Tk4Xdnmj1yp/hSsqi/8sUGe9R
+BmZmuz45UJGmADiYwwFnwec/bKkX3al4BwuQRHwcZd0=
+-----END CROSSCERT-----
+ntor-onion-key-crosscert 1
+-----BEGIN ED25519 CERT-----
+AQoABhSGAd8aYUj//W0GJlnFnZpc2+8tsR1L/RcdgJZjo7PeUcJTABR4eqhKqYNN
+Sgpojtm7C+QRvD3mTk06EEbFly9VrXOaSK4BVxTlsHadm4ti7vdqGHbTWN7DRRu6
+nnUKJPMOsAk=
+-----END ED25519 CERT-----
+hidden-service-dir
+contact 0x02225522 Frenn vun der Enn (FVDE) <info AT enn DOT lu>
+ntor-onion-key ycFwQVUCqJlPaLwJNvlrpgNLwkU780t4pKiILLWZw0o=
+reject *:*
+router-sig-ed25519 /uWcpQeWcwywFwy+O1WGfLQFuxkLMsy8u+rTTum4CQd8uN7bt3VCHRG82X9sc18rMv2VHUs7b+WZcfX39ADMDw
+router-signature
+-----BEGIN SIGNATURE-----
+FpF1a2jF1gkVbSUEuuDrw8ggeyQl4HLqHGXJM/J3SPQDky0OhvqPEV8E0CpONG38
+YNumnkSJ0vjI0YUuVyOZKpODHS/dlXnz5F/Yz8vwQfC7IsNRQgNgf5tbT3iAF8yh
+VC4FdHgFlAkXbiqkpWtD0ojJJjLlEeXbmGILjC1Ls2I=
+-----END SIGNATURE-----
+'''
+
+BRIDGE_EXTRA_INFO_DESCRIPTOR_ED25519 = '''\
+extra-info piratepartei 312D64274C29156005843EECB19C6865FA3CC10C
+identity-ed25519
+-----BEGIN ED25519 CERT-----
+AQQABhauAccW2uNOkPPWU7h9x9FFWtUJXCnw423dKqL/89pTHFRcAQAgBADfGmFI
+//1tBiZZxZ2aXNvvLbEdS/0XHYCWY6Oz3lHCU2xHCJzW03U7htLpq95lWStr2bMm
+D9N1MJp8Zufal71nFV5dgCm0DvMoeCN0d1F6zYnrGvyq+2E6p32x/DG33Qs=
+-----END ED25519 CERT-----
+published 2015-06-09 21:59:40
+write-history 2015-06-09 19:41:54 (14400 s) 1093632,3138560,1309696,1641472,1064960,1799168
+read-history 2015-06-09 19:41:54 (14400 s) 4406272,6537216,5197824,5701632,5342208,5817344
+dirreq-write-history 2015-06-09 19:17:22 (14400 s) 28672,1727488,575488,589824,43008,618496
+dirreq-read-history 2015-06-09 19:17:22 (14400 s) 0,0,0,0,0,0
+geoip-db-digest 0A1F9C09E08F6F2490E8880664D4E863D1680A12
+geoip6-db-digest A6E9B5DE6F887315749B29F9C9F698215BE5240A
+dirreq-stats-end 2015-06-09 12:33:11 (86400 s)
+dirreq-v3-ips ir=8,us=8
+dirreq-v3-reqs ir=8,us=8
+dirreq-v3-resp ok=8,not-enough-sigs=0,unavailable=0,not-found=0,not-modified=0,busy=0
+dirreq-v3-direct-dl complete=0,timeout=0,running=0
+dirreq-v3-tunneled-dl complete=8,timeout=4,running=0
+transport scramblesuit 80.92.79.70:7333 password=S3DVRHWD5375I3AA5NMQBG4WED5MBIYD
+transport fte 80.92.79.70:7331
+transport websocket 80.92.79.70:9901
+transport obfs3 80.92.79.70:7332
+transport obfs4 80.92.79.70:7334 cert=/Q8QygIhLarhjvB+rKiFvSmXdjhO9AF6OXACR8JH+voMwKF0s5uMaG3H3uEBiZNQI79jPw,iat-mode=0
+bridge-stats-end 2015-06-09 12:33:17 (86400 s)
+bridge-ips us=24
+bridge-ip-versions v4=24,v6=0
+bridge-ip-transports obfs4=24
+router-sig-ed25519 O+yrUnkHXZ16Cf0+a3gfDl2ggygbxQUal4kRi5BD2v3NW8CrWjqGJLBjked8g5eJCThUXZuraHwkapeu8gtAAg
+router-signature
+-----BEGIN SIGNATURE-----
+HbZs8ckBwKbJ4vg0LJztGosNaDqSRD+pHiWgBAmx9ARbz7niJMY/ql+Qxh7NFifQ
+xa39dJvObxE65qeaZJvcznSyEkUDcHBFcHLWZev7XQjXf2no9vUL86JvwBKHHKC1
+GnoYumyiqlKn3MOiqVYN5KXhO5i6qN/W8SjMVvywxZI=
+-----END SIGNATURE-----
+extra-info Unnamed 9673B58C3A72BC279C4FADEA678DEDCF63E524D2
+published 2015-06-09 22:00:10
+router-signature
+-----BEGIN SIGNATURE-----
+S57LSzZy2ecjd9jqA5R7nzRUOWJBNVGA8TMLiuWMHXj4DY540ZgbObNtAIU/uzR5
+C3sfCVx39iQ39DKgi93zaeZ7s37KGKiUXwJkvDsY0+A2N/TNX5DyI0ZH8WAwCMNq
+EXVgdbhn8RrQiVT69evPXjdr6hmgllUofRT7LimvR60=
+-----END SIGNATURE-----
+'''
+
 
 class ParseDescriptorsTests(unittest.TestCase):
     """Unittests for :class:`bridgedb.parse.descriptors` module."""
@@ -695,6 +796,26 @@ class ParseDescriptorsTests(unittest.TestCase):
         routers = descriptors.parseExtraInfoFiles(io.BytesIO(''))
         self.assertIsInstance(routers, dict)
         self.assertEqual(len(routers), 0)
+
+    def test_parse_descriptors_parseExtraInfoFiles_ed25519(self):
+        """Test parsing an extrainfo descriptor with Ed25519 keys/certificates.
+        """
+        descFileOne = io.BytesIO(BRIDGE_EXTRA_INFO_DESCRIPTOR_ED25519)
+        routers = descriptors.parseExtraInfoFiles(descFileOne)
+        self.assertEqual(len(routers), 1)
+
+    def test_parse_descriptors_parseExtraInfoFiles_ed25519(self):
+        """Test parsing an extrainfo descriptor with Ed25519 keys/certificates.
+        """
+        descFileOne = io.BytesIO(BRIDGE_SERVER_DESCRIPTOR_ED25519)
+        routers = descriptors.parseServerDescriptorsFile(descFileOne)
+        self.assertIsInstance(routers, list)
+        self.assertEqual(len(routers), 1)
+
+        bridge = routers[0]
+        self.assertIsInstance(bridge, RelayDescriptor)
+        self.assertEqual(bridge.address, u'80.92.79.70')
+        self.assertEqual(bridge.fingerprint, u'312D64274C29156005843EECB19C6865FA3CC10C')
 
     def test_parse_descriptors_copyUnparseableDescriptorFile_return_value(self):
         """``b.p.descriptors._copyUnparseableDescriptorFile()`` should return
