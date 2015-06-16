@@ -108,7 +108,9 @@ def get_requirements():
                 line = line.strip()
                 if line.startswith('#'):
                     continue
-                elif line.startswith(
+                if line.startswith(('git+', 'hg+', 'svn+')):
+                    line = line[line.index('+') + 1:]
+                if line.startswith(
                         ('https://', 'git://', 'hg://', 'svn://')):
                     links.append(line)
                 else:
