@@ -10,6 +10,24 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
+"""Utility functions for converting between various relay fingerprint formats,
+and checking their validity.
+
+.. py:module:: bridgedb.parse.fingerprints
+    :synopsis: Parsers for Tor Bridge fingerprints.
+
+.. todo: This module is very small; it could possibly be combined with another
+    module, e.g. :mod:`bridgedb.parse.descriptors`.
+
+bridgedb.parse.fingerprints
+============================
+::
+
+ toHex - Convert a fingerprint from its binary representation to hexadecimal.
+ fromHex - Convert a fingerprint from hexadecimal to binary.
+ isValidFingerprint - Validate a fingerprint.
+..
+"""
 
 import binascii
 import logging
