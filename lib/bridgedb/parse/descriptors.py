@@ -10,6 +10,29 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
+"""Parsers for Tor Bridge descriptors, including ``bridge-networkstatus``
+documents, ``bridge-server-descriptor``s, and ``bridge-extrainfo``
+descriptors.
+
+.. py:module:: bridgedb.parse.descriptors
+    :synopsis: Parsers for Tor Bridge descriptors.
+
+bridgedb.parse.descriptors
+===========================
+::
+
+ DescriptorWarning - Raised when we parse a very odd descriptor.
+ deduplicate - Deduplicate a container of descriptors, keeping only the newest
+               descriptor for each router.
+ parseNetworkStatusFile - Parse a bridge-networkstatus document generated and
+                          given to us by the BridgeAuthority.
+ parseServerDescriptorsFile - Parse a file containing
+                              bridge-server-descriptors.
+ parseExtraInfoFiles - Parse (multiple) file(s) containing bridge-extrainfo
+                       descriptors.
+..
+"""
+
 from __future__ import print_function
 
 import datetime
