@@ -69,10 +69,10 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
                            descriptorClass=RouterStatusEntryV3):
     """Parse a file which contains an ``@type bridge-networkstatus`` document.
 
-    See `ticket #12254 <https://bugs.torproject.org/12254>`__ for why
-    networkstatus-bridges documents don't look anything like the networkstatus
-    v2 documents that they are purported to look like. They are missing all
-    headers, and the entire footer including authority signatures.
+    See :trac:`#12254` for why networkstatus-bridges documents don't look
+    anything like the networkstatus v2 documents that they are purported to
+    look like. They are missing all headers, and the entire footer including
+    authority signatures.
 
     :param str filename: The location of the file containing bridge
         networkstatus descriptors.

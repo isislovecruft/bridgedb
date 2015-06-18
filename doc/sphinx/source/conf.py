@@ -116,7 +116,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxarg.ext',
               'sphinxcontrib.fulltoc',
               'repoze.sphinx.autointerface',
-              'apilinks_sphinxext']
+              'apilinks_sphinxext',
+              'traclinks']
 
 todo_include_todos = True
 
