@@ -36,8 +36,7 @@ from bridgedb.Dist import TooSoonEmail
 from bridgedb.email import server
 from bridgedb.parse.addr import BadEmail
 from bridgedb.schedule import Unscheduled
-from bridgedb.test.util import fileCheckDecorator
-from bridgedb.test.util import TestCaseMixin
+from bridgedb.test import util
 from bridgedb.test.email_helpers import _createConfig
 from bridgedb.test.email_helpers import _createMailServerContext
 
@@ -271,7 +270,7 @@ class SMTPIncomingDeliveryTests(unittest.TestCase):
         self.assertIsInstance(validated(), server.SMTPMessage)
 
 
-class SMTPTestCaseMixin(TestCaseMixin):
+class SMTPTestCaseMixin(util.TestCaseMixin):
     """Utility methods for use within any subclasses of
     :api:`twisted.trial.unittest.TestCase` which test SMTP.
 

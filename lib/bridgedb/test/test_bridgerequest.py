@@ -34,11 +34,25 @@ class BridgeRequestBaseTests(unittest.TestCase):
         to the ``notBlockedIn`` attribute.
         """
         self.request.withoutBlockInCountry('US')
-        self.assertIn('US', self.request.notBlockedIn)
+        self.assertIn('us', self.request.notBlockedIn)
 
     def test_BridgeRequestBase_withPluggableTransportType(self):
         """BridgeRequestBase.withPluggableTransportType() should add the
         pluggable transport type to the ``transport`` attribute.
         """
-        self.request.withPluggableTransportType('huggable-transport')
-        self.assertIn('huggable-transport', self.request.transports)
+        self.request.withPluggableTransportType('huggable_transport')
+        self.assertIn('huggable_transport', self.request.transports)
+
+    def test_BridgeRequestBase_getHashringPlacement_without_client(self):
+        """BridgeRequestBase.getHashringPlacement() without a client parameter
+        should use the default client identifier string.
+        """
+        self.assertEqual(self.request.getHashringPlacement('AAAA'),
+                         3486762050L)
+
+    def test_BridgeRequestBase_getHashringPlacement_with_client(self):
+        """BridgeRequestBase.getHashringPlacement() with a client parameter
+        should use the client identifier string.
+        """
+        self.assertEqual(self.request.getHashringPlacement('AAAA', client='you'),
+                         2870307088L)

@@ -108,22 +108,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         :class:`~bridgedb.Dist.EmailBasedDistributor`.
         """
         super(EmailBridgeRequest, self).__init__()
-        self._isValid = False
         self._wantsKey = False
-
-    def isValid(self, valid=None):
-        """Get or set the validity of this bridge request.
-
-        If called without parameters, this method will return the current
-        state, otherwise (if called with the **valid** parameter), it will set
-        the current state of validity for this request.
-
-        :param bool valid: If given, set the validity state of this
-            request. Otherwise, get the current state.
-        """
-        if valid is not None:
-            self._isValid = bool(valid)
-        return self._isValid
 
     def wantsKey(self, wantsKey=None):
         """Get or set whether this bridge request wanted our GnuPG key.

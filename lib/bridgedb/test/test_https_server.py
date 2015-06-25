@@ -9,13 +9,12 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Unittests for :mod:`bridgedb.HTTPServer`."""
+"""Unittests for :mod:`bridgedb.https.server`."""
 
 from __future__ import print_function
 
 import logging
 import os
-import random
 import shutil
 
 import ipaddr
@@ -28,38 +27,134 @@ from twisted.trial import unittest
 from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
 
-from bridgedb import HTTPServer
+from bridgedb.https import server
 from bridgedb.schedule import ScheduledInterval
+from bridgedb.test.https_helpers import _createConfig
+from bridgedb.test.https_helpers import DummyRequest
+from bridgedb.test.https_helpers import DummyHTTPSDistributor
+from bridgedb.test.util import DummyBridge
+from bridgedb.test.util import DummyMaliciousBridge
 
 
 # For additional logger output for debugging, comment out the following:
 logging.disable(50)
 # and then uncomment the following line:
-#HTTPServer.logging.getLogger().setLevel(10)
+#server.logging.getLogger().setLevel(10)
+
+
+class GetClientIPTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.https.server.getClientIP`."""
+
+    def createRequestWithIPs(self):
+        """Set the IP address returned from ``request.getClientIP()`` to
+        '3.3.3.3', and the IP address reported in the 'X-Forwarded-For' header
+        to '2.2.2.2'.
+        """
+        request = DummyRequest([''])
+        request.headers.update({'x-forwarded-for': '2.2.2.2'})
+        # See :api:`twisted.test.requesthelper.DummyRequest.getClientIP`
+        request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+        request.method = b'GET'
+        return request
+
+    def test_getClientIP_XForwardedFor(self):
+        """getClientIP() should return the IP address from the
+        'X-Forwarded-For' header when ``useForwardedHeader=True``.
+        """
+        request = self.createRequestWithIPs()
+        clientIP = server.getClientIP(request, useForwardedHeader=True)
+        self.assertEqual(clientIP, '2.2.2.2')
+
+    def test_getClientIP_XForwardedFor_bad_ip(self):
+        """getClientIP() should return None if the IP address from the
+        'X-Forwarded-For' header is bad/invalid and
+        ``useForwardedHeader=True``.
+        """
+        request = self.createRequestWithIPs()
+        request.headers.update({'x-forwarded-for': 'pineapple'})
+        clientIP = server.getClientIP(request, useForwardedHeader=True)
+        self.assertEqual(clientIP, None)
+
+    def test_getClientIP_fromRequest(self):
+        """getClientIP() should return the IP address from the request instance
+        when ``useForwardedHeader=False``.
+        """
+        request = self.createRequestWithIPs()
+        clientIP = server.getClientIP(request)
+        self.assertEqual(clientIP, '3.3.3.3')
 
 
 class ReplaceErrorPageTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.HTTPServer.replaceErrorPage`."""
+    """Tests for :func:`bridgedb.https.server.replaceErrorPage`."""
 
     def test_replaceErrorPage(self):
         """``replaceErrorPage`` should return the expected html."""
         exc = Exception("vegan gümmibären")
-        errorPage = HTTPServer.replaceErrorPage(exc)
+        errorPage = server.replaceErrorPage(exc)
         self.assertSubstring("Something went wrong", errorPage)
         self.assertNotSubstring("vegan gümmibären", errorPage)
 
 
+class IndexResourceTests(unittest.TestCase):
+    """Test for :class:`bridgedb.https.server.IndexResource`."""
+
+    def setUp(self):
+        self.pagename = ''
+        self.indexResource = server.IndexResource()
+        self.root = Resource()
+        self.root.putChild(self.pagename, self.indexResource)
+
+    def test_IndexResource_render_GET(self):
+        """renderGet() should return the index page."""
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        page = self.indexResource.render_GET(request)
+        self.assertSubstring("add the bridges to Tor Browser", page)
+
+    def test_IndexResource_render_GET_lang_ta(self):
+        """renderGet() with ?lang=ta should return the index page in Tamil."""
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.addArg('lang', 'ta')
+        page = self.indexResource.render_GET(request)
+        self.assertSubstring("bridge-களை Tor Browser-உள்", page)
+
+
+class HowtoResourceTests(unittest.TestCase):
+    """Test for :class:`bridgedb.https.server.HowtoResource`."""
+
+    def setUp(self):
+        self.pagename = 'howto.html'
+        self.howtoResource = server.HowtoResource()
+        self.root = Resource()
+        self.root.putChild(self.pagename, self.howtoResource)
+
+    def test_HowtoResource_render_GET(self):
+        """renderGet() should return the howto page."""
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        page = self.howtoResource.render_GET(request)
+        self.assertSubstring("the wizard", page)
+
+    def test_HowtoResource_render_GET_lang_ru(self):
+        """renderGet() with ?lang=ru should return the howto page in Russian."""
+        request = DummyRequest([self.pagename])
+        request.method = b'GET'
+        request.addArg('lang', 'ru')
+        page = self.howtoResource.render_GET(request)
+        self.assertSubstring("следуйте инструкциям установщика", page)
+
+
 class CaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :mod:`bridgedb.HTTPServer.CaptchaProtectedResource`."""
+    """Tests for :class:`bridgedb.https.server.CaptchaProtectedResource`."""
 
     def setUp(self):
         self.dist = None
         self.sched = None
         self.pagename = b'bridges.html'
         self.root = Resource()
-        self.protectedResource = HTTPServer.WebResourceBridges(self.dist,
-                                                               self.sched)
-        self.captchaResource = HTTPServer.CaptchaProtectedResource(
+        self.protectedResource = server.BridgesResource(self.dist, self.sched)
+        self.captchaResource = server.CaptchaProtectedResource(
             useForwardedHeader=True, protectedResource=self.protectedResource)
         self.root.putChild(self.pagename, self.captchaResource)
 
@@ -77,16 +172,16 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
         """render_GET() with a missing template should raise an error and
         return the result of replaceErrorPage().
         """
-        oldLookup = HTTPServer.lookup
+        oldLookup = server.lookup
         try:
-            HTTPServer.lookup = None
+            server.lookup = None
             request = DummyRequest([self.pagename])
             request.method = b'GET'
             page = self.captchaResource.render_GET(request)
-            errorPage = HTTPServer.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
-            HTTPServer.lookup = oldLookup
+            server.lookup = oldLookup
 
     def createRequestWithIPs(self):
         """Set the IP address returned from ``request.getClientIP()`` to
@@ -134,10 +229,10 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
 
 
 class GimpCaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :mod:`bridgedb.HTTPServer.GimpCaptchaProtectedResource`."""
+    """Tests for :mod:`bridgedb.https.server.GimpCaptchaProtectedResource`."""
 
     def setUp(self):
-        """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
+        """Create a :class:`server.BridgesResource` and protect it with
         a :class:`GimpCaptchaProtectedResource`.
         """
         # Create our cached CAPTCHA directory:
@@ -149,8 +244,8 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
         self.pagename = b'captcha.html'
         self.root = Resource()
         # (None, None) is the (distributor, scheduleInterval):
-        self.protectedResource = HTTPServer.WebResourceBridges(None, None)
-        self.captchaResource = HTTPServer.GimpCaptchaProtectedResource(
+        self.protectedResource = server.BridgesResource(None, None)
+        self.captchaResource = server.GimpCaptchaProtectedResource(
             secretKey='42',
             publicKey='23',
             hmacKey='abcdefghijklmnopqrstuvwxyz012345',
@@ -215,22 +310,22 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
         """
         shutil.rmtree(self.captchaDir)
         self.request.method = b'GET'
-        self.assertRaises(HTTPServer.captcha.GimpCaptchaError,
+        self.assertRaises(server.captcha.GimpCaptchaError,
                           self.captchaResource.getCaptchaImage, self.request)
 
     def test_render_GET_missingTemplate(self):
         """render_GET() with a missing template should raise an error and
         return the result of replaceErrorPage().
         """
-        oldLookup = HTTPServer.lookup
+        oldLookup = server.lookup
         try:
-            HTTPServer.lookup = None
+            server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = HTTPServer.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
-            HTTPServer.lookup = oldLookup
+            server.lookup = oldLookup
 
     def test_render_POST_blankFields(self):
         """render_POST() with a blank 'captcha_response_field' should return
@@ -261,10 +356,10 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
 
 
 class ReCaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :mod:`bridgedb.HTTPServer.ReCaptchaProtectedResource`."""
+    """Tests for :mod:`bridgedb.https.server.ReCaptchaProtectedResource`."""
 
     def setUp(self):
-        """Create a :class:`HTTPServer.WebResourceBridges` and protect it with
+        """Create a :class:`server.BridgesResource` and protect it with
         a :class:`ReCaptchaProtectedResource`.
         """
         self.timeout = 10.0  # Can't take longer than that, right?
@@ -272,8 +367,8 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.pagename = b'captcha.html'
         self.root = Resource()
         # (None, None) is the (distributor, scheduleInterval):
-        self.protectedResource = HTTPServer.WebResourceBridges(None, None)
-        self.captchaResource = HTTPServer.ReCaptchaProtectedResource(
+        self.protectedResource = server.BridgesResource(None, None)
+        self.captchaResource = server.ReCaptchaProtectedResource(
             publicKey='23',
             secretKey='42',
             remoteIP='111.111.111.111',
@@ -352,7 +447,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         return d
 
     def test_checkSolution_blankFields(self):
-        """:meth:`HTTPServer.ReCaptchaProtectedResource.checkSolution` should
+        """:meth:`server.ReCaptchaProtectedResource.checkSolution` should
         return a redirect if is the solution field is blank.
         """
         self.request.method = b'POST'
@@ -382,15 +477,15 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         """render_GET() with a missing template should raise an error and
         return the result of replaceErrorPage().
         """
-        oldLookup = HTTPServer.lookup
+        oldLookup = server.lookup
         try:
-            HTTPServer.lookup = None
+            server.lookup = None
             self.request.method = b'GET'
             page = self.captchaResource.render_GET(self.request)
-            errorPage = HTTPServer.replaceErrorPage(Exception('kablam'))
+            errorPage = server.replaceErrorPage(Exception('kablam'))
             self.assertEqual(page, errorPage)
         finally:
-            HTTPServer.lookup = oldLookup
+            server.lookup = oldLookup
 
     def test_render_POST_blankFields(self):
         """render_POST() with a blank 'captcha_response_field' should return
@@ -401,7 +496,7 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', '')
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
+        self.assertEqual(page, server.NOT_DONE_YET)
 
     def test_render_POST_wrongSolution(self):
         """render_POST() with a wrong 'captcha_response_field' should return
@@ -415,140 +510,31 @@ class ReCaptchaProtectedResourceTests(unittest.TestCase):
         self.request.addArg('captcha_response_field', expectedResponse)
 
         page = self.captchaResource.render_POST(self.request)
-        self.assertEqual(page, HTTPServer.server.NOT_DONE_YET)
+        self.assertEqual(page, server.NOT_DONE_YET)
 
 
-class DummyBridge(object):
-    """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
-    ``getConfigLine`` method."""
-
-    ptArgs = {}
-
-    def _randORPort(self): return random.randint(9001, 9999)
-    def _randPTPort(self): return random.randint(6001, 6666)
-    def _returnFour(self): return random.randint(2**24, 2**32-1)
-    def _returnSix(self): return random.randint(2**24, 2**128-1)
-
-    def __init__(self, transports=[]):
-        """Create a mocked bridge suitable for testing distributors and web
-        resource rendering.
-        """
-        self.nickname = "bridge-{0}".format(self._returnFour())
-        self.ip = ipaddr.IPv4Address(self._returnFour())
-        self.orport = self._randORPort()
-        self.transports = transports
-        self.running = True
-        self.stable = True
-        self.blockingCountries = {}
-        self.desc_digest = None
-        self.ei_digest = None
-        self.verified = False
-        self.fingerprint = "".join(random.choice('abcdef0123456789')
-                                   for _ in xrange(40))
-        self.or_addresses = {ipaddr.IPv6Address(self._returnSix()):
-                             self._randORPort()}
-
-    def getConfigLine(self, includeFingerprint=True,
-                      addressClass=ipaddr.IPv4Address,
-                      transport=None,
-                      request=None):
-        """Get a "torrc" bridge config line to give to a client."""
-        line = []
-        if transport is not None:
-            #print("getConfigLine got transport=%r" % transport)
-            line.append(str(transport))
-        line.append("%s:%s" % (self.ip, self.orport))
-        if includeFingerprint is True: line.append(self.fingerprint)
-        if self.ptArgs:
-            line.append(','.join(['='.join(x) for x in self.ptArgs.items()]))
-        bridgeLine = " ".join([item for item in line])
-        #print "Created config line: %r" % bridgeLine
-        return bridgeLine
-
-
-class DummyMaliciousBridge(DummyBridge):
-    """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
-    ``getConfigLine`` method and which maliciously insert an additional fake
-    bridgeline and some javascript into its PT arguments.
-    """
-    ptArgs = {
-        "eww": "\rBridge 1.2.3.4:1234",
-        "bad": "\nBridge 6.6.6.6:6666 0123456789abcdef0123456789abcdef01234567",
-        "evil": "<script>alert('fuuuu');</script>",
-    }
-
-
-class DummyIPBasedDistributor(object):
-    """A mocked :class:`bridgedb.Dist.IPBasedDistributor` which is used to test
-    :class:`bridgedb.HTTPServer.WebResourceBridges.
-    """
-
-    _bridge_class = DummyBridge
-
-    def _dumbAreaMapper(ip): return ip
-
-    def __init__(self, areaMapper=None, nClusters=None, key=None,
-                 ipCategories=None, answerParameters=None):
-        """None of the parameters are really used, they are just there to retain
-        an identical method signature.
-        """
-        self.areaMapper = self._dumbAreaMapper
-        self.nClusters = 3
-        self.nBridgesToGive = 3
-        self.key = self.__class__.__name__
-        self.ipCategories = ipCategories
-        self.answerParameters = answerParameters
-
-    def getBridgesForIP(self, ip=None, epoch=None, N=1,
-                        countyCode=None, bridgeFilterRules=None):
-        """Needed because it's called in
-        :meth:`WebResourceBridges.getBridgesForIP`.
-        """
-        return [self._bridge_class() for _ in xrange(N)]
-
-
-class DummyRequest(requesthelper.DummyRequest):
-    """Wrapper for :api:`twisted.test.requesthelper.DummyRequest` to add
-    redirect support.
-    """
-
-    def __init__(self, *args, **kwargs):
-        requesthelper.DummyRequest.__init__(self, *args, **kwargs)
-        self.redirect = self._redirect(self)
-
-    def URLPath(self):
-        """Fake the missing Request.URLPath too."""
-        return self.uri
-
-    def _redirect(self, request):
-        """Stub method to add a redirect() method to DummyResponse."""
-        newRequest = type(request)
-        newRequest.uri = request.uri
-        return newRequest
-
-
-class WebResourceBridgesTests(unittest.TestCase):
-    """Tests for :class:`HTTPServer.WebResourceBridges`."""
+class BridgesResourceTests(unittest.TestCase):
+    """Tests for :class:`https.server.BridgesResource`."""
 
     def setUp(self):
         """Set up our resources to fake a minimal HTTP(S) server."""
         self.pagename = b'bridges.html'
         self.root = Resource()
 
-        self.dist = DummyIPBasedDistributor()
+        self.dist = DummyHTTPSDistributor()
         self.sched = ScheduledInterval(1, 'hour')
         self.nBridgesPerRequest = 2
 
     def useBenignBridges(self):
         self.dist._bridge_class = DummyBridge
-        self.bridgesResource = HTTPServer.WebResourceBridges(
+        self.bridgesResource = server.BridgesResource(
             self.dist, self.sched, N=self.nBridgesPerRequest,
             includeFingerprints=True)
         self.root.putChild(self.pagename, self.bridgesResource)
 
     def useMaliciousBridges(self):
         self.dist._bridge_class = DummyMaliciousBridge
-        self.bridgesResource = HTTPServer.WebResourceBridges(
+        self.bridgesResource = server.BridgesResource(
             self.dist, self.sched, N=self.nBridgesPerRequest,
             includeFingerprints=True)
         self.root.putChild(self.pagename, self.bridgesResource)
@@ -778,19 +764,19 @@ class WebResourceBridgesTests(unittest.TestCase):
             self.assertLessEqual(int(port), 65535)
 
 
-class WebResourceOptionsTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.HTTPServer.WebResourceOptions`."""
+class OptionsResourceTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.https.server.OptionsResource`."""
 
     def setUp(self):
-        """Create a :class:`HTTPServer.WebResourceOptions`."""
+        """Create a :class:`server.OptionsResource`."""
         # Set up our resources to fake a minimal HTTP(S) server:
         self.pagename = b'options.html'
         self.root = Resource()
-        self.optionsResource = HTTPServer.WebResourceOptions()
+        self.optionsResource = server.OptionsResource()
         self.root.putChild(self.pagename, self.optionsResource)
 
     def test_render_GET_RTLlang(self):
-        """Test rendering a request for obfs3 bridges in Arabic."""
+        """Test rendering a request for obfs3 bridges in Hebrew."""
         request = DummyRequest(["bridges?transport=obfs3"])
         request.method = b'GET'
         request.getClientIP = lambda: '3.3.3.3'
@@ -802,3 +788,51 @@ class WebResourceOptionsTests(unittest.TestCase):
         page = self.optionsResource.render(request)
         self.assertSubstring("direction: rtl", page)
         self.assertSubstring("מהם גשרים?", page)
+
+
+class HTTPSServerServiceTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.email.server.addWebServer`."""
+
+    def setUp(self):
+        """Create a server.MailServerContext and EmailBasedDistributor."""
+        self.config = _createConfig()
+        self.distributor = DummyHTTPSDistributor()
+
+    def tearDown(self):
+        """Cleanup method after each ``test_*`` method runs; removes timed out
+        connections on the reactor and clears the :ivar:`transport`.
+
+        Basically, kill all connections with fire.
+        """
+        for delay in reactor.getDelayedCalls():
+            try:
+                delay.cancel()
+            except (AlreadyCalled, AlreadyCancelled):
+                pass
+
+        # FIXME: this is definitely not how we're supposed to do this, but it
+        # kills the DirtyReactorAggregateErrors.
+        reactor.disconnectAll()
+        reactor.runUntilCurrent()
+
+    def test_addWebServer_GIMP_CAPTCHA_ENABLED(self):
+        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        server.addWebServer(self.config, self.distributor)
+
+    def test_addWebServer_RECAPTCHA_ENABLED(self):
+        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        config = self.config
+        config.RECAPTCHA_ENABLED = True
+        server.addWebServer(config, self.distributor)
+
+    def test_addWebServer_no_captchas(self):
+        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        config = self.config
+        config.GIMP_CAPTCHA_ENABLED = False
+        server.addWebServer(config, self.distributor)
+
+    def test_addWebServer_no_HTTPS_ROTATION_PERIOD(self):
+        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        config = self.config
+        config.HTTPS_ROTATION_PERIOD = None
+        server.addWebServer(config, self.distributor)

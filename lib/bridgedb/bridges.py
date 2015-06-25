@@ -178,6 +178,36 @@ class BridgeAddressBase(object):
         self._fingerprint = None
 
     @property
+    def identity(self):
+        """Get this Bridge's identity digest.
+
+        :rtype: bytes
+        :returns: The binary-encoded SHA-1 hash digest of the public half of
+            this Bridge's identity key, if available; otherwise, returns
+            ``None``.
+        """
+        if self.fingerprint:
+            return fromHex(self.fingerprint)
+
+    @identity.setter
+    def identity(self, value):
+        """Set this Bridge's identity digest to **value**.
+
+        .. info: The purported identity digest will be checked for
+            specification conformity with
+            :func:`~bridgedb.parse.fingerprint.isValidFingerprint`.
+
+        :param str value: The binary-encoded SHA-1 hash digest of the public
+            half of this Bridge's identity key.
+        """
+        self.fingerprint = toHex(value)
+
+    @identity.deleter
+    def identity(self):
+        """Reset this Bridge's identity digest."""
+        del(self.fingerprint)
+
+    @property
     def address(self):
         """Get this bridge's address.
 
@@ -672,8 +702,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
         This method is provided for backwards compatibility and should not
         be relied upon.
         """
-        if self.fingerprint:
-            return fromHex(self.fingerprint)
+        return self.identity
 
     def setDescriptorDigest(self, digest):
         """Set this ``Bridge``'s server-descriptor digest.
@@ -727,7 +756,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
             :class:`ipaddr.IPv6Address`.
         :param addressClass: Type of address to choose.
         :param str request: A string (somewhat) unique to this request,
-            e.g. email-address or ``IPBasedDistributor.getSubnet(ip)``.  In
+            e.g. email-address or ``HTTPSDistributor.getSubnet(ip)``.  In
             this case, this is not a :class:`~bridgerequest.BridgeRequestBase`
             (as might be expected) but the equivalent of
             :data:`bridgerequest.BridgeRequestBase.client`.
@@ -968,6 +997,10 @@ class Bridge(BridgeBackwardsCompatibility):
             return
 
         address, port, version = addrport
+
+        if not address or not port:
+            return
+
         bridgeLine = []
 
         if bridgePrefix:
@@ -1007,6 +1040,13 @@ class Bridge(BridgeBackwardsCompatibility):
         :term:`Bridge Line` based upon the client identifier in the
         **bridgeRequest**.
 
+        .. warning:: If this bridge doesn't have any of the requested
+            pluggable transport type (optionally, not blocked in whichever
+            countries the user doesn't want their bridges to be blocked in),
+            then this method returns ``None``.  This should only happen
+            rarely, because the bridges are filtered into the client's
+            hashring based on the **bridgeRequest** options.
+
         :type bridgeRequest: :class:`bridgedb.bridgerequest.BridgeRequestBase`
         :param bridgeRequest: A ``BridgeRequest`` which stores all of the
             client-specified options for which type of bridge they want to
@@ -1023,29 +1063,40 @@ class Bridge(BridgeBackwardsCompatibility):
             return a :term:`Bridge Line` for the requested pluggable transport
             type.
         """
+        desired = bridgeRequest.justOnePTType()
         addressClass = bridgeRequest.addressClass
-        desiredTransport = bridgeRequest.justOnePTType()
-        hashringPosition = bridgeRequest.getHashringPlacement(bridgeRequest.client,
-                                                              'Order-Or-Addresses')
 
         logging.info("Bridge %s answering request for %s transport..." %
-                     (safelog.logSafely(self.fingerprint), desiredTransport))
+                     (self, desired))
+
         # Filter all this Bridge's ``transports`` according to whether or not
-        # their ``methodname`` matches the requested transport, i.e. only
-        # 'obfs3' transports, or only 'scramblesuit' transports:
-        transports = filter(lambda pt: desiredTransport == pt.methodname,
-                            self.transports)
+        # their ``methodname`` matches the requested transport:
+        transports = filter(lambda pt: pt.methodname == desired, self.transports)
         # Filter again for whichever of IPv4 or IPv6 was requested:
         transports = filter(lambda pt: isinstance(pt.address, addressClass),
                             transports)
 
-        if transports:
-            return transports[hashringPosition % len(transports)]
-        else:
+        if not transports:
             raise PluggableTransportUnavailable(
-                ("Client requested transport %s from bridge %s, but this "
-                 "bridge doesn't have any of that transport!") %
-                (desiredTransport, self.fingerprint))
+                ("Client requested transport %s, but bridge %s doesn't "
+                "have any of that transport!") % (desired, self))
+
+
+        unblocked = []
+        for pt in transports:
+            if not sum([self.transportIsBlockedIn(cc, pt.methodname)
+                        for cc in bridgeRequest.notBlockedIn]):
+                unblocked.append(pt)
+
+        if unblocked:
+            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses')
+            return transports[position % len(unblocked)]
+        else:
+            logging.warn(("Client requested transport %s%s, but bridge %s "
+                          "doesn't have any of that transport!") %
+                         (desired, " not blocked in %s" %
+                          " ".join(bridgeRequest.notBlockedIn)
+                          if bridgeRequest.notBlockedIn else "", self))
 
     def _getVanillaForRequest(self, bridgeRequest):
         """If vanilla bridges were requested, return the assigned
@@ -1065,26 +1116,28 @@ class Bridge(BridgeBackwardsCompatibility):
             "Bridge %s answering request for IPv%s vanilla address..." %
             (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
 
-        if not bridgeRequest.filters:
-            logging.debug(("Request %s didn't have any filters; "
-                           "generating them now...") % bridgeRequest)
-            bridgeRequest.generateFilters()
+        addresses = []
 
-        addresses = self.allVanillaAddresses
-
-        # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
-        addresses = filter(
-            # ``address`` here is a 3-tuple:
-            # ``(ipaddr.IPAddress, int(port), int(ipaddr.IPAddress.version))``
-            lambda address: isinstance(address[0], bridgeRequest.addressClass),
-            self.allVanillaAddresses)
+        for address, port, version in self.allVanillaAddresses:
+            # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
+            if isinstance(address, bridgeRequest.addressClass):
+                # Determine if the address is blocked in any of the country
+                # codes.  Because :meth:`addressIsBlockedIn` returns a bool,
+                # we get a list like: ``[True, False, False, True]``, and
+                # because bools are ints, they may be summed.  What we care
+                # about is that there are no ``True``s, for any country code,
+                # so we check that the sum is zero (meaning the list was full
+                # of ``False``s).
+                #
+                # XXX Do we want to add a method for this construct?
+                if not sum([self.addressIsBlockedIn(cc, address, port)
+                            for cc in bridgeRequest.notBlockedIn]):
+                    addresses.append((address, port, version))
 
         if addresses:
             # Use the client's unique data to HMAC them into their position in
             # the hashring of filtered bridges addresses:
-            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses',
-                                                          bridgeRequest.client)
-            logging.debug("Client's hashring position is %r" % position)
+            position = bridgeRequest.getHashringPlacement('Order-Or-Addresses')
             vanilla = addresses[position % len(addresses)]
             logging.info("Got vanilla bridge for client.")
 
@@ -1200,9 +1253,13 @@ class Bridge(BridgeBackwardsCompatibility):
             logging.info("Bridge request was not valid. Dropping request.")
             return  # XXX raise error perhaps?
 
+        bridgeLine = None
+
         if bridgeRequest.transports:
             pt = self._getTransportForRequest(bridgeRequest)
-            bridgeLine = pt.getTransportLine(includeFingerprint, bridgePrefix)
+            if pt:
+                bridgeLine = pt.getTransportLine(includeFingerprint,
+                                                 bridgePrefix)
         else:
             addrport = self._getVanillaForRequest(bridgeRequest)
             bridgeLine = self._constructBridgeLine(addrport,

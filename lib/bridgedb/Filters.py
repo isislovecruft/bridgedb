@@ -17,9 +17,9 @@ def filterAssignBridgesToRing(hmac, numRings, assignedRing):
         return funcs[ruleset]
     except KeyError:
         def _assignBridgesToRing(bridge):
-            digest = hmac(bridge.getID())
+            digest = hmac(bridge.identity)
             pos = long( digest[:8], 16 )
-            which = pos % numRings
+            which = pos % numRings + 1
 
             if which == assignedRing:
                 return True
@@ -92,28 +92,25 @@ def filterBridgesByTransport(methodname, addressClass=None):
         funcs[ruleset] = _filterByTransport
         return _filterByTransport
 
-def filterBridgesByNotBlockedIn(countryCode, addressClass=None, methodname=None):
-    """ if at least one address:port of the selected addressClass and
-    (optional) transport type is not blocked in countryCode, return True
+def filterBridgesByNotBlockedIn(countryCode):
+    """Return ``True`` if at least one of a bridge's (transport) bridgelines isn't
+    known to be blocked in **countryCode**.
+
+    :param str countryCode: A two-letter country code.
+    :rtype: bool
+    :returns: ``True`` if at least one address of the bridge isn't blocked.
+        ``False`` otherwise.
     """
-    # default to IPv4 if not specified
-    if addressClass is None: addressClass = IPv4Address
-    assert (addressClass) in (IPv4Address, IPv6Address)
-    ruleset = frozenset([countryCode, addressClass, methodname])
+    countryCode = countryCode.lower()
+    ruleset = frozenset([countryCode])
     try:
         return funcs[ruleset]
     except KeyError:
-        def f(bridge):
-            if bridge.isBlocked(countryCode, addressClass, methodname):
-                if addressClass is IPv4Address: ac = "IPv4"
-                else: ac = "IPv6"
-                logmsg = "Removing %s from set of results for country"
-                logmsg += " '%s' with address class %s and transport %s"
-                logging.debug(logmsg % ( bridge.fingerprint, countryCode, ac,
-                    methodname))
+        def _filterByNotBlockedIn(bridge):
+            if bridge.isBlockedIn(countryCode):
                 return False
-            return True # not blocked
-        f.__name__ = "filterBridgesNotBlockedIn(%s,%s,%s)" % \
-                (countryCode,methodname,addressClass)
-        funcs[ruleset] = f
-        return f
+            return True
+        _filterByNotBlockedIn.__name__ = "filterBridgesByNotBlockedIn(%s)" % countryCode
+        setattr(_filterByNotBlockedIn, "description", "unblocked=%s" % countryCode)
+        funcs[ruleset] = _filterByNotBlockedIn
+        return _filterByNotBlockedIn

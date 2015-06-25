@@ -25,8 +25,6 @@ import bridgedb.Bucket
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
-from bridgedb.parse.fingerprint import toHex
-from bridgedb.parse.fingerprint import fromHex
 from bridgedb.parse.fingerprint import isValidFingerprint
 from bridgedb.safelog import logSafely
 
@@ -221,13 +219,12 @@ class BridgeRing(BridgeHolder):
                 if val == 'stable' and bridge.flags.stable:
                     subring.insert(bridge)
 
-        ident = bridge.getID()
-        pos = self.hmac(ident)
-        if not self.bridges.has_key(pos):
+        pos = self.hmac(bridge.identity)
+        if not pos in self.bridges:
             self.sortedKeys.append(pos)
             self.isSorted = False
         self.bridges[pos] = bridge
-        self.bridgesByID[ident] = bridge
+        self.bridgesByID[bridge.identity] = bridge
         logging.debug("Adding %s to %s" % (bridge.address, self.name))
 
     def _sort(self):
@@ -283,28 +280,17 @@ class BridgeRing(BridgeHolder):
         assert len(r) == N
         return r
 
-    def getBridges(self, pos, N=1, countryCode=None):
+    def getBridges(self, pos, N=1):
         """Return **N** bridges appearing in this hashring after a position.
 
         :param bytes pos: The position to jump to. Any bridges returned will
-                          start at this position in the hashring, if there is
-                          a bridge assigned to that position. Otherwise,
-                          indexing will start at the first position after this
-                          one which has a bridge assigned to it.
+            start at this position in the hashring, if there is a bridge
+            assigned to that position. Otherwise, indexing will start at the
+            first position after this one which has a bridge assigned to it.
         :param int N: The number of bridges to return.
-        :type countryCode: str or None
-        :param countryCode: DOCDOC
         :rtype: list
-        :returns: A list of :class:`~bridgedb.Bridges.Bridge`s.
+        :returns: A list of :class:`~bridgedb.bridges.Bridge`s.
         """
-        # XXX This can be removed after we determine if countryCode is ever
-        # actually being used. It seems the countryCode should be passed in
-        # from bridgedb.HTTPServer.WebResource.getBridgeRequestAnswer() in
-        # order to hand out bridges which are believed to not be blocked in a
-        # given country.
-        if countryCode:
-            logging.debug("getBridges: countryCode=%r" % countryCode)
-
         forced = []
         for _, _, count, subring in self.subrings:
             if len(subring) < count:
@@ -341,11 +327,11 @@ class BridgeRing(BridgeHolder):
         logging.info("Dumping bridge assignments for %s..." % self.name)
         for b in self.bridges.itervalues():
             desc = [ description ]
-            ident = b.getID()
             for tp,val,_,subring in self.subrings:
-                if subring.getBridgeByID(ident):
+                if subring.getBridgeByID(b.identity):
                     desc.append("%s=%s"%(tp,val))
-            f.write("%s %s\n"%( toHex(ident), " ".join(desc).strip()))
+            f.write("%s %s\n" % (b.fingerprint, " ".join(desc).strip()))
+
 
 class FixedBridgeSplitter(BridgeHolder):
     """A bridgeholder that splits bridges up based on an hmac and assigns
@@ -359,7 +345,7 @@ class FixedBridgeSplitter(BridgeHolder):
 
     def insert(self, bridge):
         # Grab the first 4 bytes
-        digest = self.hmac(bridge.getID())
+        digest = self.hmac(bridge.identity)
         pos = long( digest[:8], 16 )
         which = pos % len(self.rings)
         self.rings[which].insert(bridge)
@@ -449,7 +435,6 @@ class BridgeSplitter(BridgeHolder):
            p -- the relative proportion of bridges to assign to this
                bridgeholder.
         """
-        assert isinstance(ring, BridgeHolder)
         self.ringsByName[ringname] = ring
         self.pValues.append(self.totalP)
         self.rings.append(ringname)
@@ -479,11 +464,9 @@ class BridgeSplitter(BridgeHolder):
         if not bridge.flags.running:
             return
 
-        bridgeID = bridge.fingerprint
-
         # Determine which ring to put this bridge in if we haven't seen it
         # before.
-        pos = self.hmac(bridgeID)
+        pos = self.hmac(bridge.identity)
         n = int(pos[:8], 16) % self.totalP
         pos = bisect.bisect_right(self.pValues, n) - 1
         assert 0 <= pos < len(self.rings)
@@ -535,7 +518,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         :ivar bridges: DOCDOC
         :type distributorName: str
         :ivar distributorName: The name of this splitter's distributor. See
-             :meth:`bridgedb.Dist.IPBasedDistributor.setDistributorName`.
+             :meth:`bridgedb.Dist.HTTPSDistributor.setDistributorName`.
         """
         self.key = key
         self.filterRings = {}
@@ -570,7 +553,7 @@ class FilteredBridgeSplitter(BridgeHolder):
             return
 
         index = 0
-        logging.debug("Inserting %s into splitter"
+        logging.debug("Inserting %s into hashring"
                       % (logSafely(bridge.fingerprint)))
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
@@ -680,7 +663,7 @@ class FilteredBridgeSplitter(BridgeHolder):
                 if g(b):
                     # ghetto. get subring flags, ports
                     for tp,val,_,subring in r.subrings:
-                        if subring.getBridgeByID(b.getID()):
+                        if subring.getBridgeByID(b.identity):
                             desc.append("%s=%s"%(tp,val))
                     try:
                         desc.extend(g.description.split())
@@ -705,4 +688,4 @@ class FilteredBridgeSplitter(BridgeHolder):
             # add to assignments
             desc = "%s %s" % (description.strip(),
                     " ".join([v for k,v in grouped.items()]).strip())
-            f.write("%s %s\n"%( toHex(b.getID()), desc))
+            f.write("%s %s\n" % (b.fingerprint, desc))

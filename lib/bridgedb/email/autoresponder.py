@@ -87,6 +87,7 @@ def createResponseBody(lines, context, client, lang='en'):
     bridges = None
     try:
         bridgeRequest = request.determineBridgeRequestOptions(lines)
+        bridgeRequest.client = str(client)
 
         # The request was invalid, respond with a help email which explains
         # valid email commands:
@@ -96,12 +97,10 @@ def createResponseBody(lines, context, client, lang='en'):
 
         # Otherwise they must have requested bridges:
         interval = context.schedule.intervalStart(time.time())
-        bridges = context.distributor.getBridgesForEmail(
-            str(client),
+        bridges = context.distributor.getBridges(
+            bridgeRequest,
             interval,
-            context.nBridges,
-            countryCode=None,
-            bridgeFilterRules=bridgeRequest.filters)
+            context.nBridges)
     except EmailRequestedHelp as error:
         logging.info(error)
         return templates.buildWelcomeText(translator, client)
@@ -120,11 +119,8 @@ def createResponseBody(lines, context, client, lang='en'):
         answer = "(no bridges currently available)\r\n"
         if bridges:
             transport = bridgeRequest.justOnePTType()
-            answer = "".join("  %s\r\n" % b.getConfigLine(
-                includeFingerprint=context.includeFingerprints,
-                addressClass=bridgeRequest.addressClass,
-                transport=transport,
-                request=str(client)) for b in bridges)
+            answer = "".join("  %s\r\n" % b.getBridgeLine(
+                bridgeRequest, context.includeFingerprints) for b in bridges)
         return templates.buildAnswerMessage(translator, client, answer)
 
 def generateResponse(fromAddress, client, body, subject=None,

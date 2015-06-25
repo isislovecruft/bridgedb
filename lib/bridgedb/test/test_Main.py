@@ -27,7 +27,6 @@ from twisted.internet.threads import deferToThread
 from twisted.trial import unittest
 
 from bridgedb import Main
-from bridgedb.Bridges import BridgeHolder
 from bridgedb.parse.options import parseOptions
 
 
@@ -59,13 +58,17 @@ def mockUpdateBridgeHistory(bridges, timestamps):
                   (fingerprint, timestamp))
 
 
-class MockBridgeHolder(BridgeHolder):
+class MockBridgeHolder(object):
     def __init__(self):
         self._bridges = {}
     def __len__(self):
         return len(self._bridges.keys())
     def insert(self, bridge):
         self._bridges[bridge.fingerprint] = bridge
+    def clear(self):
+        pass
+    def dumpAssignments(self):
+        pass
 
 
 class MainTests(unittest.TestCase):
@@ -108,18 +111,18 @@ class MainTests(unittest.TestCase):
         return updatedPaths
 
     def _cbAssertFingerprints(self, d):
-        """Assert that there are some bridges in the splitter."""
-        self.assertGreater(len(self.splitter), 0)
+        """Assert that there are some bridges in the hashring."""
+        self.assertGreater(len(self.hashring), 0)
         return d
 
-    def _cbCallUpdateBridgeHistory(self, d, splitter):
-        """Fake some timestamps for the bridges in the splitter, and then call
+    def _cbCallUpdateBridgeHistory(self, d, hashring):
+        """Fake some timestamps for the bridges in the hashring, and then call
         Main.updateBridgeHistory().
         """
         def timestamp():
             return datetime.fromtimestamp(random.randint(1324285117, 1524285117))
 
-        bridges = splitter._bridges
+        bridges = hashring._bridges
         timestamps = {}
 
         for fingerprint, _ in bridges.items():
@@ -168,7 +171,7 @@ class MainTests(unittest.TestCase):
         self.key = base64.b64decode('TvPS1y36BFguBmSOvhChgtXB2Lt+BOw0mGfz9SZe12Y=')
 
         # Create a BridgeSplitter
-        self.splitter = MockBridgeHolder()
+        self.hashring = MockBridgeHolder()
 
         # Functions which some tests mock, which we'll need to re-replace
         # later in tearDown():
@@ -190,30 +193,30 @@ class MainTests(unittest.TestCase):
         # access the database:
         Main.updateBridgeHistory = mockUpdateBridgeHistory
 
-        # Get the bridges into the mocked splitter
-        d = deferToThread(Main.load, self.state, self.splitter)
+        # Get the bridges into the mocked hashring
+        d = deferToThread(Main.load, self.state, self.hashring)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
-        d.addCallback(self._cbCallUpdateBridgeHistory, self.splitter)
+        d.addCallback(self._cbCallUpdateBridgeHistory, self.hashring)
         d.addErrback(self._eb_Failure)
         return d
 
     def test_Main_load(self):
         """Main.load() should run without error."""
-        d = deferToThread(Main.load, self.state, self.splitter)
+        d = deferToThread(Main.load, self.state, self.hashring)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
         return d
 
     def test_Main_load_no_state(self):
         """Main.load() should raise SystemExit without a state object."""
-        self.assertRaises(SystemExit, Main.load, None, self.splitter)
+        self.assertRaises(SystemExit, Main.load, None, self.hashring)
 
     def test_Main_load_clear(self):
         """When called with clear=True, load() should run and clear the
         hashrings.
         """
-        d = deferToThread(Main.load, self.state, self.splitter, clear=True)
+        d = deferToThread(Main.load, self.state, self.hashring, clear=True)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
         return d
@@ -231,14 +234,14 @@ class MainTests(unittest.TestCase):
         # The reactor is deferring this to a thread, so the test execution
         # here isn't actually covering the Storage.updateBridgeHistory()
         # function:
-        Main.load(state, self.splitter)
+        Main.load(state, self.hashring)
 
     def test_Main_load_malformed_networkstatus(self):
         """When called with a networkstatus file with an invalid descriptor,
         Main.load() should raise a ValueError.
         """
         self._appendToFile(self.state.STATUS_FILE, NETWORKSTATUS_MALFORMED)
-        self.assertRaises(ValueError, Main.load, self.state, self.splitter)
+        self.assertRaises(ValueError, Main.load, self.state, self.hashring)
 
     def test_Main_reloadFn(self):
         """Main._reloadFn() should return True."""
@@ -252,79 +255,79 @@ class MainTests(unittest.TestCase):
 
     def test_Main_createBridgeRings(self):
         """Main.createBridgeRings() should add three hashrings to the
-        splitter.
+        hashring.
         """
         proxyList = None
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(self.config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor ring,
+        # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 3)
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
 
     def test_Main_createBridgeRings_with_proxyList(self):
         """Main.createBridgeRings() should add three hashrings to the
-        splitter and add the proxyList to the IPBasedDistibutor.
+        hashring and add the proxyList to the IPBasedDistibutor.
         """
         exitRelays = ['1.1.1.1', '2.2.2.2', '3.3.3.3']
         proxyList = Main.proxy.ProxySet()
         proxyList.addExitRelays(exitRelays)
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(self.config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor ring,
+        # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 3)
-        self.assertGreater(len(httpsDist.categories), 0)
-        self.assertItemsEqual(exitRelays, httpsDist.categories[-1])
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        self.assertGreater(len(httpsDist.proxies), 0)
+        self.assertItemsEqual(exitRelays, httpsDist.proxies)
 
     def test_Main_createBridgeRings_no_https_dist(self):
         """When HTTPS_DIST=False, Main.createBridgeRings() should add only
-        two hashrings to the splitter.
+        two hashrings to the hashring.
         """
         proxyList = Main.proxy.ProxySet()
         config = self.config
         config.HTTPS_DIST = False
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an EmailDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 2)
-        self.assertNotIn('https', splitter.rings)
-        self.assertNotIn(httpsDist, splitter.ringsByName.values())
+        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        self.assertNotIn('https', hashring.rings)
+        self.assertNotIn(httpsDist, hashring.ringsByName.values())
 
     def test_Main_createBridgeRings_no_email_dist(self):
         """When EMAIL_DIST=False, Main.createBridgeRings() should add only
-        two hashrings to the splitter.
+        two hashrings to the hashring.
         """
         proxyList = Main.proxy.ProxySet()
         config = self.config
         config.EMAIL_DIST = False
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                proxyList,
                                                                self.key)
-        # Should have an IPBasedDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 2)
-        self.assertNotIn('email', splitter.rings)
-        self.assertNotIn(emailDist, splitter.ringsByName.values())
+        # Should have an HTTPSDistributor ring, and an UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        self.assertNotIn('email', hashring.rings)
+        self.assertNotIn(emailDist, hashring.ringsByName.values())
 
     def test_Main_createBridgeRings_no_reserved_share(self):
         """When RESERVED_SHARE=0, Main.createBridgeRings() should add only
-        two hashrings to the splitter.
+        two hashrings to the hashring.
         """
         proxyList = Main.proxy.ProxySet()
         config = self.config
         config.RESERVED_SHARE = 0
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, and an EmailDistributor ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 2)
-        self.assertNotIn('unallocated', splitter.rings)
+        # Should have an HTTPSDistributor ring, and an EmailDistributor ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        self.assertNotIn('unallocated', hashring.rings)
 
     def test_Main_createBridgeRings_two_file_buckets(self):
         """When FILE_BUCKETS has two filenames in it, Main.createBridgeRings()
-        should add three hashrings to the splitter, then add two
+        should add three hashrings to the hashring, then add two
         "pseudo-rings".
         """
         proxyList = Main.proxy.ProxySet()
@@ -333,17 +336,17 @@ class MainTests(unittest.TestCase):
             'bridges-for-support-desk': 10,
             'bridges-for-ooni-tests': 10,
         }
-        (splitter, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
-        # Should have an IPBasedDistributor ring, an EmailDistributor, and an
+        # Should have an HTTPSDistributor ring, an EmailDistributor, and an
         # UnallocatedHolder ring:
-        self.assertEqual(len(splitter.ringsByName.keys()), 3)
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
 
         # Should have two pseudoRings:
-        self.assertEqual(len(splitter.pseudoRings), 2)
-        self.assertIn('pseudo_bridges-for-support-desk', splitter.pseudoRings)
-        self.assertIn('pseudo_bridges-for-ooni-tests', splitter.pseudoRings)
+        self.assertEqual(len(hashring.pseudoRings), 2)
+        self.assertIn('pseudo_bridges-for-support-desk', hashring.pseudoRings)
+        self.assertIn('pseudo_bridges-for-ooni-tests', hashring.pseudoRings)
 
     def test_Main_run(self):
         """Main.run() should run and then finally raise SystemExit."""

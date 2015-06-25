@@ -130,16 +130,17 @@ class BridgeRequestBase(object):
         return position
 
     def isValid(self, valid=None):
-        """Set or determine if this request was valid.
+        """Get or set the validity of this bridge request.
 
-        :type valid: None or bool
-        :param valid: If ``None``, get the current request validity. If
-            ``True`` or ``False``, set the request validity accordingly.
-        :rtype: bool
-        :returns: Whether or not this request is valid.
+        If called without parameters, this method will return the current
+        state, otherwise (if called with the **valid** parameter), it will set
+        the current state of validity for this request.
+
+        :param bool valid: If given, set the validity state of this
+            request. Otherwise, get the current state.
         """
-        if isinstance(valid, bool):
-            self.valid = valid
+        if valid is not None:
+            self.valid = bool(valid)
         return self.valid
 
     def withIPv4(self):
@@ -149,7 +150,7 @@ class BridgeRequestBase(object):
         self.addressClass = ipaddr.IPv6Address
 
     def withoutBlockInCountry(self, country):
-        self.notBlockedIn.append(country)
+        self.notBlockedIn.append(country.lower())
 
     def withPluggableTransportType(self, pt):
         self.transports.append(pt)
@@ -181,6 +182,4 @@ class BridgeRequestBase(object):
             self.addFilter(Filters.filterBridgesByTransport(transport,
                                                             self.addressClass))
         for country in self.notBlockedIn:
-            self.addFilter(Filters.filterBridgesByNotBlockedIn(country,
-                                                               self.addressClass,
-                                                               transport))
+            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))

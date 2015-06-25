@@ -39,19 +39,19 @@ from bridgedb import Dist
 from bridgedb.Stability import updateBridgeHistory
 
 
-def load(state, splitter, clear=False):
-    """Read and parse all descriptors, and load into a bridge splitter.
+def load(state, hashring, clear=False):
+    """Read and parse all descriptors, and load into a bridge hashring.
 
     Read all the appropriate bridge files from the saved
     :class:`~bridgedb.persistent.State`, parse and validate them, and then
-    store them into our ``state.splitter`` instance. The ``state`` will be
+    store them into our ``state.hashring`` instance. The ``state`` will be
     saved again at the end of this function.
 
-    :type splitter: :class:`BridgeSplitter <bridgedb.Bridges.BridgeHolder>`
-    :param splitter: A class which provides a mechanism for HMACing
+    :type hashring: :class:`BridgeSplitter <bridgedb.Bridges.BridgeHolder>`
+    :param hashring: A class which provides a mechanism for HMACing
         Bridges in order to assign them to hashrings.
     :param boolean clear: If True, clear all previous bridges from the
-        splitter before parsing for new ones.
+        hashring before parsing for new ones.
     """
     if not state:
         logging.fatal("bridgedb.Main.load() could not retrieve state!")
@@ -59,7 +59,7 @@ def load(state, splitter, clear=False):
 
     if clear:
         logging.info("Clearing old bridges...")
-        splitter.clear()
+        hashring.clear()
 
     logging.info("Loading bridges...")
 
@@ -137,7 +137,7 @@ def load(state, splitter, clear=False):
                          % router.fingerprint)
 
     inserted = 0
-    logging.info("Inserting %d bridges into splitter..." % len(bridges))
+    logging.info("Inserting %d bridges into hashring..." % len(bridges))
     for fingerprint, bridge in bridges.items():
         # Skip insertion of bridges which are geolocated to be in one of the
         # NO_DISTRIBUTION_COUNTRIES, a.k.a. the countries we don't distribute
@@ -148,9 +148,9 @@ def load(state, splitter, clear=False):
         else:
             # If the bridge is not running, then it is skipped during the
             # insertion process.
-            splitter.insert(bridge)
+            hashring.insert(bridge)
             inserted += 1
-    logging.info("Done inserting %d bridges into splitter." % inserted)
+    logging.info("Done inserting %d bridges into hashring." % inserted)
 
     if state.COLLECT_TIMESTAMPS:
         reactor.callInThread(updateBridgeHistory, bridges, timestamps)
@@ -180,7 +180,7 @@ def _handleSIGUSR1(*args):
 
 def replaceBridgeRings(current, replacement):
     """Replace the current thing with the new one"""
-    current.splitter = replacement.splitter
+    current.hashring = replacement.hashring
 
 def createBridgeRings(cfg, proxyList, key):
     """Create the bridge distributors defined by the config file
@@ -192,15 +192,15 @@ def createBridgeRings(cfg, proxyList, key):
     :type proxyList: :class:`~bridgedb.proxy.ProxySet`
     :param proxyList: The container for the IP addresses of any currently
                       known open proxies.
-    :param bytes key: Splitter master key
+    :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter splitter, an IPBasedDistributor or None,
+    :returns: A BridgeSplitter hashring, an HTTPSDistributor or None,
               and an EmailBasedDistributor or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
-    splitter = Bridges.BridgeSplitter(crypto.getHMAC(key, "Splitter-Key"))
-    logging.debug("Created splitter: %r" % splitter)
+    hashring = Bridges.BridgeSplitter(crypto.getHMAC(key, "Hashring-Key"))
+    logging.debug("Created hashring: %r" % hashring)
 
     # Create ring parameters.
     ringParams = Bridges.BridgeRingParameters(needPorts=cfg.FORCE_PORTS,
@@ -210,19 +210,12 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        categories = []
-        if proxyList:
-            logging.debug("Adding proxyList to HTTPS Distributor categories.")
-            categories.append(proxyList)
-        logging.debug("HTTPS Distributor categories: '%s'" % categories)
-
-        ipDistributor = Dist.IPBasedDistributor(
-            Dist.uniformMap,
+        ipDistributor = Dist.HTTPSDistributor(
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
-            categories,
+            proxyList,
             answerParameters=ringParams)
-        splitter.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+        hashring.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
 
     # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
@@ -233,19 +226,19 @@ def createBridgeRings(cfg, proxyList, key):
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams,
             whitelist=cfg.EMAIL_WHITELIST.copy())
-        splitter.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+        hashring.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
 
-    # As appropriate, tell the splitter to leave some bridges unallocated.
+    # As appropriate, tell the hashring to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
-        splitter.addRing(Bridges.UnallocatedHolder(),
+        hashring.addRing(Bridges.UnallocatedHolder(),
                          "unallocated",
                          cfg.RESERVED_SHARE)
 
-    # Add pseudo distributors to splitter
+    # Add pseudo distributors to hashring
     for pseudoRing in cfg.FILE_BUCKETS.keys():
-        splitter.addPseudoRing(pseudoRing)
+        hashring.addPseudoRing(pseudoRing)
 
-    return splitter, emailDistributor, ipDistributor
+    return hashring, emailDistributor, ipDistributor
 
 def run(options, reactor=reactor):
     """This is BridgeDB's main entry point and main runtime loop.
@@ -302,21 +295,16 @@ def run(options, reactor=reactor):
     state = persistent.State(config=config)
 
     from bridgedb.email.server import addServer as addSMTPServer
-    from bridgedb import HTTPServer
+    from bridgedb.https.server import addWebServer
 
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
-
-    # Get a proxy list.
-    proxyList = proxy.ProxySet()
-    for proxyfile in config.PROXY_LIST_FILES:
-        logging.info("Loading proxies from: %s" % proxyfile)
-        proxy.loadProxiesFromFile(proxyfile, proxyList)
-
-    emailDistributor = ipDistributor = None
+    proxies = proxy.ProxySet()
+    emailDistributor = None
+    ipDistributor = None
 
     # Save our state
-    state.proxyList = proxyList
+    state.proxies = proxies
     state.key = key
     state.save()
 
@@ -326,7 +314,7 @@ def run(options, reactor=reactor):
         State should be saved before calling this method, and will be saved
         again at the end of it.
 
-        The internal variables, ``cfg``, ``splitter``, ``proxyList``,
+        The internal variables, ``cfg``, ``hashring``, ``proxyList``,
         ``ipDistributor``, and ``emailDistributor`` are all taken from a
         :class:`~bridgedb.persistent.State` instance, which has been saved to
         a statefile with :meth:`bridgedb.persistent.State.save`.
@@ -335,13 +323,13 @@ def run(options, reactor=reactor):
         :ivar cfg: The current configuration, including any in-memory
             settings (i.e. settings whose values were not obtained from the
             config file, but were set via a function somewhere)
-        :type splitter: A :class:`bridgedb.Bridges.BridgeHolder`
-        :ivar splitter: A class which takes an HMAC key and splits bridges
+        :type hashring: A :class:`bridgedb.Bridges.BridgeHolder`
+        :ivar hashring: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
              known open proxies.
-        :ivar ipDistributor: A :class:`Dist.IPBasedDistributor`.
+        :ivar ipDistributor: A :class:`Dist.HTTPSDistributor`.
         :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
@@ -363,31 +351,27 @@ def run(options, reactor=reactor):
         level = getattr(logging, level)
         logging.getLogger().setLevel(level)
 
-        logging.debug("Saving state again before reparsing descriptors...")
-        state.save()
-        logging.info("Reparsing bridge descriptors...")
+        logging.info("Reloading the list of open proxies...")
+        for proxyfile in cfg.PROXY_LIST_FILES:
+            logging.info("Loading proxies from: %s" % proxyfile)
+            proxy.loadProxiesFromFile(proxyfile, state.proxies, removeStale=True)
 
-        (splitter,
+        logging.info("Reparsing bridge descriptors...")
+        (hashring,
          emailDistributorTmp,
-         ipDistributorTmp) = createBridgeRings(cfg, proxyList, key)
+         ipDistributorTmp) = createBridgeRings(cfg, state.proxies, key)
+        logging.info("Bridges loaded: %d" % len(hashring))
 
         # Initialize our DB.
         bridgedb.Storage.initializeDBLock()
         bridgedb.Storage.setDBFilename(cfg.DB_FILE + ".sqlite")
-        load(state, splitter, clear=False)
-
-        state = persistent.load()
-        logging.info("Bridges loaded: %d" % len(splitter))
-
-        logging.debug("Replacing the list of open proxies...")
-        for proxyfile in cfg.PROXY_LIST_FILES:
-            proxy.loadProxiesFromFile(proxyfile, state.proxyList, removeStale=True)
+        load(state, hashring, clear=False)
 
         if emailDistributorTmp is not None:
             emailDistributorTmp.prepopulateRings() # create default rings
             logging.info("Bridges allotted for %s distribution: %d"
                          % (emailDistributorTmp.name,
-                            len(emailDistributorTmp.splitter)))
+                            len(emailDistributorTmp.hashring)))
         else:
             logging.warn("No email distributor created!")
 
@@ -396,15 +380,15 @@ def run(options, reactor=reactor):
 
             logging.info("Bridges allotted for %s distribution: %d"
                          % (ipDistributorTmp.name,
-                            len(ipDistributorTmp.splitter)))
+                            len(ipDistributorTmp.hashring)))
             logging.info("\tNum bridges:\tFilter set:")
 
             nSubrings  = 0
-            ipSubrings = ipDistributorTmp.splitter.filterRings
+            ipSubrings = ipDistributorTmp.hashring.filterRings
             for (ringname, (filterFn, subring)) in ipSubrings.items():
                 nSubrings += 1
                 filterSet = ' '.join(
-                    ipDistributorTmp.splitter.extractFilterNames(ringname))
+                    ipDistributorTmp.hashring.extractFilterNames(ringname))
                 logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
 
             logging.info("Total subrings for %s: %d"
@@ -419,7 +403,7 @@ def run(options, reactor=reactor):
             fh = open(state.ASSIGNMENTS_FILE, 'a')
             fh.write("bridge-pool-assignment %s\n" %
                      time.strftime("%Y-%m-%d %H:%M:%S"))
-            splitter.dumpAssignments(fh)
+            hashring.dumpAssignments(fh)
             fh.flush()
             fh.close()
         except IOError:
@@ -452,7 +436,7 @@ def run(options, reactor=reactor):
 
         # Configure all servers:
         if config.HTTPS_DIST and config.HTTPS_SHARE:
-            HTTPServer.addWebServer(config, ipDistributor)
+            addWebServer(config, ipDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:
             addSMTPServer(config, emailDistributor)
 
@@ -462,7 +446,7 @@ def run(options, reactor=reactor):
         if config.TASKS['GET_TOR_EXIT_LIST']:
             tasks['GET_TOR_EXIT_LIST'] = task.LoopingCall(
                 proxy.downloadTorExits,
-                proxyList,
+                state.proxies,
                 config.SERVER_PUBLIC_EXTERNAL_IP)
 
         # Schedule all configured repeating tasks:
@@ -502,7 +486,7 @@ def runSubcommand(options, config):
     """
     # Make sure that the runner module is only imported after logging is set
     # up, otherwise we run into the same logging configuration problem as
-    # mentioned above with the email.server and HTTPServer.
+    # mentioned above with the email.server and https.server.
     from bridgedb import runner
 
     statuscode = 0

@@ -25,6 +25,7 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.parse.addr import isIPAddress
 
 
 def fileCheckDecorator(func):
@@ -118,6 +119,12 @@ def bracketIPv6(ip):
     """Put brackets around an IPv6 address, just as tor does."""
     return "[%s]" % ip
 
+def randomPort():
+    return random.randint(1, 65535)
+
+def randomHighPort():
+    return random.randint(1024, 65535)
+
 def randomIPv4():
     return ipaddr.IPv4Address(random.getrandbits(32))
 
@@ -139,6 +146,27 @@ def randomIPString():
     if random.choice(xrange(2)):
         return randomIPv4String()
     return randomIPv6String()
+
+def valid(func):
+    """Wrapper for the above ``randomIPv*`` functions to ensure they only
+    return addresses which BridgeDB considers "valid".
+
+    .. seealso:: :func:`bridgedb.parse.addr.isIPAddress`
+    """
+    @wraps(func)
+    def wrapper():
+        ip = None
+        while not isIPAddress(ip):
+            ip = func()
+        return ip
+    return wrapper
+
+randomValidIPv4       = valid(randomIPv4)
+randomValidIPv6       = valid(randomIPv6)
+randomValidIP         = valid(randomIP)
+randomValidIPv4String = valid(randomIPv4String)
+randomValidIPv6String = valid(randomIPv6String)
+randomValidIPString   = valid(randomIPString)
 
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
@@ -177,3 +205,51 @@ class Benchmarker(object):
         self.milliseconds = self.seconds * 1000
         if self.verbose:
             print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))
+
+
+class DummyBridge(object):
+    """A mock :class:`bridgedb.bridges.Bridge` which only supports a mocked
+    ``getBridgeLine`` method."""
+
+    ptArgs = {}
+
+    def __init__(self):
+        """Create a mocked bridge suitable for testing distributors and web
+        resource rendering.
+        """
+        ipv4 = randomIPv4()
+        self.nickname = "bridge-{0}".format(ipv4)
+        self.address = ipaddr.IPv4Address(ipv4)
+        self.orPort = randomPort()
+        self.fingerprint = "".join(random.choice('abcdef0123456789')
+                                   for _ in xrange(40))
+        self.orAddresses = [(randomIPv6(), randomPort(), 6)]
+
+    def getBridgeLine(self, bridgeRequest, includeFingerprint=True):
+        """Get a "torrc" bridge config line to give to a client."""
+        if not bridgeRequest.isValid():
+            return
+        line = []
+        if bridgeRequest.transports:
+            line.append(bridgeRequest.transports[-1])  # Just the last PT
+        if bridgeRequest.addressClass is ipaddr.IPv6Address:
+            line.append("[%s]:%s" % self.orAddresses[0][:2])
+        else:
+            line.append("%s:%s" % (self.address, self.orPort))
+        if includeFingerprint is True:
+            line.append(self.fingerprint)
+        if self.ptArgs:
+            line.append(','.join(['='.join(x) for x in self.ptArgs.items()]))
+        return " ".join([item for item in line])
+
+
+class DummyMaliciousBridge(DummyBridge):
+    """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
+    ``getConfigLine`` method and which maliciously insert an additional fake
+    bridgeline and some javascript into its PT arguments.
+    """
+    ptArgs = {
+        "eww": "\rBridge 1.2.3.4:1234",
+        "bad": "\nBridge 6.6.6.6:6666 0123456789abcdef0123456789abcdef01234567",
+        "evil": "<script>alert('fuuuu');</script>",
+    }
