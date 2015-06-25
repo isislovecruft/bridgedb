@@ -26,6 +26,6 @@ if option.subCommand is not None:
     # Hack to set the PYTHONPATH:
     sys.path[:] = map(os.path.abspath, sys.path)
     sys.path.insert(0, os.path.abspath(getcwd()))
-    sys.path.insert(0, os.path.abspath(os.path.join(getcwd(), '../lib')))
+    sys.path.insert(0, os.path.abspath(os.path.join(getcwd(), '..')))
 
 run(option)

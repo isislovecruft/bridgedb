@@ -19,7 +19,7 @@ subprocesses in the following way:
  3. Run coverage. From the top-level of the bridgedb repo, try doing:
 
         $ make reinstall && \
-            coverage run $(which trial) ./lib/bridgedb/test/test_* && \
+            coverage run $(which trial) ./bridgedb/test/test_* && \
             coverage combine && coverage report && coverage html
 
 If ``COVERAGE_PROCESS_START`` is not set, this code does nothing,

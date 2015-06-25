@@ -48,7 +48,7 @@ versioneer.tag_prefix = 'bridgedb-'
 # source tarballs should unpack to a directory like 'bridgedb-6.6.6'
 versioneer.parentdir_prefix = 'bridgedb-'
 
-pkgpath = os.path.join('lib', 'bridgedb')
+pkgpath = 'bridgedb'
 
 # Repo directory that contains translations; this directory should contain
 # both uncompiled translations (.po files) as well as compiled ones (.mo
@@ -126,7 +126,7 @@ def get_supported_langs():
 
     The two-letter country code of each language which is going to be
     installed will be added to a list, and this list will be written to
-    :attr:`repo_langs`, so that lib/bridgedb/__init__.py can store a
+    :attr:`repo_langs`, so that bridgedb/__init__.py can store a
     package-level attribute ``bridgedb.__langs__``, which will be a list of
     any languages which were installed.
 
@@ -161,7 +161,7 @@ def get_supported_langs():
                                        'LC_MESSAGES', 'bridgedb.mo'))
     supported.sort()
 
-    # Write our list of supported languages to 'lib/bridgedb/_langs.py':
+    # Write our list of supported languages to 'bridgedb/_langs.py':
     new_langs_lines = []
     with open(repo_langs, 'r') as langsfile:
         for line in langsfile.readlines():
@@ -389,12 +389,11 @@ setuptools.setup(
     maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
     url='https://www.torproject.org',
     download_url='https://gitweb.torproject.org/bridgedb.git',
-    package_dir={'': 'lib'},
+    package_dir={'bridgedb': 'bridgedb'},
     packages=['bridgedb',
               'bridgedb.email',
               'bridgedb.https',
-              'bridgedb.parse',
-              'bridgedb.test'],
+              'bridgedb.parse'],
     scripts=['scripts/bridgedb',
              'scripts/get-tor-exits'],
     extras_require={'test': ["sure==1.2.2",
