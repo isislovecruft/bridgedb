@@ -27,26 +27,8 @@ try:
 except ImportError:
     compile_catalog = extract_messages = init_catalog = update_catalog = None
 
-# setup automatic versioning (see top-level versioneer.py file):
 import versioneer
-versioneer.versionfile_source = 'lib/bridgedb/_version.py'
-versioneer.versionfile_build = 'bridgedb/_version.py'
 
-# when creating a release, tags should be prefixed with 'bridgedb-', like so:
-#
-#     git checkout -b release-6.6.6 develop
-#     [do some stuff, merge whatever, test things]
-#     git tag -S bridgedb-6.6.6
-#     git push tpo-common --tags
-#     git checkout master
-#     git merge -S --no-ff release-6.6.6
-#     git checkout develop
-#     git merge -S --no-ff master
-#     git branch -d release-6.6.6
-#
-versioneer.tag_prefix = 'bridgedb-'
-# source tarballs should unpack to a directory like 'bridgedb-6.6.6'
-versioneer.parentdir_prefix = 'bridgedb-'
 
 pkgpath = 'bridgedb'
 
