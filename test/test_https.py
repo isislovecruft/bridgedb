@@ -35,8 +35,8 @@ from twisted.trial import unittest
 from twisted.trial.unittest import FailTest
 from twisted.trial.unittest import SkipTest
 
-from bridgedb.test.util import processExists
-from bridgedb.test.util import getBridgeDBPID
+from .util import processExists
+from .util import getBridgeDBPID
 
 HTTP_ROOT = 'http://127.0.0.1:6788'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'

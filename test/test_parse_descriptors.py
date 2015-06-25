@@ -33,7 +33,7 @@ except (ImportError, NameError), error:
 else:
     HAS_STEM = True
 
-from bridgedb.test.util import Benchmarker
+from .util import Benchmarker
 
 
 BRIDGE_NETWORKSTATUS_0 = '''\

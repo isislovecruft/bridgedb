@@ -15,8 +15,8 @@ from twisted.trial import unittest
 from twisted.trial.unittest import FailTest
 from twisted.trial.unittest import SkipTest
 
-from bridgedb.test.util import processExists
-from bridgedb.test.util import getBridgeDBPID
+from .util import processExists
+from .util import getBridgeDBPID
 
 # ------------- SMTP Client Config
 SMTP_DEBUG_LEVEL = 0  # set to 1 to see SMTP message exchange

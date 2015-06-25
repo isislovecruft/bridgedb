@@ -15,8 +15,9 @@ import io
 
 from twisted.web.test import requesthelper
 
-from bridgedb.test import util
 from bridgedb.persistent import Conf
+
+from . import util
 
 
 SERVER_PUBLIC_FQDN = 'bridges.torproject.org'

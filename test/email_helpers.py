@@ -18,7 +18,8 @@ from bridgedb.email.distributor import IgnoreEmail
 from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.email.server import MailServerContext
 from bridgedb.schedule import Unscheduled
-from bridgedb.test import util
+
+from . import util
 
 
 EMAIL_DIST = True

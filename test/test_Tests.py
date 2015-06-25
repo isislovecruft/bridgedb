@@ -4,13 +4,13 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2013, Isis Lovecruft
-#             (c) 2007-2013, The Tor Project, Inc.
-#             (c) 2007-2013, all entities within the AUTHORS file
+# :copyright: (c) 2013-2015, Isis Lovecruft
+#             (c) 2007-2015, The Tor Project, Inc.
+#             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Class wrappers to adapt BridgeDB old unittests in :mod:`bridgedb.Tests`
-(now kept in :mod:`bridgedb.test.legacy_Tests`) to be compatible with the
+"""Class wrappers to adapt BridgeDB old unittests in ``bridgedb.Tests``
+(now kept in ``test/legacy_Tests``) to be compatible with the
 newer :api:`twisted.trial` unittests in this directory.
 """
 
@@ -22,16 +22,17 @@ import doctest
 import glob
 import logging
 import os
-import warnings
 
 from twisted.python import monkey
 from twisted.trial import unittest
 
-from bridgedb.test import legacy_Tests as Tests
-from bridgedb.test import deprecated
+from . import legacy_Tests as Tests
+from . import deprecated
 
 
-warnings.filterwarnings('ignore', module="bridgedb\.test\.legacy_Tests")
+logging.disable(50)
+
+
 pyunit = __import__('unittest')
 
 
@@ -64,16 +65,16 @@ def generateTrialAdaptedDoctestsSuite():
 
 def monkeypatchTests():
     """Monkeypatch the old unittests, replacing new, refactored code with their
-    original equivalents from :mod:`bridgedb.test.deprecated`.
+    original equivalents from :mod:`deprecated`.
 
     The first patch replaces the newer parsing function,
     :func:`~bridgedb.parse.networkstatus.parseALine`, with the older,
-    :func:`deprecated one <bridgedb.test.deprecated.parseORAddressLine>` (the
+    :func:`deprecated one <deprecated.parseORAddressLine>` (the
     old function was previously located at
     ``bridgedb.Bridges.parseORAddressLine``).
 
     The second patch replaces the new :class:`~bridgedb.parse.addr.PortList`,
-    with the :class:`older one <bridgedb.test.deprecated.PortList>` (which
+    with the :class:`older one <deprecated.PortList>` (which
     was previously located at ``bridgedb.Bridges.PortList``).
 
     The third, forth, and fifth monkeypatches add some module-level attributes
@@ -81,7 +82,7 @@ def monkeypatchTests():
 
     :rtype: :api:`~twisted.python.monkey.MonkeyPatcher`
     :returns: A :api:`~twisted.python.monkey.MonkeyPatcher`, preloaded with
-              patches from :mod:`bridgedb.test.deprecated`.
+              patches from :mod:`deprecated`.
     """
     patcher = monkey.MonkeyPatcher()
     patcher.addPatch(Tests.bridgedb.Bridges, 'PluggableTransport',
@@ -189,14 +190,14 @@ class DynamicTestCaseMeta(type):
 
 
 class OldUnittests(unittest.TestCase):
-    """A wrapper around :mod:`bridgedb.Tests` to produce :api:`~twisted.trial`
+    """A wrapper around :mod:`legacy_Tests` to produce :api:`~twisted.trial`
     compatible output.
 
     Generates a :api:`twisted.trial.unittest.TestCase` containing a
-    test for each of the individual tests in :mod:`bridgedb.Tests`.
+    test for each of the individual tests in :mod:`legacy_Tests`.
 
     Each test in this :api:`~twisted.trial.unittest.TestCase`` is dynamically
-    generated from one of the old unittests in :mod:`bridgedb.Tests`. Then,
+    generated from one of the old unittests in :mod:`legacy_Tests`. Then,
     the class is wrapped to cause the results reporting mechanisms to be
     :api:`~twisted.trial` compatible.
 
@@ -209,13 +210,13 @@ class OldUnittests(unittest.TestCase):
 
 
 class MonkeypatchedOldUnittests(unittest.TestCase):
-    """A wrapper around :mod:`bridgedb.Tests` to produce :api:`~twisted.trial`
+    """A wrapper around :mod:`legacy_Tests` to produce :api:`~twisted.trial`
     compatible output.
 
     For each test in this ``TestCase``, one of the old unittests in
     bridgedb/Tests.py is run. For all of the tests, some functions and classes
     are :api:`twisted.python.monkey.MonkeyPatcher.patch`ed with old,
-    deprecated code from :mod:`bridgedb.test.deprecated` to ensure that any
+    deprecated code from :mod:`deprecated` to ensure that any
     new code has not caused any regressions.
     """
     __metaclass__ = DynamicTestCaseMeta
