@@ -153,6 +153,7 @@ def levenshteinDistance(s1, s2, len1=None, len2=None,
     the number of characters which must be changed in **s1** to make it
     identical to **s2**.
 
+    >>> from bridgedb.util import levenshteinDistance
     >>> levenshteinDistance('cat', 'cat')
     0
     >>> levenshteinDistance('cat', 'hat')
@@ -188,6 +189,7 @@ def isascii(s):
     Note that this function differs from the str.is* methods in that
     it returns True for the empty string, rather than False.
 
+    >>> from bridgedb.util import isascii
     >>> isascii('\x80')
     False
     >>> isascii('foo\tbar\rbaz\n')
@@ -206,6 +208,7 @@ def isascii_noncontrol(s):
     Note that this function differs from the str.is* methods in that
     it returns True for the empty string, rather than False.
 
+    >>> from bridgedb.util import isascii_noncontrol
     >>> isascii_noncontrol('\x80')
     False
     >>> isascii_noncontrol('foo\tbar\rbaz\n')
@@ -220,6 +223,7 @@ def isascii_noncontrol(s):
 def replaceControlChars(text, replacement=None, encoding="utf-8"):
     """Remove ASCII control characters [0-31, 92, 127].
 
+    >>> from bridgedb.util import replaceControlChars
     >>> replaceControlChars('foo\n bar\\ baz\r \t\0quux\n')
     'foo bar baz quux'
     >>> replaceControlChars("\bI wonder if I'm outside the quotes now")
@@ -344,36 +348,36 @@ class mixin:
     >>> from bridgedb.util import mixin
     >>>
     >>> class ClassA(object):
-    >>>     def sayWhich(self):
-    >>>         print("ClassA.sayWhich() called.")
-    >>>     def doSuperThing(self):
-    >>>         super(ClassA, self).__repr__()
-    >>>     def doThing(self):
-    >>>         print("ClassA is doing a thing.")
-    >>>
+    ...     def sayWhich(self):
+    ...         print("ClassA.sayWhich() called.")
+    ...     def doSuperThing(self):
+    ...         print("%s" % super(ClassA, self))
+    ...     def doThing(self):
+    ...         print("ClassA is doing a thing.")
+    ...
     >>> class ClassB(ClassA):
-    >>>     def sayWhich(self):
-    >>>         print("ClassB.sayWhich() called.")
-    >>>     def doSuperThing(self):
-    >>>         super(ClassB, self).__repr__()
-    >>>     def doOtherThing(self):
-    >>>         print("ClassB is doing something else.")
-    >>>
+    ...     def sayWhich(self):
+    ...         print("ClassB.sayWhich() called.")
+    ...     def doSuperThing(self):
+    ...         print("%s" % super(ClassB, self))
+    ...     def doOtherThing(self):
+    ...         print("ClassB is doing something else.")
+    ...
     >>> class ClassM(mixin):
-    >>>     def sayWhich(self):
-    >>>         print("ClassM.sayWhich() called.")
-    >>>
+    ...     def sayWhich(self):
+    ...         print("ClassM.sayWhich() called.")
+    ...
     >>> ClassM.register(ClassA)
     >>>
     >>> class ClassC(ClassM, ClassB):
-    >>>     def sayWhich(self):
-    >>>         super(ClassC, self).sayWhich()
-    >>>
+    ...     def sayWhich(self):
+    ...         super(ClassC, self).sayWhich()
+    ...
     >>> c = ClassC()
     >>> c.sayWhich()
-    ClassM.saywhich() called.
+    ClassM.sayWhich() called.
     >>> c.doSuperThing()
-    <super: <class 'ClassA'>, NULL>
+    <super: <class 'ClassB'>, <ClassC object>>
     >>> c.doThing()
     ClassA is doing a thing.
     >>> c.doOtherThing()

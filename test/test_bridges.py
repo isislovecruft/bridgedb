@@ -148,10 +148,10 @@ class BridgeIntegrationTests(unittest.TestCase):
     .. data: OldTest (enum)
 
     These tests were refactored from the old tests for
-    :class:`~bridgedb.test.deprecated.Bridge`, which lived in
+    ``deprecated.Bridge`, which lived in
     ``lib/bridgedb/test/test_Bridges.py``. For the translations from the old
-    tests in ``bridgedb.test.test_Bridges.BridgeClassTest`` to their new
-    equivalents here in ``bridgedb.test.test_bridges.BridgeIntegrationTests``,
+    tests in ``test_Bridges.BridgeClassTest`` to their new
+    equivalents here in ``test_bridges.BridgeIntegrationTests``,
     which should test for the same things as their old equivalents, see the
     following table:
 

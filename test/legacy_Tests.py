@@ -30,19 +30,21 @@ from bridgedb.email.distributor import EmailDistributor
 from bridgedb.email.distributor import IgnoreEmail
 from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse import addr
-from bridgedb.test.util import bracketIPv6
-from bridgedb.test.util import randomIP
-from bridgedb.test.util import randomIPv4
-from bridgedb.test.util import randomIPv6
-from bridgedb.test.util import randomIPString
-from bridgedb.test.util import randomIPv4String
-from bridgedb.test.util import randomIPv6String
-from bridgedb.test.util import randomPort
-from bridgedb.test.util import randomValidIPv6
+
+from .util import bracketIPv6
+from .util import randomIP
+from .util import randomIPv4
+from .util import randomIPv6
+from .util import randomIPString
+from .util import randomIPv4String
+from .util import randomIPv6String
+from .util import randomPort
+from .util import randomValidIPv6
 
 from math import log
 
 warnings.filterwarnings('ignore', '.*tmpnam.*')
+warnings.filterwarnings('ignore', '.*Config.*')
 
 
 def randomPortSpec():

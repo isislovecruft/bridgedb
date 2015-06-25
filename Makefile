@@ -11,13 +11,13 @@ test:
 	python setup.py test
 
 pep8:
-	find lib/bridgedb/*.py | xargs pep8
+	find bridgedb/*.py | xargs pep8
 
 pylint:
-	pylint --rcfile=./.pylintrc ./lib/bridgedb/
+	pylint --rcfile=./.pylintrc ./bridgedb/
 
 pyflakes:
-	pyflakes lib/bridgedb/
+	pyflakes ./bridgedb/
 
 install:
 	-python setup.py compile_catalog
@@ -55,11 +55,11 @@ clean-coverage-html:
 clean: clean-docs clean-coverage-html
 	-rm -rf build
 	-rm -rf dist
-	-rm -rf lib/bridgedb.egg-info
+	-rm -rf bridgedb.egg-info
 	-rm -rf _trial_temp
 
 coverage-test:
-	coverage run --rcfile=".coveragerc" $(TRIAL) ./lib/bridgedb/test/test_*.py
+	coverage run --rcfile=".coveragerc" $(TRIAL) ./test/test_*.py
 	coverage report --rcfile=".coveragerc"
 
 coverage-html:

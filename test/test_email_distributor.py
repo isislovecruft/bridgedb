@@ -28,7 +28,8 @@ from bridgedb.email.request import EmailBridgeRequest
 from bridgedb.parse.addr import BadEmail
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import normalizeEmail
-from bridgedb.test.util import generateFakeBridges
+
+from .util import generateFakeBridges
 
 logging.disable(50)
 

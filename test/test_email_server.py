@@ -36,9 +36,10 @@ from bridgedb.email.distributor import EmailDistributor
 from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse.addr import BadEmail
 from bridgedb.schedule import Unscheduled
-from bridgedb.test import util
-from bridgedb.test.email_helpers import _createConfig
-from bridgedb.test.email_helpers import _createMailServerContext
+
+from . import util
+from .email_helpers import _createConfig
+from .email_helpers import _createMailServerContext
 
 
 class SMTPMessageTests(unittest.TestCase):

@@ -33,8 +33,9 @@ from twisted.web.test import test_agent as txtagent
 from bridgedb import crypto
 from bridgedb import txrecaptcha
 from bridgedb.persistent import Conf
-from bridgedb.test.util import fileCheckDecorator
-from bridgedb.test.email_helpers import _createConfig
+
+from .util import fileCheckDecorator
+from .email_helpers import _createConfig
 
 
 logging.disable(50)
