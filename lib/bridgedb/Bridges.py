@@ -39,18 +39,6 @@ DIGEST_LEN = 20
 PORTSPEC_LEN = 16
 
 
-class BridgeHolder(object):
-    """Abstract base class for all classes that hold bridges."""
-    def insert(self, bridge):
-        raise NotImplementedError
-
-    def clear(self):
-        pass
-
-    def dumpAssignments(self, f, description=""):
-        pass
-
-
 class BridgeRingParameters(object):
     """Store validated settings on minimum number of Bridges with certain
     attributes which should be included in any generated subring of a
@@ -99,7 +87,8 @@ class BridgeRingParameters(object):
         self.needPorts = needPorts[:]
         self.needFlags = [(flag.lower(), count) for flag, count in needFlags[:]]
 
-class BridgeRing(BridgeHolder):
+
+class BridgeRing(object):
     """Arranges bridges into a hashring based on an hmac function."""
 
     def __init__(self, key, answerParameters=None):
@@ -333,15 +322,13 @@ class BridgeRing(BridgeHolder):
             f.write("%s %s\n" % (b.fingerprint, " ".join(desc).strip()))
 
 
-class FixedBridgeSplitter(BridgeHolder):
-    """A bridgeholder that splits bridges up based on an hmac and assigns
-       them to several sub-bridgeholders with equal probability.
+class FixedBridgeSplitter(object):
+    """Splits bridges up based on an HMAC and assigns them to one of several
+    subhashrings with equal probability.
     """
     def __init__(self, key, rings):
         self.hmac = getHMACFunc(key, hex=True)
         self.rings = rings[:]
-        for r in self.rings:
-            assert(isinstance(r, BridgeHolder))
 
     def insert(self, bridge):
         # Grab the first 4 bytes
@@ -366,7 +353,7 @@ class FixedBridgeSplitter(BridgeHolder):
         """Write all bridges assigned to this hashring to ``filename``.
 
         :param string description: If given, include a description next to the
-            index number of the ring from :attr:`FilteredBridgeHolder.rings`
+            index number of the ring from :attr:`FilteredBridgeSplitter.rings`
             the following bridges were assigned to. For example, if the
             description is ``"IPv6 obfs2 bridges"`` the line would read:
             ``"IPv6 obfs2 bridges ring=3"``.
@@ -374,7 +361,8 @@ class FixedBridgeSplitter(BridgeHolder):
         for index, ring in zip(xrange(len(self.rings)), self.rings):
             ring.dumpAssignments(filename, "%s ring=%s" % (description, index))
 
-class UnallocatedHolder(BridgeHolder):
+
+class UnallocatedHolder(object):
     """A pseudo-bridgeholder that ignores its bridges and leaves them
        unassigned.
     """
@@ -407,10 +395,11 @@ class UnallocatedHolder(BridgeHolder):
                     continue
                 f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
 
-class BridgeSplitter(BridgeHolder):
-    """A BridgeHolder that splits incoming bridges up based on an hmac,
-       and assigns them to sub-bridgeholders with different probabilities.
-       Bridge-to-bridgeholder associations are recorded in a store.
+
+class BridgeSplitter(object):
+    """Splits incoming bridges up based on an HMAC, and assigns them to
+    sub-bridgeholders with different probabilities.  Bridge ←→ BridgeSplitter
+    associations are recorded in a store.
     """
     def __init__(self, key):
         self.hmac = getHMACFunc(key, hex=True)
@@ -428,12 +417,13 @@ class BridgeSplitter(BridgeHolder):
         return n
 
     def addRing(self, ring, ringname, p=1):
-        """Add a new bridgeholder.
-           ring -- the bridgeholder to add.
-           ringname -- a string representing the bridgeholder.  This is used
-               to record which bridges have been assigned where in the store.
-           p -- the relative proportion of bridges to assign to this
-               bridgeholder.
+        """Add a new subring.
+
+        :param ring: The subring to add.
+        :param str ringname: This is used to record which bridges have been
+            assigned where in the store.
+        :param int p: The relative proportion of bridges to assign to this
+            bridgeholder.
         """
         self.ringsByName[ringname] = ring
         self.pValues.append(self.totalP)
@@ -493,8 +483,8 @@ class BridgeSplitter(BridgeHolder):
             ring.dumpAssignments(f, "%s %s" % (description, name))
 
 
-class FilteredBridgeSplitter(BridgeHolder):
-    """A configurable BridgeHolder that filters bridges into subrings.
+class FilteredBridgeSplitter(object):
+    """Places bridges into subrings based upon sets of filters.
 
     The set of subrings and conditions used to assign :class:`Bridge`s should
     be passed to :meth:`~FilteredBridgeSplitter.addRing`.
@@ -513,12 +503,14 @@ class FilteredBridgeSplitter(BridgeHolder):
                  - ``ringname`` is a unique string identifying the subring.
                  - ``filterFn`` is a callable which filters Bridges in some
                    manner, i.e. by whether they are IPv4 or IPv6, etc.
-                 - ``subring`` is a :class:`BridgeHolder`.
+                 - ``subring`` is any of the horribly-implemented,
+                   I-guess-it-passes-for-some-sort-of-hashring classes in this
+                   module.
         :ivar hmac: DOCDOC
         :ivar bridges: DOCDOC
         :type distributorName: str
         :ivar distributorName: The name of this splitter's distributor. See
-             :meth:`bridgedb.Dist.HTTPSDistributor.setDistributorName`.
+             :meth:`~bridgedb.https.distributor.HTTPSDistributor.setDistributorName`.
         """
         self.key = key
         self.filterRings = {}
@@ -547,14 +539,12 @@ class FilteredBridgeSplitter(BridgeHolder):
         """
         # The bridge must be running to insert it:
         if not bridge.flags.running:
-            logging.warn(
-                "Skipping hashring insertion for non-running bridge: '%s'"
-                % logSafely(bridge.fingerprint))
+            logging.warn(("Skipping hashring insertion for non-running "
+                          "bridge: %s") % bridge)
             return
 
         index = 0
-        logging.debug("Inserting %s into hashring"
-                      % (logSafely(bridge.fingerprint)))
+        logging.debug("Inserting %s into hashring..." % bridge)
         for old_bridge in self.bridges[:]:
             if bridge.fingerprint == old_bridge.fingerprint:
                 self.bridges[index] = bridge
@@ -565,8 +555,8 @@ class FilteredBridgeSplitter(BridgeHolder):
         for ringname, (filterFn, subring) in self.filterRings.items():
             if filterFn(bridge):
                 subring.insert(bridge)
-                logging.debug("Inserted bridge '%s' into '%s' sub hashring"
-                              % (logSafely(bridge.fingerprint), ringname))
+                logging.debug("Inserted bridge %s into %s subhashring." %
+                              (bridge, ringname))
 
     def extractFilterNames(self, ringname):
         """Get the names of the filters applied to a particular sub hashring.
@@ -579,7 +569,7 @@ class FilteredBridgeSplitter(BridgeHolder):
         filterNames = []
 
         for filterName in [x.func_name for x in list(ringname)]:
-            # Using `filterAssignBridgesToRing.func_name` gives us a messy
+            # Using `assignBridgesToSubring.func_name` gives us a messy
             # string which includes all parameters and memory addresses. Get
             # rid of this by partitioning at the first `(`:
             realFilterName = filterName.partition('(')[0]
@@ -591,7 +581,6 @@ class FilteredBridgeSplitter(BridgeHolder):
     def addRing(self, subring, ringname, filterFn, populate_from=None):
         """Add a subring to this hashring.
 
-        :type subring: :class:`BridgeHolder`
         :param subring: The subring to add.
         :param str ringname: A unique name for identifying the new subring.
         :param filterFn: A function whose input is a :class:`Bridge`, and
@@ -610,17 +599,13 @@ class FilteredBridgeSplitter(BridgeHolder):
         # hashring '%s'!" % (inserted, ringname))`, this log message appears:
         #
         # Jan 04 23:18:37 [INFO] Inserted 12 bridges into hashring
-        # frozenset([<function filterBridgesByIP4 at 0x2d67cf8>, <function
-        # filterAssignBridgesToRing(<function hmac_fn at 0x3778398>, 4, 0) at
+        # frozenset([<function byIPv4 at 0x2d67cf8>, <function
+        # assignBridgesToSubring(<function hmac_fn at 0x3778398>, 4, 0) at
         # 0x37de578>])!
         #
         # I suppose since it contains memory addresses, it *is* technically
         # likely to be a unique string, but it is messy.
 
-        if not isinstance(subring, BridgeHolder):
-            logging.fatal("%s hashring can't add invalid subring: %r"
-                          % (self.distributorName, subring))
-            return False
         if ringname in self.filterRings.keys():
             logging.fatal("%s hashring already has a subring named '%s'!"
                           % (self.distributorName, ringname))
@@ -628,13 +613,21 @@ class FilteredBridgeSplitter(BridgeHolder):
 
         filterNames = self.extractFilterNames(ringname)
         subringName = [self.distributorName]
+        subringNumber = None
         for filterName in filterNames:
-            if filterName != 'filterAssignBridgesToRing':
-                subringName.append(filterName.strip('filterBridgesBy'))
+            if filterName.startswith('assignBridgesToSubring'):
+                subringNumber = filterName.lstrip('assignBridgesToSubring')
+            else:
+                subringName.append(filterName.lstrip('by'))
+        if subring.name and 'Proxy' in subring.name:
+            subringName.append('Proxy')
+        elif subringNumber:
+            subringName.append(subringNumber)
         subringName = '-'.join([x for x in subringName])
         subring.setName(subringName)
 
-        logging.info("Adding subring to %s hashring..." % subring.name)
+        logging.info("Adding %s subring %s to the %s Distributor's hashring..." %
+                     (subring.name, subringNumber, self.distributorName))
         logging.info("  Subring filters: %s" % filterNames)
 
         #TODO: drop LRU ring if len(self.filterRings) > self.max_cached_rings
@@ -646,8 +639,8 @@ class FilteredBridgeSplitter(BridgeHolder):
                 if isinstance(bridge, Bridge) and filterFn(bridge):
                     subring.insert(bridge)
                     inserted += 1
-            logging.info("Bridges inserted into %s subring: %d"
-                         % (subring.name, inserted))
+            logging.info("Bridges inserted into %s subring %s: %d"
+                         % (subring.name, subringNumber, inserted))
 
         return True
 

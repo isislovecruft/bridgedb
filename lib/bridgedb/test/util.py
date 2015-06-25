@@ -25,7 +25,10 @@ from functools import wraps
 from twisted.trial import unittest
 
 from bridgedb import util as bdbutil
+from bridgedb.bridges import IBridge
 from bridgedb.parse.addr import isIPAddress
+
+from zope.interface import implementer
 
 
 def fileCheckDecorator(func):
@@ -168,6 +171,47 @@ randomValidIPv4String = valid(randomIPv4String)
 randomValidIPv6String = valid(randomIPv6String)
 randomValidIPString   = valid(randomIPString)
 
+_FAKE_BRIDGES = []
+
+def generateFakeBridges(n=500):
+    """Generate a set of **n** :class:`~bridgedb.bridges.Bridges` with random
+    data.
+    """
+    from bridgedb.bridges import Bridge
+    from bridgedb.bridges import PluggableTransport
+
+    global _FAKE_BRIDGES
+
+    if _FAKE_BRIDGES:
+        return _FAKE_BRIDGES
+
+    bridges = []
+
+    for i in range(n):
+        addr = randomValidIPv4String()
+        nick = 'bridge-%d' % i
+        port = randomHighPort()
+        # Real tor currently only supports one extra ORAddress, and it can
+        # only be IPv6.
+        addrs = [(randomValidIPv6(), randomHighPort(), 6)]
+        fpr = "".join(random.choice('abcdef0123456789') for _ in xrange(40))
+
+        # We only support the ones without PT args, because they're easier to fake.
+        supported = ["obfs2", "obfs3", "fte"]
+        transports = []
+        for j, method in zip(range(1, len(supported) + 1), supported):
+            pt = PluggableTransport(fpr, method, addr, port - j, {})
+            transports.append(pt)
+
+        bridge = Bridge(nick, addr, port, fpr)
+        bridge.flags.update("Running Stable")
+        bridge.transports = transports
+        bridge.orAddresses = addrs
+        bridges.append(bridge)
+
+    _FAKE_BRIDGES = bridges
+    return bridges
+
 
 #: Mixin class for use with :api:`~twisted.trial.unittest.TestCase`. A
 #: ``TestCaseMixin`` can be used to add additional methods, which should be
@@ -207,6 +251,7 @@ class Benchmarker(object):
             print("Benchmark: %12fms %12fs" % (self.milliseconds, self.seconds))
 
 
+@implementer(IBridge)
 class DummyBridge(object):
     """A mock :class:`bridgedb.bridges.Bridge` which only supports a mocked
     ``getBridgeLine`` method."""
@@ -232,7 +277,7 @@ class DummyBridge(object):
         line = []
         if bridgeRequest.transports:
             line.append(bridgeRequest.transports[-1])  # Just the last PT
-        if bridgeRequest.addressClass is ipaddr.IPv6Address:
+        if bridgeRequest.ipVersion is 6:
             line.append("[%s]:%s" % self.orAddresses[0][:2])
         else:
             line.append("%s:%s" % (self.address, self.orPort))
@@ -243,6 +288,7 @@ class DummyBridge(object):
         return " ".join([item for item in line])
 
 
+@implementer(IBridge)
 class DummyMaliciousBridge(DummyBridge):
     """A mock :class:`bridgedb.Bridges.Bridge` which only supports a mocked
     ``getConfigLine`` method and which maliciously insert an additional fake

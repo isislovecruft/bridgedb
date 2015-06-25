@@ -13,9 +13,9 @@
 
 import io
 
-from bridgedb.Dist import IgnoreEmail
-from bridgedb.Dist import TooSoonEmail
 from bridgedb.persistent import Conf
+from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.email.server import MailServerContext
 from bridgedb.schedule import Unscheduled
 from bridgedb.test import util
@@ -120,9 +120,11 @@ def _createMailServerContext(config=None, distributor=None):
 
 
 class DummyEmailDistributor(object):
-    """A mocked :class:`bridgedb.Dist.EmailBasedDistributor` which is used to
-    test :class:`bridgedb.EmailServer`.
+    """A mocked :class:`bridgedb.email.distributor.EmailDistributor` which is used
+    to test :class:`bridgedb.EmailServer`.
     """
+
+    _bridgesPerResponseMin = 3
 
     def __init__(self, key=None, domainmap=None, domainrules=None,
                  answerParameters=None):
@@ -134,17 +136,17 @@ class DummyEmailDistributor(object):
         self.domainrules = domainrules
         self.answerParameters = answerParameters
 
-    def getBridges(self, bridgeRequest, epoch, N=1):
-        return [util.DummyBridge() for _ in xrange(N)]
+    def getBridges(self, bridgeRequest, epoch):
+        return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
 
     def cleanDatabase(self):
         pass
 
 
 class DummyEmailDistributorWithState(DummyEmailDistributor):
-    """A mocked :class:`bridgedb.Dist.EmailBasedDistributor` which raises
-    :exc:`bridgedb.Dist.TooSoonEmail` on the second email and
-    :exc:`bridgedb.Dist.IgnoreEmail` on the third.
+    """A mocked :class:`bridgedb.email.distributor.EmailDistributor` which raises
+    :exc:`bridgedb.email.distributor.TooSoonEmail` on the second email and
+    :exc:`bridgedb.email.distributor.IgnoreEmail` on the third.
 
     Note that the state tracking is done in a really dumb way. For example, we
     currently don't consider requests for help text or GnuPG keys to be a
@@ -157,14 +159,14 @@ class DummyEmailDistributorWithState(DummyEmailDistributor):
         super(DummyEmailDistributorWithState, self).__init__()
         self.alreadySeen = {}
 
-    def getBridges(self, bridgeRequest, epoch, N=1):
+    def getBridges(self, bridgeRequest, epoch):
         # Keep track of the number of times we've seen a client.
         if not bridgeRequest.client in self.alreadySeen.keys():
             self.alreadySeen[bridgeRequest.client] = 0
         self.alreadySeen[bridgeRequest.client] += 1
 
         if self.alreadySeen[bridgeRequest.client] <= 1:
-            return [util.DummyBridge() for _ in xrange(N)]
+            return [util.DummyBridge() for _ in xrange(self._bridgesPerResponseMin)]
         elif self.alreadySeen[bridgeRequest.client] == 2:
             raise TooSoonEmail(
                 "Seen client '%s' %d times"

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_Dist -*-
+# -*- coding: utf-8 ; test-case-name: bridgedb.test.test_https_distributor -*-
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
@@ -8,88 +8,25 @@
 # :copyright: (c) 2013-2015, Isis Lovecruft
 #             (c) 2013-2015, Matthew Finkel
 #             (c) 2007-2015, The Tor Project, Inc.
-# :license: 3-Clause BSD, see LICENSE for licensing information
+# :license: see LICENSE for licensing information
 
-"""This module has functions to decide which bridges to hand out to whom."""
+"""A Distributor that hands out bridges through a web interface."""
 
 import ipaddr
 import logging
-import re
-import time
 
-import bridgedb.Bridges
 import bridgedb.Storage
 
 from bridgedb import proxy
+from bridgedb.Bridges import BridgeRing
 from bridgedb.Bridges import FilteredBridgeSplitter
 from bridgedb.crypto import getHMAC
 from bridgedb.crypto import getHMACFunc
-from bridgedb.Filters import filterAssignBridgesToRing
-from bridgedb.Filters import filterBridgesByRules
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.parse import addr
-from bridgedb.parse.addr import UnsupportedDomain
-from bridgedb.safelog import logSafely
-
-
-MAX_EMAIL_RATE = 3*3600
-
-class IgnoreEmail(addr.BadEmail):
-    """Raised when we get requests from this address after rate warning."""
-
-class TooSoonEmail(addr.BadEmail):
-    """Raised when we got a request from this address too recently."""
-
-class EmailRequestedHelp(Exception):
-    """Raised when a client has emailed requesting help."""
-
-class EmailRequestedKey(Exception):
-    """Raised when an incoming email requested a copy of our GnuPG keys."""
-
-
-class Distributor(object):
-    """Distributes bridges to clients."""
-
-    def __init__(self):
-        super(Distributor, self).__init__()
-        self.name = None
-        self.hashring = None
-
-    def setDistributorName(self, name):
-        """Set a **name** for identifying this distributor.
-
-        This is used to identify the distributor in the logs; the **name**
-        doesn't necessarily need to be unique. The hashrings created for this
-        distributor will be named after this distributor's name in
-        :meth:`propopulateRings`, and any sub hashrings of each of those
-        hashrings will also carry that name.
-
-        >>> from bridgedb import Dist
-        >>> dist = Dist.HTTPSDistributor(2, 'masterkey')
-        >>> dist.setDistributorName('Excellent Distributor')
-        >>> dist.name
-        'Excellent Distributor'
-
-        :param str name: A name for this distributor.
-        """
-        self.name = name
-        self.hashring.distributorName = name
-
-    def bridgesPerResponse(self, hashring=None, maximum=3):
-        if hashring is None:
-            hashring = self.hashring
-
-        if len(hashring) < 20:
-            n = 1
-        if 20 <= len(hashring) < 100:
-            n = min(2, maximum)
-        if len(hashring) >= 100:
-            n = maximum
-
-        logging.debug("Returning %d bridges from ring of len: %d" %
-                      (n, len(hashring)))
-        return n
+from bridgedb.distribute import Distributor
+from bridgedb.filters import byIPv4
+from bridgedb.filters import byIPv6
+from bridgedb.filters import byFilters
+from bridgedb.filters import bySubring
 
 
 class HTTPSDistributor(Distributor):
@@ -99,7 +36,7 @@ class HTTPSDistributor(Distributor):
     :type proxies: :class:`~bridgedb.proxies.ProxySet`
     :ivar proxies: All known proxies, which we treat differently. See
         :param:`proxies`.
-    :type hashring: :class:`bridgedb.Bridges.FixedBridgeSplitter`
+    :type hashring: :class:`bridgedb.Bridges.FilteredBridgeSplitter`
     :ivar hashring: A hashring that assigns bridges to subrings with fixed
         proportions. Used to assign bridges into the subrings of this
         distributor.
@@ -129,9 +66,7 @@ class HTTPSDistributor(Distributor):
             parameters, i.e. that an answer has "at least two obfsproxy
             bridges" or "at least one bridge on port 443", etc.
         """
-        super(HTTPSDistributor, self).__init__()
-
-        self.key = key
+        super(HTTPSDistributor, self).__init__(key)
         self.totalSubrings = totalSubrings
         self.answerParameters = answerParameters
 
@@ -154,13 +89,12 @@ class HTTPSDistributor(Distributor):
         self._clientToPositionHMAC = getHMACFunc(key3, hex=False)
         self._subnetToSubringHMAC = getHMACFunc(key4, hex=True)
         self.hashring = FilteredBridgeSplitter(key2, self.ringCacheSize)
-        logging.debug("Added %s to HTTPS distributor." %
-                      self.hashring.__class__.__name__)
+        self.name = 'HTTPS'
+        logging.debug("Added %s to %s distributor." %
+                      (self.hashring.__class__.__name__, self.name))
 
-        self.setDistributorName('HTTPS')
-
-    def bridgesPerResponse(self, hashring=None, maximum=3):
-        return super(HTTPSDistributor, self).bridgesPerResponse(hashring, maximum)
+    def bridgesPerResponse(self, hashring=None):
+        return super(HTTPSDistributor, self).bridgesPerResponse(hashring)
 
     @classmethod
     def getSubnet(cls, ip, usingProxy=False, proxySubnets=4):
@@ -177,7 +111,7 @@ class HTTPSDistributor(Distributor):
         ``1.2.178.234``) are placed within the same cluster, but Carol (with
         address ``1.3.11.33``) *might* end up in a different cluster.
 
-        >>> from bridgedb.Dist import HTTPSDistributor
+        >>> from bridgedb.https.distributor import HTTPSDistributor
         >>> HTTPSDistributor.getSubnet('1.2.3.4')
         '1.2.0.0/16'
         >>> HTTPSDistributor.getSubnet('1.2.211.154')
@@ -307,18 +241,17 @@ class HTTPSDistributor(Distributor):
         """
         logging.info("Prepopulating %s distributor hashrings..." % self.name)
 
-        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
+        for filterFn in [byIPv4, byIPv6]:
             for subring in range(1, self.totalSubrings + 1):
                 filters = self._buildHashringFilters([filterFn,], subring)
                 key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
-                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
+                ring = BridgeRing(key1, self.answerParameters)
                 # For consistency with previous implementation of this method,
                 # only set the "name" for "clusters" which are for this
                 # distributor's proxies:
                 if subring == self.proxySubring:
                     ring.setName('{0} Proxy Ring'.format(self.name))
-                self.hashring.addRing(ring, filters,
-                                      filterBridgesByRules(filters),
+                self.hashring.addRing(ring, filters, byFilters(filters),
                                       populate_from=self.hashring.bridges)
 
     def insert(self, bridge):
@@ -326,11 +259,11 @@ class HTTPSDistributor(Distributor):
         self.hashring.insert(bridge)
 
     def _buildHashringFilters(self, previousFilters, subring):
-        f = filterAssignBridgesToRing(self.hashring.hmac, self.totalSubrings, subring)
+        f = bySubring(self.hashring.hmac, subring, self.totalSubrings)
         previousFilters.append(f)
         return frozenset(previousFilters)
 
-    def getBridges(self, bridgeRequest, interval, N=1):
+    def getBridges(self, bridgeRequest, interval):
         """Return a list of bridges to give to a user.
 
         :type bridgeRequest: :class:`bridgedb.https.request.HTTPSBridgeRequest`
@@ -339,15 +272,13 @@ class HTTPSDistributor(Distributor):
             attribute set to a string containing the client's IP address.
         :param str interval: The time period when we got this request.  This
             can be any string, so long as it changes with every period.
-        :param int N: The number of bridges to try to give back. (default: 1)
         :rtype: list
         :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
             the response. See
             :meth:`bridgedb.https.server.WebResourceBridges.getBridgeRequestAnswer`
             for an example of how this is used.
         """
-        logging.info("Attempting to return %d bridges to client %s..."
-                     % (N, bridgeRequest.client))
+        logging.info("Attempting to get bridges for %s..." % bridgeRequest.client)
 
         if not len(self.hashring):
             logging.warn("Bailing! Hashring has zero bridges!")
@@ -386,174 +317,12 @@ class HTTPSDistributor(Distributor):
         else:
             logging.debug("Cache miss %s" % filters)
             key1 = getHMAC(self.key, "Order-Bridges-In-Ring-%d" % subring)
-            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.hashring.addRing(ring, filters, filterBridgesByRules(filters),
+            ring = BridgeRing(key1, self.answerParameters)
+            self.hashring.addRing(ring, filters, byFilters(filters),
                                   populate_from=self.hashring.bridges)
 
         # Determine the appropriate number of bridges to give to the client:
-        returnNum = self.bridgesPerResponse(ring, maximum=N)
+        returnNum = self.bridgesPerResponse(ring)
         answer = ring.getBridges(position, returnNum)
 
         return answer
-
-    def __len__(self):
-        return len(self.hashring)
-
-    def dumpAssignments(self, f, description=""):
-        self.hashring.dumpAssignments(f, description)
-
-
-class EmailBasedDistributor(Distributor):
-    """Object that hands out bridges based on the email address of an incoming
-    request and the current time period.
-
-    :type hashring: :class:`~bridgedb.Bridges.BridgeRing`
-    :ivar hashring: A hashring to hold all the bridges we hand out.
-    """
-
-    def __init__(self, key, domainmap, domainrules,
-                 answerParameters=None, whitelist=None):
-        """Create a bridge distributor which uses email.
-
-        :type emailHmac: callable
-        :param emailHmac: An hmac function used to order email addresses
-            within a ring. See :func:`~bridgedb.crypto.getHMACFunc`.
-        :param dict domainmap: A map from lowercase domains that we support
-            mail from to their canonical forms. See `EMAIL_DOMAIN_MAP` option
-            in `bridgedb.conf`.
-        :param domainrules: DOCDOC
-        :param answerParameters: DOCDOC
-        :type whitelist: dict or ``None``
-        :param whitelist: A dictionary that maps whitelisted email addresses
-            to GnuPG fingerprints.
-        """
-        self.key = key
-
-        key1 = getHMAC(key, "Map-Addresses-To-Ring")
-        self.emailHmac = getHMACFunc(key1, hex=False)
-
-        key2 = getHMAC(key, "Order-Bridges-In-Ring")
-        # XXXX clear the store when the period rolls over!
-        self.domainmap = domainmap
-        self.domainrules = domainrules
-        self.whitelist = whitelist or dict()
-        self.answerParameters = answerParameters
-
-        #XXX cache options not implemented
-        self.hashring = bridgedb.Bridges.FilteredBridgeSplitter(
-            key2, max_cached_rings=5)
-
-        self.setDistributorName('Email')
-
-    def bridgesPerResponse(self, hashring=None, maximum=3):
-        return super(EmailBasedDistributor, self).bridgesPerResponse(hashring, maximum)
-
-    def insert(self, bridge):
-        """Assign a bridge to this distributor."""
-        self.hashring.insert(bridge)
-
-    def getBridges(self, bridgeRequest, interval, N=1):
-        """Return a list of bridges to give to a user.
-
-        :type bridgeRequest: :class:`~bridgedb.email.request.EmailBridgeRequest`
-        :param bridgeRequest: A :class:`~bridgedb.bridgerequest.BridgeRequestBase`
-            with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
-            attribute set to a string containing the client's full, canonicalized
-            email address.
-        :param interval: The time period when we got this request. This can be
-            any string, so long as it changes with every period.
-        :param int N: The number of bridges to try to give back.
-        """
-        # All checks on the email address, such as checks for whitelisting and
-        # canonicalization of domain name, are done in
-        # :meth:`bridgedb.email.autoresponder.getMailTo` and
-        # :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
-        if (not bridgeRequest.client) or (bridgeRequest.client == 'default'):
-            raise addr.BadEmail(
-                ("%s distributor can't get bridges for invalid email email "
-                 " address: %s") % (self.name, bridgeRequest.client))
-
-        now = time.time()
-
-        with bridgedb.Storage.getDB() as db:
-            wasWarned = db.getWarnedEmail(bridgeRequest.client)
-            lastSaw = db.getEmailTime(bridgeRequest.client)
-
-            logging.info("Attempting to return for %d bridges for %s..."
-                         % (N, bridgeRequest.client))
-
-            if lastSaw is not None:
-                if bridgeRequest.client in self.whitelist.keys():
-                    logging.info(("Whitelisted email address %s was last seen "
-                                  "%d seconds ago.")
-                                 % (bridgeRequest.client, now - lastSaw))
-                elif (lastSaw + MAX_EMAIL_RATE) >= now:
-                    wait = (lastSaw + MAX_EMAIL_RATE) - now
-                    logging.info("Client %s must wait another %d seconds."
-                                 % (bridgeRequest.client, wait))
-                    if wasWarned:
-                        raise IgnoreEmail("Client was warned.",
-                                          bridgeRequest.client)
-                    else:
-                        logging.info("Sending duplicate request warning.")
-                        db.setWarnedEmail(bridgeRequest.client, True, now)
-                        db.commit()
-                        raise TooSoonEmail("Must wait %d seconds" % wait,
-                                           bridgeRequest.client)
-
-            # warning period is over
-            elif wasWarned:
-                db.setWarnedEmail(bridgeRequest.client, False)
-
-            pos = self.emailHmac("<%s>%s" % (interval, bridgeRequest.client))
-
-            ring = None
-            ruleset = frozenset(bridgeRequest.filters)
-            if ruleset in self.hashring.filterRings.keys():
-                logging.debug("Cache hit %s" % ruleset)
-                _, ring = self.hashring.filterRings[ruleset]
-            else:
-                # cache miss, add new ring
-                logging.debug("Cache miss %s" % ruleset)
-
-                # add new ring
-                key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
-                ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-                self.hashring.addRing(ring, ruleset,
-                                      filterBridgesByRules(ruleset),
-                                      populate_from=self.hashring.bridges)
-
-            returnNum = self.bridgesPerResponse(ring, maximum=N)
-            result = ring.getBridges(pos, returnNum)
-
-            db.setEmailTime(bridgeRequest.client, now)
-            db.commit()
-
-        return result
-
-    def __len__(self):
-        return len(self.hashring)
-
-    def cleanDatabase(self):
-        with bridgedb.Storage.getDB() as db:
-            try:
-                db.cleanEmailedBridges(time.time() - MAX_EMAIL_RATE)
-                db.cleanWarnedEmails(time.time() - MAX_EMAIL_RATE)
-            except:
-                db.rollback()
-                raise
-            else:
-                db.commit()
-
-    def dumpAssignments(self, f, description=""):
-        self.hashring.dumpAssignments(f, description)
-
-    def prepopulateRings(self):
-        # populate all rings (for dumping assignments and testing)
-        for filterFn in [filterBridgesByIP4, filterBridgesByIP6]:
-            ruleset = frozenset([filterFn])
-            key1 = getHMAC(self.key, "Order-Bridges-In-Ring")
-            ring = bridgedb.Bridges.BridgeRing(key1, self.answerParameters)
-            self.hashring.addRing(ring, ruleset,
-                                  filterBridgesByRules([filterFn]),
-                                  populate_from=self.hashring.bridges)

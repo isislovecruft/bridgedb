@@ -23,6 +23,10 @@ from Crypto.Util import asn1
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.number import long_to_bytes
 
+from zope.interface import implementer
+from zope.interface import Attribute
+from zope.interface import Interface
+
 import bridgedb.Storage
 
 from bridgedb import geo
@@ -78,6 +82,18 @@ class InvalidExtraInfoSignature(MalformedBridgeInfo):
     """Raised if the signature on an ``@type bridge-extrainfo`` is invalid."""
 
 
+class IBridge(Interface):
+    """I am a (mostly) stub interface whose primary purpose is merely to allow
+    other classes to signify whether or not they can be treated like a
+    :class:`Bridge`.
+    """
+    fingerprint = Attribute(
+        ("The lowercased, hexadecimal-encoded, hash digest of this Bridge's "
+         "public identity key."))
+    address = Attribute("This Bridge's primary public IP address.")
+    port = Attribute("The port which this Bridge is listening on.")
+
+
 class Flags(object):
     """All the flags which a :class:`Bridge` may have."""
 
@@ -122,6 +138,7 @@ class Flags(object):
         self.valid = 'Valid' in flags
 
 
+@implementer(IBridge)
 class BridgeAddressBase(object):
     """A base class for describing one of a :class:`Bridge`'s or a
     :class:`PluggableTransport`'s location, including its identity key
@@ -141,12 +158,17 @@ class BridgeAddressBase(object):
 
     :type country: str
     :ivar country: The two-letter GeoIP country code of the :ivar:`address`.
+
+    :type port: int
+    :ivar port: A integer specifying the port which this :class:`Bridge`
+        (or :class:`PluggableTransport`) is listening on.
     """
 
     def __init__(self):
         self._fingerprint = None
         self._address = None
         self._country = None
+        self._port = None
 
     @property
     def fingerprint(self):
@@ -242,7 +264,35 @@ class BridgeAddressBase(object):
         if self.address:
             return geo.getCountryCode(self.address)
 
+    @property
+    def port(self):
+        """Get the port number which this ``Bridge`` is listening
+        for incoming client connections on.
 
+        :rtype: int or None
+        :returns: The port (as an int), if it is known and valid; otherwise,
+            returns ``None``.
+        """
+        return self._port
+
+    @port.setter
+    def port(self, value):
+        """Store the port number which this ``Bridge`` is listening
+        for incoming client connections on.
+
+        :param int value: The transport's port.
+        """
+        if isinstance(value, int) and (0 <= value <= 65535):
+            self._port = value
+
+    @port.deleter
+    def port(self):
+        """Reset this ``Bridge``'s port to ``None``."""
+        self._port = None
+
+
+
+@implementer(IBridge)
 class PluggableTransport(BridgeAddressBase):
     """A single instance of a Pluggable Transport (PT) offered by a
     :class:`Bridge`.
@@ -314,16 +364,14 @@ class PluggableTransport(BridgeAddressBase):
             :data:`arguments`.
         """
         super(PluggableTransport, self).__init__()
-        self._port = None
         self._methodname = None
-        self._arguments = None
+        self._blockedIn = {}
 
         self.fingerprint = fingerprint
         self.address = address
         self.port = port
         self.methodname = methodname
         self.arguments = arguments
-        self._blockedIn = {}
 
         # Because we can intitialise this class with the __init__()
         # parameters, or use the ``updateFromStemTransport()`` method, we'll
@@ -439,30 +487,28 @@ class PluggableTransport(BridgeAddressBase):
         return False
 
     @property
-    def port(self):
-        """Get the port number which this ``PluggableTransport`` is listening
-        for incoming client connections on.
+    def methodname(self):
+        """Get this :class:`PluggableTransport`'s methodname.
 
-        :rtype: int or None
-        :returns: The port (as an int), if it is known and valid; otherwise,
-            returns ``None``.
+        :rtype: str
+        :returns: The (lowercased) methodname of this ``PluggableTransport``,
+            i.e. ``"obfs3"``, ``"scramblesuit"``, etc.
         """
-        return self._port
+        return self._methodname
 
-    @port.setter
-    def port(self, value):
-        """Store the port number which this ``PluggableTransport`` is listening
-        for incoming client connections on.
+    @methodname.setter
+    def methodname(self, value):
+        """Set this ``PluggableTransport``'s methodname.
 
-        :param int value: The transport's port.
+        .. hint:: The **value** will be automatically lowercased.
+
+        :param str value: The new methodname.
         """
-        if isinstance(value, int) and (0 <= value <= 65535):
-            self._port = value
-
-    @port.deleter
-    def port(self):
-        """Reset this ``PluggableTransport``'s port to ``None``."""
-        self._port = None
+        if value:
+            try:
+                self._methodname = value.lower()
+            except (AttributeError, TypeError):
+                raise TypeError("methodname must be a str or unicode")
 
     def getTransportLine(self, includeFingerprint=True, bridgePrefix=False):
         """Get a Bridge Line for this :class:`PluggableTransport`.
@@ -562,6 +608,7 @@ class PluggableTransport(BridgeAddressBase):
         self._runChecks()
 
 
+@implementer(IBridge)
 class BridgeBase(BridgeAddressBase):
     """The base class for all bridge implementations."""
 
@@ -609,7 +656,7 @@ class BridgeBase(BridgeAddressBase):
         :rtype: int
         :returns: This Bridge's default ORPort.
         """
-        return self._orPort
+        return self.port
 
     @orPort.setter
     def orPort(self, value):
@@ -617,15 +664,15 @@ class BridgeBase(BridgeAddressBase):
 
         :param int value: The Bridge's ORPort.
         """
-        if isinstance(value, int) and (0 <= value <= 65535):
-            self._orPort = value
+        self.port = value
 
     @orPort.deleter
     def orPort(self):
         """Reset this Bridge's ORPort."""
-        self._orPort = None
+        del self.port
 
 
+@implementer(IBridge)
 class BridgeBackwardsCompatibility(BridgeBase):
     """Backwards compatibility methods for the old Bridge class."""
 
@@ -762,7 +809,8 @@ class BridgeBackwardsCompatibility(BridgeBase):
             :data:`bridgerequest.BridgeRequestBase.client`.
         :param str transport: A pluggable transport method name.
         """
-        bridgeRequest = bridgerequest.BridgeRequestBase(addressClass)
+        ipVersion = 6 if addressClass is ipaddr.IPv6Address else 4
+        bridgeRequest = bridgerequest.BridgeRequestBase(ipVersion)
         bridgeRequest.client = request if request else bridgeRequest.client
         bridgeRequest.isValid(True)
 
@@ -814,6 +862,7 @@ class BridgeBackwardsCompatibility(BridgeBase):
             return db.getBridgeHistory(self.fingerprint).weightedUptime
 
 
+@implementer(IBridge)
 class Bridge(BridgeBackwardsCompatibility):
     """A single bridge, and all the information we have for it.
 
@@ -1064,7 +1113,7 @@ class Bridge(BridgeBackwardsCompatibility):
             type.
         """
         desired = bridgeRequest.justOnePTType()
-        addressClass = bridgeRequest.addressClass
+        ipVersion = bridgeRequest.ipVersion
 
         logging.info("Bridge %s answering request for %s transport..." %
                      (self, desired))
@@ -1073,14 +1122,12 @@ class Bridge(BridgeBackwardsCompatibility):
         # their ``methodname`` matches the requested transport:
         transports = filter(lambda pt: pt.methodname == desired, self.transports)
         # Filter again for whichever of IPv4 or IPv6 was requested:
-        transports = filter(lambda pt: isinstance(pt.address, addressClass),
-                            transports)
+        transports = filter(lambda pt: pt.address.version == ipVersion, transports)
 
         if not transports:
             raise PluggableTransportUnavailable(
                 ("Client requested transport %s, but bridge %s doesn't "
                 "have any of that transport!") % (desired, self))
-
 
         unblocked = []
         for pt in transports:
@@ -1114,13 +1161,13 @@ class Bridge(BridgeBackwardsCompatibility):
         """
         logging.info(
             "Bridge %s answering request for IPv%s vanilla address..." %
-            (self, "6" if bridgeRequest.addressClass is ipaddr.IPv6Address else "4"))
+            (self, bridgeRequest.ipVersion))
 
         addresses = []
 
         for address, port, version in self.allVanillaAddresses:
             # Filter ``allVanillaAddresses`` by whether IPv4 or IPv6 was requested:
-            if isinstance(address, bridgeRequest.addressClass):
+            if version == bridgeRequest.ipVersion:
                 # Determine if the address is blocked in any of the country
                 # codes.  Because :meth:`addressIsBlockedIn` returns a bool,
                 # we get a list like: ``[True, False, False, True]``, and
@@ -1317,7 +1364,7 @@ class Bridge(BridgeBackwardsCompatibility):
             **countryCode**, ``False`` otherwise.
         """
         for pt in self.transports:
-            if pt.methodname.lower() == methodname.lower():
+            if pt.methodname == methodname.lower():
                 if self.addressIsBlockedIn(countryCode, pt.address, pt.port):
                     logging.info("Transport %s of bridge %s is blocked in %s."
                                  % (pt.methodname, self, countryCode))

@@ -30,12 +30,13 @@ from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
+from bridgedb.email.distributor import EmailDistributor
+from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 
 import bridgedb.Storage
 
 from bridgedb import Bridges
-from bridgedb import Dist
 from bridgedb.Stability import updateBridgeHistory
 
 
@@ -47,7 +48,7 @@ def load(state, hashring, clear=False):
     store them into our ``state.hashring`` instance. The ``state`` will be
     saved again at the end of this function.
 
-    :type hashring: :class:`BridgeSplitter <bridgedb.Bridges.BridgeHolder>`
+    :type hashring: :class:`~bridgedb.Bridges.BridgeSplitter`
     :param hashring: A class which provides a mechanism for HMACing
         Bridges in order to assign them to hashrings.
     :param boolean clear: If True, clear all previous bridges from the
@@ -186,16 +187,17 @@ def createBridgeRings(cfg, proxyList, key):
     """Create the bridge distributors defined by the config file
 
     :type cfg:  :class:`Conf`
-    :param cfg: The current configuration, including any in-memory
-                settings (i.e. settings whose values were not obtained from the
-                config file, but were set via a function somewhere)
+    :param cfg: The current configuration, including any in-memory settings
+        (i.e. settings whose values were not obtained from the config file,
+        but were set via a function somewhere)
     :type proxyList: :class:`~bridgedb.proxy.ProxySet`
     :param proxyList: The container for the IP addresses of any currently
-                      known open proxies.
+        known open proxies.
     :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter hashring, an HTTPSDistributor or None,
-              and an EmailBasedDistributor or None.
+    :returns: A BridgeSplitter hashring, an
+        :class:`~bridgedb.https.distributor.HTTPSDistributor` or None, and an
+        :class:`~bridgedb.email.distributor.EmailDistributor` or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -210,23 +212,23 @@ def createBridgeRings(cfg, proxyList, key):
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
-        ipDistributor = Dist.HTTPSDistributor(
+        ipDistributor = HTTPSDistributor(
             cfg.N_IP_CLUSTERS,
             crypto.getHMAC(key, "HTTPS-IP-Dist-Key"),
             proxyList,
             answerParameters=ringParams)
-        hashring.addRing(ipDistributor, "https", cfg.HTTPS_SHARE)
+        hashring.addRing(ipDistributor.hashring, "https", cfg.HTTPS_SHARE)
 
     # As appropriate, create an email-based distributor.
     if cfg.EMAIL_DIST and cfg.EMAIL_SHARE:
         logging.debug("Setting up Email Distributor...")
-        emailDistributor = Dist.EmailBasedDistributor(
+        emailDistributor = EmailDistributor(
             crypto.getHMAC(key, "Email-Dist-Key"),
             cfg.EMAIL_DOMAIN_MAP.copy(),
             cfg.EMAIL_DOMAIN_RULES.copy(),
             answerParameters=ringParams,
             whitelist=cfg.EMAIL_WHITELIST.copy())
-        hashring.addRing(emailDistributor, "email", cfg.EMAIL_SHARE)
+        hashring.addRing(emailDistributor.hashring, "email", cfg.EMAIL_SHARE)
 
     # As appropriate, tell the hashring to leave some bridges unallocated.
     if cfg.RESERVED_SHARE:
@@ -323,14 +325,16 @@ def run(options, reactor=reactor):
         :ivar cfg: The current configuration, including any in-memory
             settings (i.e. settings whose values were not obtained from the
             config file, but were set via a function somewhere)
-        :type hashring: A :class:`bridgedb.Bridges.BridgeHolder`
+        :type hashring: A :class:`~bridgedb.Bridges.BridgeSplitter`
         :ivar hashring: A class which takes an HMAC key and splits bridges
             into their hashring assignments.
         :type proxyList: :class:`~bridgedb.proxy.ProxySet`
         :ivar proxyList: The container for the IP addresses of any currently
-             known open proxies.
-        :ivar ipDistributor: A :class:`Dist.HTTPSDistributor`.
-        :ivar emailDistributor: A :class:`Dist.EmailBasedDistributor`.
+            known open proxies.
+        :ivar ipDistributor: A
+            :class:`~bridgedb.https.distributor.HTTPSDistributor`.
+        :ivar emailDistributor: A
+            :class:`~bridgedb.email.distributor.EmailDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
             scheduled event, repetitive or otherwise, for the :class:`reactor

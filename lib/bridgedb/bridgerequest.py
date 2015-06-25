@@ -11,25 +11,26 @@
 #_____________________________________________________________________________
 
 
-import logging
-
 import ipaddr
+import logging
 
 from zope.interface import implements
 from zope.interface import Attribute
 from zope.interface import Interface
 
-from bridgedb import Filters
 from bridgedb.crypto import getHMACFunc
+from bridgedb.filters import byIPv
+from bridgedb.filters import byNotBlockedIn
+from bridgedb.filters import byTransport
 
 
 class IRequestBridges(Interface):
     """Interface specification of client options for requested bridges."""
 
-    addressClass = Attribute(
-        "The IP version of bridge addresses to distribute to the client.")
     filters = Attribute(
         "A list of callables used to filter bridges from a hashring.")
+    ipVersion = Attribute(
+        "The IP version of bridge addresses to distribute to the client.")
     transports = Attribute(
         "A list of strings of Pluggable Transport types requested.")
     notBlockedIn = Attribute(
@@ -53,7 +54,7 @@ class IRequestBridges(Interface):
     def generateFilters():
         """Build the list of callables, ``filters``, according to the current
         contents of the lists of ``transports``, ``notBlockedIn``, and the
-        ``addressClass``.
+        ``ipVersion``.
         """
 
     def getHashringPlacement():
@@ -67,10 +68,10 @@ class IRequestBridges(Interface):
         """Determine if the request is ``valid`` according to some parameters."""
 
     def withIPv4():
-        """Set the ``addressClass`` to IPv4."""
+        """Set the ``ipVersion`` to IPv4."""
 
     def withIPv6():
-        """Set the ``addressClass`` to IPv6."""
+        """Set the ``ipVersion`` to IPv6."""
 
     def withPluggableTransportType(typeOfPT):
         """Add this **typeOfPT** to the list of requested ``transports``."""
@@ -86,13 +87,8 @@ class BridgeRequestBase(object):
 
     implements(IRequestBridges)
 
-    def __init__(self, addressClass=None):
-        #: (:class:`ipaddr.IPv4Address` or :class:`ipaddr.IPv6Address`) The IP
-        #: version of bridge addresses to distribute to the client.
-        self.addressClass = addressClass
-        if not ((self.addressClass is ipaddr.IPv4Address) or
-                (self.addressClass is ipaddr.IPv6Address)):
-            self.addressClass = ipaddr.IPv4Address
+    def __init__(self, ipVersion=None):
+        self.ipVersion = ipVersion
         #: (list) A list of callables used to filter bridges from a hashring.
         self.filters = list()
         #: (list) A list of strings of Pluggable Transport types requested.
@@ -108,6 +104,26 @@ class BridgeRequestBase(object):
         self.client = 'default'
         #: (bool) Should be ``True`` if the client's request was valid.
         self.valid = False
+
+    @property
+    def ipVersion(self):
+        """The IP version of bridge addresses to distribute to the client.
+
+        :rtype: int
+        :returns: Either ``4`` or ``6``.
+        """
+        return self._ipVersion
+
+    @ipVersion.setter
+    def ipVersion(self, ipVersion):
+        """The IP version of bridge addresses to distribute to the client.
+
+        :param int ipVersion: The IP address version for the bridge lines we
+            should distribute in response to this client request.
+        """
+        if not ipVersion in (4, 6):
+            ipVersion = 4
+        self._ipVersion = ipVersion
 
     def getHashringPlacement(self, key, client=None):
         """Create an HMAC of some **client** info using a **key**.
@@ -144,10 +160,10 @@ class BridgeRequestBase(object):
         return self.valid
 
     def withIPv4(self):
-        self.addressClass = ipaddr.IPv4Address
+        self.ipVersion = 4
 
     def withIPv6(self):
-        self.addressClass = ipaddr.IPv6Address
+        self.ipVersion = 6
 
     def withoutBlockInCountry(self, country):
         self.notBlockedIn.append(country.lower())
@@ -171,15 +187,20 @@ class BridgeRequestBase(object):
         return ptType
 
     def generateFilters(self):
-        if self.addressClass is ipaddr.IPv6Address:
-            self.addFilter(Filters.filterBridgesByIP6)
-        else:
-            self.addFilter(Filters.filterBridgesByIP4)
+        self.clearFilters()
 
-        transport = self.justOnePTType()
-        if transport:
-            self.clearFilters()
-            self.addFilter(Filters.filterBridgesByTransport(transport,
-                                                            self.addressClass))
-        for country in self.notBlockedIn:
-            self.addFilter(Filters.filterBridgesByNotBlockedIn(country.lower()))
+        pt = self.justOnePTType()
+        msg = ("Adding a filter to %s for %s for IPv%d"
+               % (self.__class__.__name__, self.client, self.ipVersion))
+
+        if self.notBlockedIn:
+            for country in self.notBlockedIn:
+                logging.info("%s %s bridges not blocked in %s..." %
+                             (msg, pt or "vanilla", country))
+                self.addFilter(byNotBlockedIn(country, pt, self.ipVersion))
+        elif pt:
+            logging.info("%s %s bridges..." % (msg, pt))
+            self.addFilter(byTransport(pt, self.ipVersion))
+        else:
+            logging.info("%s bridges..." % msg)
+            self.addFilter(byIPv(self.ipVersion))

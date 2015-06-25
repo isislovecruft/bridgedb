@@ -47,10 +47,6 @@ from bridgedb import crypto
 from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport
-from bridgedb.Filters import filterBridgesByNotBlockedIn
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
@@ -819,7 +815,7 @@ def addWebServer(config, distributor):
              GIMP_CAPTCHA_DIR
              GIMP_CAPTCHA_HMAC_KEYFILE
              GIMP_CAPTCHA_RSA_KEYFILE
-    :type distributor: :class:`bridgedb.Dist.HTTPSDistributor`
+    :type distributor: :class:`bridgedb.https.distributor.HTTPSDistributor`
     :param distributor: A bridge distributor.
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`

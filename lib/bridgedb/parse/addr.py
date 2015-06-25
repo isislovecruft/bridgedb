@@ -217,7 +217,7 @@ def canonicalizeEmailDomain(domain, domainmap):
     :param str domain: The domain portion of an email address to validate. It
         will be checked that it is one of the domains allowed to email
         requests for bridges to the
-        :class:`~bridgedb.Dist.EmailBasedDistributor`.
+        :class:`~bridgedb.email.distributor.EmailDistributor`.
     :param dict domainmap: A map of permitted alternate domains (in lowercase)
         to their canonical domain names (in lowercase). This can be configured
         with the ``EMAIL_DOMAIN_MAP`` option in ``bridgedb.conf``, for
@@ -318,7 +318,7 @@ def isIPAddress(ip, compressed=True):
                 return ip
     return False
 
-def _isIPv(version, ip):
+def isIPv(version, ip):
     """Check if **ip** is a certain **version** (IPv4 or IPv6).
 
     .. warning: Do *not* put any calls to the logging module in this function,
@@ -352,7 +352,7 @@ def isIPv4(ip):
     :rtype: boolean
     :returns: True if the address is an IPv4 address.
     """
-    return _isIPv(4, ip)
+    return isIPv(4, ip)
 
 def isIPv6(ip):
     """Check if an address is IPv6.
@@ -364,7 +364,7 @@ def isIPv6(ip):
     :rtype: boolean
     :returns: True if the address is an IPv6 address.
     """
-    return _isIPv(6, ip)
+    return isIPv(6, ip)
 
 def isValidIP(ip):
     """Check that an IP (v4 or v6) is valid.
@@ -441,8 +441,9 @@ def normalizeEmail(emailaddr, domainmap, domainrules, ignorePlus=True):
 
     The email address, **emailaddr**, will be parsed and validated, and then
     checked that it originated from one of the domains allowed to email
-    requests for bridges to the :class:`~bridgedb.Dist.EmailBasedDistributor`
-    via the :func:`canonicaliseEmailDomain` function.
+    requests for bridges to the
+    :class:`~bridgedb.email.distributor.EmailDistributor` via the
+    :func:`canonicaliseEmailDomain` function.
 
     :param str emailaddr: An email address to normalise.
     :param dict domainmap: A map of permitted alternate domains (in lowercase)

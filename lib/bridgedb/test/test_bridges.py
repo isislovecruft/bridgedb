@@ -659,11 +659,11 @@ class PluggableTransportTests(unittest.TestCase):
         bridgeLine = pt.getTransportLine()
 
         # We have to check for substrings because we don't know which order
-        # the PT arguments will end up in the bridge line.  Fortunately, the
-        # following three are the only ones which are important to have in
-        # order:
-        self.assertTrue(bridgeLine.startswith("voltronPT"))
-        self.assertSubstring("voltronPT 1.2.3.4:443 " + self.fingerprint,
+        # the PT arguments will end up in the bridge line.  We also have to
+        # check for the lowercased transport name.  Fortunately, the following
+        # three are the only ones which are important to have in order:
+        self.assertTrue(bridgeLine.startswith("voltronpt"))
+        self.assertSubstring("voltronpt 1.2.3.4:443 " + self.fingerprint,
                              bridgeLine)
         # These ones can be in any order, but they should be at the end of the
         # bridge line:

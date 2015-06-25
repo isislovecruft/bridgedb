@@ -19,19 +19,16 @@ from datetime import datetime
 
 import bridgedb.Bridges
 import bridgedb.Main
-import bridgedb.Dist
 import bridgedb.schedule
 import bridgedb.Storage
 import re
 import ipaddr
 
-from bridgedb.Filters import filterBridgesByIP4
-from bridgedb.Filters import filterBridgesByIP6
-from bridgedb.Filters import filterBridgesByTransport
-from bridgedb.Filters import filterBridgesByNotBlockedIn
-
 from bridgedb.Stability import BridgeHistory
 
+from bridgedb.email.distributor import EmailDistributor
+from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.email.distributor import TooSoonEmail
 from bridgedb.parse import addr
 from bridgedb.test.util import bracketIPv6
 from bridgedb.test.util import randomIP
@@ -40,15 +37,13 @@ from bridgedb.test.util import randomIPv6
 from bridgedb.test.util import randomIPString
 from bridgedb.test.util import randomIPv4String
 from bridgedb.test.util import randomIPv6String
+from bridgedb.test.util import randomPort
+from bridgedb.test.util import randomValidIPv6
 
 from math import log
 
+warnings.filterwarnings('ignore', '.*tmpnam.*')
 
-def suppressWarnings():
-    warnings.filterwarnings('ignore', '.*tmpnam.*')
-
-def randomPort():
-    return random.randint(1,65535)
 
 def randomPortSpec():
     """
@@ -62,8 +57,8 @@ def randomPortSpec():
 
 def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
-    nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIPv4())
+    ip = randomIPv4()
+    nn = "bridge-%s" % int(ip)
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -71,21 +66,7 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
     oraddrs = []
     if or_addresses:
         for i in xrange(8):
-            # Only add or_addresses if they are valid. Otherwise, the test
-            # will randomly fail if an invalid address is chosen:
-            address = randomIPv4String()
-            portlist = addr.PortList(randomPortSpec())
-            if addr.isValidIP(address):
-                oraddrs.append((address, portlist,))
-
-    for address, portlist in oraddrs:
-        networkstatus.parseALine("{0}:{1}".format(address, portlist))
-        try:
-            portlist.add(b.or_addresses[address])
-        except KeyError:
-            pass
-        finally:
-            b.or_addresses[address] = portlist
+            b.orAddresses.append((randomValidIPv6(), randomPort(), 6))
 
     if transports:
         for i in xrange(0,8):
@@ -96,8 +77,8 @@ def fakeBridge(orport=8080, running=True, stable=True, or_addresses=False,
 
 def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
         transports=False):
-    nn = "bridge-%s"%random.randrange(0,1000000)
-    ip = ipaddr.IPAddress(randomIPv6())
+    ip = randomIPv6()
+    nn = "bridge-%s" % int(ip)
     fp = "".join([random.choice("0123456789ABCDEF") for _ in xrange(40)])
     b = bridgedb.Bridges.Bridge(nn,ip,orport,fingerprint=fp)
     b.setStatus(running, stable)
@@ -105,267 +86,15 @@ def fakeBridge6(orport=8080, running=True, stable=True, or_addresses=False,
     oraddrs = []
     if or_addresses:
         for i in xrange(8):
-            # Only add or_addresses if they are valid. Otherwise, the test
-            # will randomly fail if an invalid address is chosen:
-            address = randomIPv6()
-            portlist = addr.PortList(randomPortSpec())
-            if addr.isValidIP(address):
-                address = bracketIPv6(address)
-                oraddrs.append((address, portlist,))
-
-    for address, portlist in oraddrs:
-        networkstatus.parseALine("{0}:{1}".format(address, portlist))
-        try:
-            portlist.add(b.or_addresses[address])
-        except KeyError:
-            pass
-        finally:
-            b.or_addresses[address] = portlist
-
-            try:
-                portlist.add(b.or_addresses[address])
-            except KeyError:
-                pass
-            finally:
-                b.or_addresses[address] = portlist
+            b.orAddresses.append((randomValidIPv6(), randomPort(), 6))
 
     if transports:
         for i in xrange(0,8):
             b.transports.append(bridgedb.Bridges.PluggableTransport(b,
                 random.choice(["obfs", "obfs2", "pt1"]),
                 randomIP(), randomPort()))
-
     return b
 
-simpleDesc = "router Unnamed %s %s 0 9030\n"\
-"opt fingerprint DEAD BEEF F00F DEAD BEEF F00F DEAD BEEF F00F DEAD\n"\
-"opt @purpose bridge\n"
-orAddress = "or-address %s:%s\n"
-
-
-class RhymesWith255ProxySet:
-    def __contains__(self, ip):
-        return ip.endswith(".255")
-
-class EmailBridgeDistTests(unittest.TestCase):
-    def setUp(self):
-        self.fd, self.fname = tempfile.mkstemp()
-        self.db = bridgedb.Storage.Database(self.fname)
-        bridgedb.Storage.setDB(self.db)
-        self.cur = self.db._conn.cursor()
-
-    def tearDown(self):
-        self.db.close()
-        os.close(self.fd)
-        os.unlink(self.fname)
-
-    def testEmailRateLimit(self):
-        db = self.db
-        EMAIL_DOMAIN_MAP = {'example.com':'example.com'}
-        d = bridgedb.Dist.EmailBasedDistributor(
-                "Foo",
-                {'example.com': 'example.com',
-                    'dkim.example.com': 'dkim.example.com'},
-                {'example.com': [], 'dkim.example.com': ['dkim']})
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-        d.getBridges('abc@example.com', 1, 3)
-        self.assertRaises(bridgedb.Dist.TooSoonEmail,
-                d.getBridges, 'abc@example.com', 1, 3)
-        self.assertRaises(bridgedb.Dist.IgnoreEmail,
-                d.getBridges, 'abc@example.com', 1, 3)
-
-    def testUnsupportedDomain(self):
-        db = self.db
-        self.assertRaises(bridgedb.parse.addr.UnsupportedDomain,
-                          bridgedb.parse.addr.normalizeEmail,
-                          'bad@email.com',
-                          {'example.com':'example.com'},
-                          {'example.com':[]})
-
-class IPBridgeDistTests(unittest.TestCase):
-    def dumbAreaMapper(self, ip):
-        return ip
-    def testBasicDist(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-        n = d.getBridges("1.2.3.4", "x", 2)
-        n2 = d.getBridges("1.2.3.4", "x", 2)
-        self.assertEquals(n, n2)
-
-    def testDistWithProxies(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo",
-                                             [RhymesWith255ProxySet()])
-        for _ in xrange(256):
-            d.insert(fakeBridge())
-
-        for _ in xrange(256):
-            # Make sure that the ProxySets do not overlap
-            f = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(4)])
-            g = lambda: ".".join([str(random.randrange(1,255)) for _ in xrange(3)] + ['255'])
-            n = d.getBridges(g(), "x", 10)
-            n2 = d.getBridges(f(), "x", 10)
-
-            assert(len(n) > 0)
-            assert(len(n2) > 0)
-
-            for b in n:
-                assert (b not in n2)
-
-            for b in n2:
-                assert (b not in n)
-
-    #XXX: #6175 breaks this test!
-    #def testDistWithPortRestrictions(self):
-    #    param = bridgedb.Bridges.BridgeRingParameters(needPorts=[(443, 1)])
-    #    d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Baz",
-    #                                       answerParameters=param)
-    #    for _ in xrange(32):
-    #        d.insert(fakeBridge(443))
-    #    for _ in range(256):
-    #        d.insert(fakeBridge())
-    #    for _ in xrange(32):
-    #        i = randomIP()
-    #        n = d.getBridges(i, "x", 5)
-    #        count = 0
-    #        fps = {}
-    #        for b in n:
-    #            fps[b.getID()] = 1
-    #            if b.orport == 443:
-    #                count += 1
-    #        self.assertEquals(len(fps), len(n))
-    #        self.assertEquals(len(fps), 5)
-    #        self.assertTrue(count >= 1)
-
-    def testDistWithFilterIP6(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(500):
-            bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp",
-                                        bridgeFilterRules=[filterBridgesByIP6])
-            bridge = random.choice(bridges)
-            bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv6Address)
-            address, portlist = networkstatus.parseALine(bridge_line)
-            assert type(ipaddr.IPAddress(address)) is ipaddr.IPv6Address
-            assert filterBridgesByIP6(random.choice(bridges))
-
-    def testDistWithFilterIP4(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(500):
-            bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp",
-                                        bridgeFilterRules=[filterBridgesByIP4])
-            bridge = random.choice(bridges)
-            bridge_line = bridge.getConfigLine(addressClass=ipaddr.IPv4Address)
-            address, portlist = networkstatus.parseALine(bridge_line)
-            assert type(ipaddr.IPAddress(address)) is ipaddr.IPv4Address
-            assert filterBridgesByIP4(random.choice(bridges))
-
-    def testDistWithFilterBoth(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(50):
-            bridges = d.getBridges(randomIPv4String(),
-                                        "faketimestamp", 1,
-                                        bridgeFilterRules=[
-                                            filterBridgesByIP4,
-                                            filterBridgesByIP6])
-            if bridges:
-                t = bridges.pop()
-                assert filterBridgesByIP4(t)
-                assert filterBridgesByIP6(t)
-                address, portlist = networkstatus.parseALine(
-                    t.getConfigLine(addressClass=ipaddr.IPv4Address))
-                assert type(address) is ipaddr.IPv4Address
-                address, portlist = networkstatus.parseALine(
-                    t.getConfigLine(addressClass=ipaddr.IPv6Address))
-                assert type(address) is ipaddr.IPv6Address
-
-
-    def testDistWithFilterAll(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
-                filterBridgesByIP4, filterBridgesByIP6])
-            assert len(b) == 0
-
-    def testDistWithFilterBlockedCountries(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True))
-            d.insert(fakeBridge(or_addresses=True))
-
-        for b in d.hashring.bridges:
-            # china blocks all :-(
-            for pt in b.transports:
-                key = "%s:%s" % (pt.address, pt.port)
-                b.blockingCountries[key] = set(['cn'])
-            for address, portlist in b.or_addresses.items():
-                for port in portlist:
-                    key = "%s:%s" % (address, port)
-                    b.blockingCountries[key] = set(['cn'])
-            key = "%s:%s" % (b.ip, b.orport)
-            b.blockingCountries[key] = set(['cn'])
-
-        for i in xrange(5):
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("cn")])
-            assert len(b) == 0
-            b = d.getBridges(randomIPv4String(), "x", 1, bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("us")])
-            assert len(b) > 0
-
-    def testDistWithFilterBlockedCountriesAdvanced(self):
-        d = bridgedb.Dist.HTTPSDistributor(self.dumbAreaMapper, 3, "Foo")
-        for _ in xrange(250):
-            d.insert(fakeBridge6(or_addresses=True, transports=True))
-            d.insert(fakeBridge(or_addresses=True, transports=True))
-
-        for b in d.hashring.bridges:
-            # china blocks some transports
-            for pt in b.transports:
-                if random.choice(xrange(2)) > 0:
-                    key = "%s:%s" % (pt.address, pt.port)
-                    b.blockingCountries[key] = set(['cn'])
-            for address, portlist in b.or_addresses.items():
-                # china blocks some transports
-                for port in portlist:
-                    if random.choice(xrange(2)) > 0:
-                        key = "%s:%s" % (address, port)
-                        b.blockingCountries[key] = set(['cn'])
-            key = "%s:%s" % (b.ip, b.orport)
-            b.blockingCountries[key] = set(['cn'])
-
-        # we probably will get at least one bridge back!
-        # it's pretty unlikely to lose a coin flip 250 times in a row
-        for i in xrange(5):
-            b = d.getBridges(randomIPString(), "x", 1,
-                    bridgeFilterRules=[
-                        filterBridgesByNotBlockedIn("cn"),
-                        filterBridgesByTransport('obfs2'),
-                        ])
-            try: assert len(b) > 0
-            except AssertionError:
-                print("epic fail")
-            b = d.getBridges(randomIPString(), "x", 1, bridgeFilterRules=[
-                filterBridgesByNotBlockedIn("us")])
-            assert len(b) > 0
 
 
 class SQLStorageTests(unittest.TestCase):
@@ -595,13 +324,9 @@ class BridgeStabilityTests(unittest.TestCase):
 def testSuite():
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
-
-    for klass in [IPBridgeDistTests, SQLStorageTests, EmailBridgeDistTests,
-                  BridgeStabilityTests]:
+    for klass in [SQLStorageTests, BridgeStabilityTests]:
         suite.addTest(loader.loadTestsFromTestCase(klass))
     return suite
 
 def main():
-    suppressWarnings()
-
     unittest.TextTestRunner(verbosity=1).run(testSuite())

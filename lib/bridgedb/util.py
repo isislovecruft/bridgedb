@@ -19,6 +19,8 @@ import logging.config
 import logging.handlers
 import os
 
+from twisted.python import components
+
 
 def _getLogHandlers(logToFile=True, logToStderr=True):
     """Get the appropriate list of log handlers.
@@ -244,6 +246,20 @@ def replaceControlChars(text, replacement=None, encoding="utf-8"):
         escaped += bytearray([byte])
 
     return str(escaped)
+
+def registerAdapter(adapter, adapted, interface):
+    """Register a Zope interface adapter for global use.
+
+    See :api:`twisted.python.components.registerAdapter` and the Twisted
+    Matrix Labs `howto documentation for components`_.
+
+    .. howto documentation for components:
+        https://twistedmatrix.com/documents/current/core/howto/components.html
+    """
+    try:
+        components.registerAdapter(adapter, adapted, interface)
+    except ValueError:  # An adapter class was already registered
+        pass
 
 
 class JustifiedLogFormatter(logging.Formatter):
