@@ -81,9 +81,9 @@ run/*
 *blocked-bridges
 *extra-infos
 
-# do not recommit lib/bridgedb/_langs.py:
+# do not recommit bridgedb/_langs.py:
 # (the "supported" variable is supposed to be rewritten at install time)
-lib/bridgedb/_langs.py
+bridgedb/_langs.py
 
 # ignore persistent state files
 *bridgedb.state*
