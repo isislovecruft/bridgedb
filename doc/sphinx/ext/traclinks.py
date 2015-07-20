@@ -3,13 +3,14 @@ RestructuredText interpreted text role that looks like this::
 
     :trac:`trac_link_text`
 
-for example::
+For example::
 
-    :trac:`#2015`
+    :trac:`2015`
 
-creates a link to ticket number 2015.
+would create a link to ticket number #2015 (e.g. the link URI would be
+https://bugs.torproject.org/2015).
 
-adapted from recipe here_.
+Adapted from recipe here_.
 
 .. _here: http://stackoverflow.com/a/2111327/13564
 """
