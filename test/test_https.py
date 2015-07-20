@@ -150,6 +150,28 @@ class HTTPTests(unittest.TestCase):
                                   % (fieldsPerBridge, bridge))
         return bridges
 
+    def test_content_security_policy(self):
+        """Check that the HTTP Content-Security-Policy header is set."""
+        if os.environ.get("CI"):
+            if not self.pid or not processExists(self.pid):
+                raise FailTest("Could not start BridgeDB process on CI server!")
+        else:
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
+
+        self.br = mechanize.Browser()
+        self.br.set_handle_robots(False)
+        self.br.set_debug_http(True)
+        self.br.open(HTTP_ROOT)
+
+        headers = ''.join(self.br.response().info().headers)
+
+        self.assertIn("Content-Security-Policy", headers)
+        self.assertIn("default-src 'none';", headers)
+
     def test_get_obfs2_ipv4(self):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):

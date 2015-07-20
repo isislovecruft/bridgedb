@@ -120,7 +120,8 @@ def loadConfig(configFile=None, configCls=None):
         setting = getattr(config, attr, None) # Default to None
         setattr(config, attr, setting)
 
-    for attr in ["IGNORE_NETWORKSTATUS"]:
+    for attr in ["IGNORE_NETWORKSTATUS", "CSP_ENABLED", "CSP_REPORT_ONLY",
+                 "CSP_INCLUDE_SELF"]:
         setting = getattr(config, attr, True) # Default to True
         setattr(config, attr, setting)
 

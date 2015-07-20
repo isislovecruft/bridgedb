@@ -42,6 +42,9 @@ GIMP_CAPTCHA_ENABLED = True
 GIMP_CAPTCHA_DIR = 'captchas'
 GIMP_CAPTCHA_HMAC_KEYFILE = 'captcha_hmac_key'
 GIMP_CAPTCHA_RSA_KEYFILE = 'captcha_rsa_key'
+CSP_ENABLED = True
+CSP_REPORT_ONLY = True
+CSP_INCLUDE_SELF = True
 
 TEST_CONFIG_FILE = io.StringIO(unicode("""\
 SERVER_PUBLIC_FQDN = %r
@@ -66,6 +69,9 @@ GIMP_CAPTCHA_ENABLED = %r
 GIMP_CAPTCHA_DIR = %r
 GIMP_CAPTCHA_HMAC_KEYFILE = %r
 GIMP_CAPTCHA_RSA_KEYFILE = %r
+CSP_ENABLED = %r
+CSP_REPORT_ONLY = %r
+CSP_INCLUDE_SELF = %r
 """ % (SERVER_PUBLIC_FQDN,
        SERVER_PUBLIC_EXTERNAL_IP,
        HTTPS_DIST,
@@ -87,7 +93,10 @@ GIMP_CAPTCHA_RSA_KEYFILE = %r
        GIMP_CAPTCHA_ENABLED,
        GIMP_CAPTCHA_DIR,
        GIMP_CAPTCHA_HMAC_KEYFILE,
-       GIMP_CAPTCHA_RSA_KEYFILE)))
+       GIMP_CAPTCHA_RSA_KEYFILE,
+       CSP_ENABLED,
+       CSP_REPORT_ONLY,
+       CSP_INCLUDE_SELF)))
 
 
 def _createConfig(configFile=TEST_CONFIG_FILE):
@@ -119,6 +128,27 @@ class DummyRequest(requesthelper.DummyRequest):
     def __init__(self, *args, **kwargs):
         requesthelper.DummyRequest.__init__(self, *args, **kwargs)
         self.redirect = self._redirect(self)
+        self.content = io.StringIO()
+
+    def writeContent(self, data):
+        """Add some **data** to the faked body of this request.
+
+        This is useful when testing how servers handle content from POST
+        requests.
+
+        .. warn: Calling this method multiple times will overwrite any data
+            previously written.
+
+        :param str data: Some data to put in the "body" (i.e. the
+            :attr:`content`) of this request.
+        """
+        try:
+            self.content.write(type(u'')(data))
+        except UnicodeDecodeError:
+            self.content.write(type(u'')(data, 'utf-8'))
+        finally:
+            self.content.flush()
+            self.content.seek(0)
 
     def URLPath(self):
         """Fake the missing Request.URLPath too."""
