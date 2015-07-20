@@ -403,6 +403,25 @@ class FlagsTests(unittest.TestCase):
         self.assertFalse(self.flags.fast)
         self.assertTrue(self.flags.stable)
 
+    def test_update_HSDir(self):
+        """Test adding the HSDir flag with the update() method.
+
+        See also: :trac:`16616`.
+        """
+        self.flags.update(["Fast", "Stable", "HSDir"])
+        self.assertTrue(self.flags.fast)
+        self.assertTrue(self.flags.stable)
+        # We don't care about the HSDir flag:
+        self.assertIsNone(getattr(self.flags, "hsdir", None))
+
+    def test_update_Unicorn(self):
+        """Test adding a completely made-up flag, "Unicorn", with the update()
+        method.  (It shouldn't get added.)
+        """
+        self.flags.update(["Unicorn"])
+        # We don't care about the make-believe Unicorn flag:
+        self.assertIsNone(getattr(self.flags, "unicorn", None))
+
 
 class BridgeAddressBaseTests(unittest.TestCase):
     """Tests for :class:`bridgedb.bridges.BridgeAddressBase`."""
