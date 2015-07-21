@@ -94,8 +94,8 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
 
     See :trac:`12254` for why networkstatus-bridges documents don't look
     anything like the networkstatus v2 documents that they are purported to
-    look like. They are missing all headers, and the entire footer including
-    authority signatures.
+    look like. They are missing all headers, and the entire footer (including
+    authority signatures).
 
     :param str filename: The location of the file containing bridge
         networkstatus descriptors.
@@ -105,8 +105,10 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
     :param bool skipAnnotations: If ``True``, skip parsing everything before the
         first ``r`` line.
     :param descriptorClass: A class (probably from
-        :api:`stem.descriptors.router_status_entry`) which Stem will parse
-        each descriptor it reads from **filename** into.
+        :mod:`stem.descriptors.router_status_entry`, i.e.
+        :class:`stem.descriptor.router_status_entry.RouterStatusEntryV2` or
+        :class:`stem.descriptor.router_status_entry.RouterStatusEntryV3`)
+        which Stem will parse each descriptor it reads from **filename** into.
     :raises InvalidRouterNickname: if one of the routers in the networkstatus
         file had a nickname which does not conform to Tor's nickname
         specification.
@@ -115,7 +117,7 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
     :raises IOError: if the file at **filename** can't be read.
     :rtype: list
     :returns: A list of
-        :api:`stem.descriptor.router_status_entry.RouterStatusEntryV`s.
+        :class:`stem.descriptor.router_status_entry.RouterStatusEntry`.
     """
     routers = []
 
@@ -142,24 +144,19 @@ def parseNetworkStatusFile(filename, validate=True, skipAnnotations=True,
     return routers
 
 def parseServerDescriptorsFile(filename, validate=True):
-    """Parse a file which contains ``@type bridge-server-descriptor``s.
-
-    .. note:: ``validate`` defaults to ``False`` because there appears to be a
-        bug in Leekspin, the fake descriptor generator, where Stem thinks the
-        fingerprint doesn't match the key…
+    """Open and parse **filename**, which should contain
+    ``@type bridge-server-descriptor``.
 
     .. note:: We have to lie to Stem, pretending that these are
-        ``@type server-descriptor``s, **not**
-        ``@type bridge-server-descriptor``s. See ticket #`11257`_.
-
-    .. _`11257`: https://bugs.torproject.org/11257
+        ``@type server-descriptor``, **not**
+        ``@type bridge-server-descriptor``. See :trac:`11257`.
 
     :param str filename: The file to parse descriptors from.
     :param bool validate: Whether or not to validate descriptor
-        contents. (default: ``False``)
+        contents. (default: ``True``)
     :rtype: list
     :returns: A list of
-        :api:`stem.descriptor.server_descriptor.RelayDescriptor`s.
+        :class:`stem.descriptor.server_descriptor.RelayDescriptor`s.
     """
     logging.info("Parsing server descriptors with Stem: %s" % filename)
     descriptorType = 'server-descriptor 1.0'
@@ -198,9 +195,9 @@ def deduplicate(descriptors, statistics=False):
         to be broken or malicious.
 
     :param list descriptors: A list of
-        :api:`stem.descriptor.server_descriptor.RelayDescriptor`s,
-        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`s,
-        or :api:`stem.descriptor.router_status_entry.RouterStatusEntryV2`s.
+        :class:`stem.descriptor.server_descriptor.RelayDescriptor`,
+        :class:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`,
+        or :class:`stem.descriptor.router_status_entry.RouterStatusEntry`.
     :param bool statistics: If ``True``, log some extra statistics about the
         number of duplicates.
     :rtype: dict
@@ -241,26 +238,30 @@ def deduplicate(descriptors, statistics=False):
     return newest
 
 def parseExtraInfoFiles(*filenames, **kwargs):
-    """Parse files which contain ``@type bridge-extrainfo-descriptor``s.
+    """Open **filenames** and parse any ``@type bridge-extrainfo-descriptor``
+    contained within.
 
     .. warning:: This function will *not* check that the ``router-signature``
         at the end of the extrainfo descriptor is valid. See
         ``bridgedb.bridges.Bridge._verifyExtraInfoSignature`` for a method for
-        checking the signature.
+        checking the signature.  The signature cannot be checked here, because
+        to do so, we would need the latest, valid, corresponding
+        ``signing-key`` for the Bridge.
 
     .. note:: This function will call :func:`deduplicate` to deduplicate the
         extrainfo descriptors parsed from all **filenames**.
 
     :kwargs validate: If there is a ``'validate'`` keyword argument, its value
         will be passed along as the ``'validate'`` argument to
-        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`.
+        :class:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`.
         The ``'validate'`` keyword argument defaults to ``True``, meaning that
         the hash digest stored in the ``router-digest`` line will be checked
         against the actual contents of the descriptor and the extrainfo
         document's signature will be verified.
     :rtype: dict
-    :returns: A dictionary mapping bridge fingerprints to deduplicated
-        :api:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`s.
+    :returns: A dictionary mapping bridge fingerprints to their corresponding,
+        deduplicated
+        :class:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`.
     """
     descriptors = []
 

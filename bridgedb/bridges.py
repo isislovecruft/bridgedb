@@ -7,7 +7,25 @@
 #             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
-"""Classes for manipulating and storing Bridges and their attributes."""
+"""Classes for manipulating and storing Bridges and their attributes.
+
+.. inheritance-diagram:: PluggableTransportUnavailable MalformedBridgeInfo MalformedPluggableTransport InvalidPluggableTransportIP MissingServerDescriptorDigest ServerDescriptorDigestMismatch ServerDescriptorWithoutNetworkstatus InvalidExtraInfoSignature Flags PluggableTransport Bridge
+    :parts: 1
+
+------------
+
+**Glossary Terms**
+
+.. glossary::
+
+    Bridge Line
+      A "Bridge Line" is how BridgeDB refers to lines in a ``torrc``
+      file which should begin with the word ``"Bridge"``, and it is how
+      a client tells their Tor process that they would like to use a
+      particular bridge.
+
+------------
+"""
 
 from __future__ import print_function
 
@@ -306,7 +324,7 @@ class PluggableTransport(BridgeAddressBase):
     .. _pt-spec.txt:
         https://gitweb.torproject.org/torspec.git/tree/pt-spec.txt
 
-    :type fingerprint: str
+    :vartype fingerprint: str
     :ivar fingerprint: The uppercased, hexadecimal fingerprint of the identity
         key of the parent bridge running this pluggable transport instance,
         i.e. the main ORPort bridge whose ``@type bridge-server-descriptor``
@@ -314,24 +332,24 @@ class PluggableTransport(BridgeAddressBase):
         latter of which contains the parameter of this pluggable transport in
         its ``transport`` line.
 
-    :type methodname: str
+    :vartype methodname: str
     :ivar methodname: The canonical "name" for this pluggable transport,
         i.e. the one which would be specified in a torrc file. For example,
         ``"obfs2"``, ``"obfs3"``, ``"scramblesuit"`` would all be pluggable
         transport method names.
 
-    :type address: ``ipaddr.IPv4Address`` or ``ipaddr.IPv6Address``
+    :vartype address: ``ipaddr.IPv4Address`` or ``ipaddr.IPv6Address``
     :ivar address: The IP address of the transport. Currently (as of 20 March
         2014), there are no known, widely-deployed pluggable transports which
         support IPv6. Ergo, this is very likely going to be an IPv4 address.
 
-    :type port: int
+    :vartype port: int
     :ivar port: A integer specifying the port which this pluggable transport
         is listening on. (This should likely be whatever port the bridge
         specified in its ``ServerTransportPlugin`` torrc line, unless the
         pluggable transport is running in "managed" mode.)
 
-    :type arguments: dict
+    :vartype arguments: dict
     :ivar arguments: Some PTs can take additional arguments, which must be
         distributed to the client out-of-band. These are present in the
         ``@type bridge-extrainfo-document``, in the ``transport`` line like
@@ -420,14 +438,14 @@ class PluggableTransport(BridgeAddressBase):
 
         We currently check that:
 
-          1. The :data:`port` is an integer, and that it is between the values
-              of ``0`` and ``65535`` (inclusive).
+        1. The :data:`port` is an integer, and that it is between the values
+           of ``0`` and ``65535`` (inclusive).
 
-          2. The :data:`arguments` is a dictionary.
+        2. The :data:`arguments` is a dictionary.
 
-          3. The :data:`arguments` do not contain non-ASCII or control
-              characters or double quotes or backslashes, in keys or
-              in values.
+        3. The :data:`arguments` do not contain non-ASCII or control
+           characters or double quotes or backslashes, in keys or
+           in values.
 
         :raises MalformedPluggableTransport: if any of the above checks fails.
         """
@@ -468,8 +486,9 @@ class PluggableTransport(BridgeAddressBase):
 
     def _checkArguments(self):
         """This method is a temporary fix for PTs with missing arguments
-        (see `#13202 <https://bugs.torproject.org/13202`_).  This method can
-        be removed after Tor-0.2.4.x is deprecated.
+        (see :trac:`13202`).
+
+        .. todo: This method can be removed after Tor-0.2.4.x is deprecated.
         """
         # obfs4 requires (iat-mode && (cert || (node-id && public-key))):
         if self.methodname == 'obfs4':
@@ -513,22 +532,14 @@ class PluggableTransport(BridgeAddressBase):
     def getTransportLine(self, includeFingerprint=True, bridgePrefix=False):
         """Get a Bridge Line for this :class:`PluggableTransport`.
 
-        .. glossary::
-
-           Bridge Line
-             A "Bridge Line" is how BridgeDB refers to lines in a ``torrc``
-             file which should begin with the word ``"Bridge"``, and it is how
-             a client tells their Tor process that they would like to use a
-             particular bridge.
-
         .. note:: If **bridgePrefix** is ``False``, this method does not
-            return lines which are prefixed with the word 'bridge', as they
-            would be in a torrc file. Instead, lines returned look like this::
+            return lines which are prefixed with the word ``'bridge'``, as they
+            would be in a torrc file. Instead, lines returned look like::
 
                 obfs3 245.102.100.252:23619 59ca743e89b508e16b8c7c6d2290efdfd14eea98
 
             This was made configurable to fix Vidalia being a brain-damaged
-            piece of shit (#5851_). TorLaucher replaced Vidalia soon after,
+            piece of shit (:trac:`5851`). TorLaucher replaced Vidalia soon after,
             and TorLauncher is intelligent enough to understand
             :term:`Bridge Line`s regardless of whether or not they are prefixed
             with the word "Bridge".
@@ -571,7 +582,7 @@ class PluggableTransport(BridgeAddressBase):
         which Stem uses.
 
         Stem's
-        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
+        :class:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
         parses extrainfo ``transport`` lines into a dictionary with the
         following structure::
 
@@ -678,15 +689,16 @@ class BridgeBackwardsCompatibility(BridgeBase):
 
     def __init__(self, nickname=None, ip=None, orport=None,
                  fingerprint=None, id_digest=None, or_addresses=None):
-        """Create a Bridge which is backwards compatible with the old Bridge class
-        implementation.
+        """Create a :class:`Bridge <bridgedb.bridges.IBridge>` which is
+        backwards compatible with the legacy Bridge class implementation.
 
-        .. info: For backwards compatibility, `nickname`, `ip`, and `orport`
-            must be the first, second, and third arguments, respectively.  The
-            `fingerprint` and `id_digest` were previously kwargs, and are also
-            provided for backwards compatibility.  New calls to
-            :meth:`__init__` *should* avoid using these kwargs, and instead
-            use the methods :meth:`updateFromNetworkStatus`,
+        .. note: For backwards compatibility, **nickname**, **ip**, and
+            **orport** must be the first, second, and third arguments,
+            respectively.  The **fingerprint** and **id_digest** were
+            previously kwargs, and are also provided for backwards
+            compatibility.  New calls to :meth:`__init__` *should* avoid using
+            these kwargs, and instead use the methods
+            :meth:`updateFromNetworkStatus`,
             :meth:`updateFromServerDescriptor`, and
             :meth:`updateFromExtraInfoDescriptor`.
         """
@@ -866,50 +878,65 @@ class BridgeBackwardsCompatibility(BridgeBase):
 class Bridge(BridgeBackwardsCompatibility):
     """A single bridge, and all the information we have for it.
 
-    :type fingerprint: str or ``None``
+    :vartype fingerprint: :any:`str` or ``None``
     :ivar fingerprint: This ``Bridge``'s fingerprint, in lowercased
         hexadecimal format.
-    :type nickname: str or ``None``
+
+    :vartype nickname: :any:`str` or ``None``
     :ivar nickname: This ``Bridge``'s router nickname.
-    :type socksPort: int
+
+    :vartype socksPort: int
     :ivar socksPort: This ``Bridge``'s SOCKSPort. Should always be ``0``.
-    :type dirPort: int
+
+    :vartype dirPort: int
     :ivar dirPort: This ``Bridge``'s DirPort. Should always be ``0``.
-    :type orAddresses: list
+
+    :vartype orAddresses: list
     :ivar orAddresses: A list of 3-tuples in the form::
+
             (ADDRESS, PORT, IP_VERSION)
+
         where:
             * ADDRESS is an :class:`ipaddr.IPAddress`,
             * PORT is an ``int``,
             * IP_VERSION is either ``4`` or ``6``.
-    :type transports: list
-    :ivar transports: A list of :class:`PluggableTransport`s, one for each
+
+    :vartype transports: list
+    :ivar transports: A list of :class:`PluggableTransport`, one for each
         transport that this :class:`Bridge` currently supports.
-    :type flags: :class:`~bridgedb.bridges.Flags`
+
+    :vartype flags: :class:`~bridgedb.bridges.Flags`
     :ivar flags: All flags assigned by the BridgeAuthority to this
         :class:`Bridge`.
-    :type hibernating: bool
+
+    :vartype hibernating: bool
     :ivar hibernating: ``True`` if this :class:`Bridge` is hibernating and not
         currently serving clients (e.g. if the Bridge hit its configured
         ``RelayBandwidthLimit``); ``False`` otherwise.
-    :type _blockedIn: dict
+
+    :vartype _blockedIn: dict
     :ivar _blockedIn: A dictionary of ``ADDRESS:PORT`` pairs to lists of
         lowercased, two-letter country codes (e.g. ``"us"``, ``"gb"``,
         ``"cn"``, etc.) which that ``ADDRESS:PORT`` pair is blocked in.
-    :type contact: str or ``None``
+
+    :vartype contact: :any:`str` or ``None``
     :ivar contact: The contact information for the this Bridge's operator.
-    :type family: set or ``None``
+
+    :vartype family: :any:`set` or ``None``
     :ivar family: The fingerprints of other Bridges related to this one.
-    :type platform: str or ``None``
+
+    :vartype platform: :any:`str` or ``None``
     :ivar platform: The ``platform`` line taken from the
         ``@type bridge-server-descriptor``, e.g.
         ``'Tor 0.2.5.4-alpha on Linux'``.
-    :type software: :api:`stem.version.Version` or ``None``
+
+    :vartype software: :class:`stem.version.Version` or ``None``
     :ivar software: The OR version portion of the ``platform`` line.
-    :type os: str or None
+
+    :vartype os: :any:`str` or ``None``
     :ivar os: The OS portion of the ``platform`` line.
     """
-    #: (bool) If ``True``, check that the signature of the bridge's
+    #: (:any:`bool`) If ``True``, check that the signature of the bridge's
     #: ``@type bridge-server-descriptor`` is valid and that the signature was
     #: created with the ``signing-key`` contained in that descriptor.
     _checkServerDescriptorSignature = True
@@ -917,12 +944,13 @@ class Bridge(BridgeBackwardsCompatibility):
     def __init__(self, *args, **kwargs):
         """Create and store information for a new ``Bridge``.
 
-        .. info: For backwards compatibility, `nickname`, `ip`, and `orport`
-            must be the first, second, and third arguments, respectively.  The
-            `fingerprint` and `id_digest` were previously kwargs, and are also
-            provided for backwards compatibility.  New calls to
-            :meth:`__init__` *should* avoid using these kwargs, and instead
-            use the methods :meth:`updateFromNetworkStatus`,
+        .. note: For backwards compatibility, **nickname**, **ip**, and
+            **orport** must be the first, second, and third arguments,
+            respectively.  The **fingerprint** and **id_digest** were
+            previously kwargs, and are also provided for backwards
+            compatibility.  New calls to :meth:`__init__` *should* avoid using
+            these kwargs, and instead use the methods
+            :meth:`updateFromNetworkStatus`,
             :meth:`updateFromServerDescriptor`, and
             :meth:`updateFromExtraInfoDescriptor`.
         """
@@ -1245,19 +1273,19 @@ class Bridge(BridgeBackwardsCompatibility):
 
         We require that:
 
-          1. Any IP addresses contained in :data:`orAddresses` are valid,
-             according to :func:`~bridgedb.parse.addr.isValidIP`.
+        1. Any IP addresses contained in :data:`orAddresses` are valid,
+           according to :func:`~bridgedb.parse.addr.isValidIP`.
 
-          2. Any ports in :data:`orAddresses` are between ``1`` and ``65535``
-             (inclusive).
+        2. Any ports in :data:`orAddresses` are between ``1`` and ``65535``
+           (inclusive).
 
-          3. All IP version numbers given in :data:`orAddresses` are either
-             ``4`` or ``6``.
+        3. All IP version numbers given in :data:`orAddresses` are either
+           ``4`` or ``6``.
 
         .. todo:: This should probably be reimplemented as a property that
             automatically sanitises the values for each ORAddress, as is done
-            for :property:`bridgedb.bridges.BridgeAddressBase.address` and
-            :property:`bridgedb.bridges.BridgeBase.orPort`.
+            for :data:`bridgedb.bridges.BridgeAddressBase.address` and
+            :data:`bridgedb.bridges.BridgeBase.orPort`.
 
         :raises MalformedBridgeInfo: if something was found to be malformed or
             invalid.
@@ -1281,8 +1309,8 @@ class Bridge(BridgeBackwardsCompatibility):
         Launcher or paste directly into their ``torrc``.
 
         This is a helper method to call either :meth:`_getTransportForRequest`
-        or :meth:`_getVanillaForRequest` depending on whether or not any
-        :class:`PluggableTransport`s were requested in the
+        or :meth:`_getVanillaForRequest` depending on whether or not a
+        :class:`PluggableTransport` was requested in the
         :class:`bridgeRequest <bridgedb bridgerequest.BridgeRequestBase>`, and
         then construct the :term:`Bridge Line` accordingly.
 
@@ -1319,7 +1347,7 @@ class Bridge(BridgeBackwardsCompatibility):
 
         :param str key: The key to lookup in the :data:`Bridge._blockedIn`
             dictionary. This should be in the form returned by
-            :classmethod:`_getBlockKey`.
+            :meth:`_getBlockKey`.
         :param str countryCode: A two-character country code specifier.
         """
         if self._blockedIn.has_key(key):
@@ -1499,7 +1527,7 @@ class Bridge(BridgeBackwardsCompatibility):
         document.
 
         :type descriptor:
-            :api:`stem.descriptors.router_status_entry.RouterStatusEntry`
+            :class:`stem.descriptors.router_status_entry.RouterStatusEntry`
         :param descriptor: The networkstatus document for this bridge.
         :param bool ignoreNetworkstatus: If ``True``, then ignore most of the
            information in the networkstatus document.
@@ -1528,7 +1556,7 @@ class Bridge(BridgeBackwardsCompatibility):
     def updateFromServerDescriptor(self, descriptor, ignoreNetworkstatus=False):
         """Update this bridge's info from an ``@type bridge-server-descriptor``.
 
-        .. info::
+        .. note::
             If :func:`~bridgedb.parse.descriptor.parseServerDescriptorFile` is
             called with ``validate=True``, then Stem will handle checking that
             the ``signing-key`` hashes to the ``fingerprint``. Stem will also
@@ -1539,7 +1567,7 @@ class Bridge(BridgeBackwardsCompatibility):
             actual digest match).
 
         :type descriptor:
-            :api:`stem.descriptor.server_descriptor.RelayDescriptor`
+            :class:`stem.descriptor.server_descriptor.RelayDescriptor`
         :param descriptor: The bridge's server descriptor to gather data from.
         :raises MalformedBridgeInfo: If this Bridge has no corresponding
             networkstatus entry, or its **descriptor** digest didn't match the
@@ -1589,7 +1617,7 @@ class Bridge(BridgeBackwardsCompatibility):
         ``@type bridge-extrainfo`` descriptor.
 
         :type descriptor:
-            :api:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`
+            :class:`stem.descriptor.extrainfo_descriptor.RelayExtraInfoDescriptor`
         :param descriptor: An ``@type bridge-extrainfo`` descriptor for this
             :class:`Bridge`, parsed with Stem.
         :raises InvalidExtraInfoSignature: if the signature was invalid,
@@ -1672,7 +1700,7 @@ class Bridge(BridgeBackwardsCompatibility):
         """Update this bridge's information from an extrainfo descriptor.
 
         Stem's
-        :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
+        :class:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
         parses extrainfo ``transport`` lines into a dictionary with the
         following structure::
 
@@ -1688,12 +1716,12 @@ class Bridge(BridgeBackwardsCompatibility):
 
         .. todo:: The ``transport`` attribute of Stem's
             ``BridgeExtraInfoDescriptor`` class is a dictionary that uses the
-            Pluggable Transport's eype as the keys. Meaning that if a bridge
+            Pluggable Transport's type as the keys… meaning that if a bridge
             were to offer four instances of ``obfs3``, only one of them would
             get to us through Stem. This might pose a problem someday.
 
         :type descriptor:
-            :api:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
+            :class:`stem.descriptor.extrainfo_descriptor.BridgeExtraInfoDescriptor`
         :param descriptor: DOCDOC
         :param bool verify: If ``True``, check that the ``router-signature``
             on the extrainfo **descriptor** is a valid signature from

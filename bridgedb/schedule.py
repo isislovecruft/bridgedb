@@ -8,7 +8,11 @@
 #             (c) 2014-2015, Isis Lovecruft
 # :license: see LICENSE for licensing information
 
-"""This module implements functions for dividing time into chunks."""
+"""This module implements functions for dividing time into chunks.
+
+.. inheritance-diagram:: UnknownInterval Unscheduled ScheduledInterval
+    :parts: 1
+"""
 
 import calendar
 
@@ -17,7 +21,7 @@ import math
 from datetime import datetime
 
 from zope import interface
-from zope.interface import implements
+from zope.interface import implementer
 from zope.interface import Attribute
 
 
@@ -32,8 +36,9 @@ class UnknownInterval(ValueError):
 def toUnixSeconds(timestruct):
     """Convert a datetime struct to a Unix timestamp in seconds.
 
-    :param timestruct: A ``datetime.datetime`` object to convert into a
-        timestamp in Unix Era seconds.
+    :type timestruct: :any:`datetime.datetime`
+    :param timestruct: A ``datetime`` object to convert into a timestamp in
+        Unix Era seconds.
     :rtype: int
     """
     return calendar.timegm(timestruct)
@@ -42,13 +47,13 @@ def fromUnixSeconds(timestamp):
     """Convert a Unix timestamp to a datetime struct.
 
     :param int timestamp: A timestamp in Unix Era seconds.
-    :rtype: :type:`datetime.datetime`
+    :rtype: :any:`datetime.datetime`
     """
     return datetime.fromtimestamp(timestamp)
 
 
 class ISchedule(interface.Interface):
-    """A ``Interface`` specification for a Schedule."""
+    """An ``Interface`` specification for a Schedule."""
 
     intervalPeriod = Attribute(
         "The type of period which this Schedule's intervals will rotate by.")
@@ -65,6 +70,7 @@ class ISchedule(interface.Interface):
         """Get the start of the interval after the one containing **when**."""
 
 
+@implementer(ISchedule)
 class Unscheduled(object):
     """A base ``Schedule`` that has only one period that contains all time.
 
@@ -88,12 +94,11 @@ class Unscheduled(object):
     '9999-12-31 23:59:59'
 
     """
-    implements(ISchedule)
 
     def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
-        :param int count: The number of **period**s in an interval.
+        :param int count: The total number of **period** in one interval.
         :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         """
         self.intervalCount = count
@@ -136,6 +141,7 @@ class Unscheduled(object):
         return toUnixSeconds(datetime.max.timetuple())
 
 
+@implementer(ISchedule)
 class ScheduledInterval(Unscheduled):
     """An class that splits time into periods, based on seconds, minutes,
     hours, days, weeks, or months.
@@ -166,16 +172,15 @@ class ScheduledInterval(Unscheduled):
     '2015-03-31 03:00:00'
 
     :ivar str intervalPeriod: One of the :data:`KNOWN_INTERVALS`.
-    :ivar int intervalCount: The number of times **intervalPeriod** should be
-        repeated within an interval.
+    :ivar int intervalCount: The number of times :attr:`intervalPeriod` should
+        be repeated within an interval.
     """
-    implements(ISchedule)
 
     def __init__(self, count=None, period=None):
         """Create a schedule for dividing time into intervals.
 
-        :type count: int or str
-        :param count: The number of **period**s in an interval.
+        :type count: :any:`int` or :any:`str`
+        :param count: The total number of **period** in one interval.
         :param str period: One of the periods in :data:`KNOWN_INTERVALS`.
         """
         super(ScheduledInterval, self).__init__(count, period)
@@ -183,14 +188,14 @@ class ScheduledInterval(Unscheduled):
         self._setIntervalPeriod(period)
 
     def _setIntervalCount(self, count=None):
-        """Set our :ivar:`intervalCount`.
+        """Set our :attr:`intervalCount`.
 
-        .. attention:: This method should be called _before_
+        .. attention:: This method should be called *before*
             :meth:`_setIntervalPeriod`, because the latter may change the
             count, if it decides to change the period (for example, to
             simplify things by changing weeks into days).
 
-        :param int count: The number of times the :ivar:`intervalPeriod`
+        :param int count: The number of times the :attr:`intervalPeriod`
             should be repeated during the interval. Defaults to ``1``.
         :raises UnknownInterval: if the specified **count** was invalid.
         """
@@ -204,7 +209,7 @@ class ScheduledInterval(Unscheduled):
         self.intervalCount = count
 
     def _setIntervalPeriod(self, period=None):
-        """Set our :ivar:`intervalPeriod`.
+        """Set our :attr:`intervalPeriod`.
 
         :param str period: One of the :data:`KNOWN_INTERVALS`, or its
             plural. Defaults to ``'hour'``.

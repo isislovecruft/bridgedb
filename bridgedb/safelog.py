@@ -9,6 +9,9 @@
 
 """Filters for log sanitisation.
 
+.. inheritance-diagram:: BaseSafelogFilter SafelogEmailFilter SafelogIPv4Filter SafelogIPv6Filter
+    :parts: 1
+
 The ``Safelog*Filter`` classes within this module can be instantiated and
 adding to any :class:`logging.Handler`, in order to transparently filter
 substrings within log messages which match the given ``pattern``. Matching
@@ -27,22 +30,24 @@ with the ``replacement`` string. For example::
 
 ..
 
-Module Overview:
-~~~~~~~~~~~~~~~~
+**Module Overview:**
+
 ::
- safelog
+
+ bridgedb.safelog
   |
-  |_setSafeLogging - Enable or disable safelogging globally.
-  |_logSafely - Utility for manually sanitising a portion of a log message
+  |_ setSafeLogging - Enable or disable safelogging globally.
+  |_ logSafely - Utility for manually sanitising a portion of a log message
   |
-  |_BaseSafelogFilter - Base class for log message sanitisation filters
-     |   |_doubleCheck - Optional stricter validation on matching substrings
-     |   |_filter - Determine if some part of a log message should be filtered
+  \_ BaseSafelogFilter - Base class for log message sanitisation filters
+     |   |_ doubleCheck - Optional stricter validation on matching substrings
+     |   \_ filter - Determine if some part of a log message should be filtered
      |
-     |_SafelogEmailFilter - Filter for removing email addresses from logs
-     |_SafelogIPv6Filter - Filter for removing IPv4 addresses from logs
-     |_SafelogIPv6Filter - Filter for removing IPv6 addresses from logs
-::
+     |_ SafelogEmailFilter - Filter for removing email addresses from logs
+     |_ SafelogIPv4Filter - Filter for removing IPv4 addresses from logs
+     |_ SafelogIPv6Filter - Filter for removing IPv6 addresses from logs
+
+..
 """
 
 import functools
@@ -81,24 +86,27 @@ def logSafely(string):
 class BaseSafelogFilter(logging.Filter):
     """Base class for creating log message sanitisation filters.
 
-    A :class:`BaseSafelogFilter` uses a compiled regex :cvar:`pattern` to
+    A :class:`BaseSafelogFilter` uses a compiled regex :attr:`pattern` to
     match particular items of data in log messages which should be sanitised
     (if ``SAFELOGGING`` is enabled in :file:`bridgedb.conf`).
 
-    .. note:: The ``pattern`` is used only for string *matching* purposes, and
-        *not* for validation. In other words, a ``pattern`` which matches email
-        addresses should simply match something which appears to be an email
-        address, even though that matching string might not technically be a
-        valid email address vis-á-vis :rfc:`5321`.
+    .. note::
+        The :attr:`pattern` is used only for string *matching* purposes, and
+        *not* for validation. In other words, a :attr:`pattern` which matches
+        email addresses should simply match something which appears to be an
+        email address, even though that matching string might not technically
+        be a valid email address vis-á-vis :rfc:`5321`.
 
-    In addition, a ``BaseSafelogFilter`` uses a :cvar:`easyFind`, which is
+    In addition, a ``BaseSafelogFilter`` uses a :attr:`easyFind`, which is
     simply a string or character to search for before running checking against
     the regular expression, to attempt to avoid regexing *everything* which
     passes through the logger.
 
     :cvar pattern: A compiled regular expression, whose matches will be
-        scrubbed from log messages and replaced with :cvar:`replacement`.
-    :cvar easyFind: A simpler string to search for before regex matching.
+        scrubbed from log messages and replaced with :attr:`replacement`.
+    :vartype easyFind: str
+    :cvar easyFind: A simpler string to search for before to match by regex.
+    :vartype replacement: str
     :cvar replacement: The string to replace ``pattern`` matches
         with. (default: ``"[scrubbed]"``)
     """
@@ -110,9 +118,9 @@ class BaseSafelogFilter(logging.Filter):
         """Subclasses should override this function to implement any additional
         substring filtering to decrease the false positive rate, i.e. any
         additional filtering or validation which is *more* costly than
-        checking against the regular expression, :cvar:`pattern`.
+        checking against the regular expression, :attr:`pattern`.
 
-        To use only the :cvar:`pattern` matching in :meth:`filter`, and not
+        To use only the :attr:`pattern` matching in :meth:`filter`, and not
         use this method, simply do::
 
             return True
@@ -131,13 +139,12 @@ class BaseSafelogFilter(logging.Filter):
         """Filter a log record.
 
         The log **record** is filtered, and thus sanitised by replacing
-        matching substrings with the :cvar:`replacement` string, if the
+        matching substrings with the :attr:`replacement` string, if the
         following checks pass:
 
-            0. ``SAFELOGGING`` is currently enabled.
-            1. The ``record.msg`` string contains :cvar:`easyFind`.
-            2. The ``record.msg`` matches the regular expression,
-               :cvar:`pattern`.
+        1. ``SAFELOGGING`` is currently enabled.
+        2. The ``record.msg`` string contains :attr:`easyFind`.
+        3. The ``record.msg`` matches the regular expression, :attr:`pattern`.
 
         :type record: :class:`logging.LogRecord`
         :param record: Basically, anything passed to :func:`logging.log`.

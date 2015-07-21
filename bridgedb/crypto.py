@@ -8,18 +8,17 @@
 #             (c) 2007-2015, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""BridgeDB general cryptographic utilities.
+"""This module contains general utilities for working with external
+cryptographic tools and libraries, including OpenSSL and GnuPG. It also
+includes utilities for creating callable HMAC functions, generating HMACs for
+data, and generating and/or storing key material.
 
 .. py:module:: bridgedb.crypto
-   :synopsis: This module contains general utilities for working with external
-       cryptographic tools and libraries, including OpenSSL and GnuPG. It also
-       includes utilities for creating callable HMAC functions, generating
-       HMACs for data, and generating and/or storing key material.
+   :synopsis: BridgeDB general cryptographic utilities.
 
-Module Overview
-~~~~~~~~~~~~~~~
 ::
-    crypto
+
+   bridgedb.crypto
      |_getGPGContext() - Get a pre-configured GPGME context.
      |_getHMAC() - Compute an HMAC with some key for some data.
      |_getHMACFunc() - Get a callable for producing HMACs with the given key.
@@ -35,7 +34,7 @@ Module Overview
         |_getHostnameFromURL() - Parses the hostname from the request URL.
         \_verifyHostname() - Check that the cert CN matches the request
                              hostname.
-::
+..
 """
 
 from __future__ import absolute_import
@@ -67,8 +66,9 @@ DIGESTMOD = hashlib.sha1
 #
 #     TypeError: 'buffer' does not have the buffer interface
 #
-#: ``True`` if we have the new-style
-#: `buffer <https://docs.python.org/2/c-api/buffer.html>` interface.
+#: ``True`` if we have the new-style `buffer`_ interface; ``False`` otherwise.
+#:
+#: .. _buffer: https://docs.python.org/2/c-api/buffer.html
 NEW_BUFFER_INTERFACE = False
 try:
     io.BytesIO(buffer('test'))
@@ -233,17 +233,22 @@ def getHMACFunc(key, hex=True):
 def removePKCS1Padding(message):
     """Remove PKCS#1 padding from a **message**.
 
-    (PKCS#1 v1.0? see https://bugs.torproject.org/13042)
+    (PKCS#1 v1.0?  See :trac:`13042`.)
 
     Each block is 128 bytes total in size:
 
-        * 2 bytes for the type info ('\x00\x01')
-        * 1 byte for the separator ('\x00')
-        * variable length padding ('\xFF')
+        * 2 bytes for the type info (``'\\x00\\x01'``)
+        * 1 byte for the separator (``'\\x00'``)
+        * variable length padding (``'\\xFF'``)
         * variable length for the **message**
 
+    .. Note that the above strings are double escaped, due to the way that
+       Sphinx renders escaped strings in docstrings.
+
     For more information on the structure of PKCS#1 padding, see :rfc:`2313`,
-    particularly the notes in §8.1.
+    particularly `the notes in §8.1`__.
+
+    .. __: https://tools.ietf.org/html/rfc2313#section-8.1
 
     :param str message: A message which is PKCS#1 padded.
     :raises PKCS1PaddingError: if there is an issue parsing the **message**.

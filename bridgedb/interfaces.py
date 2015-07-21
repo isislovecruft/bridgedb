@@ -11,7 +11,10 @@
 #_____________________________________________________________________________
 
 
-"""All available ``zope.interface``s in BridgeDB."""
+"""All available `Zope`_ interfaces in BridgeDB.
+
+.. _Zope: http://docs.zope.org/zope.interface/index.html
+"""
 
 from zope.interface import Interface
 from zope.interface import Attribute
@@ -26,9 +29,10 @@ class IName(Interface):
 
 @implementer(IName)
 class Named(object):
-    """A named object"""
+    """A named object."""
 
-    #: The characters used to join child Named object's names with our name.
+    #: The character(s) used to join child :class:`Named` object's names with
+    #: our name.
     separator = ' '
 
     def __init__(self):

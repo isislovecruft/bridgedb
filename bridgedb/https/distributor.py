@@ -10,7 +10,15 @@
 #             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
-"""A Distributor that hands out bridges through a web interface."""
+"""
+bridgedb.https.distributor
+==========================
+
+A Distributor that hands out bridges through a web interface.
+
+.. inheritance-diagram:: HTTPSDistributor
+    :parts: 1
+"""
 
 import ipaddr
 import logging
@@ -216,7 +224,7 @@ class HTTPSDistributor(Distributor):
         :data:`proxies`. Thus, the resulting hashring-subhashring structure
         would look like:
 
-        +------------------+---------------------------------------------------+--------------
+        +------------------+---------------------------------------------------+-------------+
         |                  |               Directly connecting users           | Tor / known |
         |                  |                                                   | proxy users |
         +------------------+------------+------------+------------+------------+-------------+

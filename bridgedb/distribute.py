@@ -13,87 +13,94 @@
 
 """Classes for creating bridge distribution systems.
 
-DEFINITELY
-----------
+.. inheritance-diagram:: Distributor
+    :parts: 1
 
-Distributor {
-  name property
-  bridgesPerResponse() property      FORMERLY getNumBridgesPerAnswer()
-  hashring struct     FORMERLY KNOWN AS splitter
-      rotate bool
-      rotationGroups
-      rotationSchedule
-      key str
-      subrings list
-          - Subring
-      clear()
-      export()        FORMERLY KNOWN AS dumpAssignments()
-      insert()        
-  getBridges()        FORMERLY KNOWN AS getBridgesForEmail() and getBridgesForIP()
-  handleBridgeRequest()
-  handleIncomingBridges()
-}
+..
+    (These are design notes.  Please ignore.)
 
-DistributionContext {  # should go in bridgedb.py
-    distributors {
-        name: DistributorContext
+    DEFINITELY
+    ----------
+
+    Distributor {
+      name property
+      bridgesPerResponse() property      FORMERLY getNumBridgesPerAnswer()
+      hashring struct     FORMERLY KNOWN AS splitter
+          rotate bool
+          rotationGroups
+          rotationSchedule
+          key str
+          subrings list
+              - Subring
+          clear()
+          export()        FORMERLY KNOWN AS dumpAssignments()
+          insert()
+      getBridges()        FORMERLY KNOWN AS getBridgesForEmail() and getBridgesForIP()
+      handleBridgeRequest()
+      handleIncomingBridges()
     }
-}
 
-DistributorContext {   # should go in bridgedb.py
-    name str
-    allocationPercentage property
-    publicKey
-}
+    DistributionContext {  # should go in bridgedb.py
+        distributors {
+            name: DistributorContext
+        }
+    }
 
-Hashring {
-    assignBridgesToSubrings()   FORMERLY bridgedb.filters.assignBridgesToSubring()
-        + filters bridges uniformly into subrings
-    clear() / __del__()
-    isEmpty property
-}
+    DistributorContext {   # should go in bridgedb.py
+        name str
+        allocationPercentage property
+        publicKey
+    }
 
-MAYBE
------
-mapClientToHashring() FORMERLY KNOWN AS areaMapper AND
-mapClientToSubhashring()
-authenticateToBridgeDB()
-maintainACL() for proxylists
+    Hashring {
+        assignBridgesToSubrings()   FORMERLY bridgedb.filters.assignBridgesToSubring()
+            + filters bridges uniformly into subrings
+        clear() / __del__()
+        isEmpty property
+    }
 
-- need a way for BridgeDB to decide global parameters to be followed
-  by all distributors.  
-      - BridgeAnswerParameters?
-        maybe call it DistributionContext?
-        then have DistributorContexts?
+    MAYBE
+    -----
+    mapClientToHashring() FORMERLY KNOWN AS areaMapper AND
+    mapClientToSubhashring()
+    authenticateToBridgeDB()
+    maintainACL() for proxylists
 
-  requiredFlags  AnswerParameters?
-  requireFlag()
-  requiredPorts
-  requirePorts()
+    - need a way for BridgeDB to decide global parameters to be followed
+      by all distributors.
+          - BridgeAnswerParameters?
+            maybe call it DistributionContext?
+            then have DistributorContexts?
 
-  THINGS NEEDED FOR COMMUNICATION BETWEEN DISTRIBUTORS AND BRIDGEDB
-  -----------------------------------------------------------------
-  * distributorCredential (for authenticating to the DB)
-  * metrics?
-      * total clients seen
-      * total clients served
-      - unique clients seen
-      - unique clients served
-      * total requests for TRANSPORT
-      * total times TRANSPORT was served
+      requiredFlags  AnswerParameters?
+      requireFlag()
+      requiredPorts
+      requirePorts()
 
-  THINGS DISTRIBUTORS SHOULD KEEP TRACK OF, BUT NOT REPORT
-  --------------------------------------------------------
-  - approximate bridge bandwidth
-  - approximate bandwidth per client
-  - approximate bridge bandwidth already distributed
+      THINGS NEEDED FOR COMMUNICATION BETWEEN DISTRIBUTORS AND BRIDGEDB
+      -----------------------------------------------------------------
+      * distributorCredential (for authenticating to the DB)
+      * metrics?
+          * total clients seen
+          * total clients served
+          - unique clients seen
+          - unique clients served
+          * total requests for TRANSPORT
+          * total times TRANSPORT was served
 
-  NAMES FOR CHOOSING "GET ME WHATEVER TRANSPORTS"
-  -----------------------------------------------
-  chocolate box, russian roulette
+      THINGS DISTRIBUTORS SHOULD KEEP TRACK OF, BUT NOT REPORT
+      --------------------------------------------------------
+      - approximate bridge bandwidth
+      - approximate bandwidth per client
+      - approximate bridge bandwidth already distributed
 
-  * How much of a bad idea would it be to store bridges allocated to a
-    distributor as diffs over the last time the Distributor asked?
+      NAMES FOR CHOOSING "GET ME WHATEVER TRANSPORTS"
+      -----------------------------------------------
+      chocolate box, russian roulette
+
+      * How much of a bad idea would it be to store bridges allocated to a
+        distributor as diffs over the last time the Distributor asked?
+
 """
 
 import logging

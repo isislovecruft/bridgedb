@@ -11,6 +11,8 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
+"""Functions for filtering :class:`Bridges <bridgedb.bridges.Bridge>`."""
+
 import logging
 
 from ipaddr import IPv4Address
@@ -36,7 +38,7 @@ def bySubring(hmac, assigned, total):
         also be assigned to subring 2of3.
     :param int total: The total number of subrings.
     :rtype: callable
-    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    :returns: A filter function for :class:`Bridges <bridgedb.bridges.Bridge>`.
     """
     logging.debug(("Creating a filter for assigning bridges to subhashring "
                    "%s-of-%s...") % (assigned, total))
@@ -61,11 +63,11 @@ def bySubring(hmac, assigned, total):
 def byFilters(filtres):
     """Returns a filter which filters by multiple **filtres**.
 
-    :type filtres: list
-    :param filtres: A list (or other iterable) of callables which some
-        :class:`~bridgedb.bridges.Bridge`s should be filtered according to.
+    :param list filtres: A list (or other iterable) of callables which some
+        :class:`Bridges <bridgedb.bridges.Bridge>` should be filtered
+        according to.
     :rtype: callable
-    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    :returns: A filter function for :class:`Bridges <bridgedb.bridges.Bridge>`.
     """
     name = []
     for filtre in filtres:
@@ -100,6 +102,14 @@ def byIPv(ipVersion=None):
         return _cache[name]
     except KeyError:
         def _byIPv(bridge):
+            """Determine if the **bridge** has an IPv{0} address.
+
+            :type bridge: :class:`bridgedb.bridges.Bridge`
+            :param bridge: A bridge to filter.
+            :rtype: bool
+            :returns: ``True`` if the **bridge** has an address with the
+                correct IP version; ``False`` otherwise.
+            """
             if isIPv(ipVersion, bridge.address):
                 return True
             else:
@@ -109,6 +119,7 @@ def byIPv(ipVersion=None):
             return False
         setattr(_byIPv, "description", "ip=%d" % ipVersion)
         _byIPv.__name__ = "byIPv%d()" % ipVersion
+        _byIPv.func_doc = _byIPv.func_doc.format(ipVersion)
         _byIPv.name = name
         _cache[name] = _byIPv
         return _byIPv
@@ -117,25 +128,27 @@ byIPv4 = byIPv(4)
 byIPv6 = byIPv(6)
 
 def byTransport(methodname=None, ipVersion=None):
-    """Returns a filter function for :class:`~bridgedb.bridges.Bridge`s.
+    """Returns a filter function for a :class:`~bridgedb.bridges.Bridge`.
 
     The returned filter function should be called on a
-    :class:`~bridgedb.bridges.Bridge`.  It returns ``True`` if the ``Bridge``
-    has a :class:`~bridgedb.bridges.PluggableTransport` such that:
+    :class:`~bridgedb.bridges.Bridge`.  It returns ``True`` if the
+    :class:`~bridgedb.bridges.Bridge` has a
+    :class:`~bridgedb.bridges.PluggableTransport` such that:
 
-      1. The :data:`~bridge.bridges.PluggableTransport.methodname` matches
-         **methodname**, and
+    1. The :data:`methodname <bridgedb.bridges.PluggableTransport.methodname>`
+       matches **methodname**, and,
 
-      2. The :data:`~bridgedb.bridges.PluggableTransport.address`` version
-         matches the **ipVersion**.
+    2. The :attr:`bridgedb.bridges.PluggableTransport.address.version`
+       equals the **ipVersion**.
 
     :param str methodname: A Pluggable Transport
-        :data:`~bridge.bridges.PluggableTransport.methodname`.
+        :data:`~bridgedb.bridges.PluggableTransport.methodname`.
     :param int ipVersion: Either ``4`` or ``6``. The IP version that the
         ``Bridge``'s ``PluggableTransport``
-        :data:`~bridgedb.bridges.PluggableTransport.address`` should have.
+        :attr:`address <bridgedb.bridges.PluggableTransport.address>` should
+        have.
     :rtype: callable
-    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    :returns: A filter function for :class:`Bridges <bridgedb.bridges.Bridge>`.
     """
     if not ipVersion in (4, 6):
         ipVersion = 4
@@ -161,7 +174,7 @@ def byTransport(methodname=None, ipVersion=None):
         return _byTransport
 
 def byNotBlockedIn(countryCode=None, methodname=None, ipVersion=4):
-    """Returns a filter function for :class:`~bridgedb.bridges.Bridge`s.
+    """Returns a filter function for :class:`Bridges <bridgedb.bridges.Bridge>`.
 
     If a Pluggable Transport **methodname** was not specified, the returned
     filter function returns ``True`` if any of the ``Bridge``'s addresses or
@@ -169,25 +182,29 @@ def byNotBlockedIn(countryCode=None, methodname=None, ipVersion=4):
     **countryCode**.  See :meth:`~bridgedb.bridges.Bridge.isBlockedIn`.
 
     Otherwise, if a Pluggable Transport **methodname** was specified, it
-    returns ``True`` if the ``Bridge`` has a
+    returns ``True`` if the :class:`~bridgedb.bridges.Bridge` has a
     :class:`~bridgedb.bridges.PluggableTransport` such that:
 
-      1. The :data:`~bridge.bridges.PluggableTransport.methodname` matches
-         **methodname**,
+    1. The :data:`methodname <bridgedb.bridges.PluggableTransport.methodname>`
+       matches **methodname**,
 
-      2. The :data:`~bridgedb.bridges.PluggableTransport.address.version``
-         equals the **ipVersion**, and isn't known to be blocked in
-         **countryCode**.
+    2. The :attr:`bridgedb.bridges.PluggableTransport.address.version`
+       equals the **ipVersion**, and,
+
+    3. The :class:`~bridgedb.bridges.PluggableTransport`.
+       :attr:`address <bridgedb.bridges.PluggableTransport.address>` isn't
+       known to be blocked in **countryCode**.
 
     :type countryCode: str or ``None``
     :param countryCode: A two-letter country code which the filtered
-        :class:`PluggableTransport`s should not be blocked in.
+        :class:`PluggableTransports <bridgedb.bridges.PluggableTransport>`
+        should not be blocked in.
     :param str methodname: A Pluggable Transport
-        :data:`~bridge.bridges.PluggableTransport.methodname`.
+        :data:`methodname <bridgedb.bridges.PluggableTransport.methodname>`.
     :param int ipVersion: Either ``4`` or ``6``. The IP version that the
-        ``Bridge``'s addresses should have.
+        ``PluggableTransports``'s addresses should have.
     :rtype: callable
-    :returns: A filter function for :class:`~bridgedb.bridges.Bridge`s.
+    :returns: A filter function for :class:`Bridges <bridgedb.bridges.Bridge>`.
     """
     if not ipVersion in (4, 6):
         ipVersion = 4

@@ -20,13 +20,22 @@ from docutils import nodes, utils
 
 def make_trac_link(name, rawtext, text, lineno, inliner,
                    options={}, content=[]):
+
+    # quick, dirty, and ugly...
+    if '<' in text and '>' in text:
+        full_name, label = text.split('<')
+        full_name = full_name.strip()
+        label = label.strip('>').strip()
+    else:
+        full_name = text
+        label = full_name
+
     env = inliner.document.settings.env
-    trac_url =  env.config.traclinks_base_url
-    ref = trac_url + urllib.quote(text, safe='')
-    node = nodes.reference(rawtext,
-                           utils.unescape(text),
-                           refuri=ref,
-                           **options)
+    base_url =  env.config.traclinks_base_url
+    label = utils.unescape('ticket #' + label)
+    ref = base_url + urllib.quote(full_name, safe='')
+    node = nodes.reference(rawtext, label, refuri=ref, **options)
+
     return [node],[]
 
 

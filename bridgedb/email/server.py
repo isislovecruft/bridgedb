@@ -23,6 +23,9 @@ bridgedb.email.server
 
 Servers which interface with clients and distribute bridges over SMTP.
 
+.. inheritance-diagram:: MailServerContext SMTPMessage SMTPIncomingDelivery SMTPIncomingDeliveryFactory SMTPIncomingServerFactory
+    :parts: 1
+
 ::
 
   bridgedb.email.server
@@ -40,6 +43,7 @@ Servers which interface with clients and distribute bridges over SMTP.
                                   creates a new SMTPMessageDelivery, which
                                   handles response email automation, whenever
                                   we get a incoming connection on the SMTP port.
+
 ..
 """
 
@@ -97,6 +101,8 @@ class MailServerContext(object):
         initialize GnuPG for some reason.
     :ivar gpgSignFunc: A callable which signs a message, e.g. the one returned
         from :func:`~bridgedb.crypto.initialiseGnuPG`.
+
+    .. _interface: https://pythonhosted.org/gnupg/gnupg.html#gnupg-module
     """
 
     def __init__(self, config, distributor, schedule):
@@ -313,7 +319,7 @@ class SMTPIncomingDelivery(smtp.SMTP):
         :param origin: The email address we received this message from.
         :raises: :api:`twisted.mail.smtp.SMTPBadSender` if the
             ``origin.domain`` was neither our local hostname, nor one of the
-            canonical domains listed in :ivar:`context.canon`.
+            canonical domains listed in :attr:`context.canon`.
         :rtype: :api:`twisted.mail.smtp.Address`
         :returns: The ``origin``. We *must* return some non-``None`` data from
             this method, or else Twisted will reply to the sender with a 503
@@ -425,18 +431,23 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
     :class:`SMTPIncomingDeliveryFactory`, which handles response email
     automation whenever we get a incoming connection on the SMTP port.
 
-    .. warning:: My :data:`context` isn't an OpenSSL context, as is used for
-        the :api:`twisted.mail.smtp.ESMTPSender`.
+    .. warning::
+        My :attr:`~bridgedb.email.server.SMTPIncomingServerFactory.context`
+        isn't an OpenSSL context, as is used for the
+        :api:`twisted.mail.smtp.ESMTPSender`.
 
-    :ivar context: A :class:`MailServerContext` for storing configuration settings.
-    :ivar deliveryFactory: A :class:`SMTPIncomingDeliveryFactory` for
-        producing :class:`SMTPIncomingDelivery`s.
+    :vartype context: :class:`MailServerContext`
+    :ivar context: A context for storing server configuration settings.
+    :vartype deliveryFactory: :class:`SMTPIncomingDeliveryFactory`
+    :ivar deliveryFactory: A factory for producing
+        :class:`SMTPIncomingDelivery` instances.
     :ivar domain: :api:`Our FQDN <twisted.mail.smtp.DNSNAME>`.
     :ivar int timeout: The number of seconds to wait, after the last chunk of
         data was received, before raising a
         :api:`SMTPTimeoutError <twisted.mail.smtp.SMTPTimeoutError>` for an
         incoming connection.
-    :ivar protocol: :api:`SMTP <twisted.mail.smtp.SMTP>`
+    :vartype protocol: :api:`twisted.internet.protocol.Protocol`
+    :ivar protocol: :api:`twisted.mail.smtp.SMTP`
     """
 
     context = None

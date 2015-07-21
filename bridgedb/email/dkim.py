@@ -26,6 +26,7 @@ Functions for checking DKIM verification results in email headers.
 
  bridgedb.email.dkim
   |_ checkDKIM - Check the DKIM verification results header.
+
 ..
 """
 

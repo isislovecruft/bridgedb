@@ -15,11 +15,14 @@
 
 """This module implements various methods for obtaining or creating CAPTCHAs.
 
+.. inheritance-diagram:: CaptchaExpired CaptchaKeyError GimpCaptchaError Captcha ReCaptcha GimpCaptcha
+    :parts: 1
+
 **Module Overview:**
 
 ::
 
-  captcha
+  bridgedb.captcha
    |- CaptchaExpired - Raised if a solution is given for a stale CAPTCHA.
    |- CaptchaKeyError - Raised if a CAPTCHA system's keys are invalid/missing.
    |- GimpCaptchaError - Raised when a Gimp CAPTCHA can't be retrieved.
@@ -101,12 +104,16 @@ class ICaptcha(Interface):
 class Captcha(object):
     """A generic CAPTCHA base class.
 
-    :ivar str image: The CAPTCHA image.
-    :ivar str challenge: A challenge string which should permit checking of
+    :vartype image: str
+    :ivar image: The CAPTCHA image.
+    :vartype challenge: str
+    :ivar challenge: A challenge string which should permit checking of
         the client's CAPTCHA solution in some manner. In stateless protocols
         such as HTTP, this should be passed along to the client with the
         CAPTCHA image.
+    :vartype publicKey: str
     :ivar publicKey: A public key used for encrypting CAPTCHA challenge strings.
+    :vartype secretKey: str
     :ivar secretKey: A private key used for decrypting challenge strings during
         CAPTCHA solution verification.
     """
@@ -122,8 +129,9 @@ class Captcha(object):
     def get(self):
         """Retrieve a new CAPTCHA image and its associated challenge string.
 
-        The image and challenge will be stored as :ivar:`image` and
-        :ivar:`challenge, respectively.
+        The image and challenge will be stored as
+        :attr:`image <bridgedb.captcha.Captcha.image>` and
+        :attr:`challenge <bridgedb.captcha.Captcha.challenge>`, respectively.
         """
         self.image = None
         self.challenge = None
@@ -132,13 +140,17 @@ class Captcha(object):
 class ReCaptcha(Captcha):
     """A CAPTCHA obtained from a remote reCaptcha_ API server.
 
-    :ivar str image: The CAPTCHA image.
-    :ivar str challenge: The ``'recaptcha_challenge_response'`` HTTP form
+    :vartype image: str
+    :ivar image: The CAPTCHA image.
+    :vartype challenge: str
+    :ivar challenge: The ``'recaptcha_challenge_response'`` HTTP form
         field to pass to the client, along with the CAPTCHA image. See
         :doc:`BridgeDB's captcha.html <templates/captcha.html>` Mako_ template
         for an example usage.
-    :ivar str publicKey: The public reCaptcha API key.
-    :ivar str secretKey: The private reCaptcha API key.
+    :vartype publicKey: str
+    :ivar publicKey: The public reCaptcha API key.
+    :vartype secretKey: str
+    :ivar secretKey: The private reCaptcha API key.
 
     .. _reCaptcha: https://code.google.com/p/recaptcha/
     .. _Mako: http://docs.makotemplates.org/en/latest/syntax.html#page
@@ -162,8 +174,8 @@ class ReCaptcha(Captcha):
         stored at ``ReCaptcha.image`` and the challenge string at
         ``ReCaptcha.challenge``.
 
-        :raises CaptchaKeyError: If either the :ivar:`publicKey` or
-            :ivar:`secretKey` are missing.
+        :raises CaptchaKeyError: If either the :attr:`publicKey` or
+            :attr:`secretKey` are missing.
         :raises HTTPError: If the server returned any HTTP error status code.
         """
         if not self.publicKey or not self.secretKey:
@@ -186,20 +198,24 @@ class ReCaptcha(Captcha):
 class GimpCaptcha(Captcha):
     """A locally cached CAPTCHA image which was created with gimp-captcha_.
 
-    :ivar str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
-        verifying the client's solution to the CAPTCHA.
-    :ivar str publickey: A PKCS#1 OAEP-padded, public RSA key. This is used to
+    :vartype publicKey: str
+    :ivar publicKey: A PKCS#1 OAEP-padded, public RSA key. This is used to
         hide the correct CAPTCHA solution within the
         ``captcha_challenge_field`` HTML form field. That form field is given
-        to the a client along with the :ivar:`image` during the initial
+        to the a client along with the :attr:`image` during the initial
         CAPTCHA request, and the client *should* give it back to us later
         during the CAPTCHA solution verification step.
-    :ivar bytes hmacKey: A client-specific HMAC secret key.
-    :ivar str cacheDir: The local directory which pre-generated CAPTCHA images
+    :vartype secretKey: str
+    :ivar secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
+        verifying the client's solution to the CAPTCHA.
+    :vartype hmacKey: bytes
+    :ivar hmacKey: A client-specific HMAC secret key.
+    :vartype cacheDir: str
+    :ivar cacheDir: The local directory which pre-generated CAPTCHA images
         have been stored in. This can be set via the ``GIMP_CAPTCHA_DIR``
         setting in the config file.
-    :type sched: :class:`bridgedb.schedule.ScheduledInterval`
-    :ivar sched: An time interval. After this much time has passed, the
+    :vartype sched: :class:`bridgedb.schedule.ScheduledInterval`
+    :ivar sched: A time interval. After this amount time has passed, the
         CAPTCHA is considered stale, and all solutions are considered invalid
         regardless of their correctness.
 
@@ -212,7 +228,7 @@ class GimpCaptcha(Captcha):
                  cacheDir=None):
         """Create a ``GimpCaptcha`` which retrieves images from **cacheDir**.
 
-        :param str publickey: A PKCS#1 OAEP-padded, public RSA key, used for
+        :param str publicKey: A PKCS#1 OAEP-padded, public RSA key, used for
             creating the ``captcha_challenge_field`` string to give to a
             client.
         :param str secretKey: A PKCS#1 OAEP-padded, private RSA key, used for
@@ -221,9 +237,9 @@ class GimpCaptcha(Captcha):
         :param str cacheDir: The local directory which pre-generated CAPTCHA
             images have been stored in. This can be set via the
             ``GIMP_CAPTCHA_DIR`` setting in the config file.
-        :raises GimpCaptchaError: if :ivar:`cacheDir` is not a directory.
-        :raises CaptchaKeyError: if any of :ivar:`secretKey`,
-            :ivar:`publicKey`, or :ivar:`hmacKey` are invalid or missing.
+        :raises GimpCaptchaError: if :attr:`cacheDir` is not a directory.
+        :raises CaptchaKeyError: if any of :attr:`secretKey`,
+            :attr:`publicKey`, or :attr:`hmacKey` are invalid or missing.
         """
         if not cacheDir or not os.path.isdir(cacheDir):
             raise GimpCaptchaError("Gimp captcha cache isn't a directory: %r"
@@ -314,12 +330,12 @@ class GimpCaptcha(Captcha):
         | Field       | Description                                | Length   |
         +=============+============================================+==========+
         | HMAC        | An HMAC of the ``ENC_BLOB``, created with  | 20 bytes |
-        |             | the client-specific :ivar:`hmacKey`, by    |          |
+        |             | the client-specific :attr:`hmacKey`, by    |          |
         |             | applying :func:`~crypto.getHMAC` to the    |          |
         |             | ``ENC_BLOB``.                              |          |
         +-------------+--------------------------------------------+----------+
         | ENC_BLOB    | An encrypted ``ANSWER_BLOB``, created with | varies   |
-        |             | a PKCS#1 OAEP-padded RSA :ivar:`publicKey`.|          |
+        |             | a PKCS#1 OAEP-padded RSA :attr:`publicKey`.|          |
         +-------------+--------------------------------------------+----------+
         | ANSWER_BLOB | Contains the concatenated ``TIMESTAMP``    | varies   |
         |             | and ``ANSWER``.                            |          |
@@ -328,27 +344,23 @@ class GimpCaptcha(Captcha):
         |             | left-padded with "0"s.                     |          |
         +-------------+--------------------------------------------+----------+
         | ANSWER      | A string containing answer to this         | 8 bytes  |
-        |             | CAPTCHA :ivar:`image`.                     |          |
+        |             | CAPTCHA :attr:`image`.                     |          |
         +-------------+--------------------------------------------+----------+
 
         The steps taken to produce a ``CHALLENGE`` are then:
 
-          1. Create a ``TIMESTAMP``, and pad it on the left with ``0``s to 12
-             bytes in length.
-
-          2. Next, take the **answer** to this CAPTCHA :ivar:`image: and
-             concatenate the padded ``TIMESTAMP`` and the ``ANSWER``, forming
-             an ``ANSWER_BLOB``.
-
-          3. Encrypt the resulting ``ANSWER_BLOB`` to :ivar:`publicKey` to
-             create the ``ENC_BLOB``.
-
-          4. Use the client-specific :ivar:`hmacKey` to apply the
-             :func:`~crypto.getHMAC` function to the ``ENC_BLOB``, obtaining
-             an ``HMAC``.
-
-          5. Create the final ``CHALLENGE`` string by concatenating the
-             ``HMAC`` and ``ENC_BLOB``, then base64-encoding the result.
+        1. Create a ``TIMESTAMP``, and pad it on the left with ``0``s to 12
+           bytes in length.
+        2. Next, take the **answer** to this CAPTCHA :data:`image` and
+           concatenate the padded ``TIMESTAMP`` and the ``ANSWER``, forming
+           an ``ANSWER_BLOB``.
+        3. Encrypt the resulting ``ANSWER_BLOB`` to :data:`publicKey` to
+           create the ``ENC_BLOB``.
+        4. Use the client-specific :data:`hmacKey` to apply the
+           :func:`~crypto.getHMAC` function to the ``ENC_BLOB``, obtaining
+           an ``HMAC``.
+        5. Create the final ``CHALLENGE`` string by concatenating the
+           ``HMAC`` and ``ENC_BLOB``, then base64-encoding the result.
 
         :param str answer: The answer to a CAPTCHA.
         :rtype: str
@@ -369,7 +381,7 @@ class GimpCaptcha(Captcha):
         challenge string for the CAPTCHA, via :meth:`createChallenge`.
 
         :raises GimpCaptchaError: if the chosen CAPTCHA image file could not
-            be read, or if the **cacheDir** is empty.
+            be read, or if the :attr:`cacheDir` is empty.
         :rtype: tuple
         :returns: A 2-tuple containing the image file contents as a string,
             and a challenge string (used for checking the client's solution).

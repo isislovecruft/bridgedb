@@ -21,6 +21,9 @@ bridgedb.email.autoresponder
 
 Functionality for autoresponding to incoming emails.
 
+.. inheritance-diagram:: EmailResponse SMTPAutoresponder
+    :parts: 1
+
 ::
 
   bridgedb.email.autoresponder
@@ -66,7 +69,7 @@ def createResponseBody(lines, context, client, lang='en'):
 
     :param list lines: The list of lines from the original request sent by the
         client.
-    :type context: class:`bridgedb.email.server.MailServerContext`
+    :type context: :class:`bridgedb.email.server.MailServerContext`
     :param context: The context which contains settings for the email server.
     :type client: :api:`twisted.mail.smtp.Address`
     :param client: The client's email address which should be in the
@@ -77,11 +80,11 @@ def createResponseBody(lines, context, client, lang='en'):
         email to `bridges+fa@torproject.org
         <mailto:bridges+fa@torproject.org>`__, the client should receive a
         response in Farsi.
-    :rtype: None or str
-    :returns: None if we shouldn't respond to the client (i.e., if they have
-        already received a rate-limiting warning email). Otherwise, returns a
-        string containing the (optionally translated) body for the email
-        response which we should send out.
+    :rtype: str
+    :returns: ``None`` if we shouldn't respond to the client (i.e., if they
+        have already received a rate-limiting warning email). Otherwise,
+        returns a string containing the (optionally translated) body for the
+        email response which we should send out.
     """
     translator = translations.installTranslations(lang)
     bridges = None
@@ -122,26 +125,26 @@ def createResponseBody(lines, context, client, lang='en'):
 
 def generateResponse(fromAddress, client, body, subject=None,
                      messageID=None, gpgSignFunc=None):
-    """Create a :class:`EmailResponse`, which acts like an in-memory
-    ``io.StringIO`` file, by creating and writing all headers and the email
-    body into the file-like ``EmailResponse.mailfile``.
+    """Create an :class:`EmailResponse`, which acts like an
+    :class:`io.StringIO` instance, by creating and writing all headers and the
+    email body into the file-like :attr:`EmailResponse.mailfile`.
 
-    :param str fromAddress: The rfc:`2821` email address which should be in
-        the :header:`From:` header.
+    :param str fromAddress: The :rfc:`2821` email address which should be in
+        the ``'From:'`` header.
     :type client: :api:`twisted.mail.smtp.Address`
     :param client: The client's email address which should be in the
         ``'To:'`` header of the response email.
-    :param str subject: The string to write to the ``Subject:'`` header.
+    :param str subject: The string to write to the ``'Subject:'`` header.
     :param str body: The body of the email. If a **gpgSignFunc** is also
         given, then :meth:`EmailResponse.writeBody` will generate and include
         an ascii-armored OpenPGP signature in the **body**.
-    :type messageID: None or str
+    :type messageID: ``None`` or :any:`str`
     :param messageID: The :rfc:`2822` specifier for the ``'Message-ID:'``
         header, if including one is desirable.
-    :type gpgSignFunc: ``None`` or callable
-    :param gpgSignFunc: A function for signing messages.  See
-        :func:`bridgedb.crypto.initializeGnuPG` for obtaining a pre-configured
-        **gpgSignFunc**.
+    :type gpgSignFunc: callable
+    :param gpgSignFunc: If given, this should be a callable function for
+        signing messages.  See :func:`bridgedb.crypto.initializeGnuPG` for
+        obtaining a pre-configured **gpgSignFunc**.
     :returns: An :class:`EmailResponse` which contains the entire email. To
         obtain the contents of the email, including all headers, simply use
         :meth:`EmailResponse.readContents`.
@@ -173,17 +176,20 @@ class EmailResponse(object):
         keyfile, for example, rather than simply pasting it into the body of
         the email.)
 
-    :var _buff: (unicode or buffer) Used internally to write lines for the
-        response email into the ``_mailfile``. The reason why both of these
-        attributes have two possible types is for the same Python-buggy
-        reasons which require :data:`~bridgedb.crypto.NEW_BUFFER_INTERFACE`.
-    :var mailfile: (:class:`io.StringIO` or :class:`io.BytesIO`) An in-memory
-        file for storing the formatted headers and body of the response email.
+
+    :vartype _buff: :any:`unicode` or :any:`buffer`
+    :var _buff: Used internally to write lines for the response email into the
+        ``_mailfile``. The reason why both of these attributes have two
+        possible types is for the same Python-buggy reasons which require
+        :data:`~bridgedb.crypto.NEW_BUFFER_INTERFACE`.
+    :vartype mailfile: :class:`io.StringIO` or :class:`io.BytesIO`
+    :var mailfile: An in-memory file-like object for storing the formatted
+        headers and body of the response email.
     :var str delimiter: Delimiter between lines written to the
         :data:`mailfile`.
     :var bool closed: ``True`` if :meth:`close` has been called.
-    :var to: An :api:`twisted.mail.smtp.Address` for the client's email address
-        which this response should be sent to.
+    :vartype to: :api:`twisted.mail.smtp.Address`
+    :var to: The client's email address, to which this response should be sent.
     """
     _buff = buffer if NEW_BUFFER_INTERFACE else unicode
     mailfile = io.BytesIO if NEW_BUFFER_INTERFACE else io.StringIO
@@ -194,10 +200,10 @@ class EmailResponse(object):
         This class deals with correctly formatting text for the response email
         headers and the response body into an instance of :data:`mailfile`.
 
-        :type gpgSignFunc: ``None`` or callable
-        :param gpgSignFunc: A function for signing messages.  See
-            :func:`bridgedb.crypto.initializeGnuPG` for obtaining a
-            pre-configured **gpgSignFunc**.
+        :type gpgSignFunc: callable
+        :param gpgSignFunc: If given, this should be a callable function for
+            signing messages.  See :func:`bridgedb.crypto.initializeGnuPG` for
+            obtaining a pre-configured **gpgSignFunc**.
         """
         self.gpgSign = gpgSignFunc
         self.mailfile = self.mailfile()
@@ -279,8 +285,8 @@ class EmailResponse(object):
         (i.e. ``'\\n'``). See :api:`twisted.mail.smtp.SMTPClient.getMailData`
         for the reason.
 
-        :type lines: basestring or list
-        :param lines: The lines to write to the :ivar:`mailfile`.
+        :type lines: :any:`basestring` or :any:`list`
+        :param lines: The lines to write to the :attr:`mailfile`.
         """
         if isinstance(lines, basestring):
             lines = lines.replace('\r\n', '\n')
@@ -297,9 +303,9 @@ class EmailResponse(object):
 
         :param str fromAddress: The email address for the ``'From:'`` header.
         :param str toAddress: The email address for the ``'To:'`` header.
-        :type subject: None or str
+        :type subject: ``None`` or :any:`str`
         :param subject: The ``'Subject:'`` header.
-        :type inReplyTo: None or str
+        :type inReplyTo: ``None`` or :any:`str`
         :param inReplyTo: If set, an ``'In-Reply-To:'`` header will be
             generated. This should be set to the ``'Message-ID:'`` header from
             the client's original request email.
@@ -307,7 +313,7 @@ class EmailResponse(object):
             ``'Message-ID:'`` header for the response.
         :param str contentType: The ``'Content-Type:'`` header.
         :kwargs: If given, the key will become the name of the header, and the
-            value will become the Contents of that header.
+            value will become the contents of that header.
         """
         self.write("From: %s" % fromAddress)
         self.write("To: %s" % toAddress)
@@ -336,11 +342,11 @@ class EmailResponse(object):
         self.write(self.delimiter)
 
     def writeBody(self, body):
-        """Write the response body into the :cvar:`mailfile`.
+        """Write the response body into the :attr:`mailfile`.
 
-        If ``EmailResponse.gpgSignFunc`` is set, and signing is configured, the
-        **body** will be automatically signed before writing its contents into
-        the ``mailfile``.
+        If :attr:`EmailResponse.gpgSignFunc` is set, and signing is configured,
+        the **body** will be automatically signed before writing its contents
+        into the :attr:`mailfile`.
 
         :param str body: The body of the response email.
         """
@@ -361,12 +367,17 @@ class SMTPAutoresponder(smtp.SMTPClient):
     create a :class:`EmailResponse` email message in reply to it, and then,
     finally, send it out.
 
-    :ivar log: A :api:`twisted.python.util.LineLog` cache of messages.
-    :ivar debug: If ``True``, enable logging (accessible via :ivar:`log`).
+    :vartype log: :api:`twisted.python.util.LineLog`
+    :ivar log: A cache of debug log messages.
+    :vartype debug: bool
+    :ivar debug: If ``True``, enable logging (accessible via :attr:`log`).
     :ivar str identity: Our FQDN which will be sent during client ``HELO``.
-    :ivar incoming: An incoming
-        :api:`Message <twisted.mail.smtp.rfc822.Message>`, i.e. as returned
-        from :meth:`SMTPMessage.getIncomingMessage`.
+    :vartype incoming: :api:`Message <twisted.mail.smtp.rfc822.Message>`
+    :ivar incoming: An incoming message, i.e. as returned from
+        :meth:`SMTPMessage.getIncomingMessage`.
+
+    :vartype deferred: :api:`twisted.internet.defer.Deferred`
+
     :ivar deferred: A :api:`Deferred <twisted.internet.defer.Deferred>` with
        registered callbacks, :meth:`sentMail` and :meth:`sendError`, which
        will be given to the reactor in order to process the sending of the
@@ -546,9 +557,10 @@ class SMTPAutoresponder(smtp.SMTPClient):
     def sendError(self, fail):
         """Errback for a :api:`twisted.mail.smtp.SMTPSenderFactory`.
 
-        :param fail: A :api:`twisted.python.failure.Failure` or a
-            :api:`twisted.mail.smtp.SMTPClientError` which occurred during the
-            transaction to send the outgoing email.
+        :type fail: :api:`twisted.python.failure.Failure` or
+            :api:`twisted.mail.smtp.SMTPClientError`
+        :param fail: An exception which occurred during the transaction to
+            send the outgoing email.
         """
         logging.debug("called with %r" % fail)
 
@@ -604,13 +616,14 @@ class SMTPAutoresponder(smtp.SMTPClient):
         4. If the incoming message is from a domain which supports DKIM
         signing, then run :func:`bridgedb.email.dkim.checkDKIM` as well.
 
-        .. note:: Calling this method sets the ``canonicalFromEmail`` and
-            :data:``canonicalDomainRules`` attributes of the :data:`incoming`
-            message.
+        .. note:: Calling this method sets the
+            :attr:`incoming.canonicalFromEmail` and
+            :attr:`incoming.canonicalDomainRules` attributes of the
+            :attr:`incoming` message.
 
-        :param client: An :api:`twisted.mail.smtp.Address`, which contains
-            the client's email address, extracted from the ``'From:'`` header
-            from the incoming email.
+        :type client: :api:`twisted.mail.smtp.Address`
+        :param client: The client's email address, extracted from the
+            ``'From:'`` header from the incoming email.
         :rtype: bool
         :returns: ``False`` if the checks didn't pass, ``True`` otherwise.
         """

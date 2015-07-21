@@ -10,8 +10,18 @@
 #             (c) 2007-2015, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
-"""A :class:`~bridgedb.distribute.Distributor` which hands out
-:class:`bridges <bridgedb.bridges.Bridge>` to clients via an email interface.
+"""
+.. py:module:: bridgedb.email.distributor
+    :synopsis: A Distributor which hands out Bridges via an email interface.
+
+bridgedb.email.autoresponder
+============================
+
+A :class:`~bridgedb.distribute.Distributor` which hands out :class:`bridges
+<bridgedb.bridges.Bridge>` to clients via an email interface.
+
+.. inheritance-diagram:: IgnoreEmail TooSoonEmail EmailRequestedHelp EmailRequestedKey EmailDistributor
+    :parts: 1
 """
 
 import logging
@@ -117,13 +127,14 @@ class EmailDistributor(Distributor):
             :data:`~bridgedb.bridgerequest.BridgeRequestBase.client` attribute
             set to a string containing the client's full, canonicalized email
             address.
+        :type interval: str
         :param interval: The time period when we got this request. This can be
             any string, so long as it changes with every period.
         :type clock: :api:`twisted.internet.task.Clock`
         :param clock: If given, use the clock to ask what time it is, rather
             than :api:`time.time`. This should likely only be used for
             testing.
-        :rtype: list or ``None``
+        :rtype: :any:`list` or ``None``
         :returns: A list of :class:`~bridgedb.bridges.Bridges` for the
             ``bridgeRequest.client``, if allowed.  Otherwise, returns ``None``.
         """

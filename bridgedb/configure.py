@@ -23,38 +23,42 @@ def loadConfig(configFile=None, configCls=None):
 
     All pathnames and filenames within settings in the ``configFile`` will be
     expanded, and their expanded values will be stored in the returned
-    :class:`config <Conf>` object.
+    :class:`configuration <bridgedb.configure.Conf>` object.
 
-    ** Note: **
-    On the strange-looking use of
-      ``exec compile(open(configFile).read(), '<string>', 'exec') in dict()``
-    in this function:
+    **Note:**
 
-    The contents of the config file should be compiled first, and then
-    ``exec``ed -- not ``execfile``! -- in order to get the contents of the
-    config file to exist within the scope of the configuration dictionary.
+    On the strange-looking use of::
+
+        exec compile(open(configFile).read(), '<string>', 'exec') in dict()
+
+    in this function…
+
+    The contents of the config file should be compiled first, and then passed
+    to ``exec()`` -- not ``execfile()`` ! -- in order to get the contents of
+    the config file to exist within the scope of the configuration dictionary.
     Otherwise, Python *will* default_ to executing the config file directly
     within the ``globals()`` scope.
 
-    Additionally, it's roughly 20-30 times faster_ to use the ``compile``
-    builtin on a string (the contents of the file) before ``exec``ing it, than
-    using ``execfile`` directly on the file.
+    Additionally, it's roughly 20-30 times faster_ to use the ``compile()``
+    builtin on a string (the contents of the file) before passing it to
+    ``exec()``, than using ``execfile()`` directly on the file.
 
     .. _default: http://stackoverflow.com/q/17470193
     .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
 
-    :ivar boolean itsSafeToUseLogging: This is called in
-        :func:`~bridgedb.Main.run` before
+    :ivar bool itsSafeToUseLogging: This is called in
+        :func:`bridgedb.Main.run` before
         :func:`bridgedb.safelog.configureLogging`. When called from
         :func:`~bridgedb.Main.run`, the **configCls** parameter is not given,
-        because that is the first time that a :class:`Conf` is created. If a
+        because that is the first time that a
+        :class:`config <bridgedb.configure.Conf>` has been created. If a
         :class:`logging.Logger` is created in this function, then logging will
         not be correctly configured, therefore, if the **configCls** parameter
         is not given, then it's the first time this function has been called
-        and it is therefore not safe to make calls to the logging module.
-    :type: configFile: string or None
+        and it is therefore *not* safe to make calls to the logging module.
+    :type configFile: :any:`str` or ``None``
     :param configFile: If given, the filename of the config file to load.
-    :type configCls: :class:`Conf` or None
+    :type configCls: :class:`bridgedb.configure.Conf` or ``None``
     :param configCls: The current configuration instance, if one already
         exists.
     :returns: A new :class:`configuration <bridgedb.configure.Conf>`, with the

@@ -16,6 +16,9 @@ bridgedb.https.server
 =====================
 
 Servers which interface with clients and distribute bridges over HTTP(S).
+
+.. inheritance-diagram:: TranslatedTemplateResource IndexResource OptionsResource HowtoResource CaptchaProtectedResource GimpCaptchaProtectedResource ReCaptchaProtectedResource BridgesResource
+    :parts: 1
 """
 
 import base64
@@ -75,15 +78,14 @@ logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
 
 def getClientIP(request, useForwardedHeader=False):
-    """Get the client's IP address from the :header:`X-Forwarded-For`
+    """Get the client's IP address from the ``'X-Forwarded-For:'``
     header, or from the :api:`request <twisted.web.server.Request>`.
 
     :type request: :api:`twisted.web.http.Request`
-    :param request: A ``Request`` object for a
-        :api:`twisted.web.resource.Resource`.
+    :param request: A ``Request`` for a :api:`twisted.web.resource.Resource`.
     :param bool useForwardedHeader: If ``True``, attempt to get the client's
-        IP address from the :header:`X-Forwarded-For` header.
-    :rtype: None or str
+        IP address from the ``'X-Forwarded-For:'`` header.
+    :rtype: ``None`` or :any:`str`
     :returns: The client's IP address, if it was obtainable.
     """
     ip = None
@@ -153,7 +155,7 @@ class TranslatedTemplateResource(resource.Resource):
     isLeaf = True
 
     def __init__(self, template=None):
-        """Create a new :api:`~twisted.web.resource.Resource` for a
+        """Create a new :api:`Resource <twisted.web.resource.Resource>` for a
         Mako-templated webpage.
         """
         gettext.install("bridgedb", unicode=True)
@@ -214,13 +216,13 @@ class CaptchaProtectedResource(resource.Resource):
         self.resource = protectedResource
 
     def getClientIP(self, request):
-        """Get the client's IP address from the :header:`X-Forwarded-For`
+        """Get the client's IP address from the ``'X-Forwarded-For:'``
         header, or from the :api:`request <twisted.web.server.Request>`.
 
         :type request: :api:`twisted.web.http.Request`
-        :param request: A ``Request`` object for a
+        :param request: A ``Request`` for a
             :api:`twisted.web.resource.Resource`.
-        :rtype: None or str
+        :rtype: ``None`` or :any:`str`
         :returns: The client's IP address, if it was obtainable.
         """
         return getClientIP(request, self.useForwardedHeader)
@@ -228,10 +230,11 @@ class CaptchaProtectedResource(resource.Resource):
     def getCaptchaImage(self, request=None):
         """Get a CAPTCHA image.
 
+        :rtype: tuple
         :returns: A 2-tuple of ``(image, challenge)``, where ``image`` is a
-                  binary, JPEG-encoded image, and ``challenge`` is a unique
-                  string. If unable to retrieve a CAPTCHA, returns a tuple
-                  containing two empty strings.
+            binary, JPEG-encoded image, and ``challenge`` is a unique
+            string. If unable to retrieve a CAPTCHA, returns a tuple
+            containing two empty strings.
         """
         return ('', '')
 
@@ -672,13 +675,13 @@ class BridgesResource(resource.Resource):
         return response
 
     def getClientIP(self, request):
-        """Get the client's IP address from the :header:`X-Forwarded-For`
+        """Get the client's IP address from the ``'X-Forwarded-For:'``
         header, or from the :api:`request <twisted.web.server.Request>`.
 
         :type request: :api:`twisted.web.http.Request`
         :param request: A ``Request`` object for a
             :api:`twisted.web.resource.Resource`.
-        :rtype: None or str
+        :rtype: ``None`` or :any:`str`
         :returns: The client's IP address, if it was obtainable.
         """
         return getClientIP(request, self.useForwardedHeader)

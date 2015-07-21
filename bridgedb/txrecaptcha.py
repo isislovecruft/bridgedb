@@ -10,7 +10,7 @@
 """Twisted-based reCAPTCHA client.
 
 This client *always* uses TLS with strict hostname checking, unlike the
-official Google Python recaptcha-client_, which is harcoded_ to use plaintext
+official Google Python recaptcha-client_, which is hardcoded_ to use plaintext
 HTTP.
 
 Small portions of this code were taken from the official Google Python
@@ -20,6 +20,9 @@ which are copyright the authors of the recaptcha-client_ package.
 
 .. _hardcoded: https://code.google.com/p/recaptcha/source/browse/trunk/recaptcha-plugins/python/recaptcha/client/captcha.py#76
 .. _recaptcha-client: https://pypi.python.org/pypi/recaptcha-client/1.0.6
+
+.. inheritance-diagram:: RecaptchaResponseError RecaptchaResponse RecaptchaResponseProtocol
+    :parts: 1
 """
 
 import logging
@@ -42,11 +45,11 @@ from zope.interface import implements
 
 from bridgedb.crypto import SSLVerifyingContextFactory
 
-#: This was taken from  recaptcha.client.captcha.API_SSL_SERVER.
+#: This was taken from :data:`recaptcha.client.captcha.API_SSL_SERVER`.
 API_SSL_SERVER = API_SERVER = "https://www.google.com/recaptcha/api"
 API_SSL_VERIFY_URL = "%s/verify" % API_SSL_SERVER
 
-#: (type: `OpenSSL.crypto.X509`) Only trust certificate for the reCAPTCHA
+#: (:class:`OpenSSL.crypto.X509`) Only trust certificate for the reCAPTCHA
 #: :data:`API_SSL_SERVER` which were signed by the Google Internet Authority CA.
 GOOGLE_INTERNET_AUTHORITY_CA_CERT = load_certificate(FILETYPE_PEM, bytes("""\
 -----BEGIN CERTIFICATE-----
@@ -151,8 +154,9 @@ class RecaptchaResponseError(ValueError):
 
 
 class RecaptchaResponse(object):
-    """Taken from recaptcha.client.captcha.`RecaptchaResponse`_.
-    .. RecaptchaResponse: https://code.google.com/p/recaptcha/source/browse/trunk/recaptcha-plugins/python/recaptcha/client/captcha.py#7
+    """Taken from `recaptcha.client.captcha.RecaptchaResponse`__.
+
+    .. __: https://code.google.com/p/recaptcha/source/browse/trunk/recaptcha-plugins/python/recaptcha/client/captcha.py#7
     """
     def __init__(self, is_valid, error_code=None):
         self.is_valid = is_valid
@@ -163,10 +167,12 @@ class RecaptchaResponseProtocol(protocol.Protocol):
     """HTML parser which creates a :class:`RecaptchaResponse` from the body of
     the reCaptcha API server's response.
     """
-    def __init__(self, finished):
-        """Create a protocol for creating :class:`RecaptchaResponse`s.
 
-        :type finished: :api:`~twisted.internet.defer.Deferred`
+    def __init__(self, finished):
+        """Create a protocol for creating
+        :class:`RecaptchaResponses <bridgedb.txrecaptcha.RecaptchaResponse>`.
+
+        :type finished: :api:`twisted.internet.defer.Deferred`
         :param finished: A deferred which will have its ``callback()`` called
              with a :class:`RecaptchaResponse`.
         """
@@ -175,7 +181,7 @@ class RecaptchaResponseProtocol(protocol.Protocol):
         self.response = ''
 
     def dataReceived(self, data):
-        """Called when some data is received from the connection."""
+        """Called when some **data** is received from the connection."""
         if self.remaining:
             received = data[:self.remaining]
             self.response += received
@@ -187,8 +193,6 @@ class RecaptchaResponseProtocol(protocol.Protocol):
         :type reason: :api:`twisted.python.failure.Failure`
         :param reason: A string explaning why the connection was closed,
             wrapped in a ``Failure`` instance.
-
-        :raises: A :api:`twisted.internet.error.ConnectError` if the 
         """
         valid = False
         error = reason.getErrorMessage()
@@ -232,7 +236,7 @@ def _cbRequest(response):
     """Callback for a :api:`twisted.web.client.Agent.request` which delivers
     the result to a :class:`RecaptchaResponseProtocol`.
 
-    :returns: A :api:`~twisted.internet.defer.Deferred` which will callback
+    :returns: A :api:`twisted.internet.defer.Deferred` which will callback
     with a ``recaptcha.RecaptchaResponse`` for the request.
     """
     finished = defer.Deferred()
@@ -265,19 +269,20 @@ def submit(recaptcha_challenge_field, recaptcha_response_field,
         1. It uses Twisted for everything.
         2. It uses SSL/TLS for everything.
 
-    This function returns a :api:`~twisted.internet.defer.Deferred`. If you
+    This function returns a :api:`twisted.internet.defer.Deferred`. If you
     need a ``recaptcha.client.captcha.RecaptchaResponse`` to be returned, use
     the :func:`submit` function, which is an ``@inlineCallbacks`` wrapper for
     this function.
 
     :param str recaptcha_challenge_field: The value of the HTTP POST
         ``recaptcha_challenge_field`` argument from the form.
-    :param recaptcha_response_field: The value of the HTTP POST
+    :param str recaptcha_response_field: The value of the HTTP POST
         ``recaptcha_response_field`` argument from the form.
-    :param private_key: The reCAPTCHA API private key.
-    :param remoteip: An IP address to give to the reCaptcha API server.
-    :returns: A :api:`~twisted.internet.defer.Deferred` which will callback
-        with a ``recaptcha.RecaptchaResponse`` for the request.
+    :param str private_key: The reCAPTCHA API private key.
+    :param str remoteip: An IP address to give to the reCaptcha API server.
+    :rtype: :api:`twisted.internet.defer.Deferred`
+    :returns: A ``Deferred`` which will callback with a
+        ``recaptcha.RecaptchaResponse`` for the request.
     """
     if not (recaptcha_response_field and len(recaptcha_response_field) and
             recaptcha_challenge_field and len(recaptcha_challenge_field)):

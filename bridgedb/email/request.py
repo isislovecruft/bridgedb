@@ -23,6 +23,9 @@ bridgedb.email.request
 Classes for parsing and storing information about requests for bridges
 which are sent to the email distributor.
 
+.. inheritance-diagram:: EmailBridgeRequest
+    :parts: 1
+
 ::
 
   bridgedb.email.request
@@ -30,6 +33,7 @@ which are sent to the email distributor.
    |                                    offer help.
    |_ EmailBridgeRequest - A request for bridges which was received through
                            the email distributor.
+
 ..
 """
 
@@ -56,7 +60,7 @@ UNBLOCKED_PATTERN = re.compile(UNBLOCKED_REGEXP)
 
 
 def determineBridgeRequestOptions(lines):
-    """Figure out which :class:`Bridges.BridgeFilter`s to apply, or offer help.
+    """Figure out which :mod:`~bridgedb.filters` to apply, or offer help.
 
     .. note:: If any ``'transport TYPE'`` was requested, or bridges not
         blocked in a specific CC (``'unblocked CC'``), then the ``TYPE``
@@ -66,7 +70,7 @@ def determineBridgeRequestOptions(lines):
     :raises EmailRequestedHelp: if the client requested help.
     :raises EmailRequestedKey: if the client requested our GnuPG key.
     :rtype: :class:`EmailBridgeRequest`
-    :returns: A :class:`~bridgerequst.BridgeRequest` with all of the requested
+    :returns: A :class:`~bridgerequest.BridgeRequest` with all of the requested
         parameters set. The returned ``BridgeRequest`` will have already had
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """

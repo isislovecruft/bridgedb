@@ -20,12 +20,15 @@ bridgedb.https.request
 Classes for parsing and storing information about requests for bridges
 which are sent to the HTTPS distributor.
 
+.. inheritance-diagram:: HTTPSBridgeRequest
+
 ::
 
   bridgedb.https.request
    |
    |_ HTTPSBridgeRequest - A request for bridges which was received through
                            the HTTPS distributor.
+
 ..
 """
 

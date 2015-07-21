@@ -116,8 +116,11 @@ def loadProxiesFromFile(filename, proxySet=None, removeStale=False):
 
 
 class ProxySet(MutableSet):
-    """A :class:`collections.MutableSet` for storing validated IP addresses."""
+    """A :class:`collections.MutableSet` for storing validated IP addresses.
 
+    .. inheritance-diagram:: ProxySet
+        :parts: 1
+    """
     #: A tag to apply to IP addresses within this ``ProxySet`` which are known
     #: Tor exit relays.
     _exitTag = 'exit_relay'

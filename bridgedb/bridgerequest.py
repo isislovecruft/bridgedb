@@ -10,11 +10,17 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
+"""API for creating classes which store information on the type of bridges
+requested by a client.
+
+.. inheritance-diagram:: BridgeRequestBase
+    :parts: 1
+"""
 
 import ipaddr
 import logging
 
-from zope.interface import implements
+from zope.interface import implementer
 from zope.interface import Attribute
 from zope.interface import Interface
 
@@ -41,9 +47,9 @@ class IRequestBridges(Interface):
     client = Attribute(
         "This should be some information unique to the client making the "
         "request for bridges, such that we are able to HMAC this unique "
-        "data, via getHashringPlacement(), in order to place the client "
-        "into a hashring (determining which bridge addresses they get in "
-        "the request response).")
+        "data, via :meth:`getHashringPlacement()`, in order to place the "
+        "client into a hashring (determining which bridge addresses they get "
+        "in the request response).")
 
     def addFilter():
         """Add a filter to the list of ``filters``."""
@@ -82,27 +88,33 @@ class IRequestBridges(Interface):
         """
 
 
+@implementer(IRequestBridges)
 class BridgeRequestBase(object):
-    """A generic base class for storing options of a client bridge request."""
+    """A generic base class for storing options of a client bridge request.
 
-    implements(IRequestBridges)
+    :vartype filters: list
+    :ivar filters: A list of callables used to filter bridges from a hashring.
+    :vartype transports: list
+    :ivar transports: A list of strings of Pluggable Transport types requested.
+    :vartype notBlockedIn: list
+    :ivar notBlockedIn: A list of two-character country codes. The distributed
+        bridges should not be blocked in these countries.
+    :vartype client: str
+    :ivar client: This should be some information unique to the client making
+        the request for bridges, such that we are able to HMAC this unique
+        data in order to place the client into a hashring (determining which
+        bridge addresses they get in the request response). It defaults to the
+        string ``'default'``.
+    :vartype valid: bool
+    :ivar valid: Should be ``True`` if the client's request was valid.
+    """
 
     def __init__(self, ipVersion=None):
         self.ipVersion = ipVersion
-        #: (list) A list of callables used to filter bridges from a hashring.
         self.filters = list()
-        #: (list) A list of strings of Pluggable Transport types requested.
         self.transports = list()
-        #: (list) A list of two-character country codes. The distributed bridges
-        #: should not be blocked in these countries.
         self.notBlockedIn = list()
-        #: This should be some information unique to the client making the
-        #: request for bridges, such that we are able to HMAC this unique data
-        #: in order to place the client into a hashring (determining which
-        #: bridge addresses they get in the request response). It defaults to
-        #: the string ``'default'``.
         self.client = 'default'
-        #: (bool) Should be ``True`` if the client's request was valid.
         self.valid = False
 
     @property
@@ -160,25 +172,45 @@ class BridgeRequestBase(object):
         return self.valid
 
     def withIPv4(self):
+        """Set the ``ipVersion`` to IPv4."""
         self.ipVersion = 4
 
     def withIPv6(self):
+        """Set the ``ipVersion`` to IPv6."""
         self.ipVersion = 6
 
     def withoutBlockInCountry(self, country):
+        """Add this **countryCode** to the list of countries which distributed
+        bridges should not be blocked in (``notBlockedIn``).
+        """
         self.notBlockedIn.append(country.lower())
 
     def withPluggableTransportType(self, pt):
+        """Add this **pt** to the list of requested ``transports``.
+
+        :param str pt: A :class:`~bridgedb.bridges.PluggableTransport`.
+            :data:`methodname <bridgedb.bridges.PluggableTransport.methodname>`.
+        """
         self.transports.append(pt)
 
     def addFilter(self, filtre):
+        """Add a **filtre** to the list of ``filters``.
+
+        :type filter: callable
+        :param filter: A filter function, e.g. one generated via
+            :mod:`bridgedb.filters`.
+        """
         self.filters.append(filtre)
 
     def clearFilters(self):
+        """Clear the list of ``filters``."""
         self.filters = []
 
     def justOnePTType(self):
-        """Get just one bridge PT type at a time!"""
+        """Get just one bridge type (e.g. a
+        :data:`methodname <bridgedb.bridges.PluggableTransport.methodname>` of
+        :class:`~bridgedb.bridges.PluggableTransport`) at a time!
+        """
         ptType = None
         try:
             ptType = self.transports[-1]  # Use the last PT requested
@@ -187,6 +219,10 @@ class BridgeRequestBase(object):
         return ptType
 
     def generateFilters(self):
+        """Build the list of callables, ``filters``, according to the current
+        contents of the lists of ``transports``, ``notBlockedIn``, and the
+        ``ipVersion``.
+        """
         self.clearFilters()
 
         pt = self.justOnePTType()
