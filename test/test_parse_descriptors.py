@@ -391,6 +391,30 @@ class ParseDescriptorsTests(unittest.TestCase):
                           descriptors.parseNetworkStatusFile,
                           descFile)
 
+    def test_parse_descriptors_parseNetworkStatusFile_HSDir_flag(self):
+        """A Bridge networkstatus descriptor with the HSDir flag should be
+        possible to parse (without errors), however, the flag should be ignored
+        (since the :class:`bridgedb.bridges.Flags` class doesn't care about it).
+
+        See also: :trac:`16616`
+        """
+        unparseable = BRIDGE_NETWORKSTATUS_0.replace(
+            's Fast Guard Running Stable Valid',
+            's Fast Guard Running Stable Valid HSDir')
+        # Write the descriptor to a file for testing. This is necessary
+        # because the function opens the networkstatus file to read it.
+        descFile = self.writeTestDescriptorsToFile('networkstatus-bridges',
+                                                   unparseable)
+        routers = descriptors.parseNetworkStatusFile(descFile)
+        bridge = routers[0]
+
+        for flag in [u'Fast', u'Guard', u'Running',
+                     u'Stable', u'Valid', u'HSDir']:
+            self.assertTrue(flag in bridge.flags,
+                            ("Expected to parse the %r flag from a bridge "
+                             "networkstatus document, but the flag was not "
+                             "found!"))
+
     def test_parse_descriptors_parseNetworkStatusFile_IPv6_ORAddress(self):
         """A Bridge can't have its primary ORAddress be IPv6 without raising
         a ValueError.
