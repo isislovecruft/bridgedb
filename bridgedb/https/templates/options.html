@@ -3,50 +3,49 @@
 <%inherit file="base.html"/>
 <%page args="strings, rtl=False, lang='en', **kwargs"/>
 
-<div class="container-fluid"
-     style="width: 96%; align: center; margin: 2%">
-  <div class="container-fluid" style="padding: 2%">
-  <p>
-    <h2>${_(strings.BRIDGES[1])}</h2>
-  </p>
-  </div>
-  <div class="container-fluid"
-       style="width: 100%; align: center; padding: 2%;">
-    <p>
-      ${_(strings.WELCOME[0]) % \
-         ("""<a href="https://www.torproject.org/docs/pluggable-transports.html">""",
-          """</a>""")}
-    </p>
-    <p>
-      ${_(strings.WELCOME[1])}
-    </p>
+<div class="container-fluid container-fluid-outer-96">
+  <!--<div class="container-fluid step-semi-transparent">-->
+    <div class="container-fluid container-fluid-inner">
+      <p>
+        <h3>${_(strings.BRIDGES[1])}</h3>
+      </p>
+    <!--</div>-->
+    <!--<div class="container-fluid container-fluid-outer-100 container-fluid-inner">-->
+      <p>
+        ${_(strings.WELCOME[0]) % \
+           ("""<a href="https://www.torproject.org/docs/pluggable-transports.html">""",
+            """</a>""")}
+      </p>
+      <p>
+        ${_(strings.WELCOME[1])}
+      </p>
 ## The '&#8212' char is a literal emdash ('―'), but it's also XML parseable.
-    <p>
-      ${_(strings.WELCOME[2]) % ("&#8212", "&#8212")}
-    </p>
-    <div class="container-fluid" style="align: center: margin: 2%;">
-      <div style="align: center; padding: 5%;">
-        <p class="bs-component">
-          <a href="./bridges">
-            <button class="btn btn-success btn-lg btn-block"
-                    type="button"
-                    accesskey="j">
+      <p>
+        ${_(strings.WELCOME[2]) % ("&#8212", "&#8212")}
+      </p>
+      <div class="container-fluid container-fluid-outer">
+        <div class="container-fluid-inner-5">
+          <p class="bs-component">
+            <a href="./bridges">
+              <button class="btn btn-success btn-lg btn-block"
+                      id="just-give-me-bridges-btn"
+                      type="button"
+                      accesskey="j">
 ## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 ##              beginning of words are present in your final translation. Thanks!
 ##              (These are used to insert HTML5 underlining tags, to mark accesskeys
 ##              for disabled users.)
-            ${_("""%sJ%sust give me bridges!""") % ("""<u>""", """</u>""")}
-            </button>
-          </a>
-        </p>
+                ${_("""%sJ%sust give me bridges!""") % ("""<u>""", """</u>""")}
+              </button>
+            </a>
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+  <!--</div>-->
 
 <!-- BEGIN "Advanced Options" panel for bridge type -->
-<div class="container-fluid"
-     style="width: 96%; align: center; margin-left: 2%; margin-right: 2%;">
+<div class="container-fluid container-fluid-outer-96-lr">
   <div class="panel panel-primary">
     <div class="panel-heading">
       <h3 class="panel-title">${_("""Advanced Options""")}</h3>
@@ -55,8 +54,8 @@
     <!-- BEGIN bridge options selection form -->
     <form class="form-horizontal" id="advancedOptions" action="bridges" method="GET">
       <fieldset>
-        <div class="container-fluid" id="instructions" style="align-content: left;">
-          <legend style="font-size: 112%">
+        <div class="container-fluid" id="instructions">
+          <legend id="advanced-options-legend">
             <br />
             <p>${_(strings.OPTIONS[0])}</p>
           </legend>
@@ -64,20 +63,19 @@
 
         <div class="container-fluid">
           <!-- BEGIN first options row -->
-          <div class="row" style="width: 98%; height: inherit; margin: auto;">
+          <div class="row" id="options-row-1">
 
             <!-- BEGIN left column, first row -->
-            <div class="container-fluid col-lg-2"
-                 style="float: left; width: 50%; height: inherit;">
-              <div class="step" style="height: inherit;">
+            <div class="container-fluid col-lg-2" id="options-row-1-col-1">
+              <div class="step" id="options-row-1-col-1-step">
                 <div class="form-group">
                   <label class="control-label"
-                         for="transport"
-                          style="text-align: inherit;">
+                         id="options-transport-label"
+                         for="transport">
                     ${_(strings.OPTIONS[2]) % ("Pluggable <u>T</u>ransport")}
                   </label>
                   <div class="container-fluid col-lg-4">
-                    <div class="btn-group" style="float: left; padding: 2%;">
+                    <div class="btn-group" id="options-transport-btn-group">
                       <select class="btn btn-primary btn-sm dropdown"
                               form="advancedOptions"
                               id="transport"
@@ -103,21 +101,17 @@
             </div> <!-- END left column, first row -->
 
             <!-- BEGIN right column, first row -->
-            <div class="container-fluid col-lg-2"
-                 style="float: right; width: 50%; height: inherit;">
-              <div class="step"
-                   style="height: inherit; margin-right: 1%;">
+            <div class="container-fluid col-lg-2" id="options-row-1-col-2">
+              <div class="step" id="options-row-1-col-2-step">
                 <div class="form-group">
                   <label class="control-label"
-                         for="ipv6"
-                         style="text-align: inherit;">
+                         id="options-ipv6-label"
+                         for="ipv6">
                     ${_(strings.OPTIONS[1])}
                   </label>
                   <div class="container-fluid col-lg-4">
-                    <div class="checkbox"
-                         style="float: left;">
-                      <div class="input-group"
-                           style="float: left; padding: 2%;">
+                    <div class="checkbox" id="options-ipv6-checkbox">
+                      <div class="input-group" id="options-ipv6-input-group">
                         <input name="ipv6"
                                id="ipv6"
                                form="advancedOptions"
@@ -140,25 +134,21 @@
       </fieldset>
 
       <!-- BEGIN second options row -->
-      <div class="row"
-           style="width: 98%; height: inherit;
-                  margin-left: auto; margin-right: auto; padding: 2%;">
-        <div class="container-fluid col-lg-2"
-             style="width: 50%; text-align: center;">
-          <p>
-            <button class="btn btn-primary btn-lg btn-block"
-                    accesskey="g">
+      <!--<div class="row" id="options-row-2">
+        <div class="container-fluid col-lg-2" id="options-row-2-col-1">-->
+      <div class="container-fluid container-fluid-outer-60-lr">
+        <div class="container-fluid container-fluid-inner-5">
+          <button class="btn btn-primary btn-lg btn-block"
+                  id="get-bridges-btn"
+                  accesskey="g">
 ## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 ##              beginning of words are present in your final translation. Thanks!
 ## TRANSLATORS: Please do NOT translate the word "bridge"!
-              ${_("""%sG%set Bridges""") % ("<u>", "</u>")}
-            </button>
-          </p>
+            ${_("""%sG%set Bridges""") % ("<u>", "</u>")}
+          </button>
         </div>
       </div>
     </form> <!-- END bridge options selection form -->
   </div> <!-- END advanced options panel (a.k.a. the lined boxy thing --
            -- surrounding the options)                                -->
 </div>
-<br />
-<hr>

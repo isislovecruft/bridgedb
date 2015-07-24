@@ -5,104 +5,96 @@
 
 <!DOCTYPE html>
 <html lang="${lang}">
-<head>
-<meta charset="utf-8">
-<title>BridgeDB</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Bridge IP database">
-<meta name="author" content="The Tor Project">
+  <head>
+    <meta charset="utf-8">
+    <title>BridgeDB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tor Bridges">
+    <meta name="author" content="The Tor Project">
 
-<!-- Le styles -->
-<link rel="stylesheet" href="/assets/css/main.css">
-<!--[if IE 7]>
-  <link rel="stylesheet" href="/assets/css/font-awesome-ie7.min.css">
-<![endif]-->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="/assets/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    % if rtl:
+    <link rel="stylesheet" href="/assets/css/rtl.css">
+    % endif
 
-% if rtl:
-<style>
-span,p,h3,h4 {
-    text-align: right;
-    direction: rtl;
-}
-span {
-    float: right;
-}
-</style>
-% endif
+    <script type="text/javascript" src="/assets/js/bridges.js"></script>
+  </head>
 
-</head>
-<body style="background: url(/assets/tor-roots-blue.svg);
-             background-repeat: no-repeat;
-             background-attachment: scroll;
-             background-position: 2% 100px;
-             background-size: 23%;">
-  <div class="container-narrow">
-    <div class="masthead">
-      <div class="nav nav-tabs">
-        <div class="nav navbar-header">
-          <a  class="navbar-brand" href="../">BridgeDB</a>
+<body>
+  <div class="background-1">
+    <div class="background-2">
+
+      <div class="container-narrow">
+        <div class="masthead">
+          <div class="nav nav-tabs">
+            <div class="nav navbar-header">
+              <a  class="navbar-brand" href="../">BridgeDB</a>
+            </div>
+            <ul class="nav navbar-nav pull-right">
+              <li>
+                <a href="https://www.torproject.org">The Tor Project</a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <ul class="nav navbar-nav pull-right">
-          <li>
-            <a href="https://www.torproject.org">The Tor Project</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
 
 ${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
 
+        <div class="faq">
+          <div class="row-fluid marketing">
 
-<div class="faq">
-  <div class="row-fluid marketing">
+            <h4>${_(strings.FAQ[0])}</h4>
+            <p>
+              ${_(strings.FAQ[1]) % \
+                 ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
+            </p>
 
-    <h4>${_(strings.FAQ[0])}</h4>
-    <p>
-    ${_(strings.FAQ[1]) % \
-       ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
-    </p>
+            <h4>${_(strings.OTHER_DISTRIBUTORS[0])}</h4>
+            <p>
+              ${_(strings.OTHER_DISTRIBUTORS[1]) % \
+                 ("""<a href="mailto:bridges@torproject.org">bridges@torproject.org</a>""",
+                  """<a href="https://riseup.net/">Riseup</a>""",
+                  """<a href="https://mail.google.com/">Gmail</a>""",
+                  """<a href="https://mail.yahoo.com/">Yahoo</a>""")}
+            </p>
 
-    <h4>${_(strings.OTHER_DISTRIBUTORS[0])}</h4>
-    <p>
-    ${_(strings.OTHER_DISTRIBUTORS[1]) % \
-       ("""<a href="mailto:bridges@torproject.org">bridges@torproject.org</a>""",
-        """<a href="https://riseup.net/">Riseup</a>""",
-        """<a href="https://mail.google.com/">Gmail</a>""",
-        """<a href="https://mail.yahoo.com/">Yahoo</a>""")}
-    </p>
+            <h4>${_(strings.HELP[0])}</h4>
+            <p>
+              ${_(strings.HELP[1]) % \
+                 ("""<a href="mailto:help@rt.torproject.org">help@rt.torproject.org</a>""")}
+              ${_(strings.HELP[2])}
+            </p>
+          </div>
+        </div> <!-- end faq -->
 
-    <h4>${_(strings.HELP[0])}</h4>
-    <p>
-      ${_(strings.HELP[1]) % \
-         ("""<a href="mailto:help@rt.torproject.org">help@rt.torproject.org</a>""")}
-      ${_(strings.HELP[2])}
-    </p>
-
-  </div>
-</div>
-<hr>
-
-<div class="footer">
+        <div class="footer footer-small">
+        <hr>
   <p>
     <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">
-      <i class="icon icon-large icon-bug">&nbsp;${_("Report a Bug")}</i></a>
+      <i class="icon icon-large icon-bug"><span id="footer-bugs">&nbsp;${_("Report a Bug")}</span></i></a>
     &nbsp; &middot; &nbsp;
     <a href="https://gitweb.torproject.org/bridgedb.git">
-      <i class="icon icon-large icon-code">&nbsp;${_("Source Code")}</i></a>
+      <i class="icon icon-large icon-code"><span id="footer-code">&nbsp;${_("Source Code")}</span></i></a>
     &nbsp; &middot; &nbsp;
     <a href="https://gitweb.torproject.org/bridgedb.git/tree/CHANGELOG">
-      <i class="icon icon-large icon-rocket">&nbsp;${_("Changelog")}</i></a>
+      <i class="icon icon-large icon-rocket"><span id="footer-changelog">&nbsp;${_("Changelog")}</span></i></a>
     &nbsp; &middot; &nbsp;
     <a href="mailto:help@rt.torproject.org">
-      <i class="icon icon-large icon-envelope">&nbsp;${_("Contact")}</i></a>
+      <i class="icon icon-large icon-envelope"><span id="footer-contact">&nbsp;${_("Contact")}</span></i></a>
     &nbsp; &middot; &nbsp;
-    <a href="../keys"><i class="icon icon-large icon-key">&nbsp;${_("Public Keys")}</i></a>
+    <a href="../keys"><i class="icon icon-large icon-key"><span id="footer-keys">&nbsp;${_("Public Keys")}</span></i></a>
   </p>
   <br />
   <p>&copy; The Tor Project</p>
-</div>
 
-</div> <!-- /container -->
+        </div> <!-- end footer -->
+      </div> <!-- /container -->
+    </div>
+  </div>
 </body>
 </html>

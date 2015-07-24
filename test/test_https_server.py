@@ -43,6 +43,34 @@ logging.disable(50)
 #server.logging.getLogger().setLevel(10)
 
 
+class SetFQDNTests(unittest.TestCase):
+    """Tests for :func:`bridgedb.https.server.setFQDN` and
+    :func:`bridgedb.https.server.setFQDN`.
+    """
+
+    def setUp(self):
+        self.originalFQDN = server.SERVER_PUBLIC_FQDN
+
+    def tearDown(self):
+        server.SERVER_PUBLIC_FQDN = self.originalFQDN
+
+    def test_setFQDN_https(self):
+        """Calling ``server.setFQDN([…], https=True)`` should prepend
+        ``"https://"`` to the module :data:`server.SERVER_PUBLIC_FQDN`
+        variable.
+        """
+        server.setFQDN('example.com', https=True)
+        self.assertEqual(server.SERVER_PUBLIC_FQDN, "https://example.com")
+
+    def test_setFQDN_http(self):
+        """Calling ``server.setFQDN([…], https=False)`` should not prepend
+        anything at all to the module :data:`server.SERVER_PUBLIC_FQDN`
+        variable.
+        """
+        server.setFQDN('example.com', https=False)
+        self.assertEqual(server.SERVER_PUBLIC_FQDN, "example.com")
+
+
 class GetClientIPTests(unittest.TestCase):
     """Tests for :func:`bridgedb.https.server.getClientIP`."""
 
@@ -94,6 +122,78 @@ class ReplaceErrorPageTests(unittest.TestCase):
         errorPage = server.replaceErrorPage(exc)
         self.assertSubstring("Something went wrong", errorPage)
         self.assertNotSubstring("vegan gümmibären", errorPage)
+
+
+class CSPResourceTests(unittest.TestCase):
+    """Tests for :class:`bridgedb.HTTPServer.CSPResource`."""
+
+    def setUp(self):
+        self.pagename = b'foo.html'
+        self.request = DummyRequest([self.pagename])
+        self.request.method = b'GET'
+
+        server.setFQDN('bridges.torproject.org')
+
+    def test_CSPResource_setCSPHeader(self):
+        """Setting the CSP header on a request should work out just peachy,
+        like no errors or other bad stuff happening.
+        """
+        resource = server.CSPResource()
+        resource.setCSPHeader(self.request)
+
+    def test_render_POST_ascii(self):
+        """Calling ``CSPResource.render_POST()`` should log whatever stuff was
+        sent in the body of the POST request.
+        """
+        self.request.method = b'POST'
+        self.request.writeContent('lah dee dah')
+        self.request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+
+        resource = server.CSPResource()
+        page = resource.render_POST(self.request)
+
+        self.assertIn('<html>', str(page))
+
+    def test_render_POST_no_client_IP(self):
+        """Calling ``CSPResource.render_POST()`` should log whatever stuff was
+        sent in the body of the POST request, regardless of whether we were
+        able to determine the client's IP address.
+        """
+        self.request.method = b'POST'
+        self.request.writeContent('lah dee dah')
+
+        resource = server.CSPResource()
+        page = resource.render_POST(self.request)
+
+        self.assertIn('<html>', str(page))
+
+    def test_render_POST_unicode(self):
+        """Calling ``CSPResource.render_POST()`` should log whatever stuff was
+        sent in the body of the POST request, even if it's unicode.
+        """
+        self.request.method = b'POST'
+        self.request.writeContent(
+            ('南京大屠杀是中国抗日战争初期侵华日军在中华民国首都南京犯下的'
+             '大規模屠殺、強姦以及纵火、抢劫等战争罪行与反人类罪行。'))
+        self.request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+
+        resource = server.CSPResource()
+        page = resource.render_POST(self.request)
+
+        self.assertIn('<html>', str(page))
+
+    def test_render_POST_weird_request(self):
+        """Calling ``CSPResource.render_POST()`` without a strange content
+        object which doesn't have a ``content`` attribute should trigger the
+        ``except Exception`` clause.
+        """
+        self.request.method = b'GET'
+        del self.request.content
+
+        resource = server.CSPResource()
+        page = resource.render_POST(self.request)
+
+        self.assertIn('<html>', str(page))
 
 
 class IndexResourceTests(unittest.TestCase):
@@ -687,7 +787,7 @@ class BridgesResourceTests(unittest.TestCase):
         request.headers.update({'accept-language': 'ar,en,en_US,'})
 
         page = self.bridgesResource.render(request)
-        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring("rtl.css", page)
         self.assertSubstring(
             # "I need an alternative way to get bridges!"
             "أحتاج إلى وسيلة بديلة للحصول على bridges", page)
@@ -710,7 +810,7 @@ class BridgesResourceTests(unittest.TestCase):
         request.args.update({'transport': ['obfs3']})
 
         page = self.bridgesResource.render(request)
-        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring("rtl.css", page)
         self.assertSubstring(
             # "How to use the above bridge lines" (since there should be
             # bridges in this response, we don't tell them about alternative
@@ -787,7 +887,7 @@ class OptionsResourceTests(unittest.TestCase):
         request.args.update({'transport': ['obfs2']})
 
         page = self.optionsResource.render(request)
-        self.assertSubstring("direction: rtl", page)
+        self.assertSubstring("rtl.css", page)
         self.assertSubstring("מהם גשרים?", page)
 
 
@@ -836,4 +936,28 @@ class HTTPSServerServiceTests(unittest.TestCase):
         """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
         config = self.config
         config.HTTPS_ROTATION_PERIOD = None
+        server.addWebServer(config, self.distributor)
+
+    def test_addWebServer_CSP_ENABLED_False(self):
+        """Call :func:`bridgedb.https.server.addWebServer` with
+        ``CSP_ENABLED=False`` to test startup.
+        """
+        config = self.config
+        config.CSP_ENABLED = False
+        server.addWebServer(config, self.distributor)
+
+    def test_addWebServer_CSP_REPORT_ONLY_False(self):
+        """Call :func:`bridgedb.https.server.addWebServer` with
+        ``CSP_REPORT_ONLY=False`` to test startup.
+        """
+        config = self.config
+        config.CSP_REPORT_ONLY = False
+        server.addWebServer(config, self.distributor)
+
+    def test_addWebServer_CSP_INCLUDE_SELF_False(self):
+        """Call :func:`bridgedb.https.server.addWebServer` with
+        ``CSP_INCLUDE_SELF=False`` to test startup.
+        """
+        config = self.config
+        config.CSP_INCLUDE_SELF = False
         server.addWebServer(config, self.distributor)

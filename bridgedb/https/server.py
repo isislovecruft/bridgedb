@@ -76,6 +76,36 @@ lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         collection_size=500)
 logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
+#: This server's public, fully-qualified domain name.
+SERVER_PUBLIC_FQDN = None
+
+
+def setFQDN(fqdn, https=True):
+    """Set the global :data:`SERVER_PUBLIC FQDN` variable.
+
+    :param str fqdn: The public, fully-qualified domain name of the HTTP
+        server that will serve this resource.
+    :param bool https: If ``True``, then ``'https://'`` will be prepended to
+        the FQDN.  This is primarily used to create a
+        ``Content-Security-Policy`` header that will only allow resources to
+        be sourced via HTTPS, otherwise, if ``False``, it allow resources to
+        be sourced via any transport protocol.
+    """
+    if https:
+        fqdn = 'https://' + fqdn
+
+    logging.info("Setting HTTP server public FQDN to %r" % fqdn)
+
+    global SERVER_PUBLIC_FQDN
+    SERVER_PUBLIC_FQDN = fqdn
+
+def getFQDN():
+    """Get the setting for the HTTP server's public FQDN from the global
+    :data:`SERVER_PUBLIC_FQDN variable.
+
+    :rtype: str or None
+    """
+    return SERVER_PUBLIC_FQDN
 
 def getClientIP(request, useForwardedHeader=False):
     """Get the client's IP address from the ``'X-Forwarded-For:'``
@@ -148,7 +178,128 @@ def replaceErrorPage(error, template_name=None):
     return rendered
 
 
-class TranslatedTemplateResource(resource.Resource):
+class CSPResource(resource.Resource):
+    """A resource which adds a ``'Content-Security-Policy:'`` header.
+
+    :vartype reportViolations: bool
+    :var reportViolations: Use the Content Security Policy in `report-only`_
+        mode, causing CSP violations to be reported back to the server (at
+        :attr:`reportURI`, where the details of the violation will be logged).
+        (default: ``False``)
+    :vartype reportURI: str
+    :var reportURI: If :attr:`reportViolations` is ``True``, Content Security
+        Policy violations will be sent as JSON-encoded POST request to this
+        URI.  (default: ``'csp-violation'``)
+
+    .. _report-only:
+        https://w3c.github.io/webappsec/specs/content-security-policy/#content-security-policy-report-only-header-field
+    """
+    reportViolations = False
+    reportURI = 'csp-violation'
+
+    def __init__(self, includeSelf=False, enabled=True, reportViolations=False,
+                 useForwardedHeader=False):
+        """Create a new :api:`twisted.web.resource.Resource` which adds a
+        ``'Content-Security-Policy:'`` header.
+
+        If enabled, the default Content Security Policy is::
+
+            default-src 'none' ;
+            base-uri FQDN ;
+            script-src FQDN ;
+            style-src FQDN ;
+            img-src FQDN data: ;
+            font-src FQDN ;
+
+        where ``FQDN`` the value returned from the :func:`getFQDN` function
+        (which uses the ``SERVER_PUBLIC_FQDN`` config file option).
+
+        If the **includeSelf** parameter is enabled, then ``"'self'"``
+        (literally, a string containing the word ``self``, surrounded by
+        single-quotes) will be appended to the ``FQDN``.
+
+        :param str fqdn: The public, fully-qualified domain name
+            of the HTTP server that will serve this resource.
+        :param bool includeSelf: Append ``'self'`` after the **fqdn** in the
+            Content Security Policy.
+        :param bool enabled: If ``False``, all Content Security Policy
+            headers, including those used in report-only mode, will not be
+            sent.  If ``True``, Content Security Policy headers (regardless of
+            whether report-only mode is dis-/en-abled) will be sent.
+            (default: ``True``)
+        :param bool reportViolations: Use the Content Security Policy in
+            report-only mode, causing CSP violations to be reported back to
+            the server (at :attr:`reportURI`, where the details of the
+            violation will be logged).  (default: ``False``)
+        :param bool useForwardedHeader: If ``True``, then we will attempt to
+            obtain the client's IP address from the ``X-Forwarded-For`` HTTP
+            header.  This *only* has an effect if **reportViolations** is also
+            set to ``True`` — the client's IP address is logged along with any
+            CSP violation reports which the client sent via HTTP POST requests
+            to our :attr:`reportURI`.  (default: ``False``)
+        """
+        resource.Resource.__init__(self)
+
+        self.fqdn = getFQDN()
+        self.enabled = enabled
+        self.useForwardedHeader = useForwardedHeader
+        self.csp = ("default-src 'none'; "
+                    "base-uri {0}; "
+                    "script-src {0}; "
+                    "style-src {0}; "
+                    "img-src {0} data:; "
+                    "font-src {0}; ")
+
+        if includeSelf:
+            self.fqdn = " ".join([self.fqdn, "'self'"])
+
+        if reportViolations:
+            self.reportViolations = reportViolations
+
+    def setCSPHeader(self, request):
+        """Set the CSP header for a **request**.
+
+        If this :class:`CSPResource` is :attr:`enabled`, then use
+        :api:`twisted.web.http.Request.setHeader` to send an HTTP
+        ``'Content-Security-Policy:'`` header for any response made to the
+        **request** (or a ``'Content-Security-Policy-Report-Only:'`` header,
+        if :attr:`reportViolations` is enabled).
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for :attr:`reportViolationURI`.
+        """
+        self.fqdn = self.fqdn or getFQDN()  # Update the FQDN if it changed.
+
+        if self.enabled and self.fqdn:
+            if not self.reportViolations:
+                request.setHeader("Content-Security-Policy",
+                                  self.csp.format(self.fqdn))
+            else:
+                logging.debug("Sending report-only CSP header...")
+                request.setHeader("Content-Security-Policy-Report-Only",
+                                  self.csp.format(self.fqdn) +
+                                  "report-uri /%s" % self.reportURI)
+
+    def render_POST(self, request):
+        """If we're in debug mode, log a Content Security Policy violation.
+
+        :type request: :api:`twisted.web.http.Request`
+        :param request: A ``Request`` object for :attr:`reportViolationURI`.
+        """
+        try:
+            client = getClientIP(request, self.useForwardedHeader)
+            report = request.content.read(2048)
+
+            logging.warning("Content-Security-Policy violation report from %s: %r"
+                            % (client or "UNKNOWN CLIENT", report))
+        except Exception as err:
+            logging.error("Error while attempting to log CSP report: %s" % err)
+
+        # Redirect back to the original resource after the report was logged:
+        return redirectTo(request.uri, request)
+
+
+class TranslatedTemplateResource(CSPResource):
     """A generalised resource which uses gettext translations and Mako
     templates.
     """
@@ -159,10 +310,11 @@ class TranslatedTemplateResource(resource.Resource):
         Mako-templated webpage.
         """
         gettext.install("bridgedb", unicode=True)
-        resource.Resource.__init__(self)
+        CSPResource.__init__(self)
         self.template = template
 
     def render_GET(self, request):
+        self.setCSPHeader(request)
         rtl = False
         try:
             langs = translations.getLocaleFromHTTPRequest(request)
@@ -202,14 +354,14 @@ class HowtoResource(TranslatedTemplateResource):
         TranslatedTemplateResource.__init__(self, 'howto.html')
 
 
-class CaptchaProtectedResource(resource.Resource):
+class CaptchaProtectedResource(CSPResource):
     """A general resource protected by some form of CAPTCHA."""
 
     isLeaf = True
 
     def __init__(self, publicKey=None, secretKey=None,
                  useForwardedHeader=False, protectedResource=None):
-        resource.Resource.__init__(self)
+        CSPResource.__init__(self)
         self.publicKey = publicKey
         self.secretKey = secretKey
         self.useForwardedHeader = useForwardedHeader
@@ -278,6 +430,8 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        self.setCSPHeader(request)
+
         rtl = False
         image, challenge = self.getCaptchaImage(request)
 
@@ -315,6 +469,7 @@ class CaptchaProtectedResource(resource.Resource):
         :returns: A rendered HTML page containing a ReCaptcha challenge image
             for the client to solve.
         """
+        self.setCSPHeader(request)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
 
         if self.checkSolution(request) is True:
@@ -357,6 +512,8 @@ class GimpCaptchaProtectedResource(CaptchaProtectedResource):
         :type protectedResource: :api:`twisted.web.resource.Resource`
         :param protectedResource: The resource to serve if the client
             successfully passes the CAPTCHA challenge.
+        :param str serverPublicFQDN: The public, fully-qualified domain name
+            of the HTTP server that will serve this resource.
         """
         CaptchaProtectedResource.__init__(self, **kwargs)
         self.hmacKey = hmacKey
@@ -617,12 +774,13 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             :meth:`_renderDeferred` will handle rendering and displaying the
             HTML to the client.
         """
+        self.setCSPHeader(request)
         d = self.checkSolution(request)
         d.addCallback(self._renderDeferred)
         return NOT_DONE_YET
 
 
-class BridgesResource(resource.Resource):
+class BridgesResource(CSPResource):
     """This resource displays bridge lines in response to a request."""
 
     isLeaf = True
@@ -644,7 +802,7 @@ class BridgesResource(resource.Resource):
             fingerprint in the response?
         """
         gettext.install("bridgedb", unicode=True)
-        resource.Resource.__init__(self)
+        CSPResource.__init__(self)
         self.distributor = distributor
         self.schedule = schedule
         self.nBridgesToGive = N
@@ -666,6 +824,8 @@ class BridgesResource(resource.Resource):
         :rtype: str
         :returns: A plaintext or HTML response to serve.
         """
+        self.setCSPHeader(request)
+
         try:
             response = self.getBridgeRequestAnswer(request)
         except Exception as err:
@@ -818,6 +978,10 @@ def addWebServer(config, distributor):
              GIMP_CAPTCHA_DIR
              GIMP_CAPTCHA_HMAC_KEYFILE
              GIMP_CAPTCHA_RSA_KEYFILE
+             SERVER_PUBLIC_FQDN
+             CSP_ENABLED
+             CSP_REPORT_ONLY
+             CSP_INCLUDE_SELF
     :type distributor: :class:`bridgedb.https.distributor.HTTPSDistributor`
     :param distributor: A bridge distributor.
     :raises SystemExit: if the servers cannot be started.
@@ -831,12 +995,18 @@ def addWebServer(config, distributor):
 
     logging.info("Starting web servers...")
 
+    setFQDN(config.SERVER_PUBLIC_FQDN)
+
     index   = IndexResource()
     options = OptionsResource()
     howto   = HowtoResource()
     robots  = static.File(os.path.join(TEMPLATE_DIR, 'robots.txt'))
     assets  = static.File(os.path.join(TEMPLATE_DIR, 'assets/'))
     keys    = static.Data(bytes(strings.BRIDGEDB_OPENPGP_KEY), 'text/plain')
+    csp     = CSPResource(enabled=config.CSP_ENABLED,
+                          includeSelf=config.CSP_INCLUDE_SELF,
+                          reportViolations=config.CSP_REPORT_ONLY,
+                          useForwardedHeader=fwdHeaders)
 
     root = resource.Resource()
     root.putChild('', index)
@@ -845,6 +1015,7 @@ def addWebServer(config, distributor):
     root.putChild('assets', assets)
     root.putChild('options', options)
     root.putChild('howto', howto)
+    root.putChild(CSPResource.reportURI, csp)
 
     if config.RECAPTCHA_ENABLED:
         publicKey = config.RECAPTCHA_PUB_KEY

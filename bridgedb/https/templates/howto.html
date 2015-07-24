@@ -3,18 +3,16 @@
 <%inherit file="base.html"/>
 <%page args="strings, rtl=False, lang='en', **kwargs"/>
 
-<div class="container-fluid"
-     style="width: 98%; align: center; margin: auto;">
-<div class="container-fluid"
-     style="width: 95%; align: center;
-            padding-top: 10%; padding-left: 5%; padding-right: 5%;">
+<br />
+
+<div class="container-fluid container-fluid-outer-96">
   <div class="panel panel-primary">
     <div class="panel-heading">
       <h3 class="panel-title">${_(strings.HOWTO_TBB[0])}</h3>
     </div>
     <br />
 
-    <div class="container-fluid" id="howto" style="align-content: left;">
+    <div class="container-fluid" id="howto">
       <p>
         ${_(strings.HOWTO_TBB[1]) % \
            ("""<a href="https://www.torproject.org/projects/torbrowser.html"
@@ -35,5 +33,4 @@
       </p>
     </div>
   </div>
-</div>
 </div>
