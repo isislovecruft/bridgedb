@@ -481,7 +481,7 @@ Status: Draft
        Proceedings of the twelfth annual ACM-SIAM symposium on Discrete algorithms.
        Society for Industrial and Applied Mathematics, 2001.
        http://www.wisdom.weizmann.ac.il/%7Enaor/PAPERS/eotp.ps
-       https://gitweb.torproject.org/user/isis/bridgedb.git/tree/refs/heads/feature/7520-social-dist-design:/doc/papers/naor2001efficient.pdf
+       https://gitweb.torproject.org/user/isis/bridgedb.git/tree/doc/papers/naor2001efficient.pdf?h=feature/7520-social-dist-design
 [3]: https://crypto.stanford.edu/pbc/
      http://repo.or.cz/r/pbc.git
 [4]: https://www.gitorious.org/pypbc/pages/Documentation

@@ -31,6 +31,8 @@ from twisted.internet import defer
 from twisted.internet import protocol
 from twisted.internet import reactor
 from twisted.internet import ssl
+from twisted.internet.error import ConnectionRefusedError
+from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError
 
 
@@ -70,11 +72,16 @@ def getSelfIPAddress():
             s.close()
     return ip.compressed
 
-def handleTimeout(failure):
-    """Handle a **failure** due to a timedout connection attempt."""
-    if failure.type == TimeoutError:
+def handle(failure):
+    """Handle a **failure**."""
+    if failure.type == ConnectionRefusedError:
+        log.msg("get-tor-exits: Could not download exitlist; connection was refused.")
+    elif failure.type == DNSLookupError:
+        log.msg("get-tor-exits: Could not download exitlist; domain resolution failed.")
+    elif failure.type == TimeoutError:
         log.msg("get-tor-exits: Could not download exitlist; connection timed out.")
-    failure.trap(TimeoutError)
+
+    failure.trap(ConnectionRefusedError, DNSLookupError, TimeoutError)
 
 def writeToFile(response, filename):
     log.msg("get-tor-exits: Downloading list of Tor exit relays.")
@@ -167,7 +174,7 @@ def main(filename=None, address=None, port=None):
     agent = client.Agent(reactor, contextFactory)
     d = agent.request("GET", check)
     d.addCallback(writeToFile, fh)
-    d.addErrback(handleTimeout)
+    d.addErrback(handle)
     d.addCallbacks(log.msg, log.err)
 
     if not reactor.running:

@@ -1,0 +1,139 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', answer=0, qrcode=0, **kwargs"/>
+
+</div>
+
+<div class="container-narrow">
+  <div class="container-fluid">
+
+% if answer:
+    <div class="container-fluid container-fluid-outer-98">
+      <div class="container-fluid container-fluid-inner-2">
+        <h2>${_(strings.BRIDGES[0])}</h2>
+      </div>
+    </div>
+
+    <div class="container-fluid" id="container-bridges">
+      <div class="row" id="bridgesrow1">
+        <div class="col col-lg-12">
+          <div class="bridge-lines" id="bridgelines">
+## See http://docs.makotemplates.org/en/latest/filtering.html
+% for bridgeline in answer:
+${bridgeline | h,trim}<br />
+% endfor
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid container-fluid-outer">
+      <div class="row" id="bridgesrow2">
+        <button class="btn btn-primary disabled" id="selectbtn"
+                title="Select all bridge lines" aria-disabled="true">
+          <i class="icon icon-2x icon-paste"></i> &nbsp; ${_("""Select All""")}
+        </button>
+% if qrcode:
+        <a class="btn btn-primary" type="button" id="qrcodebtn"
+           href="${qrcode}" title="Show QRCode for bridge lines">
+          <i class="icon icon-2x icon-qrcode"></i> &nbsp; ${_("""Show QRCode""")}
+        </a>
+% endif
+      </div>
+
+      <div class="modal hidden" id="qrcode" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" id="qrcode-modal-btn">
+                &times;
+              </button>
+              <h4 class="modal-title">${_("""QRCode for your bridge lines""")}</h4>
+            </div>
+            <div class="modal-body">
+% if qrcode:
+              <p id="qrcode-para">
+                <img title="QRCode for your bridge lines from BridgeDB"
+                     src="${qrcode}"
+                     alt="" />
+              </p>
+% else:
+              <p class="text-danger">
+## TRANSLATORS: Please translate this into some silly way to say
+##              "There was a problem!" in your language. For example,
+##              for Italian, you might translate this into "Mama mia!",
+##              or for French: "Sacrebleu!". :)
+${_("""Uh oh, spaghettios!""")}
+${_("""It seems there was an error getting your QRCode.""")}
+                <i class="icon icon-frown"></i>
+              </p>
+% endif
+              <p>
+${_("""This QRCode contains your bridge lines. Scan it with a QRCode """ \
+    """reader to copy your bridge lines onto mobile and other devices.""")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+
+<div class="container-fluid container-fluid-outer-96">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">${_(strings.HOWTO_TBB[0])}</h3>
+    </div>
+    <br />
+
+    <div class="container-fluid" id="howto">
+      <p>
+        ${_(strings.HOWTO_TBB[1]) % \
+           ("""<a href="https://www.torproject.org/projects/torbrowser.html"
+                  target="_blank">""",
+            """</a>""")}
+        ${_(strings.HOWTO_TBB[2])}
+      </p>
+      <br />
+      <div class="bs-component">
+        <blockquote>
+          <p>
+            ${_(strings.HOWTO_TBB[3])}
+          </p>
+        </blockquote>
+      </div>
+      <p>
+        ${_(strings.HOWTO_TBB[4])}
+      </p>
+    </div>
+  </div>
+</div>
+
+% else:
+<div class="bs-component" id="uh-oh-spaghettios">
+  <div class="alert alert-dismissable alert-danger">
+    <p>
+      <br />
+      <strong>
+        <em class="primary">
+## TRANSLATORS: Please translate this into some silly way to say
+##              "There was a problem!" in your language. For example,
+##              for Italian, you might translate this into "Mama mia!",
+##              or for French: "Sacrebleu!". :)
+${_("""Uh oh, spaghettios!""")}
+        </em>
+      </strong>
+      <br />
+    </p>
+    <p>
+      ${_("""There currently aren't any bridges available...""")}
+      ${_(""" Perhaps you should try %s going back %s and choosing a""" \
+          """ different bridge type!""") % \
+         ("""<a class="alert-link" href="options">""", """</a>""")}
+    </p>
+  </div>
+</div>
+<br />
+% endif

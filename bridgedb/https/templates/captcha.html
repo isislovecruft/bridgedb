@@ -1,0 +1,49 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', imgstr=0, captcha_challenge=0, **kwargs"/>
+
+<div class="container-narrow" id="captcha-submission-container">
+  <div class="container-fluid container-fluid-inner-5">
+    <div class="box" id="captcha-box">
+      <img alt="${_(strings.CAPTCHA[0])}" src="${imgstr}" />
+
+      <form class="bs-component"
+            id="captchaSubmission"
+            action=""
+            method="POST">
+        <fieldset>
+          <div class="form-group">
+            <div class="input-group" id="captcha-submission-group">
+              <input type="hidden"
+                     form="captchaSubmission"
+                     name="captcha_challenge_field"
+                     id="captcha_challenge_field"
+                     value="${challenge_field}"></input>
+              <input class="form-control"
+                     form="captchaSubmission"
+                     name="captcha_response_field"
+                     id="captcha_response_field"
+                     value=""
+                     autocomplete="off"
+                     type="text"
+                     placeholder="${_(strings.CAPTCHA[1])}"
+                     accesskey="t" autofocus ></input>
+              <span class="input-group-btn">
+                <button class="btn btn-primary"
+                        form="captchaSubmission"
+                        type="submit"
+                        name="submit"
+                        id="captcha-submit-button"
+                        value="submit"
+                        accesskey="s">
+                  <i class="icon-level-down icon-rotate-90"></i>
+                </button>
+              </span>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>

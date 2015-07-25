@@ -1,6 +1,6 @@
 
-BridgeDB Package and Module Documentation
-=========================================
+Packages & Modules
+====================
 
 .. .. currentmodule:: bridgedb
 .. autosummary::
@@ -12,12 +12,12 @@ BridgeDB Package and Module Documentation
     bridgedb.Bucket
     bridgedb.captcha
     bridgedb.configure
+    bridgedb.distribute
     bridgedb.crypto
-    bridgedb.Dist
     bridgedb.email
-    bridgedb.Filters
+    bridgedb.filters
     bridgedb.geo
-    bridgedb.HTTPServer
+    bridgedb.https
     bridgedb.interfaces
     bridgedb.Main
     bridgedb.parse

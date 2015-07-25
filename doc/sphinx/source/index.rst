@@ -3,29 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to BridgeDB's documentation!
-====================================
+BridgeDB developer documentation
+===============================================
 
 .. image:: _static/bay-bridge.jpg
     :align: center
-
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Tor Bridge Descriptor Formats:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. toctree::
-    :maxdepth: 4
-
-    descriptors
-
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-BridgeDB Package and Module Documentation:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. toctree::
-    :maxdepth: 3
-
-    bridgedb
 
 
 ^^^^^^^^^^^^^^^^^
@@ -37,7 +19,31 @@ BridgeDB's README
     readme
 
 
-Help Us Develop BridgeDB!
+^^^^^^^^^^^^^^^^^^^^^
+Packages & Modules
+^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 3
+
+    bridgedb
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Tor Bridge Descriptor Formats
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please also see the `CollecTor`__ documentation on Tor Bridge descriptor formats.
+
+__ https://collector.torproject.org/formats.html#bridge-descriptors
+
+.. toctree::
+    :maxdepth: 4
+
+    descriptors
+
+
+Help Develop BridgeDB!
 =========================
 
 To see all open tickets for BridgeDB, please `visit the Tor Project's Trac`__ instance.
@@ -48,13 +54,14 @@ __ https://trac.torproject.org/projects/tor/query?status=!closed&component=Bridg
 Todo List
 =========
 
+This TODO list is generated in an automated manner via the
+`Sphinx TODO extension`__, and it only includes portions documentation string
+within BridgeDB's codebase which have been marked with the Sphinx ``.. todo:``
+directive.  As such, this should be taken neither as a canonical nor complete
+list of tasks planned for future development, but rather a brief list of
+small(ish) places within the codebase that could use some attention.
+
+__ http://sphinx-doc.org/ext/todo.html#directive-todo
+
 .. todolist::
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 

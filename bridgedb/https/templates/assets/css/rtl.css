@@ -1,0 +1,7 @@
+span,p,h3,h4 {
+    text-align: right;
+    direction: rtl;
+}
+span {
+    float: right;
+}

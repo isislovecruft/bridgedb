@@ -33,17 +33,29 @@ import bridgedb.captcha
 import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
-import bridgedb.Dist
+import bridgedb.distribute
 import bridgedb.email
 import bridgedb.email.autoresponder
+import bridgedb.email.distributor
 import bridgedb.email.dkim
 import bridgedb.email.request
 import bridgedb.email.server
 import bridgedb.email.templates
-import bridgedb.Filters
+import bridgedb.filters
 import bridgedb.geo
-import bridgedb.HTTPServer
+import bridgedb.https
+import bridgedb.https.distributor
+import bridgedb.https.request
+import bridgedb.https.server
 import bridgedb.Main
+import bridgedb.parse
+import bridgedb.parse.addr
+import bridgedb.parse.descriptors
+import bridgedb.parse.fingerprint
+import bridgedb.parse.headers
+import bridgedb.parse.nickname
+import bridgedb.parse.options
+import bridgedb.parse.versions
 import bridgedb.persistent
 import bridgedb.proxy
 import bridgedb.qrcodes
@@ -53,7 +65,6 @@ import bridgedb.schedule
 import bridgedb.Stability
 import bridgedb.Storage
 import bridgedb.strings
-import bridgedb.test
 import bridgedb.translations
 import bridgedb.txrecaptcha
 import bridgedb.util
@@ -99,6 +110,7 @@ needs_sphinx = '1.1'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.doctest',
+              'sphinx.ext.inheritance_diagram',
               'sphinx.ext.intersphinx',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
@@ -108,9 +120,43 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxarg.ext',
               'sphinxcontrib.fulltoc',
               'repoze.sphinx.autointerface',
-              'apilinks_sphinxext']
+              'apilinks_sphinxext',
+              'traclinks']
 
 todo_include_todos = True
+
+# See http://sphinx-doc.org/ext/inheritance.html for configuring the style of
+# inheritance diagrams.  An inheritance diagram can be generated via doing:
+#
+#     class Bar(object):
+#         pass
+#
+#     class Foo(Bar):
+#         """A foobar.
+#
+#         .. inheritance-diagram::
+#             somemodule.Foo
+#         """
+inheritance_graph_attrs = {
+    'rankdir': "LR",
+    'size': '"9.0, 12.0"',
+    'fontsize': 14,
+    'ratio': 'auto',
+    'splines': 'ortho',
+}
+inheritance_node_attrs = {
+    'shape': 'ellipse',
+    'fontsize': 14,
+    'height': 0.75,
+    'color': 'mediumaquamarine',
+    'style': 'filled',
+    'pencolor': 'black',
+}
+inheritance_edge_attrs = {
+    'arrowsize': 1.5,
+    'arrowhead': 'open',
+    'penwidth': 1.5,
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['source/.templates']
@@ -390,5 +436,8 @@ epub_uid = 'BridgeDB Documentation (ePub)' + 'v' + version
 # Allow duplicate toc entries.
 #epub_tocdup = True
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+# See http://sphinx-doc.org/ext/intersphinx.html for details of this setting.
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/', None),
+    'stem': ('https://stem.torproject.org/', None),
+}

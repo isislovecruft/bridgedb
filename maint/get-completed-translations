@@ -20,19 +20,18 @@
 #
 # …/parentdir/
 #   |-- bridgedb/
-#   |   |-- lib/
-#   |   |   `-- bridgedb/
-#   |   |       `-- i18n/
-#   |   |           |-- ar/
-#   |   |           |     `-- LC_MESSAGES
-#   |   |           |         |-- bridgedb.mo
-#   |   |           |         `-- bridgedb.po
-#   |   |           |-- …
-#   |   |           |-- zh_CN/
-#   |   |           |     `-- LC_MESSAGES
-#   |   |           |         |-- bridgedb.mo
-#   |   |           |         `-- bridgedb.po
-#   |   |           `-- templates/
+#   |   |`-- bridgedb/
+#   |   |     `-- i18n/
+#   |   |          |-- ar/
+#   |   |          |     `-- LC_MESSAGES
+#   |   |          |         |-- bridgedb.mo
+#   |   |          |         `-- bridgedb.po
+#   |   |          |-- …
+#   |   |          |-- zh_CN/
+#   |   |          |     `-- LC_MESSAGES
+#   |   |          |         |-- bridgedb.mo
+#   |   |          |         `-- bridgedb.po
+#   |   |          `-- templates/
 #   |   |-- scripts/
 #   |   `-- …
 #   `-- bridgedb-translations/
@@ -138,7 +137,7 @@ cd $PARENT_PATH
 rsync -PCAXvrq \
     --filter 'include *bridgedb.po' \
     --filter 'exclude .gitignore' \
-    $TRANS_DIR/* ./bridgedb/lib/bridgedb/i18n/
+    $TRANS_DIR/* ./bridgedb/bridgedb/i18n/
 status=$?
 
 printf "\n"

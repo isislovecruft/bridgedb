@@ -1,0 +1,441 @@
+/* Imports */
+@import url("bootstrap.min.css");
+@import url("font-awesome.min.css");
+
+/* Fonts */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url('../font/lato-regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url('../font/lato-bold.woff') format('woff');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Lato Italic'), local('Lato-Italic'), url('../font/lato-italic.woff') format('woff');
+}
+
+body {
+  padding-bottom: 40px;
+}
+.background-1 {
+  background: url(/assets/tor-roots-blue.svg);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-position: center 10%;
+  background-size: containx;
+}
+.background-2 {
+  background: rgba(255, 255, 255, 0.9875);
+  background-repeat: repeat;
+  background-attachment: fixed;
+  background-position: center top;
+  background-size: cover;
+}
+.masthead {
+  background: rgba(255, 255, 255, 1.0);
+}
+.footer {
+  background: rgba(255, 255, 255, 1.0);
+}
+
+/* The following is made responsive by the */
+/* media queries at the end of this file.  */
+.footer-small p,
+.footer-small a,
+.footer-small i {
+  font-size: 90%;
+}
+
+/* Custom container */
+.container-narrow {
+  margin: 0 auto;
+  max-width: 675px;
+}
+.container-narrow > hr {
+  margin: 30px 0;
+}
+.container-fluid-outer,
+.container-fluid-outer-98,
+.container-fluid-outer-96,
+.container-fluid-outer-96-lr {
+  align: center;
+  margin: 2%;
+}
+.container-fluid-outer-98 {
+  width: 98%;
+}
+.container-fluid-outer-96,
+.container-fluid-outer-96-lr {
+  width: 96%;
+}
+.container-fluid-outer-96-lr {
+  margin-top: 0%;
+  margin-bottom: 0%;
+  margin-left: 2%;
+  margin-right: 2%;
+}
+.container-fluid-outer-60-lr {
+  margin-top: 0%;
+  margin-bottom: 0%;
+  margin-left: 20%;
+  margin-right: 20%;
+}
+.container-fluid-outer-100 {
+  width: 100%;
+}
+.container-fluid-inner,
+.container-fluid-inner-2 {
+  padding: 2%;
+}
+.container-fluid-inner-5 {
+  padding: 5%;
+}
+.container-fluid-inner-10 {
+  padding: 10%;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+  margin: 60px 0;
+  text-align: center;
+}
+.jumbotron h1 {
+  font-size: 72px;
+  line-height: 1;
+}
+.jumbotron .btn {
+  font-size: 21px;
+  padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+.marketing {
+  margin: 60px 0;
+}
+.marketing p + h4 {
+  margin-top: 28px;
+}
+
+.captcha {
+  margin: auto;
+  display: block;
+  width: 250px;
+}
+.captcha .btn {
+  margin: auto;
+  width: 100px;
+  display: block;
+}
+.fixed-size-btn {
+  margin: 10px;
+  width: 200px;
+}
+
+.main-steps {
+  margin: 50px;
+  z-index: 1000
+}
+.main-btns {
+  margin: auto;
+  width: 450px;
+  display: block;
+}
+
+.step,
+.step-semi-transparent
+{
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+  padding: 10px 20px 0px;
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 1.0);
+}
+.step-semi-transparent {
+  background-color: rgba(255, 255, 255, 0.85);
+}
+.step-title {
+  color: #808080;
+  font-size: 18px;
+  font-weight: 100;
+}
+.step-text {
+  font-size: 18px;
+  line-height: 30px;
+  margin-top: 2px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+.lead_right {
+  margin-bottom: 20px;
+  font-size: 21px;
+  font-weight: 200;
+  line-height: 30px
+}
+[class*="bdb_span"] {
+  min-height: 1px;
+  margin: 0 20px 16px 20px;
+}
+.bdb_span7 {
+  width: 560px
+}
+
+#instructions {
+  align-content: left;
+}
+#advanced-options-legend {
+  font-size: 112%
+}
+#options-row-1,
+#options-row-2 {
+  width: 98%;
+  height: inherit;
+  margin: auto;
+}
+#options-row-2 {
+  margin-right: auto;
+  padding: 4%;
+}
+#options-row-1-col-1,
+#options-row-1-col-2,
+#options-row-2-col1 {
+  width: 50%;
+  height: inherit;
+}
+#options-row-2-col-1 {
+  content-align: center;
+  text-align: center;
+  width: 50%;
+  padding-right: 25%;
+}
+#options-row-1-col-1 {
+  float: left;
+}
+#options-row-1-col-2 {
+  float: right;
+}
+#options-row-1-col-1-step,
+#options-row-1-col-2-step {
+  height: inherit;
+}
+#options-row-1-col-2-step {
+  margin-right: 1%;
+}
+#options-transport-label,
+#options-ipv6-label {
+  text-align: inherit;
+  font-size: 13px;
+  padding-top: 0%;
+  padding-left: 2%;
+  padding-bottom: 5%;
+  padding-right: 2%;
+}
+#options-transport-btn-group,
+#options-ipv6-input-group {
+  float: left;
+}
+#options-ipv6-checkbox {
+  float: left;
+}
+
+#captcha-submission-container {
+  width: 90%;
+  align: center;
+  margin: auto;
+}
+#captcha-box {
+  padding: 5% 15% 5% 15%;
+}
+#captcha-box p {
+  align: center;
+}
+#captcha-box img {
+  /*width: 400px;*/
+  /*height: 125px;*/
+  width: 100%;
+  min-width: 200px;
+}
+#captcha-form-box {
+  align: center;
+  width: 50%;
+  margin: auto;
+}
+#captcha_response_field {
+  height: 47px;
+  margin-top: 0px;
+}
+#captcha-submit-button {
+  height: 47px;
+}
+
+div.bridge-lines {
+  padding: 20px;
+  margin: 0px 0px 20px;
+  min-height: 20px;
+  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  font-size: 95%;
+  line-height: 175%;
+  color: rgb(44, 62, 80);
+  word-break: break-all;
+  word-wrap: normal;
+  white-space: nowrap;
+  overflow-x: auto;
+  z-index: 1000;
+  background-color: rgb(236, 240, 241);
+  border: 0px solid transparent;
+  border-radius: 6px 6px 6px 6px;
+  border-color: #2C3E50;
+  box-shadow: none;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+div.bridge-lines .cursor-copy {
+  cursor: copy;
+}
+div.bridge-lines.-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+div.bridge-lines.-webkit-scrollbar-button.start.decrement {
+  display: block;
+  height: 0;
+  background-color: transparent;
+}
+div.bridge-lines.-webkit-scrollbar-button.end.increment {
+  display: block;
+  height: 0;
+  background-color: transparent;
+}
+div.bridge-lines.-webkit-scrollbar-track-piece {
+  background-color: #FAFAFA;
+  -webkit-border-radius: 0;
+  -webkit-border-bottom-right-radius: 6px;
+  -webkit-border-bottom-left-radius: 6px;
+}
+div.bridge-lines.-webkit-scrollbar-thumb.vertical {
+  height: 50px;
+  background-color: #999;
+  -webkit-border-radius: 6px;
+}
+div.bridge-lines.-webkit-scrollbar-thumb.horizontal{
+  width: 50px;
+  background-color: #999;
+  -webkit-border-radius: 6px;
+}
+#container-bridges {
+  width: auto;
+  align: center;
+  margin: auto;
+  position: relative;
+  left: 0%;
+}
+#bridgesrow2 {
+  text-align: right;
+  padding-right: 7%;
+}
+#bridgesrow2 .btn {
+  margin-bottom: 1%;
+}
+.hidden {
+  display: none;
+}
+.visible {
+  display: block;
+}
+#qrcode .modal-dialog,
+#qrcode .modal-sm {
+  width: 400px;
+}
+#qrcode img {
+  width: 350px;
+  height: 350px;
+}
+#qrcode-para {
+  text-align: center;
+}
+#howto {
+  align-content: left;
+}
+
+#uh-oh-spaghettios {
+  width: 80%;
+  margin: auto;
+}
+.uh-oh-spaghettios~p {
+  text-align: center;
+  font-size: 115%;
+}
+
+@media (min-width: 640px) and (max-width: 980px) {
+  .footer-small p,
+  .footer-small a,
+  .footer-small i {
+    font-size: 80%;
+  }
+}
+@media (min-width: 1px) and (max-width: 768px), handheld {
+  .navbar-nav {
+    display: none;
+  }
+}
+@media (min-width: 1px) and (max-width: 640px), handheld {
+  body {
+    font-size: 14px;
+  }
+  .background-1,
+  .background-2 {
+    background: none;
+  }
+  .main-steps {
+    margin: 25px;
+  }
+  .step {
+    padding: 10px 0px 0px 0px;
+  }
+  .step-title,
+  .step-text {
+    font-size: 16px;
+  }
+  .step-text {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .footer-small p {
+    font-size: 75%;
+    text-align: center;
+  }
+  .footer-small a,
+  .footer-small i {
+    font-size: 125%;
+  }
+  #footer-bugs,
+  #footer-code,
+  #footer-changelog,
+  #footer-contact,
+  #footer-keys {
+    font-size: 0px;
+  }
+  #just-give-me-bridges-btn,
+  #get-bridges-btn,
+  .control-label {
+    font-size: 14px;
+  }
+}
+@media (min-width: 1px) and (max-width: 480px), handheld {
+}

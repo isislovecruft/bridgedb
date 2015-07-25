@@ -6,7 +6,7 @@
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
 #init-hook='import sys,os; venv = os.environ.get("VIRTUAL_ENV"); v = os.path.join(venv, "lib", "python" + str(sys.version_info.major) + "." + str(sys.version_info.micro), "site-packages") if venv is not None else None; sys.path.insert(0, v);'
-init-hook="import sys,os;a=os.getcwd();print a;sys.path.insert(0, os.path.join(a, 'lib'));"
+init-hook="import sys,os;a=os.getcwd();print a;sys.path.insert(0, a));"
 
 # Profiled execution.
 profile=no

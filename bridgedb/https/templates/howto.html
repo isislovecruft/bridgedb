@@ -1,0 +1,36 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
+<br />
+
+<div class="container-fluid container-fluid-outer-96">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">${_(strings.HOWTO_TBB[0])}</h3>
+    </div>
+    <br />
+
+    <div class="container-fluid" id="howto">
+      <p>
+        ${_(strings.HOWTO_TBB[1]) % \
+           ("""<a href="https://www.torproject.org/projects/torbrowser.html"
+                  target="_blank">""",
+            """</a>""")}
+        ${_(strings.HOWTO_TBB[2])}
+      </p>
+      <br />
+      <div class="bs-component">
+        <blockquote>
+          <p>
+            ${_(strings.HOWTO_TBB[3])}
+          </p>
+        </blockquote>
+      </div>
+      <p>
+        ${_(strings.HOWTO_TBB[4])}
+      </p>
+    </div>
+  </div>
+</div>

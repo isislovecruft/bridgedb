@@ -1,0 +1,100 @@
+## -*- coding: utf-8 -*-
+
+<%namespace name="base" file="base.html" inheritable="True"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
+<!DOCTYPE html>
+<html lang="${lang}">
+  <head>
+    <meta charset="utf-8">
+    <title>BridgeDB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tor Bridges">
+    <meta name="author" content="The Tor Project">
+
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="/assets/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    % if rtl:
+    <link rel="stylesheet" href="/assets/css/rtl.css">
+    % endif
+
+    <script type="text/javascript" src="/assets/js/bridges.js"></script>
+  </head>
+
+<body>
+  <div class="background-1">
+    <div class="background-2">
+
+      <div class="container-narrow">
+        <div class="masthead">
+          <div class="nav nav-tabs">
+            <div class="nav navbar-header">
+              <a  class="navbar-brand" href="../">BridgeDB</a>
+            </div>
+            <ul class="nav navbar-nav pull-right">
+              <li>
+                <a href="https://www.torproject.org">The Tor Project</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+${next.body(strings, rtl=rtl, lang=lang, **kwargs)}
+
+        <div class="faq">
+          <div class="row-fluid marketing">
+
+            <h4>${_(strings.FAQ[0])}</h4>
+            <p>
+              ${_(strings.FAQ[1]) % \
+                 ("""<a href="https://www.torproject.org/docs/bridges">""", "</a>")}
+            </p>
+
+            <h4>${_(strings.OTHER_DISTRIBUTORS[0])}</h4>
+            <p>
+              ${_(strings.OTHER_DISTRIBUTORS[1]) % \
+                 ("""<a href="mailto:bridges@torproject.org">bridges@torproject.org</a>""",
+                  """<a href="https://riseup.net/">Riseup</a>""",
+                  """<a href="https://mail.google.com/">Gmail</a>""",
+                  """<a href="https://mail.yahoo.com/">Yahoo</a>""")}
+            </p>
+
+            <h4>${_(strings.HELP[0])}</h4>
+            <p>
+              ${_(strings.HELP[1]) % \
+                 ("""<a href="mailto:help@rt.torproject.org">help@rt.torproject.org</a>""")}
+              ${_(strings.HELP[2])}
+            </p>
+          </div>
+        </div> <!-- end faq -->
+
+        <div class="footer footer-small">
+        <hr>
+  <p>
+    <a href="https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reportbug&cc=isis&owner=isis">
+      <i class="icon icon-large icon-bug"><span id="footer-bugs">&nbsp;${_("Report a Bug")}</span></i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="https://gitweb.torproject.org/bridgedb.git">
+      <i class="icon icon-large icon-code"><span id="footer-code">&nbsp;${_("Source Code")}</span></i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="https://gitweb.torproject.org/bridgedb.git/tree/CHANGELOG">
+      <i class="icon icon-large icon-rocket"><span id="footer-changelog">&nbsp;${_("Changelog")}</span></i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="mailto:help@rt.torproject.org">
+      <i class="icon icon-large icon-envelope"><span id="footer-contact">&nbsp;${_("Contact")}</span></i></a>
+    &nbsp; &middot; &nbsp;
+    <a href="../keys"><i class="icon icon-large icon-key"><span id="footer-keys">&nbsp;${_("Public Keys")}</span></i></a>
+  </p>
+  <br />
+  <p>&copy; The Tor Project</p>
+
+        </div> <!-- end footer -->
+      </div> <!-- /container -->
+    </div>
+  </div>
+</body>
+</html>

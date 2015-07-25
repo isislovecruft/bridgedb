@@ -1,3 +1,104 @@
+Changes in version 0.3.3 - 2015-07-25
+
+        * FIXES #12029 https://bugs.torproject.org/12029
+        BridgeDB now has an API for creating Bridge Distributors.
+        See the bridgedb.distribute module, or its developer documentation
+        at https://pythonhosted.org/bridgedb/bridgedb.distribute.html.
+
+        * FIXES PART OF #12506  https://bugs.torproject.org/12506
+        BridgeDB's two Distributors (HTTPS and Email) are now entirely
+        modularised and self-contained within separate subdirectories in
+        the source code.  This is the first step to redesigning these
+        Distributors into their own separate processes, which will allow
+        the Distributors to remain functional while BridgeDB is reparsing
+        bridge descriptors.
+
+        * FIXES #15968 https://bugs.torproject.org/15968
+        BridgeDB now sends a Content-Security-Policy header which
+        explicitly allows Javascript, images, CSS, and fonts, from
+        https://bridges.torproject.org.  All other types of content are
+        forbidden, including:
+          - embedding https://bridges.torproject.org within
+            <iframe>, <embed>, or <object>, and attempting to source
+            additional resources into its embedded context
+          - inline Javascript, including Javascript within SVG files
+          - inline CSS
+          - externally hosted fonts
+          - inline SVG, e.g. via the HTML5 <svg> tag
+          - any and all connections made via Javascript XMLHttpRequests,
+            WebSockets, sendBeacon(), and Web Workers
+          - plugins
+          - applets
+        BridgeDB's Content-Security-Policy does not yet make use of
+        certain newer, lesser supported, Content-Security-Policy v2.0
+        directives, such as "reflected-xss" and "frame-ancestors", but may
+        someday.
+
+        * FIXES #16273 https://bugs.torproject.org/16273
+        Several links to Tor Project gitweb URLs within the developer
+        documentation were outdated in that they still used the old gitweb
+        URL format.  These are now updated.
+        Thanks to David Fifield for the bug report and patches.
+
+        * FIXES #16330 https://bugs.torproject.org/16330
+        BridgeDB can now handle bridge-server-descriptors with
+        extra-info-digest fields which have two values, as well as both
+        bridge-server-descriptors and bridge-extrainfo descriptors which
+        contain Ed25519 key material and signatures.  See Tor proposals
+        #220 and #228 for more information on the changes to these
+        descriptors.  Note that BridgeDB can now parse this information,
+        but does not yet make use of any Ed25519 cryptographic material
+        within bridge descriptors.
+        https://gitweb.torproject.org/torspec.git/tree/proposals/220-ecc-id-keys.txt
+        https://gitweb.torproject.org/torspec.git/tree/proposals/228-cross-certification-onionkeys.txt
+        Thanks to Atagar for patching Stem.
+
+        * FIXES #16616 https://bugs.torproject.org/16616
+        The HSDir flag can now be included within bridge-networkstatus
+        documents.  BridgeDB now has unittests which guarantee that its
+        parsers safely ignore this flag, as well as any flags unknown to
+        BridgeDB which may appear in the future.
+        Thanks to Roger Dingledine for alerting me about the change.
+
+        * FIXES #16649 https://bugs.torproject.org/16649
+        Mobile users, and other users with small screen pixel ratios, will
+        find that the UI of BridgeDB's HTTPS Distributor has greatly
+        increased in usability and readability.
+
+
+And includes the following general changes:
+
+        * FIXES an error when requesting the non-HTML version of the
+        bridges page (e.g. https://bridges.torproject.org/bridges?format=plain)
+
+        * REMOVES the `bridgedb test` commandline option.
+        BridgeDB's tests can be run via `python setup.py test` or `make
+        test` (or `make coverage` for generating HTML test coverage
+        statistics).
+
+        * CHANGES the HTTPS Distributor to HTML-encode Bridge Lines.
+        Previously, a malicious Pluggable Transport Bridge could include
+        in its PT arguments something like "evil=<script>[…]</script>" and
+        if such a Bridge were to be distributed to a user, that user's web
+        browser would execute the script (if Javacript was enabled).
+        Other characters, including non-ASCII, control characters, double
+        quotes, and backslashes, are also sanitised from Bridge Lines.
+        Thanks to Robert Ransom for the patches.
+
+        * CHANGES BridgeDB's module/package version numbers to be
+        compliant with PEP440.
+
+        * CHANGES the layout of BridgeDB's source code directories.
+        Rather than storing BridgeDB's source in "lib/bridgedb/", it is
+        now kept in "bridgedb/".  Similarly, the directory containing
+        BridgeDB's tests has been moved from "lib/bridgedb/test/" to
+        "test/", which means that the tests are no longer installed when
+        running `python setup.py install` or `make install`.
+
+        * ADDS several improvements to the developer documentation at
+        https://pythonhosted.org/bridgedb.
+
+
 Changes in version 0.3.2 - 2015-05-01
 
         * FIXES a problem with the calculation of Levenshtein distances
@@ -33,7 +134,7 @@ Changes in version 0.3.2 - 2015-05-01
         work.  This fixes the issue by excluding broken transports from
         being distributed to clients.
 
-        * FIXES #15522 https://bugs.torproject.org/15522
+        * FIXES #15517 https://bugs.torproject.org/15517
         For all clients who are coming from IPv6 addresses and are not
         using Tor, who go to https://bridges.torproject.org, BridgeDB now
         groups these clients together by /32.  This "grouping" causes all
@@ -349,7 +450,7 @@ Changes in version 0.2.4 - 2015-02-03
         * FIXES #13123 https://bugs.torproject.org/13123
         Previously, there were two additional whitespace characters at the
         beginning of bridge lines handed out by BridgeDB's HTTPS
-        distributor, which would be annoying copy+pasted into TorLauncher
+        distributor, which would be annoyingly copy+pasted into TorLauncher
         and torrcs, etc.  These are now gone.
 
         * FIXES #12664 https://bugs.torproject.org/12664
@@ -389,7 +490,7 @@ And includes the following general changes:
 Changes in version 0.2.3 - 2014-07-26
 
         * FIXES #5463 https://bugs.torproject.org/5463
-        XXX
+        BridgeDB can now OpenPGP sign outgoing emails.
 
         * FIXES #9385 https://bugs.torproject.org/9385
         BridgeDB now has the ability to blacklist email addresses, and
@@ -543,7 +644,7 @@ Changes in version 0.2.2 - 2014-06-06
         If a user refreshed https://bridges.torproject.org/bridges after
         successfully solving a CAPTCHA, BridgeDB would reply with a new
         set of bridges for each page refresh. This was due to the use of
-        `getIterval()` in `IPBasedDistributor.getBridgesForIP()`.The
+        `getInterval()` in `IPBasedDistributor.getBridgesForIP()`.  The
         correct function to use is `getIntervalStart()`.  This had been
         noted in a "XXX FIXME" comment above the call for quite some time,
         however, when the `bridgedb.schedule` (previously called

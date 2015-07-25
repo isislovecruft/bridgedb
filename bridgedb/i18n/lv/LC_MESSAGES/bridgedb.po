@@ -1,0 +1,383 @@
+# Translations template for BridgeDB.
+# Copyright (C) 2015 'The Tor Project, Inc.'
+# This file is distributed under the same license as the BridgeDB project.
+# 
+# Translators:
+# Ojārs Balcers <ojars.balcers@gmail.com>, 2012
+# Ojārs Balcers <ojars.balcers@gmail.com>, 2013-2015
+# ThePirateDuck <thepirateduck.w@gmail.com>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: The Tor Project\n"
+"Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-07-20 10:46+0000\n"
+"Last-Translator: Ojārs Balcers <ojars.balcers@gmail.com>\n"
+"Language-Team: Latvian (http://www.transifex.com/projects/p/torproject/language/lv/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.6\n"
+"Language: lv\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+
+#. TRANSLATORS: Please DO NOT translate the following words and/or phrases in
+#. any string (regardless of capitalization and/or punctuation):
+#. "BridgeDB"
+#. "pluggable transport"
+#. "pluggable transports"
+#. "obfs2"
+#. "obfs3"
+#. "scramblesuit"
+#. "fteproxy"
+#. "Tor"
+#. "Tor Browser"
+#: lib/bridgedb/HTTPServer.py:107
+msgid "Sorry! Something went wrong with your request."
+msgstr "Atvainojiet! Notikusi ar Jūsu pieprasījumu saistīta kļūme."
+
+#: lib/bridgedb/strings.py:18
+msgid "[This is an automated message; please do not reply.]"
+msgstr "[Šis ir automātisks ziņojums; lūdzu neatbildiet.]"
+
+#: lib/bridgedb/strings.py:20
+msgid "Here are your bridges:"
+msgstr "Te ir Jūsu tilti:"
+
+#: lib/bridgedb/strings.py:22
+#, python-format
+msgid ""
+"You have exceeded the rate limit. Please slow down! The minimum time between\n"
+"emails is %s hours. All further emails during this time period will be ignored."
+msgstr "Jūs esat pārsniedzis pārraides normu. Lūdzu, lēnāk. Minimālais laika ilgums starp\ne-pastiem ir %s stundas. Šajā laika posmā visi turpmākie e-pasti tiks ignorēti."
+
+#: lib/bridgedb/strings.py:25
+msgid ""
+"COMMANDs: (combine COMMANDs to specify multiple options simultaneously)"
+msgstr "COMMANDs: (apvienot KOMANDA's, lai vienlaicīgi norādītu dažādas opcijas)"
+
+#. TRANSLATORS: Please DO NOT translate the word "BridgeDB".
+#: lib/bridgedb/strings.py:28
+msgid "Welcome to BridgeDB!"
+msgstr "Sveicināti BridgeDB!"
+
+#. TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
+#: lib/bridgedb/strings.py:30
+msgid "Currently supported transport TYPEs:"
+msgstr "Šobrīd atbalstītie transporta VEIDI:"
+
+#: lib/bridgedb/strings.py:31
+#, python-format
+msgid "Hey, %s!"
+msgstr "Hei, %s!"
+
+#: lib/bridgedb/strings.py:32
+msgid "Hello, friend!"
+msgstr "Sveiks, draug!"
+
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
+msgid "Public Keys"
+msgstr "Publiskās atslēgas"
+
+#. TRANSLATORS: This string will end up saying something like:
+#. "This email was generated with rainbows, unicorns, and sparkles
+#. for alice@example.com on Friday, 09 May, 2014 at 18:59:39."
+#: lib/bridgedb/strings.py:37
+#, python-format
+msgid ""
+"This email was generated with rainbows, unicorns, and sparkles\n"
+"for %s on %s at %s."
+msgstr "This email was generated with rainbows, unicorns, and sparkles\npriekš %s dienā %s pl %s."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#. TRANSLATORS: Please DO NOT translate "Tor Network".
+#: lib/bridgedb/strings.py:47
+#, python-format
+msgid ""
+"BridgeDB can provide bridges with several %stypes of Pluggable Transports%s,\n"
+"which can help obfuscate your connections to the Tor Network, making it more\n"
+"difficult for anyone watching your internet traffic to determine that you are\n"
+"using Tor.\n"
+"\n"
+msgstr "BridgeDB var nodrošināt tiltus ar dažādiem %stypes Pluggable Transports%s,\nkas var palīdzēt maskēt Jūsu savienojumu ar Tor Network, tādējādi padarot sarežģītāk ikvienam, kas seko Jūsu interneta datu plūsmai, noteikt, ka lietojat Tor.\n\n"
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#: lib/bridgedb/strings.py:54
+msgid ""
+"Some bridges with IPv6 addresses are also available, though some Pluggable\n"
+"Transports aren't IPv6 compatible.\n"
+"\n"
+msgstr "Ir pieejami daži tilti ar IPv6 adresēm; tanī pat laikā daži Pluggable\nTransports nav savietojami ar IPv6.\n\n"
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring,
+#. regular, or unexciting". Like vanilla ice cream. It refers to bridges
+#. which do not have Pluggable Transports, and only speak the regular,
+#. boring Tor protocol. Translate it as you see fit. Have fun with it.
+#: lib/bridgedb/strings.py:63
+#, python-format
+msgid ""
+"Additionally, BridgeDB has plenty of plain-ol'-vanilla bridges %s without any\n"
+"Pluggable Transports %s which maybe doesn't sound as cool, but they can still\n"
+"help to circumvent internet censorship in many cases.\n"
+"\n"
+msgstr "Turklāt BridgeDB ir pietiekami daudz parastu, vienkāršu tiltu %s bez jebkādiem\nPluggable Transports %s, kas iespējams neizklausās tik inčīgi, bet arī tie var\ndaudzos gadījumos palīdzēt apiet interneta cenzūru.\n \n"
+
+#: lib/bridgedb/strings.py:76
+msgid "What are bridges?"
+msgstr "Kas ir tilti?"
+
+#: lib/bridgedb/strings.py:77
+#, python-format
+msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
+msgstr "%s Tilti %s ir Tor retranslatori, kas palīdz Jums apiet cenzūru."
+
+#: lib/bridgedb/strings.py:82
+msgid "I need an alternative way of getting bridges!"
+msgstr "Man nepieciešams alternatīvs tiltu iegūšanas veids!"
+
+#: lib/bridgedb/strings.py:83
+#, python-format
+msgid ""
+"Another way to get bridges is to send an email to %s. Please note that you must\n"
+"send the email using an address from one of the following email providers:\n"
+"%s, %s or %s."
+msgstr "Vēlviens veids kā saņemt tiltus ir nosūtīt e-pastu uz %s. Lūdzu, ievērojiet, ka e-pasts ir\njānosūta no viena no sekojošajiem e-pasta pakalpojumu sniedzējiem:\n%s, %s vai %s."
+
+#: lib/bridgedb/strings.py:90
+msgid "My bridges don't work! I need help!"
+msgstr "Mani tilti nestrādā! Man nepieciešama palīdzība!"
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:92
+#, python-format
+msgid "If your Tor doesn't work, you should email %s."
+msgstr "Ja Jūsu Tor nestrādā, Jums jānosūta e-pasts %s."
+
+#. TRANSLATORS: Please DO NOT translate "Pluggable Transports".
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:96
+msgid ""
+"Try including as much info about your case as you can, including the list of\n"
+"bridges and Pluggable Transports you tried to use, your Tor Browser version,\n"
+"and any messages which Tor gave out, etc."
+msgstr "Centieties iekļaut pēc iespējas daudz informāciju par savu situāciju, tostarp pievienojot to tiltu un Pluggable Transports sarakstu, kurus centāties izmantot, savu Tor Browser versiju un visus Tor ziņojumus, un citu līdzīgu informāciju."
+
+#: lib/bridgedb/strings.py:103
+msgid "Here are your bridge lines:"
+msgstr "Te ir Jūsu tiltu līnijas:"
+
+#: lib/bridgedb/strings.py:104
+msgid "Get Bridges!"
+msgstr "Saņemt Tiltus!"
+
+#: lib/bridgedb/strings.py:108
+msgid "Please select options for bridge type:"
+msgstr "Lūdzu, izvēlieties tilta veida opcijas:"
+
+#: lib/bridgedb/strings.py:109
+msgid "Do you need IPv6 addresses?"
+msgstr "Vai ir nepieciešamas IPv6 adreses?"
+
+#: lib/bridgedb/strings.py:110
+#, python-format
+msgid "Do you need a %s?"
+msgstr "Vai ir nepieciešams %s?"
+
+#: lib/bridgedb/strings.py:114
+msgid "Your browser is not displaying images properly."
+msgstr "Jūsu pārlūks neattēlo attēlus pareizi."
+
+#: lib/bridgedb/strings.py:115
+msgid "Enter the characters from the image above..."
+msgstr "Ievadīt burtus no augstāk parādītā attēla..."
+
+#: lib/bridgedb/strings.py:119
+msgid "How to start using your bridges"
+msgstr "Kā sākt izmantot Jūsu tiltus"
+
+#. TRANSLATORS: Please DO NOT translate "Tor Browser".
+#: lib/bridgedb/strings.py:121
+#, python-format
+msgid ""
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "Lai pārlūkā Tor ievadītu tiltus, vispirms dodieties uz %s pārlūka Tor lejuplādes \nlapu %s un tad sekojiet pārlūka Tor lejupielādes un sākšanas norādēm."
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:126
+msgid ""
+"When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
+"the wizard until it asks:"
+msgstr "Kad uznirst dialogs \"Tor tīkla iestatījumi\", noklikšķiniet \"Konfigurēt\" un sēkojiet\nvednim līdz tas jautā:"
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:130
+msgid ""
+"Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
+"to the Tor network?"
+msgstr "Vai Jūsu Interneta pakalpojumu sniedzējs (ISP) bloķē vai citādā veidā cenzē savienojumus\nar tīklu Tor?"
+
+#. TRANSLATORS: Please DO NOT translate "Tor".
+#: lib/bridgedb/strings.py:134
+msgid ""
+"Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
+"paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
+"you should be good to go! If you experience trouble, try clicking the 'Help'\n"
+"button in the 'Tor Network Settings' wizard for further assistance."
+msgstr "Atlasiet \"Jā\" un tad noklikšķiniet \"Tālāk\". Lai konfigurētu savus jaunos tiltus, kopējiet un\nielīmējiet tiltu līnijas teksta ievades lodziņā. Beigās noklišķiniet \"Izveidot savienojumu\" un\nvisam vajadzētu notikt! Ja ir problēmas, turpmākai palīdzībai pamēģiniet noklišķināt vednī \"Tor tīkla iestatījumi\" pogu \"Palīdzība\"."
+
+#: lib/bridgedb/strings.py:142
+msgid "Displays this message."
+msgstr "Rāda ziņojumu."
+
+#. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
+#. same non-Pluggable Transport bridges described above as being
+#. "plain-ol'-vanilla" bridges.
+#: lib/bridgedb/strings.py:146
+msgid "Request vanilla bridges."
+msgstr "Pieprasīt parastos tiltus."
+
+#: lib/bridgedb/strings.py:147
+msgid "Request IPv6 bridges."
+msgstr "Pieprasīt IPv6 tiltus."
+
+#. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
+#: lib/bridgedb/strings.py:149
+msgid "Request a Pluggable Transport by TYPE."
+msgstr "Pieprasīt Pluggable Transport pēc TYPE."
+
+#. TRANSLATORS: Please DO NOT translate "BridgeDB".
+#. TRANSLATORS: Please DO NOT translate "GnuPG".
+#: lib/bridgedb/strings.py:152
+msgid "Get a copy of BridgeDB's public GnuPG key."
+msgstr "Saņemt BridgeDB publiskās GnuPG atslēgas kopiju."
+
+#: lib/bridgedb/templates/base.html:89
+msgid "Report a Bug"
+msgstr "Ziņot par kļūdu"
+
+#: lib/bridgedb/templates/base.html:92
+msgid "Source Code"
+msgstr "Pirmkods"
+
+#: lib/bridgedb/templates/base.html:95
+msgid "Changelog"
+msgstr "Izmaiņu žurnāls"
+
+#: lib/bridgedb/templates/base.html:98
+msgid "Contact"
+msgstr "Sazināties"
+
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "Atlasīt visu"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "Parādīt QRCode"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "QRCode Jūsu tiltu rindām"
+
+#. TRANSLATORS: Please translate this into some silly way to say
+#. "There was a problem!" in your language. For example,
+#. for Italian, you might translate this into "Mama mia!",
+#. or for French: "Sacrebleu!". :)
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
+msgid "Uh oh, spaghettios!"
+msgstr "Ak, man' dieniņ!"
+
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "Sķiet, ka, saņemot Jūsu QRCode, notika kļūda."
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "Jūsu tiltu rindas ir QRCode. Skenējiet to ar QRCode lasītāju, lai iekopētu Jūsu tiltu rindas mobilajā tālrunī un citās iekārtās."
+
+#: lib/bridgedb/templates/bridges.html:181
+msgid "There currently aren't any bridges available..."
+msgstr "Šobrīd nav pieejamu tiltu..."
+
+#: lib/bridgedb/templates/bridges.html:182
+#, python-format
+msgid ""
+" Perhaps you should try %s going back %s and choosing a different bridge "
+"type!"
+msgstr "Iespējams, ka Jums jāmēģina %s atgriezties %s un izvēlēties citu tiltu veidu!"
+
+#: lib/bridgedb/templates/index.html:11
+#, python-format
+msgid "Step %s1%s"
+msgstr "Solis %s1%s"
+
+#: lib/bridgedb/templates/index.html:13
+#, python-format
+msgid "Download %s Tor Browser %s"
+msgstr "Lejuplādēt %s Pārlūku Tor %s"
+
+#: lib/bridgedb/templates/index.html:25
+#, python-format
+msgid "Step %s2%s"
+msgstr "Solis %s2%s"
+
+#: lib/bridgedb/templates/index.html:27
+#, python-format
+msgid "Get %s bridges %s"
+msgstr "Saņemt %s tiltus %s"
+
+#: lib/bridgedb/templates/index.html:36
+#, python-format
+msgid "Step %s3%s"
+msgstr "Solis %s3%s"
+
+#: lib/bridgedb/templates/index.html:38
+#, python-format
+msgid "Now %s add the bridges to Tor Browser %s"
+msgstr "Tagad %s pievienot Pārlūkam Tor tiltus %s"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. (These are used to insert HTML5 underlining tags, to mark accesskeys
+#. for disabled users.)
+#: lib/bridgedb/templates/options.html:38
+#, python-format
+msgid "%sJ%sust give me bridges!"
+msgstr "%sT%sikai dodiet man tiltus!"
+
+#: lib/bridgedb/templates/options.html:52
+msgid "Advanced Options"
+msgstr "Lietpratēju opcijas "
+
+#: lib/bridgedb/templates/options.html:88
+msgid "No"
+msgstr "Nē"
+
+#: lib/bridgedb/templates/options.html:89
+msgid "none"
+msgstr "nekas"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+#: lib/bridgedb/templates/options.html:127
+#, python-format
+msgid "%sY%ses!"
+msgstr "%sJ%sā!"
+
+#. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+#. beginning of words are present in your final translation. Thanks!
+#. TRANSLATORS: Please do NOT translate the word "bridge"!
+#: lib/bridgedb/templates/options.html:151
+#, python-format
+msgid "%sG%set Bridges"
+msgstr "%sS%saņemt tiltus"

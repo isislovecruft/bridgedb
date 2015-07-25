@@ -1,1 +1,1 @@
-lib/bridgedb/_version.py export-subst
+bridgedb/_version.py export-subst

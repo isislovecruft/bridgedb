@@ -1,0 +1,43 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
+<div class="main-steps">
+<div class="step row" id="step-1">
+  <div class="bdb_span7 step-text">
+    <span class="lead">
+      <span class="step-title">
+        ${_("Step %s1%s") % ("""<u>""", """</u>""")}</span>
+      <span class="step-text">
+        ${_("Download %s Tor Browser %s") % \
+           ("""<a href="https://www.torproject.org/projects/torbrowser.html"
+                  target="_blank" accesskey="1">""",
+            """</a>""")}</span>
+    </span>
+  </div>
+</div>
+
+<div class="step row" id="step-2">
+  <div class="bdb_span7 step-text">
+    <span class="lead">
+      <span class="step-title">
+        ${_("Step %s2%s") % ("""<u>""", """</u>""")}</span>
+      <span class="step-text">
+        ${_("Get %s bridges %s") % ("""<a href="/options" accesskey="2">""", "</a>")}</span>
+    </span>
+  </div>
+</div>
+
+<div class="step row" id="step-3">
+  <div class="bdb_span7 step-text">
+    <span class="lead">
+      <span class="step-title">
+        ${_("Step %s3%s") % ("""<u>""", """</u>""")}</span>
+      <span class="step-text">
+        ${_("""Now %s add the bridges to Tor Browser %s""") % \
+           ("""<a href="/howto" accesskey="3">""",
+            """</a>""")}</span>
+    </span>
+  </div>
+</div>

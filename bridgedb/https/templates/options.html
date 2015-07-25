@@ -1,0 +1,154 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="base.html"/>
+<%page args="strings, rtl=False, lang='en', **kwargs"/>
+
+<div class="container-fluid container-fluid-outer-96">
+  <!--<div class="container-fluid step-semi-transparent">-->
+    <div class="container-fluid container-fluid-inner">
+      <p>
+        <h3>${_(strings.BRIDGES[1])}</h3>
+      </p>
+    <!--</div>-->
+    <!--<div class="container-fluid container-fluid-outer-100 container-fluid-inner">-->
+      <p>
+        ${_(strings.WELCOME[0]) % \
+           ("""<a href="https://www.torproject.org/docs/pluggable-transports.html">""",
+            """</a>""")}
+      </p>
+      <p>
+        ${_(strings.WELCOME[1])}
+      </p>
+## The '&#8212' char is a literal emdash ('―'), but it's also XML parseable.
+      <p>
+        ${_(strings.WELCOME[2]) % ("&#8212", "&#8212")}
+      </p>
+      <div class="container-fluid container-fluid-outer">
+        <div class="container-fluid-inner-5">
+          <p class="bs-component">
+            <a href="./bridges">
+              <button class="btn btn-success btn-lg btn-block"
+                      id="just-give-me-bridges-btn"
+                      type="button"
+                      accesskey="j">
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+##              (These are used to insert HTML5 underlining tags, to mark accesskeys
+##              for disabled users.)
+                ${_("""%sJ%sust give me bridges!""") % ("""<u>""", """</u>""")}
+              </button>
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  <!--</div>-->
+
+<!-- BEGIN "Advanced Options" panel for bridge type -->
+<div class="container-fluid container-fluid-outer-96-lr">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h3 class="panel-title">${_("""Advanced Options""")}</h3>
+    </div>
+
+    <!-- BEGIN bridge options selection form -->
+    <form class="form-horizontal" id="advancedOptions" action="bridges" method="GET">
+      <fieldset>
+        <div class="container-fluid" id="instructions">
+          <legend id="advanced-options-legend">
+            <br />
+            <p>${_(strings.OPTIONS[0])}</p>
+          </legend>
+        </div>
+
+        <div class="container-fluid">
+          <!-- BEGIN first options row -->
+          <div class="row" id="options-row-1">
+
+            <!-- BEGIN left column, first row -->
+            <div class="container-fluid col-lg-2" id="options-row-1-col-1">
+              <div class="step" id="options-row-1-col-1-step">
+                <div class="form-group">
+                  <label class="control-label"
+                         id="options-transport-label"
+                         for="transport">
+                    ${_(strings.OPTIONS[2]) % ("Pluggable <u>T</u>ransport")}
+                  </label>
+                  <div class="container-fluid col-lg-4">
+                    <div class="btn-group" id="options-transport-btn-group">
+                      <select class="btn btn-primary btn-sm dropdown"
+                              form="advancedOptions"
+                              id="transport"
+                              name="transport"
+                              data-toggle="dropdown"
+                              type="button"
+                              accesskey="t">
+                        ${_("""No""")}
+<option label="none"  value="0"        >${_("none")}</option>
+% for methodname, default in strings._getSupportedAndDefaultTransports().items():
+    <option label=${methodname}
+            value=${methodname}
+    % if default:
+            selected
+    % endif
+            > ${methodname} </option>
+% endfor
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- END left column, first row -->
+
+            <!-- BEGIN right column, first row -->
+            <div class="container-fluid col-lg-2" id="options-row-1-col-2">
+              <div class="step" id="options-row-1-col-2-step">
+                <div class="form-group">
+                  <label class="control-label"
+                         id="options-ipv6-label"
+                         for="ipv6">
+                    ${_(strings.OPTIONS[1])}
+                  </label>
+                  <div class="container-fluid col-lg-4">
+                    <div class="checkbox" id="options-ipv6-checkbox">
+                      <div class="input-group" id="options-ipv6-input-group">
+                        <input name="ipv6"
+                               id="ipv6"
+                               form="advancedOptions"
+                               type="checkbox"
+                               value="yes"
+                               accesskey="y" />
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+## TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
+                          ${_("""%sY%ses!""") % ("<u>", "</u>")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>  <!-- END left column, first row -->
+          </div>
+
+        </div> <!-- END first row -->
+      </fieldset>
+
+      <!-- BEGIN second options row -->
+      <!--<div class="row" id="options-row-2">
+        <div class="container-fluid col-lg-2" id="options-row-2-col-1">-->
+      <div class="container-fluid container-fluid-outer-60-lr">
+        <div class="container-fluid container-fluid-inner-5">
+          <button class="btn btn-primary btn-lg btn-block"
+                  id="get-bridges-btn"
+                  accesskey="g">
+## TRANSLATORS: Please make sure the '%s' surrounding single letters at the
+##              beginning of words are present in your final translation. Thanks!
+## TRANSLATORS: Please do NOT translate the word "bridge"!
+            ${_("""%sG%set Bridges""") % ("<u>", "</u>")}
+          </button>
+        </div>
+      </div>
+    </form> <!-- END bridge options selection form -->
+  </div> <!-- END advanced options panel (a.k.a. the lined boxy thing --
+           -- surrounding the options)                                -->
+</div>

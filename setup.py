@@ -27,28 +27,10 @@ try:
 except ImportError:
     compile_catalog = extract_messages = init_catalog = update_catalog = None
 
-# setup automatic versioning (see top-level versioneer.py file):
 import versioneer
-versioneer.versionfile_source = 'lib/bridgedb/_version.py'
-versioneer.versionfile_build = 'bridgedb/_version.py'
 
-# when creating a release, tags should be prefixed with 'bridgedb-', like so:
-#
-#     git checkout -b release-6.6.6 develop
-#     [do some stuff, merge whatever, test things]
-#     git tag -S bridgedb-6.6.6
-#     git push tpo-common --tags
-#     git checkout master
-#     git merge -S --no-ff release-6.6.6
-#     git checkout develop
-#     git merge -S --no-ff master
-#     git branch -d release-6.6.6
-#
-versioneer.tag_prefix = 'bridgedb-'
-# source tarballs should unpack to a directory like 'bridgedb-6.6.6'
-versioneer.parentdir_prefix = 'bridgedb-'
 
-pkgpath = os.path.join('lib', 'bridgedb')
+pkgpath = 'bridgedb'
 
 # Repo directory that contains translations; this directory should contain
 # both uncompiled translations (.po files) as well as compiled ones (.mo
@@ -62,7 +44,7 @@ repo_langs = os.path.join(pkgpath, '_langs.py')
 
 # The directory containing template files and other resources to serve on the
 # web server:
-repo_templates = os.path.join(pkgpath, 'templates')
+repo_templates = os.path.join(pkgpath, 'https', 'templates')
 
 # The directories to install non-sourcecode resources into should always be
 # given as relative paths, in order to force distutils to install relative to
@@ -108,7 +90,9 @@ def get_requirements():
                 line = line.strip()
                 if line.startswith('#'):
                     continue
-                elif line.startswith(
+                if line.startswith(('git+', 'hg+', 'svn+')):
+                    line = line[line.index('+') + 1:]
+                if line.startswith(
                         ('https://', 'git://', 'hg://', 'svn://')):
                     links.append(line)
                 else:
@@ -124,7 +108,7 @@ def get_supported_langs():
 
     The two-letter country code of each language which is going to be
     installed will be added to a list, and this list will be written to
-    :attr:`repo_langs`, so that lib/bridgedb/__init__.py can store a
+    :attr:`repo_langs`, so that bridgedb/__init__.py can store a
     package-level attribute ``bridgedb.__langs__``, which will be a list of
     any languages which were installed.
 
@@ -159,7 +143,7 @@ def get_supported_langs():
                                        'LC_MESSAGES', 'bridgedb.mo'))
     supported.sort()
 
-    # Write our list of supported languages to 'lib/bridgedb/_langs.py':
+    # Write our list of supported languages to 'bridgedb/_langs.py':
     new_langs_lines = []
     with open(repo_langs, 'r') as langsfile:
         for line in langsfile.readlines():
@@ -189,7 +173,8 @@ def get_template_files():
                         'assets/font/*.woff',
                         'assets/font/*.ttf',
                         'assets/font/*.svg',
-                        'assets/font/*.eot']
+                        'assets/font/*.eot',
+                        'assets/js/*.js']
     template_files = []
 
     for include_pattern in include_patterns:
@@ -387,11 +372,11 @@ setuptools.setup(
     maintainer_email='isis@torproject.org 0xA3ADB67A2CDB8B35',
     url='https://www.torproject.org',
     download_url='https://gitweb.torproject.org/bridgedb.git',
-    package_dir={'': 'lib'},
+    package_dir={'bridgedb': 'bridgedb'},
     packages=['bridgedb',
               'bridgedb.email',
-              'bridgedb.parse',
-              'bridgedb.test'],
+              'bridgedb.https',
+              'bridgedb.parse'],
     scripts=['scripts/bridgedb',
              'scripts/get-tor-exits'],
     extras_require={'test': ["sure==1.2.2",
@@ -406,7 +391,7 @@ setuptools.setup(
     exclude_package_data={'bridgedb': ['*.po', '*.pot']},
     message_extractors={pkgpath: [
         ('**.py', 'python', None),
-        ('templates/**.html', 'mako', None),
+        ('https/templates/**.html', 'mako', None),
         ('public/**', 'ignore', None)]},
 )
 # XXX I think we don't need the 'public/**' babel.messages.frontend.method_map
