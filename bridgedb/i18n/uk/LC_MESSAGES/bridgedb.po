@@ -7,14 +7,15 @@
 # LinuxChata, 2014-2015
 # Oleksii Golub <sclub2018@yandex.ua>, 2015
 # Oleksii Golub <sclub2018@yandex.ua>, 2013
+# Yasha <yasha88888@hotmail.com>, 2015
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-02-03 03:24+0000\n"
-"PO-Revision-Date: 2015-03-14 12:34+0000\n"
-"Last-Translator: LinuxChata\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-07-13 17:46+0000\n"
+"Last-Translator: Yasha <yasha88888@hotmail.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/torproject/language/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,7 +35,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:122
+#: lib/bridgedb/HTTPServer.py:107
 msgid "Sorry! Something went wrong with your request."
 msgstr "Ми приносимо наші вибачення! Щось пішло не так з Вашим запитом."
 
@@ -205,26 +206,27 @@ msgstr "Як почати користуватися Вашими мостами
 #: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
-"Browser download page %s to start Tor Browser."
-msgstr "Для введення bridges у браузері Tor, дотримуйтесь інструкцій %s на сторінці \nзавантаження браузера Tor %s для запуску браузера Tor."
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "Щоб додати ретранслятори у Tor Browser, спочатку ідіть на  %s сторінку завантаження Tor Browser %s а потім слідуйте інструкціям для скачування і запуску  Tor Browser."
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:125
+#: lib/bridgedb/strings.py:126
 msgid ""
 "When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
 "the wizard until it asks:"
 msgstr "Коли діалог \"Налаштування мережі Tor\" відкриється, натисніть \"Налаштувати\" і дотримуйтесь\nпідказкам майстра, допоки він не запросить:"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:129
+#: lib/bridgedb/strings.py:130
 msgid ""
 "Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
 "to the Tor network?"
 msgstr "Вашій інтернет-провайдер (ISP) блокує або цензурує з'єднання\nдо мережі Tor?"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:133
+#: lib/bridgedb/strings.py:134
 msgid ""
 "Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
 "paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
@@ -232,29 +234,29 @@ msgid ""
 "button in the 'Tor Network Settings' wizard for further assistance."
 msgstr "Виберіть \"Так\", а потім натисніть \"Далі\". Для налаштування нових bridges, скопіюйте і\nвставте лінії bridge у поле для введення тексту. Потім, натисніть 'Підключатися', і\nвсе повинно працювати! Якщо у Вас виникли проблеми, спробуйте натиснути \"Довідка\" \nв майстрові \"Мережеві параметри Tor' для отримання додаткової допомоги."
 
-#: lib/bridgedb/strings.py:141
+#: lib/bridgedb/strings.py:142
 msgid "Displays this message."
 msgstr "Відображає це повідомлення."
 
 #. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
 #. same non-Pluggable Transport bridges described above as being
 #. "plain-ol'-vanilla" bridges.
-#: lib/bridgedb/strings.py:145
+#: lib/bridgedb/strings.py:146
 msgid "Request vanilla bridges."
 msgstr "Запит на отримання vanilla bridges."
 
-#: lib/bridgedb/strings.py:146
+#: lib/bridgedb/strings.py:147
 msgid "Request IPv6 bridges."
 msgstr "Запит на отримання IPv6 bridges."
 
 #. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
-#: lib/bridgedb/strings.py:148
+#: lib/bridgedb/strings.py:149
 msgid "Request a Pluggable Transport by TYPE."
 msgstr "Запит на отримання Pluggable Transport по TYPE."
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "GnuPG".
-#: lib/bridgedb/strings.py:151
+#: lib/bridgedb/strings.py:152
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Отримати копію відкритого GnuPG ключа для BridgeDB."
 
