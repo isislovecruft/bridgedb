@@ -3,8 +3,10 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Allan Nordhøy <comradekingu@gmail.com>, 2014
+# Allan Nordhøy <epost@anotheragency.no>, 2014
+# Erik Matson <erik@norwenglish.net>, 2015
 # Harald <haarektrans@gmail.com>, 2014
+# Kristian Andre Henriksen <kris.andre.h@gmail.com>, 2015
 # lateralus, 2013
 # Per Thorsheim <transifex@thorsheim.net>, 2015
 # thor574 <thor.hovden@gmail.com>, 2014
@@ -12,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-02-03 03:24+0000\n"
-"PO-Revision-Date: 2015-02-24 13:06+0000\n"
-"Last-Translator: Per Thorsheim <transifex@thorsheim.net>\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-06-23 12:17+0000\n"
+"Last-Translator: Erik Matson <erik@norwenglish.net>\n"
 "Language-Team: Norwegian Bokmål (http://www.transifex.com/projects/p/torproject/language/nb/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,7 +36,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:122
+#: lib/bridgedb/HTTPServer.py:107
 msgid "Sorry! Something went wrong with your request."
 msgstr "Dette var leit! Noe gikk galt med forespørselen din."
 
@@ -205,26 +207,27 @@ msgstr "Hvordan starte med bruk av dine broer"
 #: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
-"Browser download page %s to start Tor Browser."
-msgstr "For å oppføre broer i Tor-nettleseren, følg instruksjonene på %s Tor\nnettleser nedlastingsside %s for å starte Tor-nettleser."
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "For å sette opp broer i Tor Browser, først gå til %s Tor Browser download\nsiden %s følg så instruksene for nedlasting og start av Tor Browser."
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:125
+#: lib/bridgedb/strings.py:126
 msgid ""
 "When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
 "the wizard until it asks:"
 msgstr "Når 'Tor nettverks-innstillinger' dialogboksen spretter opp, trykk på 'oppsett' og følg\nveiviseren til den forespør:"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:129
+#: lib/bridgedb/strings.py:130
 msgid ""
 "Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
 "to the Tor network?"
 msgstr "Sensurerer, eller blokkerer på annen måte, din internetttilbyder (ISP) tilkoblinger\ntil Tor-nettverket?"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:133
+#: lib/bridgedb/strings.py:134
 msgid ""
 "Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
 "paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
@@ -232,29 +235,29 @@ msgid ""
 "button in the 'Tor Network Settings' wizard for further assistance."
 msgstr "Velg 'Ja' og klikk så 'Neste'. For å sette opp nye broer, kopier og\nlim inn brolinjene i tekstboksen. Til slutt, trykk 'Koble til', og\ndu burde være klar til kamp! Hvis du får problemer, trykk 'Hjelp'\n-knappen i \"Tor-nettverksinnstillinger'-veiviseren for ytterligere hjelp."
 
-#: lib/bridgedb/strings.py:141
+#: lib/bridgedb/strings.py:142
 msgid "Displays this message."
 msgstr "Vis denne meldingen."
 
 #. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
 #. same non-Pluggable Transport bridges described above as being
 #. "plain-ol'-vanilla" bridges.
-#: lib/bridgedb/strings.py:145
-msgid "Request vanilla bridges."
-msgstr "Forespørr broer med fabrikkoppsett."
-
 #: lib/bridgedb/strings.py:146
+msgid "Request vanilla bridges."
+msgstr "Be om broer med \"vanilla\" fabrikkoppsett."
+
+#: lib/bridgedb/strings.py:147
 msgid "Request IPv6 bridges."
 msgstr "Etterspør IPv6-broer."
 
 #. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
-#: lib/bridgedb/strings.py:148
+#: lib/bridgedb/strings.py:149
 msgid "Request a Pluggable Transport by TYPE."
-msgstr "Etterspørr pluggbar transport etter TYPE."
+msgstr "Be om en pluggbar transport etter TYPE."
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "GnuPG".
-#: lib/bridgedb/strings.py:151
+#: lib/bridgedb/strings.py:152
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Få kopi av BridgeDBs offentlige GnuPG-nøkkel."
 
