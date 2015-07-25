@@ -3,22 +3,22 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Wu Ming Shi, 2013
-# Wu Ming Shi, 2013
-# Wu Ming Shi, 2013
+# khi, 2013
+# khi, 2013
+# khi, 2013
 # Christopher Meng <cickumqt@gmail.com>, 2012
 # hanl <iamh4n@gmail.com>, 2011
 # Meng3, 2014
 # leungsookfan <leung.sookfan@riseup.net>, 2014
-# Wu Ming Shi, 2014-2015
+# khi, 2014-2015
 # YF <yfdyh000@gmail.com>, 2014-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-02-03 03:24+0000\n"
-"PO-Revision-Date: 2015-03-08 19:30+0000\n"
-"Last-Translator: Wu Ming Shi\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-06-16 14:41+0000\n"
+"Last-Translator: khi\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/projects/p/torproject/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,7 +38,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:122
+#: lib/bridgedb/HTTPServer.py:107
 msgid "Sorry! Something went wrong with your request."
 msgstr "抱歉，你的邮件请求出现问题。"
 
@@ -70,7 +70,7 @@ msgstr "欢迎来到 BridgeDB！"
 #. TRANSLATORS: Please DO NOT translate the words "transport" or "TYPE".
 #: lib/bridgedb/strings.py:30
 msgid "Currently supported transport TYPEs:"
-msgstr "支持的 transport TYPE："
+msgstr "目前可用的 transport 类型："
 
 #: lib/bridgedb/strings.py:31
 #, python-format
@@ -115,7 +115,7 @@ msgid ""
 "Some bridges with IPv6 addresses are also available, though some Pluggable\n"
 "Transports aren't IPv6 compatible.\n"
 "\n"
-msgstr "一些使用IPv6地址的bridges（网桥）也能使用，但是\nPluggable Transports并不兼容IPv6。\n"
+msgstr "另外提供一些IPv6格式的网桥，不过某些 Pluggable Transports 类型目前还不支持IPv6。\n"
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: The phrase "plain-ol'-vanilla" means "plain, boring,
@@ -138,7 +138,7 @@ msgstr "什么是网桥？"
 #: lib/bridgedb/strings.py:77
 #, python-format
 msgid "%s Bridges %s are Tor relays that help you circumvent censorship."
-msgstr "%s Bridges %s 是帮助你绕过审查或封锁的 Tor relay（中继点）。"
+msgstr "%s网桥%s即 Tor 中继节点，用于帮助用户绕过审查或封锁。"
 
 #: lib/bridgedb/strings.py:82
 msgid "I need an alternative way of getting bridges!"
@@ -170,7 +170,7 @@ msgid ""
 "Try including as much info about your case as you can, including the list of\n"
 "bridges and Pluggable Transports you tried to use, your Tor Browser version,\n"
 "and any messages which Tor gave out, etc."
-msgstr "请尽量描述你的情况，包括你尝试过的bridges和Pluggable Transports，你的Tor浏览器版本，还有任何Tor显示过的信息等等。"
+msgstr "请尽量详细地描述你的情况，包括所用的网桥及其类型，Tor 浏览器版本以及任何 Tor 显示的信息等等。"
 
 #: lib/bridgedb/strings.py:103
 msgid "Here are your bridge lines:"
@@ -209,26 +209,27 @@ msgstr "如何使用网桥"
 #: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
-"Browser download page %s to start Tor Browser."
-msgstr "如需在 Tor 浏览器中添加网桥，请先根据 %s Tor 浏览器下载页面 %s 的说明来启动Tor 浏览器。"
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "如需在 Tor 浏览器中添加网桥，请先根据 %s Tor 浏览器下载页面 %s 的说明下载和启动 Tor 浏览器。"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:125
+#: lib/bridgedb/strings.py:126
 msgid ""
 "When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
 "the wizard until it asks:"
 msgstr "当“Tor 网络设置” 对话框出现时，点击“配置” ，然后根据向导操作，直到看到下面的问题："
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:129
+#: lib/bridgedb/strings.py:130
 msgid ""
 "Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
 "to the Tor network?"
 msgstr "网络提供商（ISP）或其他人是否对 Tor 网络连接进行审查或封锁？"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:133
+#: lib/bridgedb/strings.py:134
 msgid ""
 "Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
 "paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
@@ -236,29 +237,29 @@ msgid ""
 "button in the 'Tor Network Settings' wizard for further assistance."
 msgstr "选择“是”，然后点击“下一步”。如下添加新的网桥，请将网桥地址行通过复制粘贴的方式输入到文本输入框。最后，点击“连接”就可以连接至 Tor 网络。如有问题需要帮助，请点击“Tor 网络设置”向导窗口中的“帮助”按钮。"
 
-#: lib/bridgedb/strings.py:141
+#: lib/bridgedb/strings.py:142
 msgid "Displays this message."
 msgstr "显示这条信息。"
 
 #. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
 #. same non-Pluggable Transport bridges described above as being
 #. "plain-ol'-vanilla" bridges.
-#: lib/bridgedb/strings.py:145
+#: lib/bridgedb/strings.py:146
 msgid "Request vanilla bridges."
 msgstr "请求普通网桥。"
 
-#: lib/bridgedb/strings.py:146
+#: lib/bridgedb/strings.py:147
 msgid "Request IPv6 bridges."
 msgstr "请求IPv6网络。"
 
 #. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
-#: lib/bridgedb/strings.py:148
+#: lib/bridgedb/strings.py:149
 msgid "Request a Pluggable Transport by TYPE."
-msgstr "根据TYPE 请求Pluggable Transport。"
+msgstr "按照类型请求不同的 Pluggable Transport 网桥。"
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "GnuPG".
-#: lib/bridgedb/strings.py:151
+#: lib/bridgedb/strings.py:152
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "获取 BridgeDB 的 GnuPG 公共密匙。"
 

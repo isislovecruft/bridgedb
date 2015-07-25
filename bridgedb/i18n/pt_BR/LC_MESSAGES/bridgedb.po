@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
-# Communia <ameaneantie@riseup.net>, 2013-2014
+# Communia <ameaneantie@riseup.net>, 2013-2015
 # Augustine <evandro@geocities.com>, 2013
 # Humberto Sartini <humberto@hss.blog.br>, 2014
 # Isabel Ferreira, 2014
@@ -14,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-02-03 03:24+0000\n"
-"PO-Revision-Date: 2015-02-17 01:10+0000\n"
-"Last-Translator: João Paulo S.S <contato1908@gmail.com>\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-06-16 19:39+0000\n"
+"Last-Translator: Communia <ameaneantie@riseup.net>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/torproject/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,7 +36,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:122
+#: lib/bridgedb/HTTPServer.py:107
 msgid "Sorry! Something went wrong with your request."
 msgstr "Desculpe! Algo errado ocorreu com a sua solicitação."
 
@@ -207,26 +207,27 @@ msgstr "Como começar a usar as suas pontes"
 #: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
-"Browser download page %s to start Tor Browser."
-msgstr "Para inserir pontes no navegador Tor, siga as instruções no %s página\n de downloads do navegador Tor %s para iniciar o navegador Tor."
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "Para adicionar pontes ao Navegador Tor, primeiro vá ao %s página de download\ndo Navegador Tor %s e siga as instruções  para fazer o download e iniciá-lo."
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:125
+#: lib/bridgedb/strings.py:126
 msgid ""
 "When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
 "the wizard until it asks:"
 msgstr "Quando a janela 'Configurações da Rede Tor' aparecer, clique em 'Configurar' e siga\no assistente até que ele pergunte:"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:129
+#: lib/bridgedb/strings.py:130
 msgid ""
 "Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
 "to the Tor network?"
 msgstr "O seu Provedor de Serviços de Internet (PSI) bloqueia ou censura conexões\nà rede Tor?"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:133
+#: lib/bridgedb/strings.py:134
 msgid ""
 "Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
 "paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
@@ -234,29 +235,29 @@ msgid ""
 "button in the 'Tor Network Settings' wizard for further assistance."
 msgstr "Selecione 'Sim' e clique em 'Próximo'. Para configurar suas novas pontes, copie e\ncole as coordenadas das pontes na caixa de texto de saída. Por fim, clique em 'Conectar'.\nIsso deve ser o suficiente! Se você encontrar problemas, tente clicar no botão\n'Ajuda' no assistente de 'Configurações da Rede Tor', para mais assistência."
 
-#: lib/bridgedb/strings.py:141
+#: lib/bridgedb/strings.py:142
 msgid "Displays this message."
 msgstr "Mostrar essa mensagem."
 
 #. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
 #. same non-Pluggable Transport bridges described above as being
 #. "plain-ol'-vanilla" bridges.
-#: lib/bridgedb/strings.py:145
+#: lib/bridgedb/strings.py:146
 msgid "Request vanilla bridges."
 msgstr "Solicitar pontes VANILLA."
 
-#: lib/bridgedb/strings.py:146
+#: lib/bridgedb/strings.py:147
 msgid "Request IPv6 bridges."
 msgstr "Solicitar pontes IPv6."
 
 #. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
-#: lib/bridgedb/strings.py:148
+#: lib/bridgedb/strings.py:149
 msgid "Request a Pluggable Transport by TYPE."
 msgstr "Requerer Transporte Plugável por TYPE"
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "GnuPG".
-#: lib/bridgedb/strings.py:151
+#: lib/bridgedb/strings.py:152
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Obter uma cópia da chave pública GnuPG do BridgeDB."
 

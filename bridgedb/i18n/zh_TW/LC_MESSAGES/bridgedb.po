@@ -1,17 +1,18 @@
 # Translations template for BridgeDB.
-# Copyright (C) 2014 'The Tor Project, Inc.'
+# Copyright (C) 2015 'The Tor Project, Inc.'
 # This file is distributed under the same license as the BridgeDB project.
 # 
 # Translators:
 # danfong <danfong.hsieh@gmail.com>, 2014
 # LNDDYL, 2014
+# x4r <xatierlike@gmail.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2014-07-26 02:11+0000\n"
-"PO-Revision-Date: 2014-11-24 09:10+0000\n"
-"Last-Translator: LNDDYL\n"
+"POT-Creation-Date: 2015-02-03 03:24+0000\n"
+"PO-Revision-Date: 2015-03-23 08:01+0000\n"
+"Last-Translator: x4r <xatierlike@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/projects/p/torproject/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,7 +32,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:121
+#: lib/bridgedb/HTTPServer.py:122
 msgid "Sorry! Something went wrong with your request."
 msgstr "抱歉!您的請求發生錯誤。"
 
@@ -74,7 +75,7 @@ msgstr "嘿，%s!"
 msgid "Hello, friend!"
 msgstr "朋友，您好!"
 
-#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:101
+#: lib/bridgedb/strings.py:33 lib/bridgedb/templates/base.html:100
 msgid "Public Keys"
 msgstr "公開金鑰"
 
@@ -255,35 +256,58 @@ msgstr "按照 TYPE 請求 Pluggable Transport。"
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "取得 BridgeDB 的公共 GnuPG 金鑰副本。"
 
-#: lib/bridgedb/templates/base.html:92
+#: lib/bridgedb/templates/base.html:89
 msgid "Report a Bug"
 msgstr "回報錯誤"
 
-#: lib/bridgedb/templates/base.html:94
+#: lib/bridgedb/templates/base.html:92
 msgid "Source Code"
 msgstr "原始程式碼"
 
-#: lib/bridgedb/templates/base.html:97
+#: lib/bridgedb/templates/base.html:95
 msgid "Changelog"
 msgstr "變更記錄"
 
-#: lib/bridgedb/templates/base.html:99
+#: lib/bridgedb/templates/base.html:98
 msgid "Contact"
 msgstr "聯絡資訊"
+
+#: lib/bridgedb/templates/bridges.html:81
+msgid "Select All"
+msgstr "選擇全部"
+
+#: lib/bridgedb/templates/bridges.html:87
+msgid "Show QRCode"
+msgstr "出示 QRCode"
+
+#: lib/bridgedb/templates/bridges.html:100
+msgid "QRCode for your bridge lines"
+msgstr "您的橋接的 QRCode"
 
 #. TRANSLATORS: Please translate this into some silly way to say
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: lib/bridgedb/templates/bridges.html:66
+#: lib/bridgedb/templates/bridges.html:115
+#: lib/bridgedb/templates/bridges.html:175
 msgid "Uh oh, spaghettios!"
 msgstr "有問題!"
 
-#: lib/bridgedb/templates/bridges.html:72
+#: lib/bridgedb/templates/bridges.html:116
+msgid "It seems there was an error getting your QRCode."
+msgstr "掃描 QRCode 時似乎發生錯誤"
+
+#: lib/bridgedb/templates/bridges.html:121
+msgid ""
+"This QRCode contains your bridge lines. Scan it with a QRCode reader to copy"
+" your bridge lines onto mobile and other devices."
+msgstr "這個 QRCode 還有您的橋接資訊。在行動裝置上掃描以獲得您的橋接資訊"
+
+#: lib/bridgedb/templates/bridges.html:181
 msgid "There currently aren't any bridges available..."
 msgstr "目前沒有任何橋接可用..."
 
-#: lib/bridgedb/templates/bridges.html:73
+#: lib/bridgedb/templates/bridges.html:182
 #, python-format
 msgid ""
 " Perhaps you should try %s going back %s and choosing a different bridge "
@@ -344,7 +368,7 @@ msgstr "無"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: lib/bridgedb/templates/options.html:130
+#: lib/bridgedb/templates/options.html:127
 #, python-format
 msgid "%sY%ses!"
 msgstr "%sY%ses!"
@@ -352,7 +376,7 @@ msgstr "%sY%ses!"
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: lib/bridgedb/templates/options.html:154
+#: lib/bridgedb/templates/options.html:151
 #, python-format
 msgid "%sG%set Bridges"
 msgstr "%sG%set Bridges"

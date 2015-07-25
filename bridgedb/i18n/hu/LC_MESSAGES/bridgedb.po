@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: The Tor Project\n"
 "Report-Msgid-Bugs-To: 'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-02-03 03:24+0000\n"
-"PO-Revision-Date: 2015-03-04 11:11+0000\n"
+"POT-Creation-Date: 2015-03-19 22:13+0000\n"
+"PO-Revision-Date: 2015-06-16 23:41+0000\n"
 "Last-Translator: vargaviktor <viktor.varga@gmail.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/projects/p/torproject/language/hu/)\n"
 "MIME-Version: 1.0\n"
@@ -34,7 +34,7 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: lib/bridgedb/HTTPServer.py:122
+#: lib/bridgedb/HTTPServer.py:107
 msgid "Sorry! Something went wrong with your request."
 msgstr "Elnézést! Valami rosszul működött a kérésed közben."
 
@@ -205,26 +205,27 @@ msgstr "Hogyan kezdjük használni a hidat "
 #: lib/bridgedb/strings.py:121
 #, python-format
 msgid ""
-"To enter bridges into Tor Browser, follow the instructions on the %s Tor\n"
-"Browser download page %s to start Tor Browser."
-msgstr "A hidak megadásához a Tor Browser -hez, kövese az utasításokat a %s Tor\nBrowser letöltés oldalán %s a Tor Browser indításához."
+"To enter bridges into Tor Browser, first go to the %s Tor Browser download\n"
+"page %s and then follow the instructions there for downloading and starting\n"
+"Tor Browser."
+msgstr "A hidak beállításához a Tor böngészőben, először látogasson el a %s Tor böngésző letöltés oldalra %s és kövesse az útmutatást a Tor böngésző letöltéséről és használatáról."
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:125
+#: lib/bridgedb/strings.py:126
 msgid ""
 "When the 'Tor Network Settings' dialogue pops up, click 'Configure' and follow\n"
 "the wizard until it asks:"
 msgstr "Amikor a 'Tor Hálózati Beállítások' dialógus felugrik, kattintson a 'Konfigurálás'-ra és kövesse\na varászlót amíg az kéri hogy:"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:129
+#: lib/bridgedb/strings.py:130
 msgid ""
 "Does your Internet Service Provider (ISP) block or otherwise censor connections\n"
 "to the Tor network?"
 msgstr "Blokkolja vagy cenzúrázza az ön internet szolgáltatója (ISP) a kapcsolatokat\na Tor hálózatához?"
 
 #. TRANSLATORS: Please DO NOT translate "Tor".
-#: lib/bridgedb/strings.py:133
+#: lib/bridgedb/strings.py:134
 msgid ""
 "Select 'Yes' and then click 'Next'. To configure your new bridges, copy and\n"
 "paste the bridge lines into the text input box. Finally, click 'Connect', and\n"
@@ -232,29 +233,29 @@ msgid ""
 "button in the 'Tor Network Settings' wizard for further assistance."
 msgstr "Válassza hogy 'Igen' és utána kattintson a 'Következő\"-re. Az ön új hidjai konfigurásához, másolja\nés illessze be a Híd sorokat a felugró ablakba. Végül, kattintson 'Kapcsolódás'-ra, és \nmár készen is van. Ha valamilyen hibát tapasztal, próbáljon a 'Segítség'\n gombra kattintani a 'Tor hálózati beállítások' varázslóban a tobábbi segítségért."
 
-#: lib/bridgedb/strings.py:141
+#: lib/bridgedb/strings.py:142
 msgid "Displays this message."
 msgstr "Megjeleníti ezt az ütenetet."
 
 #. TRANSLATORS: Please try to make it clear that "vanilla" here refers to the
 #. same non-Pluggable Transport bridges described above as being
 #. "plain-ol'-vanilla" bridges.
-#: lib/bridgedb/strings.py:145
+#: lib/bridgedb/strings.py:146
 msgid "Request vanilla bridges."
 msgstr "Nem csatlakoztatható szállító híd kérelme."
 
-#: lib/bridgedb/strings.py:146
+#: lib/bridgedb/strings.py:147
 msgid "Request IPv6 bridges."
 msgstr "IPV6 híd kérése."
 
 #. TRANSLATORS: Please DO NOT translate the word the word "TYPE".
-#: lib/bridgedb/strings.py:148
+#: lib/bridgedb/strings.py:149
 msgid "Request a Pluggable Transport by TYPE."
 msgstr "Egy csatlakoztatható szállító kérelme TYPE szerint."
 
 #. TRANSLATORS: Please DO NOT translate "BridgeDB".
 #. TRANSLATORS: Please DO NOT translate "GnuPG".
-#: lib/bridgedb/strings.py:151
+#: lib/bridgedb/strings.py:152
 msgid "Get a copy of BridgeDB's public GnuPG key."
 msgstr "Másolat szertése a BridgeDB's publikus GnuPG kulcsából."
 
