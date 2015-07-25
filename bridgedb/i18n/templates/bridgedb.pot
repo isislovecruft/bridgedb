@@ -10,11 +10,11 @@
 # Isis Lovecruft <isis@torproject.org>, 2012-2015
 msgid ""
 msgstr ""
-"Project-Id-Version: bridgedb 0.3.1-208-ga646ccd-dirty\n"
+"Project-Id-Version: bridgedb 0.3.1+255.g3454779.dirty\n"
 "Report-Msgid-Bugs-To: "
 "'https://trac.torproject.org/projects/tor/newticket?component=BridgeDB&keywords"
 "=bridgedb-reported,msgid&cc=isis,sysrqb&owner=isis'\n"
-"POT-Creation-Date: 2015-06-25 05:33+0000\n"
+"POT-Creation-Date: 2015-07-25 03:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,8 +22,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Language: en\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: Please DO NOT translate the following words and/or phrases in
 #. any string (regardless of capitalization and/or punctuation):
@@ -36,35 +34,35 @@ msgstr ""
 #. "fteproxy"
 #. "Tor"
 #. "Tor Browser"
-#: bridgedb/https/server.py:135
+#: bridgedb/https/server.py:167
 msgid "Sorry! Something went wrong with your request."
 msgstr ""
 
-#: bridgedb/https/templates/base.html:89
+#: bridgedb/https/templates/base.html:79
 msgid "Report a Bug"
 msgstr ""
 
-#: bridgedb/https/templates/base.html:92
+#: bridgedb/https/templates/base.html:82
 msgid "Source Code"
 msgstr ""
 
-#: bridgedb/https/templates/base.html:95
+#: bridgedb/https/templates/base.html:85
 msgid "Changelog"
 msgstr ""
 
-#: bridgedb/https/templates/base.html:98
+#: bridgedb/https/templates/base.html:88
 msgid "Contact"
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:84
+#: bridgedb/https/templates/bridges.html:35
 msgid "Select All"
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:90
+#: bridgedb/https/templates/bridges.html:40
 msgid "Show QRCode"
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:103
+#: bridgedb/https/templates/bridges.html:52
 msgid "QRCode for your bridge lines"
 msgstr ""
 
@@ -72,26 +70,26 @@ msgstr ""
 #. "There was a problem!" in your language. For example,
 #. for Italian, you might translate this into "Mama mia!",
 #. or for French: "Sacrebleu!". :)
-#: bridgedb/https/templates/bridges.html:118
-#: bridgedb/https/templates/bridges.html:178
+#: bridgedb/https/templates/bridges.html:67
+#: bridgedb/https/templates/bridges.html:125
 msgid "Uh oh, spaghettios!"
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:119
+#: bridgedb/https/templates/bridges.html:68
 msgid "It seems there was an error getting your QRCode."
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:124
+#: bridgedb/https/templates/bridges.html:73
 msgid ""
 "This QRCode contains your bridge lines. Scan it with a QRCode reader to copy "
 "your bridge lines onto mobile and other devices."
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:184
+#: bridgedb/https/templates/bridges.html:131
 msgid "There currently aren't any bridges available..."
 msgstr ""
 
-#: bridgedb/https/templates/bridges.html:185
+#: bridgedb/https/templates/bridges.html:132
 #, python-format
 msgid " Perhaps you should try %s going back %s and choosing a different bridge type!"
 msgstr ""
@@ -135,22 +133,22 @@ msgstr ""
 msgid "%sJ%sust give me bridges!"
 msgstr ""
 
-#: bridgedb/https/templates/options.html:52
+#: bridgedb/https/templates/options.html:51
 msgid "Advanced Options"
 msgstr ""
 
-#: bridgedb/https/templates/options.html:88
+#: bridgedb/https/templates/options.html:86
 msgid "No"
 msgstr ""
 
-#: bridgedb/https/templates/options.html:89
+#: bridgedb/https/templates/options.html:87
 msgid "none"
 msgstr ""
 
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Translate "Yes!" as in "Yes! I do need IPv6 addresses."
-#: bridgedb/https/templates/options.html:130
+#: bridgedb/https/templates/options.html:124
 #, python-format
 msgid "%sY%ses!"
 msgstr ""
@@ -158,7 +156,7 @@ msgstr ""
 #. TRANSLATORS: Please make sure the '%s' surrounding single letters at the
 #. beginning of words are present in your final translation. Thanks!
 #. TRANSLATORS: Please do NOT translate the word "bridge"!
-#: bridgedb/https/templates/options.html:154
+#: bridgedb/https/templates/options.html:147
 #, python-format
 msgid "%sG%set Bridges"
 msgstr ""
@@ -202,7 +200,7 @@ msgstr ""
 msgid "Hello, friend!"
 msgstr ""
 
-#: bridgedb/strings.py:58 bridgedb/https/templates/base.html:100
+#: bridgedb/strings.py:58 bridgedb/https/templates/base.html:90
 msgid "Public Keys"
 msgstr ""
 
