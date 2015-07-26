@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #_____________________________________________________________________________
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
@@ -38,17 +39,30 @@ from twisted.trial.unittest import SkipTest
 from .util import processExists
 from .util import getBridgeDBPID
 
+
 HTTP_ROOT = 'http://127.0.0.1:6788'
 CAPTCHA_RESPONSE = 'Tvx74Pmy'
 
+TOPDIR = os.getcwd()
+while not TOPDIR.endswith('bridgedb'):
+    TOPDIR = os.path.dirname(TOPDIR)
+
+PIDFILE = os.path.join(TOPDIR, 'run', 'bridgedb.pid')
+PID = getBridgeDBPID(PIDFILE)
+
 
 class HTTPTests(unittest.TestCase):
+
     def setUp(self):
-        here = os.getcwd()
-        topdir = here.rstrip('_trial_temp')
-        self.rundir = os.path.join(topdir, 'run')
-        self.pidfile = os.path.join(self.rundir, 'bridgedb.pid')
-        self.pid = getBridgeDBPID(self.pidfile)
+        if not os.environ.get("CI"):
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
+        if not PID or not processExists(PID):
+            raise FailTest("Could not start BridgeDB process on CI server!")
+
         self.br = None
 
     def tearDown(self):
@@ -152,16 +166,6 @@ class HTTPTests(unittest.TestCase):
 
     def test_content_security_policy(self):
         """Check that the HTTP Content-Security-Policy header is set."""
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.br = mechanize.Browser()
         self.br.set_handle_robots(False)
         self.br.set_debug_http(True)
@@ -182,16 +186,6 @@ class HTTPTests(unittest.TestCase):
         self.assertRaises(mechanize.HTTPError, self.br.open, page)
 
     def test_get_obfs2_ipv4(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -204,16 +198,6 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_obfs3_ipv4(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -226,16 +210,6 @@ class HTTPTests(unittest.TestCase):
             self.assertEquals(PT, pt)
 
     def test_get_vanilla_ipv4(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -249,16 +223,6 @@ class HTTPTests(unittest.TestCase):
             self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv4Address)
 
     def test_get_vanilla_ipv6(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -272,16 +236,6 @@ class HTTPTests(unittest.TestCase):
             self.assertIsInstance(ipaddr.IPAddress(addr), ipaddr.IPv6Address)
 
     def test_get_scramblesuit_ipv4(self):
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -303,16 +257,6 @@ class HTTPTests(unittest.TestCase):
         This is a regression test for #12932, see
         https://bugs.torproject.org/12932.
         """
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -338,16 +282,6 @@ class HTTPTests(unittest.TestCase):
         """Ask for obfs4 bridges and check that there is an 'iat-mode' PT
         argument in the bridge lines.
         """
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -375,16 +309,6 @@ class HTTPTests(unittest.TestCase):
         """Ask for obfs4 bridges and check that there is an 'public-key' PT
         argument in the bridge lines.
         """
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
@@ -412,16 +336,6 @@ class HTTPTests(unittest.TestCase):
         """Ask for obfs4 bridges and check that there is an 'node-id' PT
         argument in the bridge lines.
         """
-        if os.environ.get("CI"):
-            if not self.pid or not processExists(self.pid):
-                raise FailTest("Could not start BridgeDB process on CI server!")
-        else:
-            raise SkipTest(("The mechanize tests cannot handle self-signed  "
-                            "TLS certificates, and thus require opening "
-                            "another port for running a plaintext HTTP-only "
-                            "BridgeDB webserver. Because of this, these tests "
-                            "are only run on CI servers."))
-
         self.openBrowser()
         self.goToOptionsPage()
 
