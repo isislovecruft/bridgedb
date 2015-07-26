@@ -1,7 +1,5 @@
 [run]
-source = 
-     bridgedb
-     lib/bridgedb/test/test_*
+source = bridgedb
 branch = True
 #parallel = True
 timid = True
@@ -9,11 +7,9 @@ timid = True
 [report]
 modules = bridgedb
 omit = 
-     */test*
      */_langs*
      */_version*
      */__init__*
-     */Tests*
      */sitecustomize*
 # Regexes for lines to exclude from report generation:
 exclude_lines = 
