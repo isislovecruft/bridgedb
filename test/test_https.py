@@ -26,6 +26,7 @@ repository.
 
 from __future__ import print_function
 
+import gettext
 import ipaddr
 import mechanize
 import os
@@ -33,9 +34,11 @@ import os
 from BeautifulSoup import BeautifulSoup
 
 from twisted.trial import unittest
+from twisted.trial.reporter import TestResult
 from twisted.trial.unittest import FailTest
 from twisted.trial.unittest import SkipTest
 
+from .test_Tests import DynamicTestCaseMeta
 from .util import processExists
 from .util import getBridgeDBPID
 
@@ -358,3 +361,77 @@ class HTTPTests(unittest.TestCase):
 
             self.assertTrue(hasNodeID,
                             "obfs4 bridge line is missing 'node-id' PT arg.")
+
+
+class _HTTPTranslationsTests(unittest.TestCase):
+    """Build a TestCase with dynamic methods which tests all HTTP rendering of
+    all translations in the bridgedb/i18n/ directory.
+    """
+    i18n = os.path.join(TOPDIR, 'bridgedb', 'i18n')
+
+    def setUp(self):
+        if not os.environ.get("CI"):
+            raise SkipTest(("The mechanize tests cannot handle self-signed  "
+                            "TLS certificates, and thus require opening "
+                            "another port for running a plaintext HTTP-only "
+                            "BridgeDB webserver. Because of this, these tests "
+                            "are only run on CI servers."))
+
+        if not PID or not processExists(PID):
+            raise FailTest("Could not start BridgeDB process on CI server!")
+
+        self.br = None
+
+    @classmethod
+    def makeTestMethod(cls, locale):
+        """Dynamically generate a test_ method for **locale**."""
+
+        def test(self):
+            pageArgs = '/?lang=%s' % locale
+            language = gettext.translation("bridgedb",
+                                           localedir=self.i18n,
+                                           languages=[locale,],
+                                           fallback=True)
+            expected = language.gettext("What are bridges?")
+
+            if not locale.startswith('en'):
+                self.assertNotEqual(expected, "What are bridges?")
+
+            self.openBrowser()
+            self.br.open(HTTP_ROOT + pageArgs)
+            self.assertSubstring(expected, self.br.response().read())
+
+        test.__name__ = 'test_%s' % locale
+        setattr(cls, test.__name__, test)
+
+        return test
+
+    def tearDown(self):
+        self.br = None
+
+    def openBrowser(self):
+        self.br = mechanize.Browser()
+        self.br.set_handle_robots(False)
+
+    def test_self(self):
+        self.assertTrue(self)
+
+
+def createHTTPTranslationsTestSuite():
+    suite = unittest.TestSuite()
+    translations = os.listdir(_HTTPTranslationsTests.i18n)
+    translations.remove('templates')
+
+    for locale in translations:
+        klass = _HTTPTranslationsTests
+        method = klass.makeTestMethod(locale)
+        case = klass()
+        suite.addTest(case)
+
+    return [suite,]
+
+
+class HTTPTranslationsTests(unittest.TestCase):
+    __metaclass__ = DynamicTestCaseMeta
+    testResult    = TestResult()
+    testSuites    = createHTTPTranslationsTestSuite()
