@@ -132,20 +132,28 @@ def getClientIP(request, useForwardedHeader=False):
 
     return ip
 
-def replaceErrorPage(error, template_name=None):
+def replaceErrorPage(request, error, template_name=None, html=True):
     """Create a general error page for displaying in place of tracebacks.
 
     Log the error to BridgeDB's logger, and then display a very plain "Sorry!
     Something went wrong!" page to the client.
 
+    :type request: :api:`twisted.web.http.Request`
+    :param request: A ``Request`` object containing the HTTP method, full
+        URI, and any URL/POST arguments and headers present.
     :type error: :exc:`Exception`
     :param error: Any exeption which has occurred while attempting to retrieve
-                  a template, render a page, or retrieve a resource.
+        a template, render a page, or retrieve a resource.
     :param str template_name: A string describing which template/page/resource
-                              was being used when the exception occurred,
-                              i.e. ``'index.html'``.
-    :returns: A string containing HTML to serve to the client (rather than
-              serving a traceback).
+        was being used when the exception occurred, i.e. ``'index.html'``.
+    :param bool html: If ``True``, return one of two HTML error pages.  First,
+        we attempt to render a fancier error page.  If that rendering failed,
+        or if **html** is ``False``, then we return a very simple HTML page
+        (without CSS, Javascript, images, etc.)  which simply says
+        ``"Sorry! Something went wrong with your request."``
+    :rtype: str
+    :returns: A string containing some content to serve to the client (rather
+        than serving a Twisted traceback).
     """
     logging.error("Error while attempting to render %s: %s"
                   % (template_name or 'template',
@@ -164,16 +172,16 @@ def replaceErrorPage(error, template_name=None):
     # "Tor"
     # "Tor Browser"
     #
-    errmsg = _("Sorry! Something went wrong with your request.")
-    rendered = """<html>
-                    <head>
-                      <link href="/assets/bootstrap.min.css" rel="stylesheet">
-                      <link href="/assets/custom.css" rel="stylesheet">
-                    </head>
-                    <body>
-                      <p>{0}</p>
-                    </body>
-                  </html>""".format(errmsg)
+    errorMessage = _("Sorry! Something went wrong with your request.")
+
+    if not html:
+        return bytes(errorMessage)
+
+    try:
+        rendered = resource500.render(request)
+    except Exception as err:
+        logging.exception(err)
+        rendered = bytes(errorMessage)
 
     return rendered
 
@@ -299,7 +307,49 @@ class CSPResource(resource.Resource):
         return redirectTo(request.uri, request)
 
 
-class TranslatedTemplateResource(CSPResource):
+class ErrorResource(CSPResource):
+    """A resource which explains that BridgeDB is undergoing maintenance, or
+    that some other (unexpected) error has occured.
+    """
+    isLeaf = True
+
+    def __init__(self, template=None, code=200):
+        """Create a :api:`twisted.web.resource.Resource` for an error page."""
+        CSPResource.__init__(self)
+        self.template = template
+        self.code = code
+
+    def render_GET(self, request):
+        self.setCSPHeader(request)
+        request.setHeader("Content-Type", "text/html; charset=utf-8")
+        request.setResponseCode(self.code)
+
+        try:
+            template = lookup.get_template(self.template)
+            rendered = template.render()
+        except Exception as err:
+            rendered = replaceErrorPage(request, err, html=False)
+
+        return rendered
+
+    render_POST = render_GET
+
+resource404 = ErrorResource('error-404.html', code=404)
+resource500 = ErrorResource('error-500.html', code=500)
+maintenance = ErrorResource('error-503.html', code=503)
+
+
+class CustomErrorHandlingResource(resource.Resource):
+    """A :api:`twisted.web.resource.Resource` which wraps the
+    :api:`twisted.web.resource.Resource.getChild` method in order to use
+    custom error handling pages.
+    """
+    def getChild(self, path, request):
+        logging.debug("[404] %s" % request.uri)
+        return resource404
+
+
+class TranslatedTemplateResource(CustomErrorHandlingResource, CSPResource):
     """A generalised resource which uses gettext translations and Mako
     templates.
     """
@@ -322,7 +372,7 @@ class TranslatedTemplateResource(CSPResource):
             template = lookup.get_template(self.template)
             rendered = template.render(strings, rtl=rtl, lang=langs[0])
         except Exception as err:  # pragma: no cover
-            rendered = replaceErrorPage(err)
+            rendered = replaceErrorPage(request, err)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
 
@@ -354,7 +404,7 @@ class HowtoResource(TranslatedTemplateResource):
         TranslatedTemplateResource.__init__(self, 'howto.html')
 
 
-class CaptchaProtectedResource(CSPResource):
+class CaptchaProtectedResource(CustomErrorHandlingResource, CSPResource):
     """A general resource protected by some form of CAPTCHA."""
 
     isLeaf = True
@@ -447,7 +497,7 @@ class CaptchaProtectedResource(CSPResource):
                                        imgstr=imgstr,
                                        challenge_field=challenge)
         except Exception as err:
-            rendered = replaceErrorPage(err, 'captcha.html')
+            rendered = replaceErrorPage(request, err, 'captcha.html')
 
         request.setHeader("Content-Type", "text/html; charset=utf-8")
         return rendered
@@ -476,7 +526,7 @@ class CaptchaProtectedResource(CSPResource):
             try:
                 rendered = self.resource.render(request)
             except Exception as err:
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
             return rendered
 
         logging.debug("Client failed a CAPTCHA; returning redirect to %s"
@@ -638,7 +688,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
             try:
                 rendered = self.resource.render(request)
             except Exception as err:  # pragma: no cover
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
         else:
             logging.info("Client failed a CAPTCHA; redirecting to %s"
                          % request.uri)
@@ -780,7 +830,7 @@ class ReCaptchaProtectedResource(CaptchaProtectedResource):
         return NOT_DONE_YET
 
 
-class BridgesResource(CSPResource):
+class BridgesResource(CustomErrorHandlingResource, CSPResource):
     """This resource displays bridge lines in response to a request."""
 
     isLeaf = True
@@ -930,7 +980,7 @@ class BridgesResource(CSPResource):
             try:
                 rendered = bytes('\n'.join(bridgeLines))
             except Exception as err:
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err, html=False)
         else:
             request.setHeader("Content-Type", "text/html; charset=utf-8")
             qrcode = None
@@ -948,7 +998,7 @@ class BridgesResource(CSPResource):
                                            answer=bridgeLines,
                                            qrcode=qrcode)
             except Exception as err:
-                rendered = replaceErrorPage(err)
+                rendered = replaceErrorPage(request, err)
 
         return rendered
 
@@ -1008,13 +1058,15 @@ def addWebServer(config, distributor):
                           reportViolations=config.CSP_REPORT_ONLY,
                           useForwardedHeader=fwdHeaders)
 
-    root = resource.Resource()
+    root = CustomErrorHandlingResource()
     root.putChild('', index)
     root.putChild('robots.txt', robots)
     root.putChild('keys', keys)
     root.putChild('assets', assets)
     root.putChild('options', options)
     root.putChild('howto', howto)
+    root.putChild('maintenance', maintenance)
+    root.putChild('error', resource500)
     root.putChild(CSPResource.reportURI, csp)
 
     if config.RECAPTCHA_ENABLED:

@@ -1,0 +1,208 @@
+.application,
+.application>.error,
+.application>.error>.main {
+    /*min-height: 100vh*/
+}
+.error,
+.maintenance {
+    height: 100%;
+    overflow: hidden
+}
+.error .full-size,
+.maintenance .full-size {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-repeat: no-repeat
+}
+.main--error {
+    min-height: 100%;
+    overflow: hidden
+}
+.error-text,
+.maintenance-text {
+    position: absolute;
+    top: 6%;
+    left: 0;
+    right: 0;
+    z-index: 10
+}
+.error-text h1,
+.maintenance-text h1 {
+    margin: 1em 0 .4em;
+    font-weight: 600;
+    /*color: #357389;*/
+    font-size: 40px;
+    line-height: 1;
+    text-align: center
+}
+@media only screen and (min-width: 50.063em) {
+    .error-text h1,
+    .maintenance-text h1 {
+        margin: 1.5em 0 .4em;
+        font-size: 70px
+    }
+}
+.error-text p,
+.maintenance-text p {
+    padding: 0 1em;
+    /*color: #9d9fa1;*/
+    font-size: 18px;
+    text-align: center
+}
+.error-text a,
+.maintenance-text a {
+    /*color: #9d9fa1*/
+}
+.error-text a:focus,
+.error-text a:hover,
+.maintenance-text a:focus,
+.maintenance-text a:hover {
+    /*color: #9d9fa1;*/
+    /*text-decoration: underline*/
+}
+.error500 .error-bg {
+    background: -webkit-linear-gradient(90deg, #dcc682, #dcc682 38.9%, #ccebf7 39%, #fff 60%, #fff);
+    background: linear-gradient(0deg, #dcc682, #dcc682 38.9%, #ccebf7 39%, #fff 60%, #fff)
+}
+.error500 .hill-left {
+    background-image: url("/assets/images/500-hills-left.svg");
+    background-size: auto 10vh;
+    background-position: 0 58%
+}
+@media only screen and (min-width: 50.063em) {
+    .error500 .hill-left {
+        background-size: 38vw auto;
+        background-position: 0 58%
+    }
+}
+.error500 .hill-right {
+    background-image: url("/assets/images/500-hills-right.svg");
+    background-size: 38vw auto;
+    background-position: 99% 59%;
+    display: none
+}
+@media only screen and (min-width: 50.063em) {
+    .error500 .hill-right {
+        display: block
+    }
+}
+.error500 .shadow-left {
+    background-image: url("/assets/images/500-hills-left-shade.svg");
+    background-size: 24vw auto;
+    background-position: 6% 72%
+}
+.error500 .shadow-right {
+    background-image: url("/assets/images/500-hills-right-shade.svg");
+    background-size: 17vw auto;
+    background-position: 95% 79%
+}
+.error500 .road {
+    background-image: url("/assets/images/500-road.svg");
+    background-size: auto 27vh;
+    background-position: 42% 78%
+}
+@media only screen and (min-width: 50.063em) {
+    .error500 .road {
+        background-size: auto 40vh;
+        background-position: 42% 91.3%
+    }
+}
+.error404 .top {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 5
+}
+.error404 .error-bg {
+    background: -webkit-linear-gradient(90deg, #bbcac6, #bbcac6 38.9%, #ccebf7 39%, #fff 60%, #fff);
+    background: linear-gradient(0deg, #bbcac6, #bbcac6 38.9%, #ccebf7 39%, #fff 60%, #fff)
+}
+.error404 .hill-left {
+    display: none;
+    background-image: url("/assets/images/404-hills-left.svg");
+    background-size: 30vw auto;
+    background-position: 0 58%
+}
+@media only screen and (min-width: 50.063em) {
+    .error404 .hill-left {
+        display: block
+    }
+}
+.error404 .hill-right {
+    background-image: url("/assets/images/404-hills-right.svg");
+    background-size: auto 30vw;
+    background-position: 99% 58%
+}
+@media only screen and (min-width: 50.063em) {
+    .error404 .hill-right {
+        background-size: 50vw auto;
+        background-position: 99% 58%
+    }
+}
+@media only screen and (min-width: 64.063em) {
+    .error404 .hill-right {
+        background-size: 50vw auto;
+        background-position: 99% 54%
+    }
+}
+.error404 .error-excavator {
+    background-image: url("/assets/images/404-excavator.svg");
+    background-size: auto 25vh;
+    background-position: 71% 83%
+}
+.maintenance .maintenance-bg {
+    background: -webkit-linear-gradient(90deg, #8cad7d, #8cad7d 38.9%, #ccebf7 39%, #fff 60%, #fff);
+    background: linear-gradient(0deg, #8cad7d, #8cad7d 38.9%, #ccebf7 39%, #fff 60%, #fff)
+}
+.maintenance .hill-left {
+    background-image: url("/assets/images/maintenance-hills-left.svg");
+    background-size: 80vw auto;
+    background-position: 0 58%
+}
+@media only screen and (min-width: 50.063em) {
+    .maintenance .hill-left {
+        background-size: 58vw auto;
+        background-position: 0 58%
+    }
+}
+@media only screen and (min-width: 64.063em) {
+    .maintenance .hill-left {
+        background-size: 50vw auto;
+        background-position: 0 56%
+    }
+}
+.maintenance .hill-right {
+    background-image: url("/assets/images/maintenance-hills-right.svg");
+    background-size: 38vw auto;
+    background-position: 99% 59%;
+    display: none
+}
+@media only screen and (min-width: 50.063em) {
+    .maintenance .hill-right {
+        display: block
+    }
+}
+.maintenance .shadow-left {
+    background-image: url("/assets/images/maintenance-hills-left-shade.svg");
+    background-size: 24vw auto;
+    background-position: 6% 72%
+}
+.maintenance .shadow-right {
+    background-image: url("/assets/images/maintenance-hills-right-shade.svg");
+    background-size: 17vw auto;
+    background-position: 95% 79%
+}
+.maintenance .maintenance-tractor {
+    background-image: url("/assets/images/maintenance-tractor.svg");
+    background-size: 87vw auto;
+    background-position: 63% 87%
+}
+@media only screen and (min-width: 50.063em) {
+    .maintenance .maintenance-tractor {
+        background-size: auto 44vh;
+        background-position: 63% 83%
+    }
+}
