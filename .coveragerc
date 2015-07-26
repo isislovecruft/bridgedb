@@ -27,7 +27,7 @@ exclude_lines =
 # Ignore source code which cannot be found:
 ignore_errors = True
 # Exit with status code 2 if under this percentage is covered:
-fail_under = 10
+fail_under = 80
 
 [html]
 directory = doc/coverage-html
