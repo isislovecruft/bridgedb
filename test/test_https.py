@@ -172,6 +172,15 @@ class HTTPTests(unittest.TestCase):
         self.assertIn("Content-Security-Policy", headers)
         self.assertIn("default-src 'none';", headers)
 
+    def test_404(self):
+        """Asking for a non-existent resource should yield our custom 404 page,
+        but we can't actually check because Mechanize flips out if we get
+        anything response code other than 200. :/
+        """
+        page = '/'.join([HTTP_ROOT, '404'])
+        self.openBrowser()
+        self.assertRaises(mechanize.HTTPError, self.br.open, page)
+
     def test_get_obfs2_ipv4(self):
         if os.environ.get("CI"):
             if not self.pid or not processExists(self.pid):
