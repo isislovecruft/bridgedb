@@ -2,7 +2,7 @@
 source = bridgedb
 branch = True
 #parallel = True
-timid = True
+timid = False
 
 [report]
 modules = bridgedb
