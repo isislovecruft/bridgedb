@@ -1,4 +1,4 @@
-Changes in version 0.3.4 - 2015-11-30
+Changes in version 0.3.4 - 0.3.5 - 2015-11-30
 
         * FIXES #14685 https://bugs.torproject.org/14685
         This disables distribution of obfs2 bridges.  This pluggable
