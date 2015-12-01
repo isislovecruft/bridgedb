@@ -1,19 +1,15 @@
 [run]
-source = 
-     bridgedb
-     lib/bridgedb/test/test_*
+source = bridgedb
 branch = True
 #parallel = True
-timid = True
+timid = False
 
 [report]
 modules = bridgedb
 omit = 
-     */test*
      */_langs*
      */_version*
      */__init__*
-     */Tests*
      */sitecustomize*
 # Regexes for lines to exclude from report generation:
 exclude_lines = 
@@ -31,7 +27,7 @@ exclude_lines =
 # Ignore source code which cannot be found:
 ignore_errors = True
 # Exit with status code 2 if under this percentage is covered:
-fail_under = 10
+fail_under = 80
 
 [html]
 directory = doc/coverage-html

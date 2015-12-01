@@ -390,10 +390,10 @@ setuptools.setup(
     dependency_links=deplinks,
     package_data={'bridgedb': get_data_files(filesonly=True)},
     exclude_package_data={'bridgedb': ['*.po', '*.pot']},
-    message_extractors={pkgpath: [
-        ('**.py', 'python', None),
-        ('https/templates/**.html', 'mako', None),
-        ('public/**', 'ignore', None)]},
+    message_extractors={
+        pkgpath: [
+            ('**.py', 'python', None),
+            ('https/templates/**.html', 'mako', None),
+        ]
+    },
 )
-# XXX I think we don't need the 'public/**' babel.messages.frontend.method_map
-# anymore... 2013-10-15 --isis

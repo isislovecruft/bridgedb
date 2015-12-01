@@ -1,4 +1,22 @@
-Changes in version 0.3.3 - 2015-07-25
+Changes in version 0.3.4 - 2015-11-30
+
+        * FIXES #14685 https://bugs.torproject.org/14685
+        This disables distribution of obfs2 bridges.  This pluggable
+        transport has known distiguishers which allow adversaries to
+        identify client connections to obfs2 bridges, which in turn allows
+        these connections to be blocked/censored.  With numerous obfs3 and
+        obfs4 bridges both readily available, users should not be
+        presented with an easily-configurable choice that is known to be
+        unsafe for the majority of users.
+
+And includes the following general changes:
+
+        * ADDS error pages to BridgeDB's web interface, to provide
+        friendlier explanations for downtime, missing pages, and internal
+        server errors.  For example: https://bridges.torproject.org/404
+
+
+Changes in version 0.3.3 - 2015-10-25
 
         * FIXES #12029 https://bugs.torproject.org/12029
         BridgeDB now has an API for creating Bridge Distributors.
@@ -97,6 +115,106 @@ And includes the following general changes:
 
         * ADDS several improvements to the developer documentation at
         https://pythonhosted.org/bridgedb.
+
+        * UPDATE English (en_US) translations.
+
+        * UPDATE English (en) translations.
+
+        * ADD Serbian (sr) translations.
+          Thanks to obj.petit.a, Ivan Radeljic, and Milenko Doder.
+
+        * UPDATE Arabic (ar) translations.
+          Thanks to  A. Hassan, debo debo, KACIMI LAMINE, and Nudroid A.
+
+        * UPDATE Catalan (ca) translations.
+          Thanks to laia_.
+
+        * UPDATE Czech (cs) translations.
+          Thanks to Tomas Palik and Vlastimil Burián.
+
+        * UPDATE Danish (da) translations.
+          Thanks to Mogelbjerg.
+
+        * UPDATE German (de) translations.
+          Thanks to jschfr, Junge Limba, and Toralf Förster.
+
+        * UPDATE English (en_GB) translations.
+          Thanks to Andi Chandler.
+
+        * UPDATE Farsi (fa) translations.
+          Thanks to some awesome anonymous person for helping out.
+
+        * UPDATE Finish (fi) translations.
+          Thanks to Riku Viitanen.
+
+        * UPDATE French (fr) translations.
+          Thanks to elouann, Trans-fr, and Towinet.
+
+        * UPDATE French (fr_CA) translations.
+          Thanks to Trans-fr.
+
+        * UPDATE Croatian (hr_HR) translations.
+          Thanks to some awesome anonymous person for helping out.
+
+        * UPDATE Hungarian (hu) translations.
+          Thanks to some awesome anonymous person for helping out.
+
+        * UPDATE Indonesian (id) translations.
+          Thanks to Anthony Santana, Astryd Viandila Dahlan, cholif yulian,
+          constantius damar wicaksono, Dwi Cahyono, L1Nus, km242saya, and
+          Zamani Karmana.
+
+        * UPDATE Italian (it) translations.
+          Thanks to Random_R.
+
+        * UPDATE Japanese (ja) translations.
+          Thanks to ABE Tsunehiko.
+
+        * UPDATE Latvian (lv) translations.
+          Thanks to Ojārs Balcers.
+
+        * UPDATE Norwegian Bokmål (nb) translations.
+          Thanks to Erik Matson and Kristian Andre Henriksen.
+
+        * UPDATE Dutch (nl) translations.
+          Thanks to Mart3000.
+
+        * UPDATE Polish (pl) translations.
+          Thanks to Karol Obartuch.
+
+        * UPDATE Portuguese (pt) translations.
+          Thanks to Bruno D. Rodrigues and MMSRS.
+
+        * UPDATE Brazillian Portuguese (pt_BR) translations.
+          Thanks to Communia.
+
+        * UPDATE Romanian (ro) translations.
+          Thanks to  Ana, axel_89, and Di N.
+
+        * UPDATE Russian (ru) translations.
+          Thanks to Ivan.
+
+        * UPDATE Slovak (sk_SK) translations.
+          Thanks to StefanH.
+
+        * UPDATE Albanian (sq) translations.
+          Thanks to  some awesome unknown anonymous person who didn't add their
+          name to the list of translators.
+
+        * UPDATE Swedish (sv) translations.
+          Thanks to Peter Michanek.
+
+        * UPDATE Turkish (tr) translations.
+          Thanks to Bullgeschichte and Fomas.
+
+        * UPDATE Ukranian (uk) translations.
+          Thanks to Yasha.
+
+        * UPDATE Chinese Mandarin (zh_CN) translations.
+          Thanks to khi.
+
+        * UPDATE Taiwanese Mandarin (zh_TW) translations.
+          Thanks to x4r.
 
 
 Changes in version 0.3.2 - 2015-05-01
