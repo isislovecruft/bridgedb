@@ -72,7 +72,7 @@ class MiscLoggingUtilTests(unittest.TestCase):
 
 
 class LevenshteinDistanceTests(unittest.TestCase):
-    """Unittests for `bridgedb.util.levenshteinDistance."""
+    """Unittests for `bridgedb.util.levenshteinDistance`."""
 
     def test_levenshteinDistance_blank_blank(self):
         """The Levenshtein Distance between '' and '' should be 0."""
