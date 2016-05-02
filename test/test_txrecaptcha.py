@@ -10,6 +10,7 @@
 """Unittests for the bridgedb.txrecaptcha module."""
 
 import logging
+import os
 
 from twisted.internet import defer
 from twisted.internet import reactor
@@ -19,6 +20,7 @@ from twisted.internet.error import ConnectionLost
 from twisted.internet.error import ConnectionRefusedError
 from twisted.test import proto_helpers
 from twisted.trial import unittest
+from twisted.trial.unittest import SkipTest
 from twisted.python import failure
 from twisted.web.client import ResponseDone
 from twisted.web.http_headers import Headers
@@ -208,6 +210,10 @@ class SubmitTests(unittest.TestCase):
         :func:`txrecaptcha.submit` should be a
         :class:`txcaptcha.RecaptchaResponse`.
         """
+        if not os.environ.get("CI"):
+            raise SkipTest(("This test requires network so it is only run "
+                            "on CI servers."))
+
         def checkResponse(response):
             """Check that the response is a
             :class:`txcaptcha.RecaptchaResponse`.
