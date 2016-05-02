@@ -18,6 +18,7 @@ import logging
 import logging.config
 import logging.handlers
 import os
+import time
 
 from twisted.python import components
 
@@ -143,6 +144,26 @@ def configureLogging(cfg):
     logging.info("Logger Started.")
     logging.info("Level: %s", logLevel)
     logging.info("Safe Logging: %sabled" % ("En" if safelogging else "Dis"))
+
+def deleteFilesOlderThan(files, seconds):
+    """Delete any file in ``files`` with an mtime more than ``seconds`` ago.
+
+    :param list files: A list of paths to files which should be
+        considered for deletion.
+    :param int seconds: If a file's mtime is more than this number (in
+        seconds), it will be deleted.
+    :rtype: list
+    :returns: A list of the deleted files.
+    """
+    deleted = []
+    now = int(time.time())
+
+    for fn in files:
+        if (now - os.stat(fn).st_mtime) > seconds:
+            os.unlink(fn)
+            deleted.append(fn)
+
+    return deleted
 
 def levenshteinDistance(s1, s2, len1=None, len2=None,
                         offset1=0, offset2=0, memo=None):

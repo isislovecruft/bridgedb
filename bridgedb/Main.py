@@ -23,6 +23,7 @@ from twisted.internet import task
 from bridgedb import crypto
 from bridgedb import persistent
 from bridgedb import proxy
+from bridgedb import runner
 from bridgedb import util
 from bridgedb.bridges import MalformedBridgeInfo
 from bridgedb.bridges import MissingServerDescriptorDigest
@@ -452,6 +453,17 @@ def run(options, reactor=reactor):
                 proxy.downloadTorExits,
                 state.proxies,
                 config.SERVER_PUBLIC_EXTERNAL_IP)
+
+        if config.TASKS.get('DELETE_UNPARSEABLE_DESCRIPTORS'):
+            delUnparseableSecs = config.TASKS['DELETE_UNPARSEABLE_DESCRIPTORS']
+        else:
+            delUnparseableSecs = 24 * 60 * 60  # Default to 24 hours
+
+        # We use the directory name of STATUS_FILE, since that directory
+        # is where the *.unparseable descriptor files will be written to.
+        tasks['DELETE_UNPARSEABLE_DESCRIPTORS'] = task.LoopingCall(
+            runner.cleanupUnparseableDescriptors,
+            os.path.dirname(config.STATUS_FILE), delUnparseableSecs)
 
         # Schedule all configured repeating tasks:
         for name, seconds in config.TASKS.items():
