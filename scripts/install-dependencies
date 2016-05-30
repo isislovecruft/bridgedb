@@ -8,7 +8,7 @@ APT_FLAGS='-q --no-install-suggests --no-install-recommends'
 PIP=$(which pip)
 PIP_FLAGS='--no-use-wheel'
 DEPENDS="build-essential openssl sqlite3 python-dev python-setuptools"
-DEPENDS="${DEPENDS} libgeoip-dev geoip-database libjpeg-dev"
+DEPENDS="${DEPENDS} libgeoip-dev geoip-database libjpeg-dev capnproto"
 HERE=$(dirname $0)
 
 if [ "$EUID" != "0" ] ; then SUDO=$(which sudo); fi
