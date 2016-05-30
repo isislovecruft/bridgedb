@@ -35,22 +35,22 @@ env:
     #     https://github.com/pypa/virtualenv/issues/459
     - PYTHON_EGG_CACHE="${HOME}/.python-eggs-$(echo $RANDOM$PPID$RANDOM | sha256sum | cut -d ' ' -f 1)"
   matrix:
-    # Debian Wheezy
-    - TWISTED_VERSION=13.2.0 PYOPENSSL_VERSION=0.13.1
     # Debian Jessie
     - TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+    # Debian Stretch
+    - TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
 
 matrix:
   include:
-    - python: "2.7"
-      env: TWISTED_VERSION=15.0.0 PYOPENSSL_VERSION=0.14
     - python: "pypy"
       env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+    - python: "pypy"
+      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
   allow_failures:
-    - python: "2.7"
-      env: TWISTED_VERSION=15.0.0 PYOPENSSL_VERSION=0.14
     - python: "pypy"
       env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+    - python: "pypy"
+      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
   fast_finish: true
 
 before_install:
