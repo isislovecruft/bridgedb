@@ -17,6 +17,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import time
 
 from twisted.mail.smtp import Address
 from twisted.trial import unittest
@@ -69,6 +70,36 @@ class MiscLoggingUtilTests(unittest.TestCase):
         from bridgedb.persistent import Conf
         util.configureLogging(Conf())
         util.logging.info("BridgeDB's email address: bridges@torproject.org")
+
+
+class FileUtilityTests(unittest.TestCase):
+    """Unittests for `bridgedb.util.deleteFilesOlderThan`."""
+
+    def setUp(self):
+        self._directory = self.id()
+        self.newfile = os.sep.join([self._directory, "newfile"])
+        self.oldfile = os.sep.join([self._directory, "oldfile"])
+        self.testfiles = [self.newfile, self.oldfile]
+        os.mkdir(self._directory)
+
+        now = time.time()
+
+        for fn in self.testfiles:
+            with open(fn, "w") as fd:
+                fd.flush()
+
+        # Change the mtime of the "oldfile" to be two days old:
+        os.utime(self.oldfile, (now, now - (48 * 60 * 60)))
+
+    def test_deleteFilesOlderThan_deletes_old_files(self):
+        """The function should delete appropriate files."""
+        deleted = util.deleteFilesOlderThan(self.testfiles ,24 * 60 * 60)
+        self.assertIn(self.oldfile, deleted)
+
+    def test_deleteFilesOlderThan_keeps_new_files(self):
+        """The function should delete appropriate files."""
+        deleted = util.deleteFilesOlderThan(self.testfiles ,24 * 60 * 60)
+        self.assertNotIn(self.newfile, deleted)
 
 
 class LevenshteinDistanceTests(unittest.TestCase):

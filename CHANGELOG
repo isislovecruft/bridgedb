@@ -1,3 +1,11 @@
+Changes in version 0.3.6 - 2016-XXX
+
+	* FIXES #18237 https://bugs.torproject.org/18237
+	During descriptor parsing, BridgeDB saves copies of descriptor files
+	which couldn't be parsed, for later debugging purposes.  To avoid
+	filing up the runtime directory with these files, we now delete files
+	older than 24 hours, every 24 hours.
+
 Changes in version 0.3.4 - 0.3.5 - 2015-11-30
 
         * FIXES #14685 https://bugs.torproject.org/14685

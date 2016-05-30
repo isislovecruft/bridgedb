@@ -17,12 +17,41 @@
 
 from __future__ import print_function
 
+import glob
 import logging
 import sys
 import os
 
 from twisted.python import procutils
 
+from bridgedb import util
+
+
+def cleanupUnparseableDescriptors(directory, seconds):
+    """Delete any ``*.unparseable`` descriptor files in ``directory`` with
+    mtimes more than ``seconds`` ago.
+
+    The :func:`bridgedb.parsers._copyUnparseableDescriptors` function
+    will make copies of any files we attempt to parse which contain
+    unparseable descriptors.  This function should run on a timer to
+    clean them up.
+
+    :param str directory: The directory in which to search for unparseable
+        descriptors.
+    :param int olderThan: If a file's mtime is more than this number
+        (in seconds), it will be deleted.
+    """
+    files = []
+
+    for pattern in ["*.unparseable", "*.unparseable.xz"]:
+        files.extend(glob.glob(os.sep.join([directory, pattern])))
+
+    if files:
+        logging.info("Deleting old unparseable descriptor files...")
+        logging.debug("Considered for deletion: %s" % "\n".join(files))
+
+        deleted = util.deleteFilesOlderThan(files, seconds)
+        logging.info("Deleted %d unparseable descriptor files." % len(deleted))
 
 def find(filename):
     """Find the executable ``filename``.
