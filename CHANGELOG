@@ -1,4 +1,19 @@
-Changes in version 0.3.4 - 2015-11-30
+Changes in version 0.3.6 - 2016-07-28
+
+        * FIXES #18237 https://bugs.torproject.org/18237
+        During descriptor parsing, BridgeDB saves copies of descriptor files
+        which couldn't be parsed, for later debugging purposes.  To avoid
+        filing up the runtime directory with these files, we now delete files
+        older than 24 hours, every 24 hours.
+
+        * FIXES #18949 https://bugs.torproject.org/18949
+        Since we've upgraded the host machine which runs The Tor Project's
+        BridgeDB instance to Debian Jessie, this patch updates the testing
+        configurations and continuous integration infrastructure to run
+        tests on versions of Python dependencies in Debian Jessie and Stretch.
+
+
+Changes in version 0.3.4 - 0.3.5 - 2015-11-30
 
         * FIXES #14685 https://bugs.torproject.org/14685
         This disables distribution of obfs2 bridges.  This pluggable
