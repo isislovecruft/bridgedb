@@ -1,2 +1,4 @@
 include versioneer.py
 include bridgedb/_version.py
+include requirements.txt
+recursice-include bridgedb/i18n *.po *.pot
