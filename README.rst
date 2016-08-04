@@ -88,6 +88,9 @@ BridgeDB requires the following OS-level dependencies:
 -  geoip-database
 -  `python-setuptools <https://pypi.python.org/pypi/setuptools>`__
 -  libjpeg-dev
+-  `flog <https://packages.debian.org/jessie/flog>`__ (only required if bridgedb
+   is invocated with the ``run-bridgedb`` `script
+   <https://gitweb.torproject.org/project/bridges/bridgedb-admin.git/tree/bin/run-bridgedb>`__)
 
 As well as any Python dependencies in the ``requirements.txt`` file.
 

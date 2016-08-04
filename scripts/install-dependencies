@@ -18,7 +18,7 @@ if [ "$EUID" != "0" ] ; then SUDO=$(which sudo); fi
 if [ "$TRAVIS" == "true" ] ; then
     DEPENDS="${DEPENDS} realpath"
 else
-    DEPENDS="${DEPENDS} python-pip"
+    DEPENDS="${DEPENDS} python-pip flog"
 fi
     
 MISSING=""
