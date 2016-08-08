@@ -13,4 +13,3 @@ pep8==1.5.7
 # https://bitbucket.org/logilab/pylint/issue/203/importing-namespace-packages-crashes#comment-11013783
 pylint==1.1.0
 sure==1.2.2
-Twisted==13.2.0

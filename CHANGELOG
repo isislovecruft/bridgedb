@@ -1,3 +1,17 @@
+Changes in version 0.3.7 - 2016-08-04
+
+        * FIXES #19691 https://bugs.torproject.org
+        BridgeDB (as running on Tor Project infrastructure) is now
+        invocated with a redirection of stdout and stderr to the flog
+        utility, in order to ensure that file handles are properly closed
+        and reopened when BridgeDB receives a SIGHUP.
+
+And includes the following general changes:
+
+        * ADDS some files which were missing from BridgeDB PyPI packages
+        to the MANIFEST.in, so that they are now included.
+
+
 Changes in version 0.3.6 - 2016-07-28
 
         * FIXES #18237 https://bugs.torproject.org/18237

@@ -66,3 +66,8 @@ coverage-html:
 	coverage html --rcfile=".coveragerc"
 
 coverage: coverage-test coverage-html
+
+upload: clean
+	python setup.py bdist_egg upload --sign
+	#python setup.py bdist_wheel upload --sign
+	python setup.py sdist --formats=gztar,zip upload --sign
