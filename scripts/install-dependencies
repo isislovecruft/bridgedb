@@ -6,7 +6,10 @@ SUDO=
 APT_GET=$(which apt-get)
 APT_FLAGS='-q --no-install-suggests --no-install-recommends'
 PIP=$(which pip)
-PIP_FLAGS='--no-use-wheel'
+# For older versions of pip (< 8.1.2):
+#PIP_FLAGS='--no-use-wheel'
+#PIP_FLAGS='--no-binaries :all:'
+PIP_FLAGS=
 DEPENDS="build-essential openssl sqlite3 python-dev python-setuptools"
 DEPENDS="${DEPENDS} libgeoip-dev geoip-database libjpeg-dev"
 HERE=$(dirname $0)
