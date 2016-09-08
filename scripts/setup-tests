@@ -11,7 +11,8 @@ THERE="$HERE"
 echo "Found top-level repo directory: $THERE"
 cd $THERE
 
-mkdir run
+mkdir -p run/from-authority
+mkdir -p run/from-bifroest
 cp -R -t run bridgedb.conf captchas .gnupg
 # Add '127.0.0.1' to EMAIL_DOMAINS in bridgedb.conf. This should ONLY be
 # done on testing servers, never on production servers.
@@ -25,6 +26,7 @@ sed -r -i -e "s/(HTTP_UNENCRYPTED_BIND_IP = )(None)/\1'127.0.0.1'/" run/bridgedb
 sed -r -i -e "s/(HTTP_UNENCRYPTED_PORT = )(None)/\16788/" run/bridgedb.conf
 sed -r -i -e "s/(SERVER_PUBLIC_FQDN = )(.*)/\1'127.0.0.1:6788'/" run/bridgedb.conf
 leekspin -n 100
-cp -t run networkstatus-bridges cached-extrainfo* bridge-descriptors
+cp -t run/from-authority networkstatus-bridges cached-extrainfo* bridge-descriptors
+cp -t run/from-bifroest networkstatus-bridges cached-extrainfo* bridge-descriptors
 ./scripts/make-ssl-cert
 cp -t run privkey.pem cert
