@@ -66,6 +66,9 @@ install:
 before_script:
   - ./scripts/setup-tests
   - bridgedb -r run &
+  - which coverage
+  - whereis coverage
+  - pip list
 
 script:
   - make coverage-test
