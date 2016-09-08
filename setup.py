@@ -390,10 +390,10 @@ setuptools.setup(
     dependency_links=deplinks,
     package_data={'bridgedb': get_data_files(filesonly=True)},
     exclude_package_data={'bridgedb': ['*.po', '*.pot']},
-    message_extractors={
-        pkgpath: [
-            ('**.py', 'python', None),
-            ('https/templates/**.html', 'mako', None),
-        ]
-    },
+    #message_extractors={
+    #    pkgpath: [
+    #        ('**.py', 'python', None),
+    #        ('https/templates/**.html', 'mako', None),
+    #    ]
+    #},
 )
