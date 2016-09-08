@@ -21,7 +21,7 @@ sure==1.2.2
 Babel==0.9.6
 BeautifulSoup==3.2.1
 Mako==0.8.1
-https://ipaddr-py.googlecode.com/files/ipaddr-2.1.10.tar.gz#sha1=c608450b077b19773d4f1b5f1ef88b26f6650ce0#egg=ipaddr-2.1.10-py2.7
+ipaddr==2.1.11
 pycrypto==2.6.1
 pygeoip==0.2.7
 gnupg==2.0.1
