@@ -41,6 +41,12 @@ from bridgedb import Bridges
 from bridgedb.Stability import updateBridgeHistory
 
 
+def expandBridgeAuthDir(authdir, filename):
+    """Expands a descriptor ``filename`` relative to which of the
+    BRIDGE_AUTHORITY_DIRECTORIES, ``authdir`` it resides within.
+    """
+    return os.path.abspath(os.path.expanduser(os.sep.join([authdir, filename])))
+
 def load(state, hashring, clear=False):
     """Read and parse all descriptors, and load into a bridge hashring.
 
@@ -69,95 +75,101 @@ def load(state, hashring, clear=False):
     if ignoreNetworkstatus:
         logging.info("Ignoring BridgeAuthority networkstatus documents.")
 
-    bridges = {}
-    timestamps = {}
+    for auth in state.BRIDGE_AUTHORITY_DIRECTORIES:
+        logging.info("Processing descriptors in %s directory..." % auth)
 
-    logging.info("Opening networkstatus file: %s" % state.STATUS_FILE)
-    networkstatuses = descriptors.parseNetworkStatusFile(state.STATUS_FILE)
-    logging.debug("Closing networkstatus file: %s" % state.STATUS_FILE)
+        bridges = {}
+        timestamps = {}
 
-    logging.info("Processing networkstatus descriptors...")
-    for router in networkstatuses:
-        bridge = Bridge()
-        bridge.updateFromNetworkStatus(router, ignoreNetworkstatus)
-        try:
-            bridge.assertOK()
-        except MalformedBridgeInfo as error:
-            logging.warn(str(error))
-        else:
-            bridges[bridge.fingerprint] = bridge
+        fn = expandBridgeAuthDir(auth, state.STATUS_FILE)
+        logging.info("Opening networkstatus file: %s" % fn)
+        networkstatuses = descriptors.parseNetworkStatusFile(fn)
+        logging.debug("Closing networkstatus file: %s" % fn)
 
-    for filename in state.BRIDGE_FILES:
-        logging.info("Opening bridge-server-descriptor file: '%s'" % filename)
-        serverdescriptors = descriptors.parseServerDescriptorsFile(filename)
-        logging.debug("Closing bridge-server-descriptor file: '%s'" % filename)
-
-        for router in serverdescriptors:
+        logging.info("Processing networkstatus descriptors...")
+        for router in networkstatuses:
+            bridge = Bridge()
+            bridge.updateFromNetworkStatus(router, ignoreNetworkstatus)
             try:
-                bridge = bridges[router.fingerprint]
-            except KeyError:
-                logging.warn(
-                    ("Received server descriptor for bridge '%s' which wasn't "
-                     "in the networkstatus!") % router.fingerprint)
-                if ignoreNetworkstatus:
-                    bridge = Bridge()
-                else:
+                bridge.assertOK()
+            except MalformedBridgeInfo as error:
+                logging.warn(str(error))
+            else:
+                bridges[bridge.fingerprint] = bridge
+
+        for filename in state.BRIDGE_FILES:
+            fn = expandBridgeAuthDir(auth, filename)
+            logging.info("Opening bridge-server-descriptor file: '%s'" % fn)
+            serverdescriptors = descriptors.parseServerDescriptorsFile(fn)
+            logging.debug("Closing bridge-server-descriptor file: '%s'" % fn)
+
+            for router in serverdescriptors:
+                try:
+                    bridge = bridges[router.fingerprint]
+                except KeyError:
+                    logging.warn(
+                        ("Received server descriptor for bridge '%s' which wasn't "
+                         "in the networkstatus!") % router.fingerprint)
+                    if ignoreNetworkstatus:
+                        bridge = Bridge()
+                    else:
+                        continue
+
+                try:
+                    bridge.updateFromServerDescriptor(router, ignoreNetworkstatus)
+                except (ServerDescriptorWithoutNetworkstatus,
+                        MissingServerDescriptorDigest,
+                        ServerDescriptorDigestMismatch) as error:
+                    logging.warn(str(error))
+                    # Reject any routers whose server descriptors didn't pass
+                    # :meth:`~bridges.Bridge._checkServerDescriptor`, i.e. those
+                    # bridges who don't have corresponding networkstatus
+                    # documents, or whose server descriptor digests don't check
+                    # out:
+                    bridges.pop(router.fingerprint)
                     continue
 
+                if state.COLLECT_TIMESTAMPS:
+                    # Update timestamps from server descriptors, not from network
+                    # status descriptors (because networkstatus documents and
+                    # descriptors aren't authenticated in any way):
+                    if bridge.fingerprint in timestamps.keys():
+                        timestamps[bridge.fingerprint].append(router.published)
+                    else:
+                        timestamps[bridge.fingerprint] = [router.published]
+
+        eifiles = [expandBridgeAuthDir(auth, fn) for fn in state.EXTRA_INFO_FILES]
+        extrainfos = descriptors.parseExtraInfoFiles(*eifiles)
+        for fingerprint, router in extrainfos.items():
             try:
-                bridge.updateFromServerDescriptor(router, ignoreNetworkstatus)
-            except (ServerDescriptorWithoutNetworkstatus,
-                    MissingServerDescriptorDigest,
-                    ServerDescriptorDigestMismatch) as error:
+                bridges[fingerprint].updateFromExtraInfoDescriptor(router)
+            except MalformedBridgeInfo as error:
                 logging.warn(str(error))
-                # Reject any routers whose server descriptors didn't pass
-                # :meth:`~bridges.Bridge._checkServerDescriptor`, i.e. those
-                # bridges who don't have corresponding networkstatus
-                # documents, or whose server descriptor digests don't check
-                # out:
-                bridges.pop(router.fingerprint)
-                continue
+            except KeyError as error:
+                logging.warn(("Received extrainfo descriptor for bridge '%s', "
+                              "but could not find bridge with that fingerprint.")
+                             % router.fingerprint)
 
-            if state.COLLECT_TIMESTAMPS:
-                # Update timestamps from server descriptors, not from network
-                # status descriptors (because networkstatus documents and
-                # descriptors aren't authenticated in any way):
-                if bridge.fingerprint in timestamps.keys():
-                    timestamps[bridge.fingerprint].append(router.published)
-                else:
-                    timestamps[bridge.fingerprint] = [router.published]
+        inserted = 0
+        logging.info("Inserting %d bridges into hashring..." % len(bridges))
+        for fingerprint, bridge in bridges.items():
+            # Skip insertion of bridges which are geolocated to be in one of the
+            # NO_DISTRIBUTION_COUNTRIES, a.k.a. the countries we don't distribute
+            # bridges from:
+            if bridge.country in state.NO_DISTRIBUTION_COUNTRIES:
+                logging.warn("Not distributing Bridge %s %s:%s in country %s!" %
+                             (bridge, bridge.address, bridge.orPort, bridge.country))
+            else:
+                # If the bridge is not running, then it is skipped during the
+                # insertion process.
+                hashring.insert(bridge)
+                inserted += 1
+        logging.info("Done inserting %d bridges into hashring." % inserted)
 
-    extrainfos = descriptors.parseExtraInfoFiles(*state.EXTRA_INFO_FILES)
-    for fingerprint, router in extrainfos.items():
-        try:
-            bridges[fingerprint].updateFromExtraInfoDescriptor(router)
-        except MalformedBridgeInfo as error:
-            logging.warn(str(error))
-        except KeyError as error:
-            logging.warn(("Received extrainfo descriptor for bridge '%s', "
-                          "but could not find bridge with that fingerprint.")
-                         % router.fingerprint)
+        if state.COLLECT_TIMESTAMPS:
+            reactor.callInThread(updateBridgeHistory, bridges, timestamps)
 
-    inserted = 0
-    logging.info("Inserting %d bridges into hashring..." % len(bridges))
-    for fingerprint, bridge in bridges.items():
-        # Skip insertion of bridges which are geolocated to be in one of the
-        # NO_DISTRIBUTION_COUNTRIES, a.k.a. the countries we don't distribute
-        # bridges from:
-        if bridge.country in state.NO_DISTRIBUTION_COUNTRIES:
-            logging.warn("Not distributing Bridge %s %s:%s in country %s!" %
-                         (bridge, bridge.address, bridge.orPort, bridge.country))
-        else:
-            # If the bridge is not running, then it is skipped during the
-            # insertion process.
-            hashring.insert(bridge)
-            inserted += 1
-    logging.info("Done inserting %d bridges into hashring." % inserted)
-
-    if state.COLLECT_TIMESTAMPS:
-        reactor.callInThread(updateBridgeHistory, bridges, timestamps)
-
-    state.save()
+        state.save()
 
 def _reloadFn(*args):
     """Placeholder callback function for :func:`_handleSIGHUP`."""
