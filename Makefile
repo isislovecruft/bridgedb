@@ -5,6 +5,16 @@
 TRIAL:=$(shell which trial)
 VERSION:=$(shell git describe)
 
+define PYTHON_WHICH
+import platform
+import sys
+sys.stdout.write(platform.python_implementation())
+endef
+
+PYTHON_IMPLEMENTATION:=$(shell python -c '$(PYTHON_WHICH)')
+PYTHON_PYTHON=CPython
+PYTHON_PYPY=PyPy
+
 all: uninstall clean install coverage-test
 
 test:
@@ -59,8 +69,13 @@ clean: clean-docs clean-coverage-html
 	-rm -rf _trial_temp
 
 coverage-test:
+ifeq ($(PYTHON_IMPLEMENTATION),PyPy)
+	@echo "Detected PyPy... not running coverage."
+	python setup.py test
+else
 	coverage run --rcfile=".coveragerc" $(TRIAL) ./test/test_*.py
 	coverage report --rcfile=".coveragerc"
+endif
 
 coverage-html:
 	coverage html --rcfile=".coveragerc"
