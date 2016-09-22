@@ -5,7 +5,7 @@
 #     $ pip install -r .test.requirements.txt
 #     $ make coverage
 #
-coverage==3.7.1
+coverage==4.2
 leekspin==1.1.4
 mechanize==0.2.5
 pep8==1.5.7

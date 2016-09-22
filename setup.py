@@ -381,7 +381,7 @@ setuptools.setup(
     scripts=['scripts/bridgedb',
              'scripts/get-tor-exits'],
     extras_require={'test': ["sure==1.2.2",
-                             "coverage==3.7.1",
+                             "coverage==4.2",
                              "leekspin==1.1.4"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),

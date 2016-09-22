@@ -5,7 +5,6 @@ branch = True
 timid = False
 
 [report]
-modules = bridgedb
 omit = 
      */_langs*
      */_version*

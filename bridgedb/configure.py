@@ -100,7 +100,7 @@ def loadConfig(configFile=None, configCls=None):
     #
     # See :meth:`bridgedb.persistent.State.useUpdatedSettings`.
 
-    for attr in ["PROXY_LIST_FILES", "BRIDGE_FILES", "EXTRA_INFO_FILES"]:
+    for attr in ["PROXY_LIST_FILES"]:
         setting = getattr(config, attr, None)
         if setting is None:  # pragma: no cover
             setattr(config, attr, []) # If they weren't set, make them lists
@@ -110,7 +110,7 @@ def loadConfig(configFile=None, configCls=None):
 
     for attr in ["DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE", "PIDFILE",
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
-                 "LOG_FILE", "STATUS_FILE", "COUNTRY_BLOCK_FILE",
+                 "LOG_FILE", "COUNTRY_BLOCK_FILE",
                  "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
                  "GIMP_CAPTCHA_RSA_KEYFILE", "EMAIL_GPG_HOMEDIR",
                  "EMAIL_GPG_PASSPHRASE_FILE"]:
