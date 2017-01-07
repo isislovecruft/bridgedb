@@ -34,6 +34,7 @@ from bridgedb.configure import loadConfig
 from bridgedb.email.distributor import EmailDistributor
 from bridgedb.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
+from bridgedb.parse.blacklist import parseBridgeBlacklistFile
 
 import bridgedb.Storage
 
@@ -150,6 +151,8 @@ def load(state, hashring, clear=False):
                               "but could not find bridge with that fingerprint.")
                              % router.fingerprint)
 
+        blacklist = parseBridgeBlacklistFile(state.NO_DISTRIBUTION_FILE)
+
         inserted = 0
         logging.info("Inserting %d bridges into hashring..." % len(bridges))
         for fingerprint, bridge in bridges.items():
@@ -159,6 +162,10 @@ def load(state, hashring, clear=False):
             if bridge.country in state.NO_DISTRIBUTION_COUNTRIES:
                 logging.warn("Not distributing Bridge %s %s:%s in country %s!" %
                              (bridge, bridge.address, bridge.orPort, bridge.country))
+            # Skip insertion of blacklisted bridges.
+            elif bridge in blacklist.keys():
+                logging.warn("Not distributing blacklisted Bridge %s %s:%s: %s" %
+                             (bridge, bridge.address, bridge.orPort, blacklist[bridge]))
             else:
                 # If the bridge is not running, then it is skipped during the
                 # insertion process.
