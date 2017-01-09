@@ -1,13 +1,23 @@
+Changes in version 0.4.0 - 2017-01-09
+
+        * FIXES #21162 https://bugs.torproject.org/21162
+        BridgeDB now supports arbitrarily blacklisting suspected bad
+        bridges from being distributed to clients.  This is in response
+        to a suspected sybil attack by an unknown party.  For more
+        details, see:
+        https://lists.torproject.org/pipermail/tor-project/2016-December/000851.html
+
+
 Changes in version 0.3.8 - 2016-09-22
 
-	* FIXES #20088 https://bugs.torproject.org/20088
-	BridgeDB now supports receiving descriptors from multiple Bridge
-	Authorities.  See also #19690.
+        * FIXES #20088 https://bugs.torproject.org/20088
+        BridgeDB now supports receiving descriptors from multiple Bridge
+        Authorities.  See also #19690.
 
-	* FIXES #20087 https://bugs.torproject.org/20087
-	BridgeDB's version of Stem now supports parsing transport lines in
-	bridge extrainfo descriptors which contain IPv6 addresses
-	contained within square brackets.
+        * FIXES #20087 https://bugs.torproject.org/20087
+        BridgeDB's version of Stem now supports parsing transport lines in
+        bridge extrainfo descriptors which contain IPv6 addresses
+        contained within square brackets.
 
 
 Changes in version 0.3.7 - 2016-08-04
