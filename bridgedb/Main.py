@@ -524,15 +524,10 @@ def runSubcommand(options, config):
     # mentioned above with the email.server and https.server.
     from bridgedb import runner
 
-    statuscode = 0
-
     if options.subCommand is not None:
         logging.debug("Running BridgeDB command: '%s'" % options.subCommand)
 
         if 'descriptors' in options.subOptions:
-            statuscode = runner.generateDescriptors(
-                options.subOptions['descriptors'], config.RUN_IN_DIR)
+            runner.generateDescriptors(options.subOptions['descriptors'], config.RUN_IN_DIR)
 
-        logging.info("Subcommand '%s' finished with status %s."
-                     % (options.subCommand, statuscode))
-        sys.exit(statuscode)
+        sys.exit(0)

@@ -382,7 +382,7 @@ setuptools.setup(
              'scripts/get-tor-exits'],
     extras_require={'test': ["sure==1.2.2",
                              "coverage==4.2",
-                             "leekspin==1.1.4"]},
+                             "cryptography==1.9"]},
     zip_safe=False,
     cmdclass=get_cmdclass(),
     include_package_data=True,

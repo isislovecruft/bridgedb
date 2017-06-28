@@ -81,17 +81,6 @@ def find(filename):
 def generateDescriptors(count=None, rundir=None):
     """Run a script which creates fake bridge descriptors for testing purposes.
 
-    This will run Leekspin_ to create bridge server descriptors, bridge
-    extra-info descriptors, and networkstatus document.
-
-    .. warning: This function can take a very long time to run, especially in
-        headless environments where entropy sources are minimal, because it
-        creates the keys for each mocked OR, which are embedded in the server
-        descriptors, used to calculate the OR fingerprints, and sign the
-        descriptors, among other things.
-
-    .. _Leekspin: https://gitweb.torproject.org/user/isis/leekspin.git
-
     :param integer count: Number of mocked bridges to generate descriptor
         for. (default: 3)
     :type rundir: string or None
@@ -100,28 +89,15 @@ def generateDescriptors(count=None, rundir=None):
         directory MUST already exist, and the descriptor files will be created
         in it. If None, use the whatever directory we are currently in.
     """
-    import subprocess
-    import os.path
 
-    proc = None
-    statuscode = 0
-    script = 'leekspin'
-    rundir = rundir if os.path.isdir(rundir) else None
+    from stem.descriptor.server_descriptor import RelayDescriptor
+
     count = count if count else 3
-    try:
-        proc = subprocess.Popen([script, '-n', str(count)],
-                                close_fds=True, cwd=rundir)
-    finally:
-        if proc is not None:
-            proc.wait()
-            if proc.returncode:
-                print("There was an error generating bridge descriptors.",
-                      "(Returncode: %d)" % proc.returncode)
-                statuscode = proc.returncode
-            else:
-                print("Sucessfully generated %s descriptors." % str(count))
-        del subprocess
-        return statuscode
+    rundir = rundir if rundir else os.getcwd()
+
+    for i in range(count):
+      with open(os.path.join(rundir, 'descriptor_%i' % i), 'w') as descriptor_file:
+        descriptor_file.write(RelayDescriptor.content(sign = True))
 
 def doDumpBridges(config):
     """Dump bridges by assignment to a file.

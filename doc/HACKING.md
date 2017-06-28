@@ -12,19 +12,16 @@ with password ```writecode```.
 ## Generating bridge descriptors
 
 Developers wishing to test BridgeDB will need to generate mock bridge
-descriptors. This is accomplished through the [leekspin
-script](https://gitweb.torproject.org/user/isis/leekspin.git). To generate 20
-bridge descriptors, change to the bridgedb running directory and do:
+descriptors. This is accomplished through **create-descriptors.py**. To
+generate 20 bridge descriptors, change to the bridgedb running directory and
+run:
 
-    $ leekspin -n 20
+    $ ./scripts/create-descriptors.py 20
 
 It is recommended that you generate at least 250 descriptors for testing.
 Ideally, even more descriptors should be generated, somewhere in the realm of
 2000, as certain bugs do not emerge until BridgeDB is processing thousands of
 descriptors.
-
-**Leekspin is for testing purposes only and should never be deployed on a
-production server.** We do not want to distribute fake bridges.
 
 ## Git Workflow
 

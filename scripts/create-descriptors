@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+try:
+  import stem
+  from stem.descriptor.server_descriptor import RelayDescriptor
+except ImportError:
+  print('Creating descriptors requires stem (https://stem.torproject.org/)')
+  sys.exit(1)
+
+if not hasattr(RelayDescriptor, 'content'):
+  print('This requires stem version 1.6 or later, you are running version %s' % stem.__version__)
+  sys.exit(1)
+
+if len(sys.argv) < 2 or not sys.argv[1].isdigit():
+  print('We need a numeric argument indicating how many descriptors to make.')
+  sys.exit(1)
+
+output_dir = os.path.join(os.getcwd(), 'test_descriptors')
+
+if not os.path.exists(output_dir):
+  os.mkdir(output_dir)
+
+for i in range(int(sys.argv[1])):
+  with open(os.path.join(output_dir, 'descriptor_%i' % i), 'w') as descriptor_file:
+    descriptor_file.write(RelayDescriptor.content(sign = True))
+
