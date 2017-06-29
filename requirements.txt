@@ -10,5 +10,5 @@ gnupg==2.0.1
 pillow>=2.6.1
 qrcode==5.0.1
 service_identity==14.0.0
-git+https://git.torproject.org/stem.git@152fa89c33114619913d2be13e67adb4e55ce7ab#egg=stem-1.4.1.dev1-py2.7
+git+https://git.torproject.org/stem.git@eb07135e7b0f11ab784858c577c6d12e189722c2#egg=stem-1.6.0.dev1-py2.7
 zope.interface==3.6.1
