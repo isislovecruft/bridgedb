@@ -1,29 +1,58 @@
 #!/usr/bin/env python
 
+import base64
+import binascii
 import os
 import sys
 
 try:
   import stem
+  import stem.descriptor
   from stem.descriptor.server_descriptor import RelayDescriptor
+  from stem.descriptor.extrainfo_descriptor import RelayExtraInfoDescriptor
+  from stem.descriptor.networkstatus import NetworkStatusDocumentV3
+  from stem.descriptor.router_status_entry import RouterStatusEntryV3
 except ImportError:
   print('Creating descriptors requires stem (https://stem.torproject.org/)')
   sys.exit(1)
 
-if not hasattr(RelayDescriptor, 'content'):
+if not hasattr(stem.descriptor, 'create_signing_key'):
   print('This requires stem version 1.6 or later, you are running version %s' % stem.__version__)
   sys.exit(1)
 
-if len(sys.argv) < 2 or not sys.argv[1].isdigit():
-  print('We need a numeric argument indicating how many descriptors to make.')
-  sys.exit(1)
+OUTPUT_DIR = os.path.join(os.getcwd(), 'test_descriptors')
 
-output_dir = os.path.join(os.getcwd(), 'test_descriptors')
 
-if not os.path.exists(output_dir):
-  os.mkdir(output_dir)
+def write_descriptor(desc, filename):
+  if not os.path.exists(OUTPUT_DIR):
+    os.mkdir(OUTPUT_DIR)
 
-for i in range(int(sys.argv[1])):
-  with open(os.path.join(output_dir, 'descriptor_%i' % i), 'w') as descriptor_file:
-    descriptor_file.write(RelayDescriptor.content(sign = True))
+  with open(os.path.join(OUTPUT_DIR, filename), 'w') as descriptor_file:
+    descriptor_file.write(str(desc))
 
+
+def make_descriptors(count):
+  consensus_entries = []
+
+  for i in range(count):
+    signing_key = stem.descriptor.create_signing_key()
+    server_desc = RelayDescriptor.create(signing_key = signing_key)
+    consensus_entries.append(server_desc.make_router_status_entry())
+
+    extrainfo_desc = RelayExtraInfoDescriptor.create({
+      'extra-info': '%s %s' % (server_desc.nickname, server_desc.fingerprint),
+    }, signing_key = signing_key)
+
+    write_descriptor(server_desc, 'server_descriptor_%i' % i)
+    write_descriptor(extrainfo_desc, 'extrainfo_descriptor_%i' % i)
+
+  consensus = NetworkStatusDocumentV3.create(routers = consensus_entries)
+  write_descriptor(consensus, 'consensus')
+
+
+if __name__ == '__main__':
+  if len(sys.argv) < 2 or not sys.argv[1].isdigit():
+    print('We need a numeric argument indicating how many descriptors to make.')
+    sys.exit(1)
+
+  make_descriptors(int(sys.argv[1]))
