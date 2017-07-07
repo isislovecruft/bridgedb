@@ -4,8 +4,8 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: Isis Lovecruft <isis@torproject.org> 0xA3ADB67A2CDB8B35
-# :copyright: (c) 2007-2015, The Tor Project, Inc.
-#             (c) 2013-2015, Isis Lovecruft
+# :copyright: (c) 2007-2017, The Tor Project, Inc.
+#             (c) 2013-2017, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 

@@ -3,7 +3,7 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: see AUTHORS file
-# :copyright: (c) 2007-2015, The Tor Project, Inc.
+# :copyright: (c) 2007-2017, The Tor Project, Inc.
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """This module has low-level functionality for parsing bridges and arranging

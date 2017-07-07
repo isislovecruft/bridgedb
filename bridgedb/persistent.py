@@ -4,9 +4,9 @@
 #
 # :authors: Isis Lovecruft 0xA3ADB67A2CDB8B35 <isis@torproject.org>
 #           please also see AUTHORS file
-# :copyright: (c) 2013-2015 Isis Lovecruft
-#             (c) 2007-2015, The Tor Project, Inc.
-#             (c) 2007-2015, all entities within the AUTHORS file
+# :copyright: (c) 2013-2017 Isis Lovecruft
+#             (c) 2007-2017, The Tor Project, Inc.
+#             (c) 2007-2017, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
 """Module for functionality to persistently store state."""
