@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import random
 import sys
 
 try:
@@ -18,34 +19,57 @@ if not hasattr(stem.descriptor, 'create_signing_key'):
   print('This requires stem version 1.6 or later, you are running version %s' % stem.__version__)
   sys.exit(1)
 
-OUTPUT_DIR = os.path.join(os.getcwd(), 'test_descriptors')
+
+OUTPUT_DIR = os.path.join(os.getcwd())
 
 
-def write_descriptor(desc, filename):
+def make_output_dir():
   if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
+
+def write_descriptors(descs, filename):
+  make_output_dir()
+
+  with open(os.path.join(OUTPUT_DIR, filename), 'w') as descriptor_file:
+    for descriptor in descs:
+      descriptor_file.write(str(descriptor))
+    descriptor_file.flush()
+
+def write_descriptor(desc, filename):
+  make_output_dir()
 
   with open(os.path.join(OUTPUT_DIR, filename), 'w') as descriptor_file:
     descriptor_file.write(str(desc))
 
-
 def make_descriptors(count):
   consensus_entries = []
+  server_descriptors = []
+  extrainfos_old = []
+  extrainfos_new = []
 
   for i in range(count):
     signing_key = stem.descriptor.create_signing_key()
     server_desc = RelayDescriptor.create(signing_key = signing_key)
+    server_descriptors.append(server_desc)
     consensus_entries.append(server_desc.make_router_status_entry())
 
     extrainfo_desc = RelayExtraInfoDescriptor.create({
       'extra-info': '%s %s' % (server_desc.nickname, server_desc.fingerprint),
     }, signing_key = signing_key)
 
+    if random.random() > 0.75:
+      extrainfos_new.append(extrainfo_desc)
+    else:
+      extrainfos_old.append(extrainfo_desc)
+
     write_descriptor(server_desc, 'server_descriptor_%i' % i)
     write_descriptor(extrainfo_desc, 'extrainfo_descriptor_%i' % i)
 
   consensus = NetworkStatusDocumentV3.create(routers = consensus_entries)
-  write_descriptor(consensus, 'consensus')
+  write_descriptor(consensus, 'networkstatus-bridges')
+  write_descriptors(server_descriptors, 'bridge-descriptors')
+  write_descriptors(extrainfos_old, 'cached-extrainfo')
+  write_descriptors(extrainfos_new, 'cached-extrainfo.new')
 
 
 if __name__ == '__main__':
