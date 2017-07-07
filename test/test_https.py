@@ -5,8 +5,8 @@
 #
 # :authors: trygve <tor-dev@lists.torproject.org>
 # :copyright: (c) 2014, trygve
-#             (c) 2014-2015, The Tor Project, Inc.
-#             (c) 2014-2015, Isis Lovecruft
+#             (c) 2014-2017, The Tor Project, Inc.
+#             (c) 2014-2017, Isis Lovecruft
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 

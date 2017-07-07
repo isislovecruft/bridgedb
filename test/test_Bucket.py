@@ -2,8 +2,8 @@
 #
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
-# :copyright: (c) 2007-2015, The Tor Project, Inc.
-#             (c) 2007-2015, all entities within the AUTHORS file
+# :copyright: (c) 2007-2017, The Tor Project, Inc.
+#             (c) 2007-2017, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
 """Unittests for the :mod:`bridgedb.Bucket` module.
