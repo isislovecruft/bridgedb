@@ -20,7 +20,7 @@ if not hasattr(stem.descriptor, 'create_signing_key'):
   sys.exit(1)
 
 
-OUTPUT_DIR = os.path.join(os.getcwd())
+OUTPUT_DIR = os.path.join(os.getcwd(), 'mock-descriptors')
 
 
 def make_output_dir():
