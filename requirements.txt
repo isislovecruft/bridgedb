@@ -1,10 +1,10 @@
 Babel==0.9.6
 BeautifulSoup==3.2.1
 Mako==0.8.1
-Twisted==14.0.2
+Twisted==16.1.1
 ipaddr==2.1.11
 pycrypto==2.6.1
-pyOpenSSL==0.14
+pyOpenSSL==16.2.0
 pygeoip==0.2.7
 gnupg==2.0.1
 pillow>=2.6.1
