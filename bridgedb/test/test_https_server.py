@@ -30,11 +30,11 @@ from twisted.web.test import requesthelper
 from bridgedb.https import server
 from bridgedb.schedule import ScheduledInterval
 
-from .https_helpers import _createConfig
-from .https_helpers import DummyRequest
-from .https_helpers import DummyHTTPSDistributor
-from .util import DummyBridge
-from .util import DummyMaliciousBridge
+from bridgedb.test.https_helpers import _createConfig
+from bridgedb.test.https_helpers import DummyRequest
+from bridgedb.test.https_helpers import DummyHTTPSDistributor
+from bridgedb.test.util import DummyBridge
+from bridgedb.test.util import DummyMaliciousBridge
 
 
 # For additional logger output for debugging, comment out the following:

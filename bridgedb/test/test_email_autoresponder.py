@@ -27,9 +27,9 @@ from bridgedb.email import autoresponder
 from bridgedb.email.server import SMTPMessage
 from bridgedb.email.distributor import TooSoonEmail
 
-from .email_helpers import _createConfig
-from .email_helpers import _createMailServerContext
-from .email_helpers import DummyEmailDistributorWithState
+from bridgedb.test.email_helpers import _createConfig
+from bridgedb.test.email_helpers import _createMailServerContext
+from bridgedb.test.email_helpers import DummyEmailDistributorWithState
 
 
 class CreateResponseBodyTests(unittest.TestCase):

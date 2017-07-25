@@ -11,7 +11,7 @@
 from twisted.trial import unittest
 
 from bridgedb import translations
-from .https_helpers import DummyRequest
+from bridgedb.test.https_helpers import DummyRequest
 
 
 REALISH_HEADERS = {

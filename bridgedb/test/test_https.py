@@ -38,9 +38,9 @@ from twisted.trial.reporter import TestResult
 from twisted.trial.unittest import FailTest
 from twisted.trial.unittest import SkipTest
 
-from .test_Tests import DynamicTestCaseMeta
-from .util import processExists
-from .util import getBridgeDBPID
+from bridgedb.test.test_Tests import DynamicTestCaseMeta
+from bridgedb.test.util import processExists
+from bridgedb.test.util import getBridgeDBPID
 
 
 HTTP_ROOT = 'http://127.0.0.1:6788'
