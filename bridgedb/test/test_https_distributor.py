@@ -27,9 +27,9 @@ from bridgedb.https import distributor
 from bridgedb.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
 
-from .util import randomValidIPv4String
-from .util import generateFakeBridges
-from .https_helpers import DummyRequest
+from bridgedb.test.util import randomValidIPv4String
+from bridgedb.test.util import generateFakeBridges
+from bridgedb.test.https_helpers import DummyRequest
 
 logging.disable(50)
 

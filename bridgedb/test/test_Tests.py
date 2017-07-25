@@ -26,8 +26,8 @@ import os
 from twisted.python import monkey
 from twisted.trial import unittest
 
-from . import legacy_Tests as Tests
-from . import deprecated
+from bridgedb.test import legacy_Tests as Tests
+from bridgedb.test import deprecated
 
 
 logging.disable(50)

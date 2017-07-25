@@ -34,8 +34,8 @@ from bridgedb import crypto
 from bridgedb import txrecaptcha
 from bridgedb.persistent import Conf
 
-from .util import fileCheckDecorator
-from .email_helpers import _createConfig
+from bridgedb.test.util import fileCheckDecorator
+from bridgedb.test.email_helpers import _createConfig
 
 
 logging.disable(50)
