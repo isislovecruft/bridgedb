@@ -73,7 +73,7 @@ ifeq ($(PYTHON_IMPLEMENTATION),PyPy)
 	@echo "Detected PyPy... not running coverage."
 	python setup.py test
 else
-	coverage run --rcfile=".coveragerc" $(TRIAL) ./test/test_*.py
+	coverage run --rcfile=".coveragerc" $(TRIAL) ./bridgedb/test/test_*.py
 	coverage report --rcfile=".coveragerc"
 endif
 
