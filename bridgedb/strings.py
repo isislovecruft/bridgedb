@@ -92,7 +92,7 @@ help to circumvent internet censorship in many cases.\n\n"""),
 }
 """These strings should go on the first "Welcome" email sent by the
 :mod:`~bridgedb.EmailServer`, as well as on the ``index.html`` template used
-by the :mod:`~bridgedb.https.server`. They are used as an introduction to
+by the :mod:`~bridgedb.distributors.https.server`. They are used as an introduction to
 explain what Tor bridges are, what bridges do, and why someone might want to
 use bridges.
 """
@@ -278,7 +278,7 @@ contain format specifiers (i.e. ``%s``) to what those format specifiers should
 be replaced with in a given template system.
 
 For example, a string which needs a pair of HTML ``("<a href=''">, "</a>")``
-tags (for the templates used by :mod:`bridgedb.https.server`) would need some
+tags (for the templates used by :mod:`bridgedb.distributors.https.server`) would need some
 alternative replacements for the :mod:`EmailServer`, because the latter uses
 templates with a ``text/plain`` mimetype instead of HTML. For the
 ``EmailServer``, the format strings specifiers are replaced with an empty

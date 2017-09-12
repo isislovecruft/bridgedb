@@ -10,11 +10,11 @@
 #_____________________________________________________________________________
 
 """
-.. py:module:: bridgedb.https.request
+.. py:module:: bridgedb.distributors.https.request
     :synopsis: Classes for parsing and storing information about requests for
                bridges which are sent to the HTTPS distributor.
 
-bridgedb.https.request
+bridgedb.distributors.https.request
 ======================
 
 Classes for parsing and storing information about requests for bridges
@@ -24,7 +24,7 @@ which are sent to the HTTPS distributor.
 
 ::
 
-  bridgedb.https.request
+  bridgedb.distributors.https.request
    |
    |_ HTTPSBridgeRequest - A request for bridges which was received through
                            the HTTPS distributor.
@@ -58,7 +58,7 @@ class HTTPSBridgeRequest(bridgerequest.BridgeRequestBase):
 
     def __init__(self, addClientCountryCode=True):
         """Process a new bridge request received through the
-        :class:`~bridgedb.https.distributor.HTTPSDistributor`.
+        :class:`~bridgedb.distributors.https.distributor.HTTPSDistributor`.
 
         :param bool addClientCountryCode: If ``True``, then calling
             :meth:`withoutBlockInCountry` will attempt to add the client's own

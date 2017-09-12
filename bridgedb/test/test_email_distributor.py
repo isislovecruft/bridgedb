@@ -7,7 +7,7 @@
 #             (c) 2007-2017, The Tor Project, Inc.
 # :license: see included LICENSE for information
 
-"""Tests for :mod:`bridgedb.email.distributor`."""
+"""Tests for :mod:`bridgedb.distributors.email.distributor`."""
 
 from __future__ import print_function
 
@@ -21,10 +21,10 @@ from twisted.trial import unittest
 import bridgedb.Storage
 
 from bridgedb.bridges import Bridge
-from bridgedb.email.distributor import EmailDistributor
-from bridgedb.email.distributor import IgnoreEmail
-from bridgedb.email.distributor import TooSoonEmail
-from bridgedb.email.request import EmailBridgeRequest
+from bridgedb.distributors.email.distributor import EmailDistributor
+from bridgedb.distributors.email.distributor import IgnoreEmail
+from bridgedb.distributors.email.distributor import TooSoonEmail
+from bridgedb.distributors.email.request import EmailBridgeRequest
 from bridgedb.parse.addr import BadEmail
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import normalizeEmail
@@ -38,7 +38,7 @@ BRIDGES = generateFakeBridges()
 
 
 class EmailDistributorTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.email.distributor.EmailDistributor`."""
+    """Tests for :class:`bridgedb.distributors.email.distributor.EmailDistributor`."""
 
     # Fail any tests which take longer than 15 seconds.
     timeout = 15

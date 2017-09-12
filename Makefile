@@ -86,3 +86,6 @@ upload: clean
 	python setup.py bdist_egg upload --sign
 	#python setup.py bdist_wheel upload --sign
 	python setup.py sdist --formats=gztar,zip upload --sign
+
+tags:
+	find ./bridgedb -type f -name "*.py" -print | xargs etags

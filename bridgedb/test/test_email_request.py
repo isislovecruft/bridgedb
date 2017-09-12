@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.email.request` module."""
+"""Unittests for the :mod:`bridgedb.distributors.email.request` module."""
 
 from __future__ import print_function
 
@@ -17,7 +17,7 @@ import ipaddr
 
 from twisted.trial import unittest
 
-from bridgedb.email import request
+from bridgedb.distributors.email import request
 
 
 class DetermineBridgeRequestOptionsTests(unittest.TestCase):

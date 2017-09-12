@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.email.server` module."""
+"""Unittests for the :mod:`bridgedb.distributors.email.server` module."""
 
 from __future__ import print_function
 
@@ -31,9 +31,9 @@ from twisted.trial import unittest
 
 from zope.interface import implementedBy
 
-from bridgedb.email import server
-from bridgedb.email.distributor import EmailDistributor
-from bridgedb.email.distributor import TooSoonEmail
+from bridgedb.distributors.email import server
+from bridgedb.distributors.email.distributor import EmailDistributor
+from bridgedb.distributors.email.distributor import TooSoonEmail
 from bridgedb.parse.addr import BadEmail
 from bridgedb.schedule import Unscheduled
 
@@ -43,7 +43,7 @@ from bridgedb.test.email_helpers import _createMailServerContext
 
 
 class SMTPMessageTests(unittest.TestCase):
-    """Unittests for :class:`bridgedb.email.server.SMTPMessage`."""
+    """Unittests for :class:`bridgedb.distributors.email.server.SMTPMessage`."""
 
     def setUp(self):
         self.config = _createConfig()
@@ -59,7 +59,7 @@ class SMTPMessageTests(unittest.TestCase):
     def test_SMTPMessage_init(self):
         """Our ``message`` attribute should be a ``SMTPMessage`` object, and
         ``message.responder`` should be a
-        :class:`bridgedb.email.autoresponder.SMTPAutoresponder`.
+        :class:`bridgedb.distributors.email.autoresponder.SMTPAutoresponder`.
         """
         self.assertIsInstance(self.message, server.SMTPMessage)
         self.assertIsInstance(self.message.responder,
@@ -320,7 +320,7 @@ class SMTPTestCaseMixin(util.TestCaseMixin):
          segment. Includes the SMTP DATA EOM command ('.') at the end. If no
          keyword arguments are given, the defaults are fairly sane.
 
-        Suitable for testing a :class:`bridgedb.email.server.SMTPIncomingServerFactory`.
+        Suitable for testing a :class:`bridgedb.distributors.email.server.SMTPIncomingServerFactory`.
 
         :param str fromAddr: An email address for the 'From:' header.
         :param str toAddr: An email address for the 'To:' header.
@@ -382,7 +382,7 @@ class SMTPTestCaseMixin(util.TestCaseMixin):
 
 
 class SMTPIncomingServerFactoryTests(SMTPTestCaseMixin, unittest.TestCase):
-    """Unittests for :class:`bridgedb.email.server.SMTPIncomingServerFactory`."""
+    """Unittests for :class:`bridgedb.distributors.email.server.SMTPIncomingServerFactory`."""
 
     def setUp(self):
         """Set up a localhost SMTPIncomingServerFactory handler incoming SMTP
@@ -502,7 +502,7 @@ class SMTPIncomingServerFactoryTests(SMTPTestCaseMixin, unittest.TestCase):
 
 
 class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
-    """Unittests for :func:`bridgedb.email.server.addServer`."""
+    """Unittests for :func:`bridgedb.distributors.email.server.addServer`."""
 
     def setUp(self):
         """Create a MailServerContext and EmailDistributor."""
@@ -523,7 +523,7 @@ class EmailServerServiceTests(SMTPTestCaseMixin, unittest.TestCase):
         reactor.runUntilCurrent()
 
     def test_addServer(self):
-        """Call :func:`bridgedb.email.server.addServer` to test startup."""
+        """Call :func:`bridgedb.distributors.email.server.addServer` to test startup."""
         factory = server.addServer(self.config, self.dist)
         factory.timeout = None
         factory.protocol.timeout = None  # Or else the reactor gets dirty

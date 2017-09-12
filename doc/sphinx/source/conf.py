@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(
 
 
 import bridgedb
+import bridgedb.main
 import bridgedb.bridgerequest
 import bridgedb.bridges
 import bridgedb.captcha
@@ -34,20 +35,20 @@ import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
 import bridgedb.distribute
-import bridgedb.email
-import bridgedb.email.autoresponder
-import bridgedb.email.distributor
-import bridgedb.email.dkim
-import bridgedb.email.request
-import bridgedb.email.server
-import bridgedb.email.templates
+import bridgedb.distributors
+import bridgedb.distributors.email
+import bridgedb.distributors.email.autoresponder
+import bridgedb.distributors.email.distributor
+import bridgedb.distributors.email.dkim
+import bridgedb.distributors.email.request
+import bridgedb.distributors.email.server
+import bridgedb.distributors.email.templates
+import bridgedb.distributors.https
+import bridgedb.distributors.https.distributor
+import bridgedb.distributors.https.request
+import bridgedb.distributors.https.server
 import bridgedb.filters
 import bridgedb.geo
-import bridgedb.https
-import bridgedb.https.distributor
-import bridgedb.https.request
-import bridgedb.https.server
-import bridgedb.Main
 import bridgedb.parse
 import bridgedb.parse.addr
 import bridgedb.parse.descriptors
@@ -116,8 +117,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
-              'sphinxjp.themecore',
-              'sphinxarg.ext',
               'sphinxcontrib.fulltoc',
               'repoze.sphinx.autointerface',
               'apilinks_sphinxext',

@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 
 import bridgedb.Bridges
-import bridgedb.Main
+import bridgedb.main
 import bridgedb.schedule
 import bridgedb.Storage
 import re
@@ -26,9 +26,9 @@ import ipaddr
 
 from bridgedb.Stability import BridgeHistory
 
-from bridgedb.email.distributor import EmailDistributor
-from bridgedb.email.distributor import IgnoreEmail
-from bridgedb.email.distributor import TooSoonEmail
+from bridgedb.distributors.email.distributor import EmailDistributor
+from bridgedb.distributors.email.distributor import IgnoreEmail
+from bridgedb.distributors.email.distributor import TooSoonEmail
 from bridgedb.parse import addr
 
 from .util import bracketIPv6

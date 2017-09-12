@@ -1,3 +1,15 @@
+Changes in version 0.6.0 - 2017-11-15
+
+        * ADDS a new JSON API distributor called "moat", which is intended
+        for use for Tor Launcher to use to build an in-browser UI for
+        retrieving bridges.
+
+        * CHANGES the organisation of code to add a new
+        bridgedb.distributors package as well as a
+        bridgedb.distributors.common package for code shared between
+        multiple distributors.
+
+
 Changes in version 0.5.0 - 2017-10-28
 
         * FIXES #23957 https://bugs.torproject.org/23957

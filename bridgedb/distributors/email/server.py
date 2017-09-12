@@ -14,11 +14,11 @@
 
 
 """
-.. py:module:: bridgedb.email.server
+.. py:module:: bridgedb.distributors.email.server
     :synopsis: Servers which interface with clients and distribute bridges
                over SMTP.
 
-bridgedb.email.server
+bridgedb.distributors.email.server
 =====================
 
 Servers which interface with clients and distribute bridges over SMTP.
@@ -28,7 +28,7 @@ Servers which interface with clients and distribute bridges over SMTP.
 
 ::
 
-  bridgedb.email.server
+  bridgedb.distributors.email.server
    | |_ addServer - Set up a SMTP server which listens on the configured
    |                EMAIL_PORT for incoming connections, and responds as
    |                necessary to requests for bridges.
@@ -66,9 +66,9 @@ from zope.interface import implements
 from bridgedb import __version__
 from bridgedb import safelog
 from bridgedb.crypto import initializeGnuPG
-from bridgedb.email import autoresponder
-from bridgedb.email import templates
-from bridgedb.email import request
+from bridgedb.distributors.email import autoresponder
+from bridgedb.distributors.email import templates
+from bridgedb.distributors.email import request
 from bridgedb.parse import addr
 from bridgedb.parse.addr import UnsupportedDomain
 from bridgedb.parse.addr import canonicalizeEmailDomain
@@ -109,7 +109,7 @@ class MailServerContext(object):
         """Create a context for storing configs for email bridge distribution.
 
         :type config: :class:`bridgedb.persistent.Conf`
-        :type distributor: :class:`~bridgedb.email.distributor.EmailDistributor`
+        :type distributor: :class:`~bridgedb.distributors.email.distributor.EmailDistributor`
         :param distributor: The distributor will handle getting the correct
             bridges (or none) for a client for us.
         :type schedule: :class:`bridgedb.schedule.ScheduledInterval`
@@ -172,18 +172,18 @@ class SMTPMessage(object):
     :var bool ignoring: If ``True``, we're ignoring the rest of this message
         because it exceeded :data:`MailServerContext.maximumSize`.
     :var canonicalFromSMTP: See
-        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+        :meth:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder.runChecks`.
     :var canonicalFromEmail: See
-        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+        :meth:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder.runChecks`.
     :var canonicalDomainRules: See
-        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+        :meth:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder.runChecks`.
     :var message: (:api:`twisted.mail.smtp.rfc822.Message` or ``None``) The
         incoming email message.
-    :var responder: A :class:`~bridgedb.email.autoresponder.SMTPAutoresponder`
+    :var responder: A :class:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder`
         which parses and checks the incoming :data:`message`. If it decides to
         do so, it will build a
-        :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.reply` email
-        and :meth:`~bridgedb.email.autoresponder.SMTPAutoresponder.send` it.
+        :meth:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder.reply` email
+        and :meth:`~bridgedb.distributors.email.autoresponder.SMTPAutoresponder.send` it.
     """
     implements(smtp.IMessage)
 
@@ -432,7 +432,7 @@ class SMTPIncomingServerFactory(smtp.SMTPFactory):
     automation whenever we get a incoming connection on the SMTP port.
 
     .. warning::
-        My :attr:`~bridgedb.email.server.SMTPIncomingServerFactory.context`
+        My :attr:`~bridgedb.distributors.email.server.SMTPIncomingServerFactory.context`
         isn't an OpenSSL context, as is used for the
         :api:`twisted.mail.smtp.ESMTPSender`.
 
@@ -477,7 +477,7 @@ def addServer(config, distributor):
 
     :type config: :class:`bridgedb.configure.Conf`
     :param config: A configuration object.
-    :type distributor: :class:`bridgedb.email.distributor.EmailDistributor`
+    :type distributor: :class:`bridgedb.distributors.email.distributor.EmailDistributor`
     :param dist: A distributor which will handle database interactions, and
         will decide which bridges to give to who and when.
     """

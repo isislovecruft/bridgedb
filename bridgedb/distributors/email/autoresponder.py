@@ -13,10 +13,10 @@
 #_____________________________________________________________________________
 
 """
-.. py:module:: bridgedb.email.autoresponder
+.. py:module:: bridgedb.distributors.email.autoresponder
     :synopsis: Functionality for autoresponding to incoming emails.
 
-bridgedb.email.autoresponder
+bridgedb.distributors.email.autoresponder
 ============================
 
 Functionality for autoresponding to incoming emails.
@@ -26,7 +26,7 @@ Functionality for autoresponding to incoming emails.
 
 ::
 
-  bridgedb.email.autoresponder
+  bridgedb.distributors.email.autoresponder
    | |_ createResponseBody - Parse lines from an incoming email and determine
    | |                       how to respond.
    | |_ generateResponse - Create an email response.
@@ -50,13 +50,13 @@ from twisted.python import failure
 
 from bridgedb import safelog
 from bridgedb.crypto import NEW_BUFFER_INTERFACE
-from bridgedb.email import dkim
-from bridgedb.email import request
-from bridgedb.email import templates
-from bridgedb.email.distributor import EmailRequestedHelp
-from bridgedb.email.distributor import EmailRequestedKey
-from bridgedb.email.distributor import TooSoonEmail
-from bridgedb.email.distributor import IgnoreEmail
+from bridgedb.distributors.email import dkim
+from bridgedb.distributors.email import request
+from bridgedb.distributors.email import templates
+from bridgedb.distributors.email.distributor import EmailRequestedHelp
+from bridgedb.distributors.email.distributor import EmailRequestedKey
+from bridgedb.distributors.email.distributor import TooSoonEmail
+from bridgedb.distributors.email.distributor import IgnoreEmail
 from bridgedb.parse import addr
 from bridgedb.parse.addr import canonicalizeEmailDomain
 from bridgedb.util import levenshteinDistance
@@ -69,7 +69,7 @@ def createResponseBody(lines, context, client, lang='en'):
 
     :param list lines: The list of lines from the original request sent by the
         client.
-    :type context: :class:`bridgedb.email.server.MailServerContext`
+    :type context: :class:`bridgedb.distributors.email.server.MailServerContext`
     :param context: The context which contains settings for the email server.
     :type client: :api:`twisted.mail.smtp.Address`
     :param client: The client's email address which should be in the
@@ -614,7 +614,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
         3. Check that those canonical domains match.
 
         4. If the incoming message is from a domain which supports DKIM
-        signing, then run :func:`bridgedb.email.dkim.checkDKIM` as well.
+        signing, then run :func:`bridgedb.distributors.email.dkim.checkDKIM` as well.
 
         .. note:: Calling this method sets the
             :attr:`incoming.canonicalFromEmail` and

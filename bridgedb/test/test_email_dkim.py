@@ -9,14 +9,14 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.email.dkim` module."""
+"""Unittests for the :mod:`bridgedb.distributors.email.dkim` module."""
 
 import io
 
 from twisted.mail.smtp import rfc822
 from twisted.trial import unittest
 
-from bridgedb.email import dkim
+from bridgedb.distributors.email import dkim
 
 
 class CheckDKIMTests(unittest.TestCase):

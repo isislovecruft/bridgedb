@@ -44,7 +44,7 @@ repo_langs = os.path.join(pkgpath, '_langs.py')
 
 # The directory containing template files and other resources to serve on the
 # web server:
-repo_templates = os.path.join(pkgpath, 'https', 'templates')
+repo_templates = os.path.join(pkgpath, 'distributors', 'https', 'templates')
 
 # The directories to install non-sourcecode resources into should always be
 # given as relative paths, in order to force distutils to install relative to
@@ -375,8 +375,11 @@ setuptools.setup(
     download_url='https://gitweb.torproject.org/bridgedb.git',
     package_dir={'bridgedb': 'bridgedb'},
     packages=['bridgedb',
-              'bridgedb.email',
-              'bridgedb.https',
+              'bridgedb.distributors',
+              'bridgedb.distributors.common',
+              'bridgedb.distributors.email',
+              'bridgedb.distributors.https',
+              'bridgedb.distributors.moat',
               'bridgedb.parse',
               'bridgedb.test',
           ],
@@ -395,7 +398,7 @@ setuptools.setup(
     message_extractors={
         pkgpath: [
             ('**.py', 'python', None),
-            ('https/templates/**.html', 'mako', None),
+            ('distributors/https/templates/**.html', 'mako', None),
         ]
     },
 )

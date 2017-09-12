@@ -9,7 +9,7 @@
 # :license: see LICENSE for licensing information
 #_____________________________________________________________________________
 
-"""Unittests for :mod:`bridgedb.https.server`."""
+"""Unittests for :mod:`bridgedb.distributors.https.server`."""
 
 from __future__ import print_function
 
@@ -27,7 +27,7 @@ from twisted.trial import unittest
 from twisted.web.resource import Resource
 from twisted.web.test import requesthelper
 
-from bridgedb.https import server
+from bridgedb.distributors.https import server
 from bridgedb.schedule import ScheduledInterval
 
 from bridgedb.test.https_helpers import _createConfig
@@ -43,78 +43,8 @@ logging.disable(50)
 #server.logging.getLogger().setLevel(10)
 
 
-class SetFQDNTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.https.server.setFQDN` and
-    :func:`bridgedb.https.server.setFQDN`.
-    """
-
-    def setUp(self):
-        self.originalFQDN = server.SERVER_PUBLIC_FQDN
-
-    def tearDown(self):
-        server.SERVER_PUBLIC_FQDN = self.originalFQDN
-
-    def test_setFQDN_https(self):
-        """Calling ``server.setFQDN([…], https=True)`` should prepend
-        ``"https://"`` to the module :data:`server.SERVER_PUBLIC_FQDN`
-        variable.
-        """
-        server.setFQDN('example.com', https=True)
-        self.assertEqual(server.SERVER_PUBLIC_FQDN, "https://example.com")
-
-    def test_setFQDN_http(self):
-        """Calling ``server.setFQDN([…], https=False)`` should not prepend
-        anything at all to the module :data:`server.SERVER_PUBLIC_FQDN`
-        variable.
-        """
-        server.setFQDN('example.com', https=False)
-        self.assertEqual(server.SERVER_PUBLIC_FQDN, "example.com")
-
-
-class GetClientIPTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.https.server.getClientIP`."""
-
-    def createRequestWithIPs(self):
-        """Set the IP address returned from ``request.getClientIP()`` to
-        '3.3.3.3', and the IP address reported in the 'X-Forwarded-For' header
-        to '2.2.2.2'.
-        """
-        request = DummyRequest([''])
-        request.headers.update({'x-forwarded-for': '2.2.2.2'})
-        # See :api:`twisted.test.requesthelper.DummyRequest.getClientIP`
-        request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
-        request.method = b'GET'
-        return request
-
-    def test_getClientIP_XForwardedFor(self):
-        """getClientIP() should return the IP address from the
-        'X-Forwarded-For' header when ``useForwardedHeader=True``.
-        """
-        request = self.createRequestWithIPs()
-        clientIP = server.getClientIP(request, useForwardedHeader=True)
-        self.assertEqual(clientIP, '2.2.2.2')
-
-    def test_getClientIP_XForwardedFor_bad_ip(self):
-        """getClientIP() should return None if the IP address from the
-        'X-Forwarded-For' header is bad/invalid and
-        ``useForwardedHeader=True``.
-        """
-        request = self.createRequestWithIPs()
-        request.headers.update({'x-forwarded-for': 'pineapple'})
-        clientIP = server.getClientIP(request, useForwardedHeader=True)
-        self.assertEqual(clientIP, None)
-
-    def test_getClientIP_fromRequest(self):
-        """getClientIP() should return the IP address from the request instance
-        when ``useForwardedHeader=False``.
-        """
-        request = self.createRequestWithIPs()
-        clientIP = server.getClientIP(request)
-        self.assertEqual(clientIP, '3.3.3.3')
-
-
 class ReplaceErrorPageTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.https.server.replaceErrorPage`."""
+    """Tests for :func:`bridgedb.distributors.https.server.replaceErrorPage`."""
 
     def setUp(self):
         self.resource500 = server.resource500
@@ -152,7 +82,7 @@ class ReplaceErrorPageTests(unittest.TestCase):
                              errorPage)
 
 class ErrorResourceTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.https.server.ErrorResource`."""
+    """Tests for :class:`bridgedb.distributors.https.server.ErrorResource`."""
 
     def setUp(self):
         self.request = DummyRequest([''])
@@ -174,7 +104,7 @@ class ErrorResourceTests(unittest.TestCase):
 
 
 class CustomErrorHandlingResourceTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.https.server.CustomErrorHandlingResource`."""
+    """Tests for :class:`bridgedb.distributors.https.server.CustomErrorHandlingResource`."""
 
     def test_getChild(self):
         """``CustomErrorHandlingResource.getChild`` should return a rendered
@@ -258,7 +188,7 @@ class CSPResourceTests(unittest.TestCase):
 
 
 class IndexResourceTests(unittest.TestCase):
-    """Test for :class:`bridgedb.https.server.IndexResource`."""
+    """Test for :class:`bridgedb.distributors.https.server.IndexResource`."""
 
     def setUp(self):
         self.pagename = ''
@@ -283,7 +213,7 @@ class IndexResourceTests(unittest.TestCase):
 
 
 class HowtoResourceTests(unittest.TestCase):
-    """Test for :class:`bridgedb.https.server.HowtoResource`."""
+    """Test for :class:`bridgedb.distributors.https.server.HowtoResource`."""
 
     def setUp(self):
         self.pagename = 'howto.html'
@@ -308,7 +238,7 @@ class HowtoResourceTests(unittest.TestCase):
 
 
 class CaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.https.server.CaptchaProtectedResource`."""
+    """Tests for :class:`bridgedb.distributors.https.server.CaptchaProtectedResource`."""
 
     def setUp(self):
         self.dist = None
@@ -391,7 +321,7 @@ class CaptchaProtectedResourceTests(unittest.TestCase):
 
 
 class GimpCaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :mod:`bridgedb.https.server.GimpCaptchaProtectedResource`."""
+    """Tests for :mod:`bridgedb.distributors.https.server.GimpCaptchaProtectedResource`."""
 
     def setUp(self):
         """Create a :class:`server.BridgesResource` and protect it with
@@ -518,7 +448,7 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
 
 
 class ReCaptchaProtectedResourceTests(unittest.TestCase):
-    """Tests for :mod:`bridgedb.https.server.ReCaptchaProtectedResource`."""
+    """Tests for :mod:`bridgedb.distributors.https.server.ReCaptchaProtectedResource`."""
 
     def setUp(self):
         """Create a :class:`server.BridgesResource` and protect it with
@@ -947,7 +877,7 @@ class BridgesResourceTests(unittest.TestCase):
 
 
 class OptionsResourceTests(unittest.TestCase):
-    """Tests for :class:`bridgedb.https.server.OptionsResource`."""
+    """Tests for :class:`bridgedb.distributors.https.server.OptionsResource`."""
 
     def setUp(self):
         """Create a :class:`server.OptionsResource`."""
@@ -973,7 +903,7 @@ class OptionsResourceTests(unittest.TestCase):
 
 
 class HTTPSServerServiceTests(unittest.TestCase):
-    """Unittests for :func:`bridgedb.email.server.addWebServer`."""
+    """Unittests for :func:`bridgedb.distributors.email.server.addWebServer`."""
 
     def setUp(self):
         """Create a config and an HTTPSDistributor."""
@@ -998,29 +928,29 @@ class HTTPSServerServiceTests(unittest.TestCase):
         reactor.runUntilCurrent()
 
     def test_addWebServer_GIMP_CAPTCHA_ENABLED(self):
-        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` to test startup."""
         server.addWebServer(self.config, self.distributor)
 
     def test_addWebServer_RECAPTCHA_ENABLED(self):
-        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` to test startup."""
         config = self.config
         config.RECAPTCHA_ENABLED = True
         server.addWebServer(config, self.distributor)
 
     def test_addWebServer_no_captchas(self):
-        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` to test startup."""
         config = self.config
         config.GIMP_CAPTCHA_ENABLED = False
         server.addWebServer(config, self.distributor)
 
     def test_addWebServer_no_HTTPS_ROTATION_PERIOD(self):
-        """Call :func:`bridgedb.https.server.addWebServer` to test startup."""
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` to test startup."""
         config = self.config
         config.HTTPS_ROTATION_PERIOD = None
         server.addWebServer(config, self.distributor)
 
     def test_addWebServer_CSP_ENABLED_False(self):
-        """Call :func:`bridgedb.https.server.addWebServer` with
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` with
         ``CSP_ENABLED=False`` to test startup.
         """
         config = self.config
@@ -1028,7 +958,7 @@ class HTTPSServerServiceTests(unittest.TestCase):
         server.addWebServer(config, self.distributor)
 
     def test_addWebServer_CSP_REPORT_ONLY_False(self):
-        """Call :func:`bridgedb.https.server.addWebServer` with
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` with
         ``CSP_REPORT_ONLY=False`` to test startup.
         """
         config = self.config
@@ -1036,7 +966,7 @@ class HTTPSServerServiceTests(unittest.TestCase):
         server.addWebServer(config, self.distributor)
 
     def test_addWebServer_CSP_INCLUDE_SELF_False(self):
-        """Call :func:`bridgedb.https.server.addWebServer` with
+        """Call :func:`bridgedb.distributors.https.server.addWebServer` with
         ``CSP_INCLUDE_SELF=False`` to test startup.
         """
         config = self.config

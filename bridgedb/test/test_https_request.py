@@ -14,7 +14,7 @@
 from twisted.trial import unittest
 
 from bridgedb.bridgerequest import IRequestBridges
-from bridgedb.https import request 
+from bridgedb.distributors.https import request 
 
 
 class MockRequest(object):
@@ -23,7 +23,7 @@ class MockRequest(object):
 
 
 class HTTPSBridgeRequestTests(unittest.TestCase):
-    """Unittests for :class:`bridgedb.https.request.HTTPSBridgeRequest`."""
+    """Unittests for :class:`bridgedb.distributors.https.request.HTTPSBridgeRequest`."""
 
     def setUp(self):
         """Setup test run."""

@@ -9,7 +9,7 @@
 #             (c) 2007-2017, all entities within the AUTHORS file
 # :license: 3-clause BSD, see included LICENSE for information
 
-"""Tests for :mod:`bridgedb.https.distributor`."""
+"""Tests for :mod:`bridgedb.distributors.https.distributor`."""
 
 from __future__ import print_function
 
@@ -23,8 +23,8 @@ from bridgedb.Bridges import BridgeRing
 from bridgedb.Bridges import BridgeRingParameters
 from bridgedb.filters import byIPv4
 from bridgedb.filters import byIPv6
-from bridgedb.https import distributor
-from bridgedb.https.request import HTTPSBridgeRequest
+from bridgedb.distributors.https import distributor
+from bridgedb.distributors.https.request import HTTPSBridgeRequest
 from bridgedb.proxy import ProxySet
 
 from bridgedb.test.util import randomValidIPv4String

@@ -113,8 +113,8 @@ def _createConfig(configFile=TEST_CONFIG_FILE):
 
 
 class DummyHTTPSDistributor(object):
-    """A mocked :class:`bridgedb.https.distributor.HTTPSDistributor` which is
-    used to test :class:`bridgedb.https.server.BridgesResource`.
+    """A mocked :class:`bridgedb.distributors.https.distributor.HTTPSDistributor` which is
+    used to test :class:`bridgedb.distributors.https.server.BridgesResource`.
     """
     _bridge_class = util.DummyBridge
     _bridgesPerResponseMin = 3
@@ -347,9 +347,8 @@ class DummyRequest(RequestHelperDummyRequest):
         self.content = io.StringIO()
 
         self.headers = {}  # Needed for Twisted>14.0.2
-        #self.outgoingHeaders = {}
-        #self.responseHeaders = Headers()
-        #self.requestHeaders = Headers()
+        self.responseHeaders = Headers()
+        self.requestHeaders = Headers()
 
     def writeContent(self, data):
         """Add some **data** to the faked body of this request.

@@ -168,7 +168,13 @@ class BaseOptions(usage.Options):
 
     def opt_version(self):
         """Display BridgeDB's version and exit."""
-        print("%s-%s" % (__package__, __version__))
+        if "." in __package__:
+            pkg = __package__.split(".", 1)[0]  # Just the parent package
+        else:
+            pkg = __package__
+
+        print("%s-%s" % (pkg, __version__))
+
         sys.exit(0)
 
     @staticmethod

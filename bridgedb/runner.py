@@ -128,7 +128,7 @@ def doDumpBridges(config):
 
     This function handles the commandline '--dump-bridges' option.
 
-    :type config: :class:`bridgedb.Main.Conf`
+    :type config: :class:`bridgedb.main.Conf`
     :param config: The current configuration.
     """
     import bridgedb.Bucket as bucket
