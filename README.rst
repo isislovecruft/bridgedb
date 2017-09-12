@@ -420,6 +420,179 @@ e.g. bridges@...) and sent from an ``@riseup.net``, ``@gmail.com``, or
 
 You can email our BridgeDB instance `here <mailto:bridges@torproject.org>`__.
 
+
+----------------------------
+Accessing the Moat Interface
+----------------------------
+
+Moat is a bridge distributor for requesting bridges through `Tor Launcher's
+<https://gitweb.torproject.org/tor-launcher.git/>`__ user interface.
+
+The following describes the Moat API, version 0.1.0.
+
+The client and server both MUST conform to `JSON-API <http://jsonapi.org/>`__.
+
+The client SHOULD direct all requests via the Meek reflector at ``MEEK_REFECTOR``.
+..
+   XXX meek reflector URL
+
+Requesting Bridges
+""""""""""""""""""
+
+The client MUST send a ``POST /meek/moat/fetch`` containing the following JSON::
+
+    {
+      'data': {
+        'version': '0.1.0',
+        'type': 'client-transports',
+        'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
+      }
+    }
+
+where:
+
+* ``TRANSPORT`` is a string identifying a transport, e.g. ``"obfs3"`` or
+  ``"obfs4"``.  Currently supported transport identifiers are:
+  - ``"vanilla"``
+  - ``"fte"``
+  - ``"obfs3"``
+  - ``"obfs4"``
+  - ``"scramblesuit"``
+
+
+Receiving a CAPTCHA challenge
+"""""""""""""""""""""""""""""
+
+The moat server will respond with ``200 OK``.
+
+If there is no overlap with the transports which BridgeDB supports, the moat
+server will respond with the list of transports which is *does* support::
+
+    {
+      'data': {
+        'version': '0.1.0',
+        'type': 'moat-transports',
+        'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
+      }
+    }
+
+If there is an overlap with what BridgeDB supports, the moat server will select
+the "best" transport from the list of supported transports, and respond with the
+following JSON containing a CAPTCHA challenge::
+
+    {
+      'data': {
+        'id': 1,
+        'type': 'moat-challenge',
+        'version': '0.1.0',
+        'transport': TRANSPORT,
+        'image': CAPTCHA,
+        'challenge': CHALLENGE,
+      }
+    }
+
+where:
+
+* ``TRANSPORT`` is the agreed upon transport which will be distributed,
+* ``CAPTCHA`` is a base64-encoded, jpeg image that is 400 pixels in
+  length and 125 pixels in height,
+* ``CHALLENGE`` is a base64-encoded CAPTCHA challenge which MUST be
+  later passed back to the server along with the proposed solution.
+
+The challenge contains an encrypted-then-HMACed timestamp, and
+solutions submitted more than 30 minutes after requesting the CAPTCHA
+are considered invalid.
+
+
+Responding to a CAPTCHA challenge
+"""""""""""""""""""""""""""""""""
+
+To propose a solution to a CAPTCHA, the client MUST send a request for ``POST
+/meek/moat/check``, where the body of the request contains the following JSON::
+
+    {
+      'data': {
+        'id': 2,
+        'type': 'moat-solution',
+        'version': '0.1.0',
+        'transport': TRANSPORT,
+        'challenge': CHALLENGE,
+        'solution': SOLUTION,
+        'qrcode': BOOLEAN,
+      }
+    }
+
+
+where:
+
+* ``TRANSPORT`` is the agreed upon transport which will be distributed,
+* ``CHALLENGE`` is a base64-encoded CAPTCHA challenge which MUST be
+  later passed back to the server along with the proposed solution.
+* ``SOLUTION`` is a valid unicode string, up to 20 bytes in length,
+  containing the client's answer (i.e. what characters the CAPTCHA
+  image displayed).  The solution is *not* case-sensitive.
+* ``BOOLEAN`` is ``'true'`` if the client wants a qrcode containing the bridge
+  lines to be generated and returned; ``'false'`` otherwise.
+
+
+Receiving Bridges
+"""""""""""""""""
+
+If the ``CHALLENGE`` has already timed out, or if the ``SOLUTION`` was
+incorrect, the server SHOULD respond with ``419 No You're A Teapot``.
+
+If the ``SOLUTION`` was successful for the supplied ``CHALLENGE``, the
+server responds ``200 OK`` with the following JSON::
+
+    {
+      'data': {
+        'id': 3,
+        'type': 'moat-bridges',
+        'version': '0.1.0',
+        'bridges': [ 'BRIDGE_LINE', ... ],
+        'qrcode': QRCODE,
+      }
+    }
+
+where:
+
+* ``BRIDGE_LINE`` is a bridge line suitable for configuration in a torrc,
+* ``QRCODE`` is a base64-encoded jpeg image of a QRCode containing all the
+  ``BRIDGE_LINE``, if one was requested, otherwise this field will be ``NaN``.
+
+..
+    XXX do we care to differentiate the errors for "unable to distribute
+        bridges"? are any of these useful to Tor Launcher?
+
+If the ``SOLUTION`` was successful for the supplied ``CHALLENGE``, but the
+server is unable to distribute the requested Bridges, the server responds ``200
+OK`` with the following JSON::
+
+    {
+      'error': {
+        'id': 1,
+        'code': '404',
+        'status': 'Not Found',
+        'title': 'Could not fetch the type of bridges you requested',
+        'detail': DETAILS,
+      }
+    }
+
+where:
+
+* ``DETAILS`` is some string describing the detailed nature of the issue.
+
+
+Other Responses
+"""""""""""""""
+
+If the client requested some page other than ``/meek/moat/fetch``, or
+``/meek/moat/check``, the server MUST respond with ``501 Not Implemented``.
+
+If the client attempts any other HTTP method, other than ``POST``, the server
+MUST respond ``403 FORBIDDEN``.
+
+
 =================
 Contact & Support
 =================

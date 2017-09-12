@@ -347,9 +347,8 @@ class DummyRequest(RequestHelperDummyRequest):
         self.content = io.StringIO()
 
         self.headers = {}  # Needed for Twisted>14.0.2
-        #self.outgoingHeaders = {}
-        #self.responseHeaders = Headers()
-        #self.requestHeaders = Headers()
+        self.responseHeaders = Headers()
+        self.requestHeaders = Headers()
 
     def writeContent(self, data):
         """Add some **data** to the faked body of this request.

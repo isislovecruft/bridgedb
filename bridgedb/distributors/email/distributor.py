@@ -228,3 +228,6 @@ class EmailDistributor(Distributor):
         # Since prepopulateRings is called every half hour when the bridge
         # descriptors are re-parsed, we should clean the database then.
         self.cleanDatabase()
+
+        logging.info("Bridges allotted for %s distribution: %d"
+                     % (self.name, len(self.hashring)))

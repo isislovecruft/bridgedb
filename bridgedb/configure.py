@@ -110,6 +110,7 @@ def loadConfig(configFile=None, configCls=None):
 
     for attr in ["DB_FILE", "DB_LOG_FILE", "MASTER_KEY_FILE", "PIDFILE",
                  "ASSIGNMENTS_FILE", "HTTPS_CERT_FILE", "HTTPS_KEY_FILE",
+                 "MOAT_CERT_FILE", "MOAT_KEY_FILE",
                  "LOG_FILE", "COUNTRY_BLOCK_FILE",
                  "GIMP_CAPTCHA_DIR", "GIMP_CAPTCHA_HMAC_KEYFILE",
                  "GIMP_CAPTCHA_RSA_KEYFILE", "EMAIL_GPG_HOMEDIR",
@@ -120,11 +121,18 @@ def loadConfig(configFile=None, configCls=None):
         else:
             setattr(config, attr, os.path.abspath(os.path.expanduser(setting)))
 
-    for attr in ["HTTPS_ROTATION_PERIOD", "EMAIL_ROTATION_PERIOD"]:
+    for attr in ["MOAT_ROTATION_PERIOD",
+                 "HTTPS_ROTATION_PERIOD",
+                 "EMAIL_ROTATION_PERIOD"]:
         setting = getattr(config, attr, None) # Default to None
         setattr(config, attr, setting)
 
-    for attr in ["IGNORE_NETWORKSTATUS", "CSP_ENABLED", "CSP_REPORT_ONLY",
+    for attr in ["IGNORE_NETWORKSTATUS",
+                 "MOAT_CSP_ENABLED",
+                 "MOAT_CSP_REPORT_ONLY",
+                 "MOAT_CSP_INCLUDE_SELF",
+                 "CSP_ENABLED",
+                 "CSP_REPORT_ONLY",
                  "CSP_INCLUDE_SELF"]:
         setting = getattr(config, attr, True) # Default to True
         setattr(config, attr, setting)

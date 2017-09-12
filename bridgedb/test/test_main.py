@@ -302,12 +302,12 @@ class BridgedbTests(unittest.TestCase):
         hashring.
         """
         proxyList = None
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(self.config,
-                                                                  proxyList,
-                                                                  self.key)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            self.config, proxyList, self.key)
+
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
-        # and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        # a MoatDistributor right, and an UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 4)
 
     def test_main_createBridgeRings_with_proxyList(self):
         """main.createBridgeRings() should add three hashrings to the
@@ -316,12 +316,12 @@ class BridgedbTests(unittest.TestCase):
         exitRelays = ['1.1.1.1', '2.2.2.2', '3.3.3.3']
         proxyList = main.proxy.ProxySet()
         proxyList.addExitRelays(exitRelays)
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(self.config,
-                                                                  proxyList,
-                                                                  self.key)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            self.config, proxyList, self.key)
+
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
-        # and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        # a MoatDistributor ring, and an UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 4)
         self.assertGreater(len(httpsDist.proxies), 0)
         self.assertItemsEqual(exitRelays, httpsDist.proxies)
 
@@ -332,11 +332,12 @@ class BridgedbTests(unittest.TestCase):
         proxyList = main.proxy.ProxySet()
         config = self.config
         config.HTTPS_DIST = False
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
-                                                                  proxyList,
-                                                                  self.key)
-        # Should have an EmailDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            config, proxyList, self.key)
+
+        # Should have an EmailDistributor ring, a MoatDistributor ring, and an
+        # UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
         self.assertNotIn('https', hashring.rings)
         self.assertNotIn(httpsDist, hashring.ringsByName.values())
 
@@ -347,11 +348,12 @@ class BridgedbTests(unittest.TestCase):
         proxyList = main.proxy.ProxySet()
         config = self.config
         config.EMAIL_DIST = False
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
-                                                               proxyList,
-                                                               self.key)
-        # Should have an HTTPSDistributor ring, and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            config, proxyList, self.key)
+
+        # Should have an HTTPSDistributor ring, a MoatDistributor ring, and an
+        # UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
         self.assertNotIn('email', hashring.rings)
         self.assertNotIn(emailDist, hashring.ringsByName.values())
 
@@ -362,11 +364,12 @@ class BridgedbTests(unittest.TestCase):
         proxyList = main.proxy.ProxySet()
         config = self.config
         config.RESERVED_SHARE = 0
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
-                                                                  proxyList,
-                                                                  self.key)
-        # Should have an HTTPSDistributor ring, and an EmailDistributor ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 2)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            config, proxyList, self.key)
+
+        # Should have an HTTPSDistributor ring, an EmailDistributor ring, and a
+        # MoatDistributor ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 3)
         self.assertNotIn('unallocated', hashring.rings)
 
     def test_main_createBridgeRings_two_file_buckets(self):
@@ -380,12 +383,12 @@ class BridgedbTests(unittest.TestCase):
             'bridges-for-support-desk': 10,
             'bridges-for-ooni-tests': 10,
         }
-        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
-                                                                  proxyList,
-                                                                  self.key)
-        # Should have an HTTPSDistributor ring, an EmailDistributor, and an
-        # UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 3)
+        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
+            config, proxyList, self.key)
+
+        # Should have an HTTPSDistributor ring, an EmailDistributor, a
+        # MoatDistributor and an UnallocatedHolder ring:
+        self.assertEqual(len(hashring.ringsByName.keys()), 4)
 
         # Should have two pseudoRings:
         self.assertEqual(len(hashring.pseudoRings), 2)
