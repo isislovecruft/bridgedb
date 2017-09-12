@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+function usage() {
+    printf "Usage: %s [fetch] [check]\n" "$(basename $0)"
+}
+
+if test "$#" -lt 1 ; then
+    usage
+    exit 1
+fi
+
+function do_fetch() {
+    curl -H 'Content-Type: application/vnd.api+json' \
+         -H 'Accept: application/vnd.api+json' \
+         --data '{"data": [{"supported": ["obfs4"], "version": "0.1.0", "type": "client-transports"}]}' \
+         http://127.0.0.1:6790/meek/moat/fetch
+    echo
+}
+
+function do_check() {
+    curl -H 'Content-Type: application/vnd.api+json' \
+         -H 'Accept: application/vnd.api+json' \
+         --data '{"data": [{"challenge": "foo", "solution": "bar", "version": "0.1.0", "qrcode": "false", "type": "moat-solution", "id": 2, "transport": "obfs4"}]}' \
+         http://127.0.0.1:6790/meek/moat/check
+    echo
+}
+
+while test -n "$1" ; do
+    case "$1" in
+        fetch) do_fetch ;;
+        check) do_check ;;
+        *) usage ;;
+    esac
+
+    shift
+done
