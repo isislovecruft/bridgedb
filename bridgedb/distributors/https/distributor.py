@@ -262,6 +262,17 @@ class HTTPSDistributor(Distributor):
                 self.hashring.addRing(ring, filters, byFilters(filters),
                                       populate_from=self.hashring.bridges)
 
+        logging.info("Bridges allotted for %s distribution: %d"
+                     % (self.name, len(self.hashring)))
+
+        logging.info("\tNum bridges:\tFilter set:")
+        for (ringname, (filterFn, subring)) in self.hashring.filterRings.items():
+            filterSet = ' '.join(self.hashring.extractFilterNames(ringname))
+            logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
+
+        logging.info("Total subrings for %s: %d"
+                     % (self.name, len(self.hashring.filterRings)))
+
     def insert(self, bridge):
         """Assign a bridge to this distributor."""
         self.hashring.insert(bridge)

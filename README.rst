@@ -444,7 +444,7 @@ The client MUST send a ``POST /meek/moat/fetch`` containing the following JSON::
     {
       'data': {
         'version': '0.1.0',
-        'type': 'moat client supported transports',
+        'type': 'client-transports',
         'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
       }
     }
@@ -471,7 +471,7 @@ server will respond with the list of transports which is *does* support::
     {
       'data': {
         'version': '0.1.0',
-        'type': 'moat server supported transports',
+        'type': 'moat-transports',
         'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
       }
     }
@@ -483,7 +483,7 @@ following JSON containing a CAPTCHA challenge::
     {
       'data': {
         'id': 1,
-        'type': 'moat farfetchd challenge',
+        'type': 'moat-challenge',
         'version': '0.1.0',
         'transport': TRANSPORT,
         'image': CAPTCHA,
@@ -513,7 +513,7 @@ To propose a solution to a CAPTCHA, the client MUST send a request for ``POST
     {
       'data': {
         'id': 2,
-        'type': 'moat farfetchd solution',
+        'type': 'moat-solution',
         'version': '0.1.0',
         'transport': TRANSPORT,
         'challenge': CHALLENGE,
@@ -547,7 +547,7 @@ server responds ``200 OK`` with the following JSON::
     {
       'data': {
         'id': 3,
-        'type': 'moat bridges',
+        'type': 'moat-bridges',
         'version': '0.1.0',
         'bridges': [ 'BRIDGE_LINE', ... ],
         'qrcode': QRCODE,

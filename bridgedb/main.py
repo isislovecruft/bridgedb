@@ -33,6 +33,7 @@ from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
 from bridgedb.distributors.email.distributor import EmailDistributor
 from bridgedb.distributors.https.distributor import HTTPSDistributor
+from bridgedb.distributors.moat.distributor import MoatDistributor
 from bridgedb.parse import descriptors
 from bridgedb.parse.blacklist import parseBridgeBlacklistFile
 
@@ -220,9 +221,10 @@ def createBridgeRings(cfg, proxyList, key):
         known open proxies.
     :param bytes key: Hashring master key
     :rtype: tuple
-    :returns: A BridgeSplitter hashring, an
+    :returns: A :class:`~bridgedb.Bridges.BridgeSplitter` hashring, an
         :class:`~bridgedb.distributors.https.distributor.HTTPSDistributor` or None, and an
-        :class:`~bridgedb.distributors.email.distributor.EmailDistributor` or None.
+        :class:`~bridgedb.distributors.email.distributor.EmailDistributor` or None, and an
+        :class:`~bridgedb.distributors.moat.distributor.MoatDistributor` or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -233,7 +235,18 @@ def createBridgeRings(cfg, proxyList, key):
     ringParams = Bridges.BridgeRingParameters(needPorts=cfg.FORCE_PORTS,
                                               needFlags=cfg.FORCE_FLAGS)
 
-    emailDistributor = ipDistributor = None
+    emailDistributor = ipDistributor = moatDistributor = None
+
+    # As appropriate, create a Moat distributor.
+    if cfg.MOAT_DIST and cfg.MOAT_SHARE:
+        logging.debug("Setting up Moat Distributor...")
+        moatDistributor = MoatDistributor(
+            cfg.MOAT_N_IP_CLUSTERS,
+            crypto.getHMAC(key, "Moat-Dist-Key"),
+            proxyList,
+            answerParameters=ringParams)
+        hashring.addRing(moatDistributor.hashring, "moat", cfg.MOAT_SHARE)
+
     # As appropriate, create an IP-based distributor.
     if cfg.HTTPS_DIST and cfg.HTTPS_SHARE:
         logging.debug("Setting up HTTPS Distributor...")
@@ -265,7 +278,7 @@ def createBridgeRings(cfg, proxyList, key):
     for pseudoRing in cfg.FILE_BUCKETS.keys():
         hashring.addPseudoRing(pseudoRing)
 
-    return hashring, emailDistributor, ipDistributor
+    return hashring, emailDistributor, ipDistributor, moatDistributor
 
 def run(options, reactor=reactor):
     """This is BridgeDB's main entry point and main runtime loop.
@@ -323,12 +336,14 @@ def run(options, reactor=reactor):
 
     from bridgedb.distributors.email.server import addServer as addSMTPServer
     from bridgedb.distributors.https.server import addWebServer
+    from bridgedb.distributors.moat.server  import addMoatServer
 
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
     proxies = proxy.ProxySet()
     emailDistributor = None
     ipDistributor = None
+    moatDistributor = None
 
     # Save our state
     state.proxies = proxies
@@ -388,7 +403,8 @@ def run(options, reactor=reactor):
         logging.info("Reparsing bridge descriptors...")
         (hashring,
          emailDistributorTmp,
-         ipDistributorTmp) = createBridgeRings(cfg, state.proxies, key)
+         ipDistributorTmp,
+         moatDistributorTmp) = createBridgeRings(cfg, state.proxies, key)
         logging.info("Bridges loaded: %d" % len(hashring))
 
         # Initialize our DB.
@@ -398,32 +414,18 @@ def run(options, reactor=reactor):
 
         if emailDistributorTmp is not None:
             emailDistributorTmp.prepopulateRings() # create default rings
-            logging.info("Bridges allotted for %s distribution: %d"
-                         % (emailDistributorTmp.name,
-                            len(emailDistributorTmp.hashring)))
         else:
             logging.warn("No email distributor created!")
 
         if ipDistributorTmp is not None:
             ipDistributorTmp.prepopulateRings() # create default rings
-
-            logging.info("Bridges allotted for %s distribution: %d"
-                         % (ipDistributorTmp.name,
-                            len(ipDistributorTmp.hashring)))
-            logging.info("\tNum bridges:\tFilter set:")
-
-            nSubrings  = 0
-            ipSubrings = ipDistributorTmp.hashring.filterRings
-            for (ringname, (filterFn, subring)) in ipSubrings.items():
-                nSubrings += 1
-                filterSet = ' '.join(
-                    ipDistributorTmp.hashring.extractFilterNames(ringname))
-                logging.info("\t%2d bridges\t%s" % (len(subring), filterSet))
-
-            logging.info("Total subrings for %s: %d"
-                         % (ipDistributorTmp.name, nSubrings))
         else:
             logging.warn("No HTTP(S) distributor created!")
+
+        if moatDistributorTmp is not None:
+            moatDistributorTmp.prepopulateRings()
+        else:
+            logging.warn("No Moat distributor created!")
 
         # Dump bridge pool assignments to disk.
         try:
@@ -443,6 +445,9 @@ def run(options, reactor=reactor):
         if inThread:
             # XXX shutdown the distributors if they were previously running
             # and should now be disabled
+            if moatDistributorTmp:
+                reactor.callFromThread(replaceBridgeRings,
+                                       moatDistributor, moatDistributorTmp)
             if ipDistributorTmp:
                 reactor.callFromThread(replaceBridgeRings,
                                        ipDistributor, ipDistributorTmp)
@@ -452,7 +457,7 @@ def run(options, reactor=reactor):
         else:
             # We're still starting up. Return these distributors so
             # they are configured in the outer-namespace
-            return emailDistributorTmp, ipDistributorTmp
+            return emailDistributorTmp, ipDistributorTmp, moatDistributorTmp
 
     global _reloadFn
     _reloadFn = reload
@@ -461,9 +466,11 @@ def run(options, reactor=reactor):
 
     if reactor:  # pragma: no cover
         # And actually load it to start parsing. Get back our distributors.
-        emailDistributor, ipDistributor = reload(False)
+        emailDistributor, ipDistributor, moatDistributor = reload(False)
 
         # Configure all servers:
+        if config.MOAT_DIST and config.MOAT_SHARE:
+            addMoatServer(config, moatDistributor)
         if config.HTTPS_DIST and config.HTTPS_SHARE:
             addWebServer(config, ipDistributor)
         if config.EMAIL_DIST and config.EMAIL_SHARE:

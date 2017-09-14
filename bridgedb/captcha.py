@@ -290,7 +290,6 @@ class GimpCaptcha(Captcha):
             if hmacIsValid:
                 try:
                     answerBlob = secretKey.decrypt(encBlob)
-
                     timestamp = answerBlob[:12].lstrip('0')
                     then = cls.sched.nextIntervalStarts(int(timestamp))
                     now = int(time.time())

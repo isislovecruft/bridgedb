@@ -50,6 +50,9 @@ from bridgedb import crypto
 from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
+from bridgedb.distributors.common.http import setFQDN
+from bridgedb.distributors.common.http import getFQDN
+from bridgedb.distributors.common.http import getClientIP
 from bridgedb.distributors.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
@@ -60,8 +63,9 @@ from bridgedb.schedule import ScheduledInterval
 from bridgedb.util import replaceControlChars
 
 
+#: The path to the HTTPS distributor's web templates.  (Should be the
+#: "templates" directory in the same directory as this file.)
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
 # Setting `filesystem_checks` to False is recommended for production servers,
 # due to potential speed increases. This means that the atimes of the Mako
@@ -76,61 +80,9 @@ lookup = TemplateLookup(directories=[TEMPLATE_DIR],
                         collection_size=500)
 logging.debug("Set template root to %s" % TEMPLATE_DIR)
 
-#: This server's public, fully-qualified domain name.
-SERVER_PUBLIC_FQDN = None
+#: Localisations which BridgeDB supports which should be rendered right-to-left.
+rtl_langs = ('ar', 'he', 'fa', 'gu_IN', 'ku')
 
-
-def setFQDN(fqdn, https=True):
-    """Set the global :data:`SERVER_PUBLIC_FQDN` variable.
-
-    :param str fqdn: The public, fully-qualified domain name of the HTTP
-        server that will serve this resource.
-    :param bool https: If ``True``, then ``'https://'`` will be prepended to
-        the FQDN.  This is primarily used to create a
-        ``Content-Security-Policy`` header that will only allow resources to
-        be sourced via HTTPS, otherwise, if ``False``, it allow resources to
-        be sourced via any transport protocol.
-    """
-    if https:
-        fqdn = 'https://' + fqdn
-
-    logging.info("Setting HTTP server public FQDN to %r" % fqdn)
-
-    global SERVER_PUBLIC_FQDN
-    SERVER_PUBLIC_FQDN = fqdn
-
-def getFQDN():
-    """Get the setting for the HTTP server's public FQDN from the global
-    :data:`SERVER_PUBLIC_FQDN variable.
-
-    :rtype: str or None
-    """
-    return SERVER_PUBLIC_FQDN
-
-def getClientIP(request, useForwardedHeader=False):
-    """Get the client's IP address from the ``'X-Forwarded-For:'``
-    header, or from the :api:`request <twisted.web.server.Request>`.
-
-    :type request: :api:`twisted.web.http.Request`
-    :param request: A ``Request`` for a :api:`twisted.web.resource.Resource`.
-    :param bool useForwardedHeader: If ``True``, attempt to get the client's
-        IP address from the ``'X-Forwarded-For:'`` header.
-    :rtype: ``None`` or :any:`str`
-    :returns: The client's IP address, if it was obtainable.
-    """
-    ip = None
-
-    if useForwardedHeader:
-        header = request.getHeader("X-Forwarded-For")
-        if header:
-            ip = header.split(",")[-1].strip()
-            if not isIPAddress(ip):
-                logging.warn("Got weird X-Forwarded-For value %r" % header)
-                ip = None
-    else:
-        ip = request.getClientIP()
-
-    return ip
 
 def replaceErrorPage(request, error, template_name=None, html=True):
     """Create a general error page for displaying in place of tracebacks.
@@ -333,6 +285,7 @@ class ErrorResource(CSPResource):
         return rendered
 
     render_POST = render_GET
+
 
 resource404 = ErrorResource('error-404.html', code=404)
 resource500 = ErrorResource('error-500.html', code=500)
