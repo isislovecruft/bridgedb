@@ -6,7 +6,7 @@
 #     $ make coverage
 #
 coverage==4.2
-leekspin==1.1.4
+git+https://git.torproject.org/user/isis/leekspin.git@bad0bed11a9018f65555b3c6998b26e2cb06f5b5#egg=leekspin-2.2.0.dev1-py2.7
 mechanize==0.2.5
 pep8==1.5.7
 # pylint must be pinned until pylint bug #203 is fixed. See
