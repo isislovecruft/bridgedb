@@ -454,29 +454,60 @@ class BridgeSplitter(object):
         if not bridge.flags.running:
             return
 
-        # Determine which ring to put this bridge in if we haven't seen it
-        # before.
-        pos = self.hmac(bridge.identity)
-        n = int(pos[:8], 16) % self.totalP
-        pos = bisect.bisect_right(self.pValues, n) - 1
-        assert 0 <= pos < len(self.rings)
-        ringname = self.rings[pos]
-        logging.info("%s placing bridge %s into hashring %s (via n=%s, pos=%s)."
-                     % (self.__class__.__name__, bridge, ringname, n, pos))
-
         validRings = self.rings + self.pseudoRings
+        distribution_method = None
+
+        # If the bridge already has a distributor, use that.
+        with bridgedb.Storage.getDB() as db:
+            distribution_method = db.getBridgeDistributor(bridge, validRings)
+
+        if distribution_method:
+            logging.info("%s bridge %s was already in hashring %s" %
+                         (self.__class__.__name__, bridge, distribution_method))
+        else:
+            # Check if the bridge requested a specific distribution method.
+            if bridge.distribution_request:
+                distribution_method = bridge.distribution_request
+                logging.info("%s bridge %s requested placement in hashring %s"
+                             % (self.__class__.__name__, bridge,
+                                distribution_method))
+
+            # If they requested not to be distributed, honor the request:
+            if distribution_method == "none":
+                logging.info("%s bridge %s requested to not be distributed."
+                             % (self.__class__.__name__, bridge))
+                return
+
+            # If we didn't know what they are talking about, or they requested
+            # "any" distribution method, and we've never seen this bridge
+            # before, then determine where to place it.
+            if ((distribution_method not in validRings) or
+                (distribution_method == "any")):
+
+                pos = self.hmac(bridge.identity)
+                n = int(pos[:8], 16) % self.totalP
+                pos = bisect.bisect_right(self.pValues, n) - 1
+                assert 0 <= pos < len(self.rings)
+                distribution_method = self.rings[pos]
+                logging.info(("%s placing bridge %s into hashring %s (via n=%s,"
+                              " pos=%s).") % (self.__class__.__name__, bridge,
+                                              distribution_method, n, pos))
 
         with bridgedb.Storage.getDB() as db:
-            ringname = db.insertBridgeAndGetRing(bridge, ringname, time.time(), 
-                                             validRings)
+            ringname = db.insertBridgeAndGetRing(bridge, distribution_method,
+                                                 time.time(), validRings)
             db.commit()
 
-            # Pseudo distributors are always held in the "unallocated" ring
-            if ringname in self.pseudoRings:
-                ringname = "unallocated"
+        # Pseudo distributors are always held in the "unallocated" ring
+        if ringname in self.pseudoRings:
+            ringname = "unallocated"
 
-            ring = self.ringsByName.get(ringname)
-            ring.insert(bridge)
+        ring = self.ringsByName.get(ringname)
+        ring.insert(bridge)
+
+        if ring is None:
+            logging.warn("Couldn't recognise ring named: '%s'" % ringname)
+            logging.info("Current rings: %s" % " ".join(self.ringsByName))
 
     def dumpAssignments(self, f, description=""):
         for name,ring in self.ringsByName.iteritems():
