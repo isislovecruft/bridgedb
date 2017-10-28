@@ -35,22 +35,28 @@ env:
     #     https://github.com/pypa/virtualenv/issues/459
     - PYTHON_EGG_CACHE="${HOME}/.python-eggs-$(echo $RANDOM$PPID$RANDOM | sha256sum | cut -d ' ' -f 1)"
   matrix:
-    # Debian Jessie
-    - TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+    # What we're running on polyanthum
+    - TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.2.0
     # Debian Stretch
-    - TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
+    - TWISTED_VERSION=16.6.0 PYOPENSSL_VERSION=16.2.0
+    # Debian experimental (all other versions of Debian have the same dependency versions right now)
+    - TWISTED_VERSION=17.1.0 PYOPENSSL_VERSION=16.2.0
 
 matrix:
   include:
     - python: "pypy"
-      env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.2.0
     - python: "pypy"
-      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
+      env: TWISTED_VERSION=16.6.0 PYOPENSSL_VERSION=16.2.0
   allow_failures:
+    - python: "2.7"
+      env: TWISTED_VERSION=16.6.0 PYOPENSSL_VERSION=16.2.0
+    - python: "2.7"
+      env: TWISTED_VERSION=17.1.0 PYOPENSSL_VERSION=16.2.0
     - python: "pypy"
-      env: TWISTED_VERSION=14.0.2 PYOPENSSL_VERSION=0.14
+      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.2.0
     - python: "pypy"
-      env: TWISTED_VERSION=16.1.1 PYOPENSSL_VERSION=16.0.0
+      env: TWISTED_VERSION=16.6.0 PYOPENSSL_VERSION=16.2.0
   fast_finish: true
 
 before_install:

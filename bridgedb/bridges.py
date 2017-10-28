@@ -3,8 +3,8 @@
 # This file is part of BridgeDB, a Tor bridge distribution system.
 #
 # :authors: please see the AUTHORS file for attributions
-# :copyright: (c) 2013-2015, Isis Lovecruft
-#             (c) 2007-2015, The Tor Project, Inc.
+# :copyright: (c) 2013-2017, Isis Lovecruft
+#             (c) 2007-2017, The Tor Project, Inc.
 # :license: see LICENSE for licensing information
 
 """Classes for manipulating and storing Bridges and their attributes.
@@ -914,6 +914,12 @@ class Bridge(BridgeBackwardsCompatibility):
         currently serving clients (e.g. if the Bridge hit its configured
         ``RelayBandwidthLimit``); ``False`` otherwise.
 
+    :vartype distribution_request: str
+    :ivar distribution_request: If the bridge specified a
+        "bridgedb-distribution-request" line in its ``@type
+        bridge-server-descriptor``, the requested distribution method will be
+        stored here.  If the line was absent, this will be set to ``"any"``.
+
     :vartype _blockedIn: dict
     :ivar _blockedIn: A dictionary of ``ADDRESS:PORT`` pairs to lists of
         lowercased, two-letter country codes (e.g. ``"us"``, ``"gb"``,
@@ -963,6 +969,7 @@ class Bridge(BridgeBackwardsCompatibility):
         self.flags = Flags()
         self.hibernating = False
         self._blockedIn = {}
+        self.distribution_request = "any"
 
         self.bandwidth = None
         self.bandwidthAverage = None
@@ -1594,6 +1601,9 @@ class Bridge(BridgeBackwardsCompatibility):
         self.orPort = descriptor.or_port
         self._updateORAddresses(descriptor.or_addresses)
         self.hibernating = descriptor.hibernating
+
+        if descriptor.bridge_distribution:
+            self.distribution_request = descriptor.bridge_distribution
 
         self.onionKey = descriptor.onion_key
         self.ntorOnionKey = descriptor.ntor_onion_key

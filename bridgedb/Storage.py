@@ -145,6 +145,26 @@ class Database(object):
         self._cur.close()
         self._conn.close()
 
+    def getBridgeDistributor(self, bridge, validRings):
+        """If a ``bridge`` is already in the database, get its distributor.
+
+        :rtype: None or str
+        :returns: The ``bridge`` distribution method, if one was
+            already assigned, otherwise, returns None.
+        """
+        distribution_method = None
+        cur = self._cur
+
+        cur.execute("SELECT id, distributor FROM Bridges WHERE hex_key = ?",
+                    (bridge.fingerprint,))
+        result = cur.fetchone()
+
+        if result:
+            if result[1] in validRings:
+                distribution_method = result[1]
+
+        return distribution_method
+
     def insertBridgeAndGetRing(self, bridge, setRing, seenAt, validRings,
                                defaultPool="unallocated"):
         '''Updates info about bridge, setting ring to setRing if none was set.
@@ -175,6 +195,10 @@ class Database(object):
                          timeToStr(seenAt), i))
             return ring
         else:
+            # Check if this is currently a valid ring name. If not, move back
+            # into default pool.
+            if setRing not in validRings:
+                setRing = defaultPool
             # Insert it.
             cur.execute("INSERT INTO Bridges (hex_key, address, or_port, "
                         "distributor, first_seen, last_seen) "
