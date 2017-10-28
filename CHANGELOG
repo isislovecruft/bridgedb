@@ -1,3 +1,22 @@
+Changes in version 0.5.0 - 2017-10-28
+
+        * FIXES #23957 https://bugs.torproject.org/23957
+        BridgeDB now supports bridge operators choosing how their bridge
+        will be distributed.  See the "BridgeDistribution" torrc option in
+        tor's manpage for details.
+
+        * FIXES #16650 https://bugs.torproject.org/16650
+        BridgeDB is now accessible via select remote user interfaces
+        through a meek tunnel.
+
+        * FIXES #22998 https://bugs.torproject.org/23033
+        * FIXES #23033 https://bugs.torproject.org/23033
+        * FIXES #23034 https://bugs.torproject.org/23034
+        Upgrades BridgeDB to newer versions of Twisted and PyOpenSSL, and
+        fixes several issues due to non-backwards compatible changes
+        within those libraries.
+
+
 Changes in version 0.4.0 - 2017-01-09
 
         * FIXES #21162 https://bugs.torproject.org/21162
