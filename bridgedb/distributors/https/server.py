@@ -81,7 +81,7 @@ SERVER_PUBLIC_FQDN = None
 
 
 def setFQDN(fqdn, https=True):
-    """Set the global :data:`SERVER_PUBLIC FQDN` variable.
+    """Set the global :data:`SERVER_PUBLIC_FQDN` variable.
 
     :param str fqdn: The public, fully-qualified domain name of the HTTP
         server that will serve this resource.
