@@ -10,6 +10,7 @@ omit =
      */_version*
      */__init__*
      */sitecustomize*
+     */test/*
 # Regexes for lines to exclude from report generation:
 exclude_lines = 
      pragma: no cover
