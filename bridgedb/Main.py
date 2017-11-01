@@ -31,8 +31,8 @@ from bridgedb.bridges import ServerDescriptorDigestMismatch
 from bridgedb.bridges import ServerDescriptorWithoutNetworkstatus
 from bridgedb.bridges import Bridge
 from bridgedb.configure import loadConfig
-from bridgedb.email.distributor import EmailDistributor
-from bridgedb.https.distributor import HTTPSDistributor
+from bridgedb.distributors.email.distributor import EmailDistributor
+from bridgedb.distributors.https.distributor import HTTPSDistributor
 from bridgedb.parse import descriptors
 from bridgedb.parse.blacklist import parseBridgeBlacklistFile
 
@@ -216,8 +216,8 @@ def createBridgeRings(cfg, proxyList, key):
     :param bytes key: Hashring master key
     :rtype: tuple
     :returns: A BridgeSplitter hashring, an
-        :class:`~bridgedb.https.distributor.HTTPSDistributor` or None, and an
-        :class:`~bridgedb.email.distributor.EmailDistributor` or None.
+        :class:`~bridgedb.distributors.https.distributor.HTTPSDistributor` or None, and an
+        :class:`~bridgedb.distributors.email.distributor.EmailDistributor` or None.
     """
     # Create a BridgeSplitter to assign the bridges to the different
     # distributors.
@@ -316,8 +316,8 @@ def run(options, reactor=reactor):
 
     state = persistent.State(config=config)
 
-    from bridgedb.email.server import addServer as addSMTPServer
-    from bridgedb.https.server import addWebServer
+    from bridgedb.distributors.email.server import addServer as addSMTPServer
+    from bridgedb.distributors.https.server import addWebServer
 
     # Load the master key, or create a new one.
     key = crypto.getKey(config.MASTER_KEY_FILE)
@@ -352,9 +352,9 @@ def run(options, reactor=reactor):
         :ivar proxyList: The container for the IP addresses of any currently
             known open proxies.
         :ivar ipDistributor: A
-            :class:`~bridgedb.https.distributor.HTTPSDistributor`.
+            :class:`~bridgedb.distributors.https.distributor.HTTPSDistributor`.
         :ivar emailDistributor: A
-            :class:`~bridgedb.email.distributor.EmailDistributor`.
+            :class:`~bridgedb.distributors.email.distributor.EmailDistributor`.
         :ivar dict tasks: A dictionary of ``{name: task}``, where name is a
             string to associate with the ``task``, and ``task`` is some
             scheduled event, repetitive or otherwise, for the :class:`reactor

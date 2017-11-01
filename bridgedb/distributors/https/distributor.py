@@ -11,7 +11,7 @@
 # :license: see LICENSE for licensing information
 
 """
-bridgedb.https.distributor
+bridgedb.distributors.https.distributor
 ==========================
 
 A Distributor that hands out bridges through a web interface.
@@ -119,7 +119,7 @@ class HTTPSDistributor(Distributor):
         ``1.2.178.234``) are placed within the same cluster, but Carol (with
         address ``1.3.11.33``) *might* end up in a different cluster.
 
-        >>> from bridgedb.https.distributor import HTTPSDistributor
+        >>> from bridgedb.distributors.https.distributor import HTTPSDistributor
         >>> HTTPSDistributor.getSubnet('1.2.3.4')
         '1.2.0.0/16'
         >>> HTTPSDistributor.getSubnet('1.2.211.154')
@@ -274,7 +274,7 @@ class HTTPSDistributor(Distributor):
     def getBridges(self, bridgeRequest, interval):
         """Return a list of bridges to give to a user.
 
-        :type bridgeRequest: :class:`bridgedb.https.request.HTTPSBridgeRequest`
+        :type bridgeRequest: :class:`bridgedb.distributors.https.request.HTTPSBridgeRequest`
         :param bridgeRequest: A :class:`~bridgedb.bridgerequest.BridgeRequestBase`
             with the :data:`~bridgedb.bridgerequest.BridgeRequestBase.client`
             attribute set to a string containing the client's IP address.
@@ -283,7 +283,7 @@ class HTTPSDistributor(Distributor):
         :rtype: list
         :return: A list of :class:`~bridgedb.Bridges.Bridge`s to include in
             the response. See
-            :meth:`bridgedb.https.server.WebResourceBridges.getBridgeRequestAnswer`
+            :meth:`bridgedb.distributors.https.server.WebResourceBridges.getBridgeRequestAnswer`
             for an example of how this is used.
         """
         logging.info("Attempting to get bridges for %s..." % bridgeRequest.client)

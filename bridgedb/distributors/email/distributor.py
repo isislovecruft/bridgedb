@@ -11,10 +11,10 @@
 # :license: see LICENSE for licensing information
 
 """
-.. py:module:: bridgedb.email.distributor
+.. py:module:: bridgedb.distributors.email.distributor
     :synopsis: A Distributor which hands out Bridges via an email interface.
 
-bridgedb.email.autoresponder
+bridgedb.distributors.email.autoresponder
 ============================
 
 A :class:`~bridgedb.distribute.Distributor` which hands out :class:`bridges
@@ -117,11 +117,11 @@ class EmailDistributor(Distributor):
         .. hint:: All checks on the email address (which should be stored in
             the ``bridgeRequest.client`` attribute), such as checks for
             whitelisting and canonicalization of domain name, are done in
-            :meth:`bridgedb.email.autoresponder.getMailTo` and
-            :meth:`bridgedb.email.autoresponder.SMTPAutoresponder.runChecks`.
+            :meth:`bridgedb.distributors.email.autoresponder.getMailTo` and
+            :meth:`bridgedb.distributors.email.autoresponder.SMTPAutoresponder.runChecks`.
 
         :type bridgeRequest:
-            :class:`~bridgedb.email.request.EmailBridgeRequest`
+            :class:`~bridgedb.distributors.email.request.EmailBridgeRequest`
         :param bridgeRequest: A
             :class:`~bridgedb.bridgerequest.BridgeRequestBase` with the
             :data:`~bridgedb.bridgerequest.BridgeRequestBase.client` attribute

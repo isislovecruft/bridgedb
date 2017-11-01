@@ -13,11 +13,11 @@
 #_____________________________________________________________________________
 
 """
-.. py:module:: bridgedb.email.request
+.. py:module:: bridgedb.distributors.email.request
     :synopsis: Classes for parsing and storing information about requests for
                bridges which are sent to the email distributor.
 
-bridgedb.email.request
+bridgedb.distributors.email.request
 ======================
 
 Classes for parsing and storing information about requests for bridges
@@ -28,7 +28,7 @@ which are sent to the email distributor.
 
 ::
 
-  bridgedb.email.request
+  bridgedb.distributors.email.request
    | |_ determineBridgeRequestOptions - Figure out which filters to apply, or
    |                                    offer help.
    |_ EmailBridgeRequest - A request for bridges which was received through
@@ -44,8 +44,8 @@ import logging
 import re
 
 from bridgedb import bridgerequest
-from bridgedb.email.distributor import EmailRequestedHelp
-from bridgedb.email.distributor import EmailRequestedKey
+from bridgedb.distributors.email.distributor import EmailRequestedHelp
+from bridgedb.distributors.email.distributor import EmailRequestedKey
 
 
 #: A regular expression for matching the Pluggable Transport method TYPE in
@@ -109,7 +109,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
 
     def __init__(self):
         """Process a new bridge request received through the
-        :class:`~bridgedb.email.distributor.EmailDistributor`.
+        :class:`~bridgedb.distributors.email.distributor.EmailDistributor`.
         """
         super(EmailBridgeRequest, self).__init__()
         self._wantsKey = False

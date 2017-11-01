@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.email.templates` module."""
+"""Unittests for the :mod:`bridgedb.distributors.email.templates` module."""
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -20,7 +20,7 @@ from gettext import NullTranslations
 from twisted.mail.smtp import Address
 from twisted.trial import unittest
 
-from bridgedb.email import templates
+from bridgedb.distributors.email import templates
 
 
 class EmailTemplatesTests(unittest.TestCase):

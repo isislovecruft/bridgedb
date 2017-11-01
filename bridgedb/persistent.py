@@ -25,8 +25,8 @@ from twisted.spread import jelly
 
 from bridgedb import Bridges
 from bridgedb import filters
-from bridgedb.email import distributor as emailDistributor
-from bridgedb.https import distributor as httpsDistributor
+from bridgedb.distributors.email import distributor as emailDistributor
+from bridgedb.distributors.https import distributor as httpsDistributor
 from bridgedb.configure import Conf
 #from bridgedb.proxy import ProxySet
 

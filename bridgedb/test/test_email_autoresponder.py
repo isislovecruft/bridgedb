@@ -9,7 +9,7 @@
 #             (c) 2007-2013, all entities within the AUTHORS file
 # :license: 3-Clause BSD, see LICENSE for licensing information
 
-"""Unittests for the :mod:`bridgedb.email.autoresponder` module."""
+"""Unittests for the :mod:`bridgedb.distributors.email.autoresponder` module."""
 
 from __future__ import print_function
 
@@ -23,9 +23,9 @@ from twisted.python.failure import Failure
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
-from bridgedb.email import autoresponder
-from bridgedb.email.server import SMTPMessage
-from bridgedb.email.distributor import TooSoonEmail
+from bridgedb.distributors.email import autoresponder
+from bridgedb.distributors.email.server import SMTPMessage
+from bridgedb.distributors.email.distributor import TooSoonEmail
 
 from bridgedb.test.email_helpers import _createConfig
 from bridgedb.test.email_helpers import _createMailServerContext
@@ -33,7 +33,7 @@ from bridgedb.test.email_helpers import DummyEmailDistributorWithState
 
 
 class CreateResponseBodyTests(unittest.TestCase):
-    """Tests for :func:`bridgedb.email.autoresponder.createResponseBody`."""
+    """Tests for :func:`bridgedb.distributors.email.autoresponder.createResponseBody`."""
 
     def _moveGPGTestKeyfile(self):
         here          = os.getcwd()
@@ -289,7 +289,7 @@ a ball of timey-wimey, wibbly-warbly... stuff."""
 
 
 class SMTPAutoresponderTests(unittest.TestCase):
-    """Unittests for :class:`bridgedb.email.autoresponder.SMTPAutoresponder`."""
+    """Unittests for :class:`bridgedb.distributors.email.autoresponder.SMTPAutoresponder`."""
 
     timeout = 10
 
@@ -322,7 +322,7 @@ class SMTPAutoresponderTests(unittest.TestCase):
         self.responder = self.message.responder
         # The following are needed to provide client disconnection methods for
         # the call to ``twisted.mail.smtp.SMTPClient.sendError`` in
-        # ``bridgedb.email.autoresponder.SMTPAutoresponder.sendError``:
+        # ``bridgedb.distributors.email.autoresponder.SMTPAutoresponder.sendError``:
         #protocol = proto_helpers.AccumulatingProtocol()
         #transport = proto_helpers.StringTransportWithDisconnection()
         self.tr = proto_helpers.StringTransportWithDisconnection()

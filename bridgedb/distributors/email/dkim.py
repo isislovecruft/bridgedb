@@ -13,18 +13,18 @@
 #_____________________________________________________________________________
 
 """
-.. py:module:: bridgedb.email.dkim
+.. py:module:: bridgedb.distributors.email.dkim
     :synopsis: Functions for checking DKIM verification results in email
                headers.
 
-bridgedb.email.dkim
+bridgedb.distributors.email.dkim
 ===================
 
 Functions for checking DKIM verification results in email headers.
 
 ::
 
- bridgedb.email.dkim
+ bridgedb.distributors.email.dkim
   |_ checkDKIM - Check the DKIM verification results header.
 
 ..

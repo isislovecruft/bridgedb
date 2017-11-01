@@ -8,11 +8,11 @@
 # :license: see LICENSE for licensing information
 
 """
-.. py:module:: bridgedb.https.server
+.. py:module:: bridgedb.distributors.https.server
     :synopsis: Servers which interface with clients and distribute bridges
                over HTTP(S).
 
-bridgedb.https.server
+bridgedb.distributors.https.server
 =====================
 
 Servers which interface with clients and distribute bridges over HTTP(S).
@@ -50,7 +50,7 @@ from bridgedb import crypto
 from bridgedb import strings
 from bridgedb import translations
 from bridgedb import txrecaptcha
-from bridgedb.https.request import HTTPSBridgeRequest
+from bridgedb.distributors.https.request import HTTPSBridgeRequest
 from bridgedb.parse import headers
 from bridgedb.parse.addr import isIPAddress
 from bridgedb.qrcodes import generateQR
@@ -1032,7 +1032,7 @@ def addWebServer(config, distributor):
              CSP_ENABLED
              CSP_REPORT_ONLY
              CSP_INCLUDE_SELF
-    :type distributor: :class:`bridgedb.https.distributor.HTTPSDistributor`
+    :type distributor: :class:`bridgedb.distributors.https.distributor.HTTPSDistributor`
     :param distributor: A bridge distributor.
     :raises SystemExit: if the servers cannot be started.
     :rtype: :api:`twisted.web.server.Site`

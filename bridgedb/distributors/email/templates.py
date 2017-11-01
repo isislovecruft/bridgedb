@@ -11,11 +11,11 @@
 #_____________________________________________________________________________
 
 """
-.. py:module:: bridgedb.email.templates
+.. py:module:: bridgedb.distributors.email.templates
     :synopsis: Templates for formatting emails sent out by the email
                distributor.
 
-bridgedb.email.templates
+bridgedb.distributors.email.templates
 ========================
 
 Templates for formatting emails sent out by the email distributor.
@@ -30,7 +30,7 @@ import os
 from datetime import datetime
 
 from bridgedb import strings
-from bridgedb.email.distributor import MAX_EMAIL_RATE
+from bridgedb.distributors.email.distributor import MAX_EMAIL_RATE
 
 
 def addCommands(template):
