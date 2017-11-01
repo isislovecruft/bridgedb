@@ -488,7 +488,10 @@ def run(options, reactor=reactor):
         for name, seconds in config.TASKS.items():
             if seconds:
                 try:
-                    tasks[name].start(abs(seconds))
+                    # Set now to False to get the servers up and running when
+                    # first started, rather than spend a bunch of time in
+                    # scheduled tasks.
+                    tasks[name].start(abs(seconds), now=False)
                 except KeyError:
                     logging.info("Task %s is disabled and will not run." % name)
                 else:
