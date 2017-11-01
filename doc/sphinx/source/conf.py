@@ -35,6 +35,7 @@ import bridgedb.Bridges
 import bridgedb.Bucket
 import bridgedb.crypto
 import bridgedb.distribute
+import bridgedb.distributors
 import bridgedb.distributors.email
 import bridgedb.distributors.email.autoresponder
 import bridgedb.distributors.email.distributor
@@ -42,12 +43,12 @@ import bridgedb.distributors.email.dkim
 import bridgedb.distributors.email.request
 import bridgedb.distributors.email.server
 import bridgedb.distributors.email.templates
-import bridgedb.filters
-import bridgedb.geo
 import bridgedb.distributors.https
 import bridgedb.distributors.https.distributor
 import bridgedb.distributors.https.request
 import bridgedb.distributors.https.server
+import bridgedb.filters
+import bridgedb.geo
 import bridgedb.parse
 import bridgedb.parse.addr
 import bridgedb.parse.descriptors
