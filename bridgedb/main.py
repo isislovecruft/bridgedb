@@ -46,7 +46,12 @@ def expandBridgeAuthDir(authdir, filename):
     """Expands a descriptor ``filename`` relative to which of the
     BRIDGE_AUTHORITY_DIRECTORIES, ``authdir`` it resides within.
     """
-    return os.path.abspath(os.path.expanduser(os.sep.join([authdir, filename])))
+    path = filename
+
+    if not authdir in filename or not os.path.isabs(filename):
+        path = os.path.abspath(os.path.expanduser(os.sep.join([authdir, filename])))
+
+    return path
 
 def load(state, hashring, clear=False):
     """Read and parse all descriptors, and load into a bridge hashring.

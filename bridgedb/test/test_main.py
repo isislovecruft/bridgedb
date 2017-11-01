@@ -81,9 +81,12 @@ class BridgedbTests(unittest.TestCase):
         fh.flush()
         fh.close()
 
-    def _copyDescFilesHere(self, files):
+    def _copyDescFilesHere(self, authdirs, files):
         """Copy all the **files** to the _trial_tmp/ directory.
 
+        :param list authdirs: A list of strings representing the directories
+            from BridgeAuthorities, as in the BRIDGE_AUTHORITY_DIRECTORIES
+            config option.
         :param list files: A list of strings representing the paths to
             descriptor files. This should probably be taken from a
             ``bridgedb.persistent.Conf`` object which has parsed the
@@ -95,18 +98,23 @@ class BridgedbTests(unittest.TestCase):
         """
         updatedPaths = []
 
-        for f in files:
-            base = os.path.basename(f)
-            src = os.path.join(CI_RUNDIR, base)
-            if os.path.isfile(src):
-                dst = os.path.join(HERE, base)
-                shutil.copy(src, dst)
-                updatedPaths.append(dst)
-            else:
-                self.skip = True
-                raise unittest.SkipTest(
-                    "Can't find mock descriptor files in %s directory" %
-                    CI_RUNDIR)
+        for d in authdirs:
+            for f in files:
+                base = os.path.basename(f)
+                src = os.path.join(CI_RUNDIR, d, base)
+                if os.path.isfile(src):
+                    dstdir = os.path.join(HERE, d)
+                    if not os.path.isdir(dstdir):
+                        os.mkdir(dstdir)
+                        self._directories_created.append(dstdir)
+                    dst = os.path.join(dstdir, base)
+                    shutil.copy(src, dst)
+                    updatedPaths.append(dst)
+                else:
+                    self.skip = True
+                    raise unittest.SkipTest(
+                        "Can't find mock descriptor files in %s directory" %
+                        CI_RUNDIR)
 
         return updatedPaths
 
@@ -157,14 +165,24 @@ class BridgedbTests(unittest.TestCase):
         directory, produce a state object from the loaded bridgedb.conf file,
         and make an HMAC key.
         """
+        # We'll want to nuke these after the test runs
+        self._directories_created = []
+
         # Get the bridgedb.conf file in the top-level directory of this repo:
         self.configFile = os.path.join(TOPDIR, 'bridgedb.conf')
         self.config = main.loadConfig(self.configFile)
+        self.config.BRIDGE_AUTHORITY_DIRECTORIES = ["from-bifroest"]
 
         # Copy the referenced descriptor files from bridgedb/run/ to CWD:
-        self.config.STATUS_FILE = self._copyDescFilesHere([self.config.STATUS_FILE])[0]
-        self.config.BRIDGE_FILES = self._copyDescFilesHere(self.config.BRIDGE_FILES)
-        self.config.EXTRA_INFO_FILES = self._copyDescFilesHere(self.config.EXTRA_INFO_FILES)
+        self.config.STATUS_FILE = self._copyDescFilesHere(
+            self.config.BRIDGE_AUTHORITY_DIRECTORIES,
+            [self.config.STATUS_FILE])[0]
+        self.config.BRIDGE_FILES = self._copyDescFilesHere(
+            self.config.BRIDGE_AUTHORITY_DIRECTORIES,
+            self.config.BRIDGE_FILES)
+        self.config.EXTRA_INFO_FILES = self._copyDescFilesHere(
+            self.config.BRIDGE_AUTHORITY_DIRECTORIES,
+            self.config.EXTRA_INFO_FILES)
 
         # Initialise the state
         self.state = main.persistent.State(**self.config.__dict__)
@@ -184,6 +202,9 @@ class BridgedbTests(unittest.TestCase):
         """
         main.updateBridgeHistory = self._orig_updateBridgeHistory
         sys.argv = self._orig_sys_argv
+
+        for d in self._directories_created:
+            shutil.rmtree(d)
 
     def test_main_updateBridgeHistory(self):
         """main.updateBridgeHistory should update some timestamps for some
