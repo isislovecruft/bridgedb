@@ -1,7 +1,7 @@
-bridgedb.Main
-----------------
+bridgedb.main
+-----------------
 
-.. automodule:: bridgedb.Main
+.. automodule:: bridgedb.main
     :members:
     :undoc-members:
     :private-members:

@@ -33,7 +33,7 @@ def downloadTorExits(proxyList, ipaddress, port=443, protocol=None):
     """Run a script which downloads a list of Tor exit relays which allow their
     clients to exit to the given **ipaddress** and **port**.
 
-    :param proxyList: The :class:`ProxySet` instance from :mod:`bridgedb.Main`.
+    :param proxyList: The :class:`ProxySet` instance from :mod:`bridgedb.main`.
     :param str ipaddress: The IP address that each Tor exit relay should be
         capable of connecting to for clients, as specified by its ExitPolicy.
     :param int port: The port corresponding to the above **ipaddress** that

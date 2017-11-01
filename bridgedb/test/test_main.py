@@ -9,7 +9,7 @@
 #             (c) 2007-2017, all entities within the AUTHORS file
 # :license: see included LICENSE for information
 
-"""Tests for :mod:`bridgedb.Main`."""
+"""Tests for :mod:`bridgedb.main`."""
 
 from __future__ import print_function
 
@@ -26,7 +26,7 @@ from time import sleep
 from twisted.internet.threads import deferToThread
 from twisted.trial import unittest
 
-from bridgedb import Main
+from bridgedb import main
 from bridgedb.parse.options import parseOptions
 
 
@@ -50,7 +50,7 @@ p reject 1-65535
 def mockUpdateBridgeHistory(bridges, timestamps):
     """A mocked version of :func:`bridgedb.Stability.updateBridgeHistory`
     which doesn't access the database (so that we can test functions which
-    call it, like :func:`bridgedb.Main.load`).
+    call it, like :func:`bridgedb.main.load`).
     """
     for fingerprint, stamps in timestamps.items()[:]:
         for timestamp in stamps:
@@ -71,8 +71,8 @@ class MockHashring(object):
         pass
 
 
-class MainTests(unittest.TestCase):
-    """Integration tests for :func:`bridgedb.Main.load`."""
+class BridgedbTests(unittest.TestCase):
+    """Integration tests for :func:`bridgedb.main.load`."""
 
     def _appendToFile(self, file, data):
         """Append **data** to **file**."""
@@ -117,7 +117,7 @@ class MainTests(unittest.TestCase):
 
     def _cbCallUpdateBridgeHistory(self, d, hashring):
         """Fake some timestamps for the bridges in the hashring, and then call
-        Main.updateBridgeHistory().
+        main.updateBridgeHistory().
         """
         def timestamp():
             return datetime.fromtimestamp(random.randint(1324285117, 1524285117))
@@ -128,7 +128,7 @@ class MainTests(unittest.TestCase):
         for fingerprint, _ in bridges.items():
             timestamps[fingerprint] = [timestamp(), timestamp(), timestamp()]
 
-        return Main.updateBridgeHistory(bridges, timestamps)
+        return main.updateBridgeHistory(bridges, timestamps)
 
     def _eb_Failure(self, failure):
         """If something produces a twisted.python.failure.Failure, fail the
@@ -159,7 +159,7 @@ class MainTests(unittest.TestCase):
         """
         # Get the bridgedb.conf file in the top-level directory of this repo:
         self.configFile = os.path.join(TOPDIR, 'bridgedb.conf')
-        self.config = Main.loadConfig(self.configFile)
+        self.config = main.loadConfig(self.configFile)
 
         # Copy the referenced descriptor files from bridgedb/run/ to CWD:
         self.config.STATUS_FILE = self._copyDescFilesHere([self.config.STATUS_FILE])[0]
@@ -167,7 +167,7 @@ class MainTests(unittest.TestCase):
         self.config.EXTRA_INFO_FILES = self._copyDescFilesHere(self.config.EXTRA_INFO_FILES)
 
         # Initialise the state
-        self.state = Main.persistent.State(**self.config.__dict__)
+        self.state = main.persistent.State(**self.config.__dict__)
         self.key = base64.b64decode('TvPS1y36BFguBmSOvhChgtXB2Lt+BOw0mGfz9SZe12Y=')
 
         # Create a pseudo hashring
@@ -175,104 +175,104 @@ class MainTests(unittest.TestCase):
 
         # Functions which some tests mock, which we'll need to re-replace
         # later in tearDown():
-        self._orig_updateBridgeHistory = Main.updateBridgeHistory
+        self._orig_updateBridgeHistory = main.updateBridgeHistory
         self._orig_sys_argv = sys.argv
 
     def tearDown(self):
         """Replace the mocked mockUpdateBridgeHistory() function with the
         real function, Stability.updateBridgeHistory().
         """
-        Main.updateBridgeHistory = self._orig_updateBridgeHistory
+        main.updateBridgeHistory = self._orig_updateBridgeHistory
         sys.argv = self._orig_sys_argv
 
-    def test_Main_updateBridgeHistory(self):
-        """Main.updateBridgeHistory should update some timestamps for some
+    def test_main_updateBridgeHistory(self):
+        """main.updateBridgeHistory should update some timestamps for some
         bridges.
         """
         # Mock the updateBridgeHistory() function so that we don't try to
         # access the database:
-        Main.updateBridgeHistory = mockUpdateBridgeHistory
+        main.updateBridgeHistory = mockUpdateBridgeHistory
 
         # Get the bridges into the mocked hashring
-        d = deferToThread(Main.load, self.state, self.hashring)
+        d = deferToThread(main.load, self.state, self.hashring)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
         d.addCallback(self._cbCallUpdateBridgeHistory, self.hashring)
         d.addErrback(self._eb_Failure)
         return d
 
-    def test_Main_load(self):
-        """Main.load() should run without error."""
-        d = deferToThread(Main.load, self.state, self.hashring)
+    def test_main_load(self):
+        """main.load() should run without error."""
+        d = deferToThread(main.load, self.state, self.hashring)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
         return d
 
-    def test_Main_load_no_state(self):
-        """Main.load() should raise SystemExit without a state object."""
-        self.assertRaises(SystemExit, Main.load, None, self.hashring)
+    def test_main_load_no_state(self):
+        """main.load() should raise SystemExit without a state object."""
+        self.assertRaises(SystemExit, main.load, None, self.hashring)
 
-    def test_Main_load_clear(self):
+    def test_main_load_clear(self):
         """When called with clear=True, load() should run and clear the
         hashrings.
         """
-        d = deferToThread(Main.load, self.state, self.hashring, clear=True)
+        d = deferToThread(main.load, self.state, self.hashring, clear=True)
         d.addCallback(self._cbAssertFingerprints)
         d.addErrback(self._eb_Failure)
         return d
 
-    def test_Main_load_collect_timestamps(self):
-        """When COLLECT_TIMESTAMPS=True, Main.load() should call
-        Main.updateBridgeHistory().
+    def test_main_load_collect_timestamps(self):
+        """When COLLECT_TIMESTAMPS=True, main.load() should call
+        main.updateBridgeHistory().
         """
         # Mock the addOrUpdateBridgeHistory() function so that we don't try to
         # access the database:
-        Main.updateBridgeHistory = mockUpdateBridgeHistory
+        main.updateBridgeHistory = mockUpdateBridgeHistory
         state = self.state
         state.COLLECT_TIMESTAMPS = True
 
         # The reactor is deferring this to a thread, so the test execution
         # here isn't actually covering the Storage.updateBridgeHistory()
         # function:
-        Main.load(state, self.hashring)
+        main.load(state, self.hashring)
 
-    def test_Main_load_malformed_networkstatus(self):
+    def test_main_load_malformed_networkstatus(self):
         """When called with a networkstatus file with an invalid descriptor,
-        Main.load() should raise a ValueError.
+        main.load() should raise a ValueError.
         """
         self._appendToFile(self.state.STATUS_FILE, NETWORKSTATUS_MALFORMED)
-        self.assertRaises(ValueError, Main.load, self.state, self.hashring)
+        self.assertRaises(ValueError, main.load, self.state, self.hashring)
 
-    def test_Main_reloadFn(self):
-        """Main._reloadFn() should return True."""
-        self.assertTrue(Main._reloadFn())
+    def test_main_reloadFn(self):
+        """main._reloadFn() should return True."""
+        self.assertTrue(main._reloadFn())
 
-    def test_Main_handleSIGHUP(self):
-        """Main._handleSIGHUP() should return True."""
+    def test_main_handleSIGHUP(self):
+        """main._handleSIGHUP() should return True."""
         raise unittest.SkipTest("_handleSIGHUP touches the reactor.")
 
-        self.assertTrue(Main._handleSIGHUP())
+        self.assertTrue(main._handleSIGHUP())
 
-    def test_Main_createBridgeRings(self):
-        """Main.createBridgeRings() should add three hashrings to the
+    def test_main_createBridgeRings(self):
+        """main.createBridgeRings() should add three hashrings to the
         hashring.
         """
         proxyList = None
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
         # and an UnallocatedHolder ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 3)
 
-    def test_Main_createBridgeRings_with_proxyList(self):
-        """Main.createBridgeRings() should add three hashrings to the
+    def test_main_createBridgeRings_with_proxyList(self):
+        """main.createBridgeRings() should add three hashrings to the
         hashring and add the proxyList to the IPBasedDistibutor.
         """
         exitRelays = ['1.1.1.1', '2.2.2.2', '3.3.3.3']
-        proxyList = Main.proxy.ProxySet()
+        proxyList = main.proxy.ProxySet()
         proxyList.addExitRelays(exitRelays)
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(self.config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(self.config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor ring,
@@ -281,14 +281,14 @@ class MainTests(unittest.TestCase):
         self.assertGreater(len(httpsDist.proxies), 0)
         self.assertItemsEqual(exitRelays, httpsDist.proxies)
 
-    def test_Main_createBridgeRings_no_https_dist(self):
-        """When HTTPS_DIST=False, Main.createBridgeRings() should add only
+    def test_main_createBridgeRings_no_https_dist(self):
+        """When HTTPS_DIST=False, main.createBridgeRings() should add only
         two hashrings to the hashring.
         """
-        proxyList = Main.proxy.ProxySet()
+        proxyList = main.proxy.ProxySet()
         config = self.config
         config.HTTPS_DIST = False
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an EmailDistributor ring, and an UnallocatedHolder ring:
@@ -296,14 +296,14 @@ class MainTests(unittest.TestCase):
         self.assertNotIn('https', hashring.rings)
         self.assertNotIn(httpsDist, hashring.ringsByName.values())
 
-    def test_Main_createBridgeRings_no_email_dist(self):
-        """When EMAIL_DIST=False, Main.createBridgeRings() should add only
+    def test_main_createBridgeRings_no_email_dist(self):
+        """When EMAIL_DIST=False, main.createBridgeRings() should add only
         two hashrings to the hashring.
         """
-        proxyList = Main.proxy.ProxySet()
+        proxyList = main.proxy.ProxySet()
         config = self.config
         config.EMAIL_DIST = False
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
                                                                proxyList,
                                                                self.key)
         # Should have an HTTPSDistributor ring, and an UnallocatedHolder ring:
@@ -311,32 +311,32 @@ class MainTests(unittest.TestCase):
         self.assertNotIn('email', hashring.rings)
         self.assertNotIn(emailDist, hashring.ringsByName.values())
 
-    def test_Main_createBridgeRings_no_reserved_share(self):
-        """When RESERVED_SHARE=0, Main.createBridgeRings() should add only
+    def test_main_createBridgeRings_no_reserved_share(self):
+        """When RESERVED_SHARE=0, main.createBridgeRings() should add only
         two hashrings to the hashring.
         """
-        proxyList = Main.proxy.ProxySet()
+        proxyList = main.proxy.ProxySet()
         config = self.config
         config.RESERVED_SHARE = 0
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, and an EmailDistributor ring:
         self.assertEqual(len(hashring.ringsByName.keys()), 2)
         self.assertNotIn('unallocated', hashring.rings)
 
-    def test_Main_createBridgeRings_two_file_buckets(self):
-        """When FILE_BUCKETS has two filenames in it, Main.createBridgeRings()
+    def test_main_createBridgeRings_two_file_buckets(self):
+        """When FILE_BUCKETS has two filenames in it, main.createBridgeRings()
         should add three hashrings to the hashring, then add two
         "pseudo-rings".
         """
-        proxyList = Main.proxy.ProxySet()
+        proxyList = main.proxy.ProxySet()
         config = self.config
         config.FILE_BUCKETS = {
             'bridges-for-support-desk': 10,
             'bridges-for-ooni-tests': 10,
         }
-        (hashring, emailDist, httpsDist) = Main.createBridgeRings(config,
+        (hashring, emailDist, httpsDist) = main.createBridgeRings(config,
                                                                   proxyList,
                                                                   self.key)
         # Should have an HTTPSDistributor ring, an EmailDistributor, and an
@@ -348,8 +348,8 @@ class MainTests(unittest.TestCase):
         self.assertIn('pseudo_bridges-for-support-desk', hashring.pseudoRings)
         self.assertIn('pseudo_bridges-for-ooni-tests', hashring.pseudoRings)
 
-    def test_Main_run(self):
-        """Main.run() should run and then finally raise SystemExit."""
+    def test_main_run(self):
+        """main.run() should run and then finally raise SystemExit."""
         config = """
 BRIDGE_FILES = ["../run/bridge-descriptors"]
 EXTRA_INFO_FILES = ["../run/cached-extrainfo", "../run/cached-extrainfo.new"]
@@ -434,4 +434,4 @@ FILE_BUCKETS = {}"""
         sys.argv = ['bridgedb', '-r', os.getcwd(), '-c', configFile]
         options = parseOptions()
 
-        self.assertRaises(SystemExit, Main.run, options, reactor=None)
+        self.assertRaises(SystemExit, main.run, options, reactor=None)

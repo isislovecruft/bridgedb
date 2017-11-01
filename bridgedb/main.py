@@ -63,7 +63,7 @@ def load(state, hashring, clear=False):
         hashring before parsing for new ones.
     """
     if not state:
-        logging.fatal("bridgedb.Main.load() could not retrieve state!")
+        logging.fatal("bridgedb.main.load() could not retrieve state!")
         sys.exit(2)
 
     if clear:
@@ -517,7 +517,7 @@ def runSubcommand(options, config):
     :type options: :class:`bridgedb.opt.MainOptions`
     :param options: A pre-parsed options class containing any arguments and
         options given in the commandline we were called with.
-    :type config: :class:`bridgedb.Main.Conf`
+    :type config: :class:`bridgedb.main.Conf`
     :param config: The current configuration.
     :raises: :exc:`SystemExit` when all subCommands and subOptions have
         finished running.

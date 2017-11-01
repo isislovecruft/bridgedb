@@ -16,7 +16,7 @@ import sys
 
 from os import getcwd
 
-from bridgedb.Main import run
+from bridgedb.main import run
 from bridgedb.parse.options import parseOptions
 
 

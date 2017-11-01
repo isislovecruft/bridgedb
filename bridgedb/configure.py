@@ -47,9 +47,9 @@ def loadConfig(configFile=None, configCls=None):
     .. _faster: http://lucumr.pocoo.org/2011/2/1/exec-in-python/
 
     :ivar bool itsSafeToUseLogging: This is called in
-        :func:`bridgedb.Main.run` before
+        :func:`bridgedb.main.run` before
         :func:`bridgedb.safelog.configureLogging`. When called from
-        :func:`~bridgedb.Main.run`, the **configCls** parameter is not given,
+        :func:`~bridgedb.main.run`, the **configCls** parameter is not given,
         because that is the first time that a
         :class:`config <bridgedb.configure.Conf>` has been created. If a
         :class:`logging.Logger` is created in this function, then logging will

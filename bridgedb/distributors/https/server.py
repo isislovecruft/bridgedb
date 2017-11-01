@@ -1008,7 +1008,7 @@ def addWebServer(config, distributor):
 
     :type config: :class:`bridgedb.persistent.Conf`
     :param config: A configuration object from
-         :mod:`bridgedb.Main`. Currently, we use these options::
+         :mod:`bridgedb.main`. Currently, we use these options::
              HTTP_UNENCRYPTED_PORT
              HTTP_UNENCRYPTED_BIND_IP
              HTTP_USE_IP_FROM_FORWARDED_HEADER

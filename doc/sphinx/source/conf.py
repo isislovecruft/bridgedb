@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(
 
 
 import bridgedb
+import bridgedb.main
 import bridgedb.bridgerequest
 import bridgedb.bridges
 import bridgedb.captcha
@@ -47,7 +48,6 @@ import bridgedb.distributors.https
 import bridgedb.distributors.https.distributor
 import bridgedb.distributors.https.request
 import bridgedb.distributors.https.server
-import bridgedb.Main
 import bridgedb.parse
 import bridgedb.parse.addr
 import bridgedb.parse.descriptors

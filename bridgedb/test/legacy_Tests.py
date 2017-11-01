@@ -18,7 +18,7 @@ import time
 from datetime import datetime
 
 import bridgedb.Bridges
-import bridgedb.Main
+import bridgedb.main
 import bridgedb.schedule
 import bridgedb.Storage
 import re
