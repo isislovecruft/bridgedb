@@ -459,7 +459,7 @@ def run(options, reactor=reactor):
     signal.signal(signal.SIGHUP, _handleSIGHUP)
     signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
-    if reactor:
+    if reactor:  # pragma: no cover
         # And actually load it to start parsing. Get back our distributors.
         emailDistributor, ipDistributor = reload(False)
 
@@ -508,7 +508,7 @@ def run(options, reactor=reactor):
         if reactor and not reactor.running:
             logging.info("Starting reactors.")
             reactor.run()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: # pragma: no cover
         logging.fatal("Received keyboard interrupt. Shutting down...")
     finally:
         if config.PIDFILE:

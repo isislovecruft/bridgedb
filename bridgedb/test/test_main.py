@@ -71,6 +71,20 @@ class MockHashring(object):
         pass
 
 
+class ExpandBridgeAuthDirTests(unittest.TestCase):
+    """Unittests for :func:`bridgedb.main.expandBridgeAuthDir`."""
+
+    def setUp(self):
+        self.authdir = "from-authority"
+        self.filename = "bridge-descriptors"
+
+    def test_expandBridgeAuthDir_not_abs(self):
+        """A non-absolute path should turn into an absolute one."""
+        result = main.expandBridgeAuthDir(self.authdir, self.filename)
+
+        self.assertTrue(os.path.isabs(result))
+
+
 class BridgedbTests(unittest.TestCase):
     """Integration tests for :func:`bridgedb.main.load`."""
 
@@ -226,6 +240,15 @@ class BridgedbTests(unittest.TestCase):
         """main.load() should run without error."""
         d = deferToThread(main.load, self.state, self.hashring)
         d.addCallback(self._cbAssertFingerprints)
+        d.addErrback(self._eb_Failure)
+        return d
+
+    def test_main_load_then_reload(self):
+        """main.load() should run without error."""
+        d = deferToThread(main.load, self.state, self.hashring)
+        d.addCallback(self._cbAssertFingerprints)
+        d.addErrback(self._eb_Failure)
+        d.addCallback(main._reloadFn)
         d.addErrback(self._eb_Failure)
         return d
 
