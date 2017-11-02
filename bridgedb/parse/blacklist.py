@@ -59,9 +59,19 @@ def parseBridgeBlacklistFile(filename):
         else:
             for line in fh.readlines():
                 fields = line.split(' ', 1)
-                fingerprint, reason = fields[0], fields[1] if len(fields)==2 else ''
+
+                if len(fields) == 2:
+                    fingerprint, reason = fields[0].strip(), fields[1].strip()
+                else:
+                    fingerprint, reason = fields[0].strip(), ""
 
                 if isValidFingerprint(fingerprint):
+                    logging.info("Blacklisted %s. Reason: \"%s\"" %
+                                 (fingerprint, reason))
                     blacklist[fingerprint] = reason
+                else:
+                    logging.warn(("Can't blacklist %s (for reason \"%s\"): "
+                                  "invalid fingerprint") %
+                                 (fingerprint, reason))
 
     return blacklist
