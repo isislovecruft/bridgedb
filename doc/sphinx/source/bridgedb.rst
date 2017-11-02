@@ -14,12 +14,12 @@ Packages & Modules
     bridgedb.configure
     bridgedb.distribute
     bridgedb.crypto
-    bridgedb.email
+    bridgedb.distributors.email
+    bridgedb.distributors.https
     bridgedb.filters
     bridgedb.geo
-    bridgedb.https
     bridgedb.interfaces
-    bridgedb.Main
+    bridgedb.main
     bridgedb.parse
     bridgedb.persistent
     bridgedb.proxy
