@@ -335,7 +335,7 @@ def run(options, reactor=reactor):
     state.key = key
     state.save()
 
-    def reload(inThread=True):
+    def reload(inThread=True): # pragma: no cover
         """Reload settings, proxy lists, and bridges.
 
         State should be saved before calling this method, and will be saved
