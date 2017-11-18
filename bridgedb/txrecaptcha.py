@@ -31,10 +31,10 @@ import urllib
 from OpenSSL.crypto import FILETYPE_PEM
 from OpenSSL.crypto import load_certificate
 
-from twisted import version as _twistedversion
 from twisted.internet import defer
 from twisted.internet import protocol
 from twisted.internet import reactor
+from twisted.internet._sslverify import OpenSSLCertificateAuthorities
 from twisted.python import failure
 from twisted.python.versions import Version
 from twisted.web import client
@@ -43,7 +43,6 @@ from twisted.web.iweb import IBodyProducer
 
 from zope.interface import implements
 
-from bridgedb.crypto import SSLVerifyingContextFactory
 
 #: This was taken from :data:`recaptcha.client.captcha.API_SSL_SERVER`.
 API_SSL_SERVER = API_SERVER = "https://www.google.com/recaptcha/api"
@@ -70,37 +69,25 @@ ARlIjNvrPq86fpVg0NOTawALkSqOUMl3MynBQO+spR7EHcRbADQ/JemfTEh2Ycfl
 vZqhEFBfurZkX0eTANq98ZvVfpg=
 -----END CERTIFICATE-----"""))
 
-# `t.w.client.HTTPConnectionPool` isn't available in Twisted-12.0.0
-# (see ticket #11219: https://bugs.torproject.org/11219):
-_connectionPoolAvailable = _twistedversion >= Version('twisted', 12, 1, 0)
-if _connectionPoolAvailable:
-    logging.info("Using HTTPConnectionPool for reCaptcha API server.")
-    _pool = client.HTTPConnectionPool(reactor, persistent=False)
-    _pool.maxPersistentPerHost = 5
-    _pool.cachedConnectionTimeout = 30
-    _agent = client.Agent(reactor, pool=_pool)
-else:
-    logging.warn("Twisted-%s is too old for HTTPConnectionPool! Disabling..."
-                 % _twistedversion.short())
-    _pool = None
-    _agent = client.Agent(reactor)
+
+logging.info("Using HTTPConnectionPool for reCaptcha API server.")
+_pool = client.HTTPConnectionPool(reactor, persistent=False)
+_pool.maxPersistentPerHost = 5
+_pool.cachedConnectionTimeout = 30
+_agent = client.Agent(reactor, pool=_pool)
 
 
-# Twisted>=14.0.0 changed the way in which hostname verification works.
-if _twistedversion >= Version('twisted', 14, 0, 0):
-    from twisted.internet._sslverify import OpenSSLCertificateAuthorities
+class RecaptchaOpenSSLCertificateAuthorities(OpenSSLCertificateAuthorities):
+    """The trusted CAs for connecting to reCAPTCHA servers."""
+    #: A list of `OpenSSL.crypto.X509` objects.
+    caCerts = [GOOGLE_INTERNET_AUTHORITY_CA_CERT,]
+    def __init__(self):
+        super(RecaptchaOpenSSLCertificateAuthorities, self).__init__(self.caCerts)
 
-    class RecaptchaOpenSSLCertificateAuthorities(OpenSSLCertificateAuthorities):
-        """The trusted CAs for connecting to reCAPTCHA servers."""
-        #: A list of `OpenSSL.crypto.X509` objects.
-        caCerts = [GOOGLE_INTERNET_AUTHORITY_CA_CERT,]
-        def __init__(self):
-            super(RecaptchaOpenSSLCertificateAuthorities, self).__init__(self.caCerts)
-
-    class RecaptchaPolicyForHTTPS(client.BrowserLikePolicyForHTTPS):
-        _trustRoot = RecaptchaOpenSSLCertificateAuthorities()
-        def __init__(self):
-            super(RecaptchaPolicyForHTTPS, self).__init__(trustRoot=self._trustRoot)
+class RecaptchaPolicyForHTTPS(client.BrowserLikePolicyForHTTPS):
+    _trustRoot = RecaptchaOpenSSLCertificateAuthorities()
+    def __init__(self):
+        super(RecaptchaPolicyForHTTPS, self).__init__(trustRoot=self._trustRoot)
 
 
 def _setAgent(agent):
@@ -128,23 +115,13 @@ def _getAgent(reactor=reactor, url=API_SSL_VERIFY_URL, connectTimeout=30,
         :api:`twisted.internet.reactor.connectSSL` for specifying the
         connection timeout. (default: ``30``)
     """
-    # Twisted>=14.0.0 changed the way in which hostname verification works.
-    if _twistedversion >= Version('twisted', 14, 0, 0):
-        contextFactory = RecaptchaPolicyForHTTPS()
-    else:
-        contextFactory = SSLVerifyingContextFactory(url)
+    contextFactory = RecaptchaPolicyForHTTPS()
 
-    if _connectionPoolAvailable:
-        return client.Agent(reactor,
-                            contextFactory=contextFactory,
-                            connectTimeout=connectTimeout,
-                            pool=_pool,
-                            **kwargs)
-    else:
-        return client.Agent(reactor,
-                            contextFactory=contextFactory,
-                            connectTimeout=connectTimeout,
-                            **kwargs)
+    return client.Agent(reactor,
+                        contextFactory=contextFactory,
+                        connectTimeout=connectTimeout,
+                        pool=_pool,
+                        **kwargs)
 
 _setAgent(_getAgent())
 

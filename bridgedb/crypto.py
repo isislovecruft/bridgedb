@@ -25,15 +25,7 @@ data, and generating and/or storing key material.
      |_getKey() - Load the master HMAC key from a file, or create a new one.
      |_getRSAKey() - Load an RSA key from a file, or create a new one.
      |_gpgSignMessage() - Sign a message string according to a GPGME context.
-     |_writeKeyToFile() - Write to a file readable only by the process owner.
-     |
-     \_SSLVerifyingContextFactory - OpenSSL.SSL.Context factory which verifies
-        |                           certificate chains and matches hostnames.
-        |_getContext() - Retrieve an SSL context configured for certificate
-        |                verification.
-        |_getHostnameFromURL() - Parses the hostname from the request URL.
-        \_verifyHostname() - Check that the cert CN matches the request
-                             hostname.
+     \_writeKeyToFile() - Write to a file readable only by the process owner.
 ..
 """
 
@@ -83,9 +75,6 @@ else:
 
 class PKCS1PaddingError(Exception):
     """Raised when there is a problem adding or removing PKCS#1 padding."""
-
-class RSAKeyGenerationError(Exception):
-    """Raised when there was an error creating an RSA keypair."""
 
 
 def writeKeyToFile(key, filename):
@@ -255,7 +244,6 @@ def removePKCS1Padding(message):
     :rtype: bytes
     :returns: The message without the PKCS#1 padding.
     """
-    padding = b'\xFF'
     typeinfo = b'\x00\x01'
     separator = b'\x00'
 
@@ -361,95 +349,3 @@ def initializeGnuPG(config):
         return (gpg, gpgSignMessage)
 
     return ret
-
-
-class SSLVerifyingContextFactory(ssl.CertificateOptions):
-    """``OpenSSL.SSL.Context`` factory which does full certificate-chain and
-    hostname verfication.
-    """
-    isClient = True
-
-    def __init__(self, url, **kwargs):
-        """Create a client-side verifying SSL Context factory.
-
-        To pass acceptable certificates for a server which does
-        client-authentication checks: initialise with a ``caCerts=[]`` keyword
-        argument, which should be a list of ``OpenSSL.crypto.X509`` instances
-        (one for each peer certificate to add to the store), and set
-        ``SSLVerifyingContextFactory.isClient=False``.
-
-        :param str url: The URL being requested by an
-            :api:`twisted.web.client.Agent`.
-        :param bool isClient: True if we're being used in a client
-            implementation; False if we're a server.
-        """
-        self.hostname = self.getHostnameFromURL(url)
-
-        # ``verify`` here refers to server-side verification of certificates
-        # presented by a client:
-        self.verify = False if self.isClient else True
-        super(SSLVerifyingContextFactory, self).__init__(verify=self.verify,
-                                                         fixBrokenPeers=True,
-                                                         **kwargs)
-
-    def getContext(self, hostname=None, port=None):
-        """Retrieve a configured ``OpenSSL.SSL.Context``.
-
-        Any certificates in the ``caCerts`` list given during initialisation
-        are added to the ``Context``'s certificate store.
-
-        The **hostname** and **port** arguments seem unused, but they are
-        required due to some Twisted and pyOpenSSL internals. See
-        :api:`twisted.web.client.Agent._wrapContextFactory`.
-
-        :rtype: ``OpenSSL.SSL.Context``
-        :returns: An SSL Context which verifies certificates.
-        """
-        ctx = super(SSLVerifyingContextFactory, self).getContext()
-        store = ctx.get_cert_store()
-        verifyOptions = OpenSSL.SSL.VERIFY_PEER
-        ctx.set_verify(verifyOptions, self.verifyHostname)
-        return ctx
-
-    def getHostnameFromURL(self, url):
-        """Parse the hostname from the originally requested URL.
-
-        :param str url: The URL being requested by an
-            :api:`twisted.web.client.Agent`.
-        :rtype: str
-        :returns: The full hostname (including any subdomains).
-        """
-        hostname = urllib.splithost(urllib.splittype(url)[1])[0]
-        logging.debug("Parsed hostname %r for cert CN matching." % hostname)
-        return hostname
-
-    def verifyHostname(self, connection, x509, errnum, depth, okay):
-        """Callback method for additional SSL certificate validation.
-
-        If the certificate is signed by a valid CA, and the chain is valid,
-        verify that the level 0 certificate has a subject common name which is
-        valid for the hostname of the originally requested URL.
-
-        :param connection: An ``OpenSSL.SSL.Connection``.
-        :param x509: An ``OpenSSL.crypto.X509`` object.
-        :param errnum: A pyOpenSSL error number. See that project's docs.
-        :param depth: The depth which the current certificate is at in the
-            certificate chain.
-        :param bool okay: True if all the pyOpenSSL default checks on the
-            certificate passed. False otherwise.
-        """
-        commonName = x509.get_subject().commonName
-        logging.debug("Received cert at level %d: '%s'" % (depth, commonName))
-
-        # We only want to verify that the hostname matches for the level 0
-        # certificate:
-        if okay and (depth == 0):
-            cn = commonName.replace('*', '.*')
-            hostnamesMatch = re.search(cn, self.hostname)
-            if not hostnamesMatch:
-                logging.warn("Invalid certificate subject CN for '%s': '%s'"
-                             % (self.hostname, commonName))
-                return False
-            logging.debug("Valid certificate subject CN for '%s': '%s'"
-                          % (self.hostname, commonName))
-        return True

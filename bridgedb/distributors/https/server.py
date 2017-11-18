@@ -34,7 +34,6 @@ from functools import partial
 from ipaddr import IPv4Address
 
 import mako.exceptions
-from mako.template import Template
 from mako.lookup import TemplateLookup
 
 from twisted.internet import reactor
