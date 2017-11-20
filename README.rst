@@ -361,25 +361,12 @@ Or just give it a SIGHUP::
       kill -s SIGHUP `cat .../run/bridgedb.pid`
 
 
----------------------------------------------------
-To extract bucket files of all unallocated bridges:
----------------------------------------------------
+----------------------------------
+To extract all bridge assignments:
+----------------------------------
 
-Edit the configuration file value ``FILE_BUCKETS`` according to your
-needs. For example, the following is a possible configuration::
-
-      FILE_BUCKETS = { "name1": 10, "name2": 15, "foobar": 3 }
-
-This configuration for buckets would result in 3 files being created for
-bridge distribution: name1-2010-07-17.brdgs, name2-2010-07-17.brdgs and
-foobar-2010-07-17.brdgs. The first file would contain 10 bridges from
-BridgeDB's 'unallocated' pool. The second file would contain 15 bridges
-from the same pool and the third one similarly 3 bridges. These files
-can then be handed out to trusted parties via mail or fed to other
-distribution mechanisms such as Twitter.
-
-To dump all buckets to their files, send BridgeDB a ``SIGUSR1`` signal
-by doing::
+To dump all bridge assignments to files, send BridgeDB a ``SIGUSR1``
+signal by doing::
 
       kill -s SIGUSR1 `cat .../run/bridgedb.pid`
 
