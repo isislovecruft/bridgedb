@@ -560,7 +560,7 @@ class CaptchaCheckResource(CaptchaResource):
                     "Transport '%s' is not currently supported" %
                     data["transport"])
             else:
-                qrcode = data["qrcode"]
+                qrcode = True if data["qrcode"] == "true" else False
                 transport = type('')(data["transport"])
                 challenge = type('')(data["challenge"])
                 solution = type('')(data["solution"])
