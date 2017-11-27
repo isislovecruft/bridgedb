@@ -149,7 +149,7 @@ class BridgeRequestBase(object):
             mod the number of nodes in the hashring.
         """
         if not client:
-            client = self.client
+            client = type('')(self.client)
 
         # Get an HMAC with the key of the client identifier:
         digest = getHMACFunc(key)(client)
