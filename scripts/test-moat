@@ -15,6 +15,7 @@ fi
 function do_fetch() {
     curl -H 'Content-Type: application/vnd.api+json' \
          -H 'Accept: application/vnd.api+json' \
+         -H 'X-Forwarded-For: 1.2.3.4' \
          --data '{"data": [{"supported": ["obfs4"], "version": "0.1.0", "type": "client-transports"}]}' \
          http://127.0.0.1:6790/meek/moat/fetch
     echo
@@ -23,6 +24,7 @@ function do_fetch() {
 function do_check() {
     curl -H 'Content-Type: application/vnd.api+json' \
          -H 'Accept: application/vnd.api+json' \
+         -H 'X-Forwarded-For: 1.2.3.4' \
          --data '{"data": [{"challenge": "'$CHALLENGE'", "solution": "'$SOLUTION'", "version": "0.1.0", "qrcode": "false", "type": "moat-solution", "id": 2, "transport": "obfs4"}]}' \
          http://127.0.0.1:6790/meek/moat/check
     echo
