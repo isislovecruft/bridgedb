@@ -882,7 +882,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
                 'transport': 'obfs4',
                 'challenge': challenge,
                 'solution': self.solution,
-                'qrcode': True,
+                'qrcode': 'true',
             }]
         }
         encoded_data = json.dumps(data)
