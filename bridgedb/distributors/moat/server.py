@@ -386,12 +386,12 @@ class CaptchaFetchResource(CaptchaResource):
         :param str request: A JSON blob containing the following
             fields:
                 * "version": The moat protocol version.
-                * "type": "client-transports".
-                * "supported": ['TRANSPORT', … ]
+                * "type": "moat-transports".
+                * "supported": ["TRANSPORT", … ]
             where:
-                * TRANSPORT is a string identifying a transport, e.g. "obfs3" or
-                  "obfs4". Currently supported transport identifiers are:
-                  "vanilla", "fte", "obfs3", "obfs4", "scramblesuit".
+                * ``TRANSPORT`` is a string identifying a transport, e.g.
+                  "obfs3" or "obfs4". Currently supported transport identifiers
+                  are: "vanilla", "fte", "obfs3", "obfs4", "scramblesuit".
         :rtype: list
         :returns: The list of transports the client supports.
         """
@@ -401,10 +401,10 @@ class CaptchaFetchResource(CaptchaResource):
             encoded_data = request.content.read()
             data = json.loads(encoded_data)["data"][0]
 
-            if data["type"] != "client-transports":
+            if data["type"] != "moat-transports":
                 raise ValueError(
                     "Bad JSON API object type: expected %s got %s" %
-                    ('client-transports', data["type"]))
+                    ('moat-transports', data["type"]))
             elif data["version"] != MOAT_API_VERSION:
                 raise ValueError(
                     "Client requested protocol version %s, but we're using %s" %
