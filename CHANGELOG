@@ -1,3 +1,56 @@
+Changes in version 0.6.1 - 2017-12-13
+
+        * ADDS a shell script, scripts/test-moat, for testing either a
+        locally-running moat server, or a remote one through a meek
+        tunnel.
+        Thanks to David Fifield for his work on meek, assistance setting
+        it up, and providing the first version of this script.
+
+        * FIXES #24433 https://bugs.torproject.org/24433
+        The test-moat script wasn't sending an X-Forwarded-For header,
+        which triggered a bug in the moat server, since the CAPTCHA
+        solution includes an HMAC based on the client's IP (forwarded
+        through all the several layers of tunnels/proxies).
+
+        * FIXES #24443 https://bugs.torproject.org/24443
+        Due to a difference between how booleans are parsed by Python's
+        json library and normal Python booleans, the moat server was
+        generating and returning QRCodes… regardless of whether the remote
+        client application asked for one.  This is now fixed.
+
+        * FIXES #24460 https://bugs.torproject.org/24460
+        There was an unhandled error when sending certain (what appears to
+        be possibly malicious? but in a very strange way) requests to
+        BridgeDB's HTTPS distributor.  The robots making the requests were
+        attempting to request bridges, but were presenting a CAPTCHA
+        solution without the correct HTML form field parameters present,
+        which isn't possible through normal usage of the web interface.
+        Whoever or whatever is doing this is now going to be endlessly
+        redirected so that they may forever spiral in their own private
+        internet hell.  I reserve the right come up with a worse fate for
+        them later, should I get bored.
+
+        * FIXES #3015 https://bugs.torproject.org/3015
+        BridgeDB has had a partially-implemented concept of "buckets"
+        since the age of the dinosaurs: write some of the unallocated
+        bridges to a file which should (somehow) be manually distributed.
+        In addition to be unused and untested, there were several issues
+        with the buckets, the most significant of which were the inability
+        to request pluggable transports in a bucket and the fact that
+        buckets were not persistent in any way (e.g. if i request a bucket
+        of 50 bridges for Gomez and another with 50 for Morticia, they
+        might end up with some of the same bridges, further, tomorrow
+        they'll end up with 50 possibly different bridges than those they
+        received today).  All of this code is now removed.
+
+And includes the following general changes:
+
+        * FIXES issues with JSON quote syntax and a mistaken JSON API
+        "type" parameter in the specification of the moat server (in the
+        README).
+        Thanks to Mark Smith and Kathy Brade for pointing out the issues.
+
+
 Changes in version 0.6.0 - 2017-11-15
 
         * ADDS a new JSON API distributor called "moat", which is intended
