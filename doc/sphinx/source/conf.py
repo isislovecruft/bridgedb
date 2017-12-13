@@ -32,7 +32,6 @@ import bridgedb.bridgerequest
 import bridgedb.bridges
 import bridgedb.captcha
 import bridgedb.Bridges
-import bridgedb.Bucket
 import bridgedb.crypto
 import bridgedb.distribute
 import bridgedb.distributors

@@ -20,7 +20,6 @@ import ipaddr
 import random
 
 import bridgedb.Storage
-import bridgedb.Bucket
 
 from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
@@ -388,10 +387,7 @@ class UnallocatedHolder(object):
                     continue
                 dist = bridge.distributor
                 desc = [ description ]
-                if dist.startswith(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX):
-                    dist = dist.replace(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX, "")
-                    desc.append("bucket=%s" % dist)
-                elif dist != "unallocated":
+                if dist != "unallocated":
                     continue
                 f.write("%s %s\n" % (bridge.hex_key, " ".join(desc).strip()))
 
@@ -407,7 +403,6 @@ class BridgeSplitter(object):
         self.totalP = 0
         self.pValues = []
         self.rings = []
-        self.pseudoRings = []
         self.statsHolders = []
 
     def __len__(self):
@@ -430,11 +425,6 @@ class BridgeSplitter(object):
         self.rings.append(ringname)
         self.totalP += p
 
-    def addPseudoRing(self, ringname):
-        """Add a pseudo ring to the list of pseudo rings.
-        """
-        self.pseudoRings.append(bridgedb.Bucket.PSEUDO_DISTRI_PREFIX + ringname)
-
     def addTracker(self, t):
         """Adds a statistics tracker that gets told about every bridge we see.
         """
@@ -454,7 +444,7 @@ class BridgeSplitter(object):
         if not bridge.flags.running:
             return
 
-        validRings = self.rings + self.pseudoRings
+        validRings = self.rings
         distribution_method = None
 
         # If the bridge already has a distributor, use that.
@@ -497,10 +487,6 @@ class BridgeSplitter(object):
             ringname = db.insertBridgeAndGetRing(bridge, distribution_method,
                                                  time.time(), validRings)
             db.commit()
-
-        # Pseudo distributors are always held in the "unallocated" ring
-        if ringname in self.pseudoRings:
-            ringname = "unallocated"
 
         ring = self.ringsByName.get(ringname)
         ring.insert(bridge)

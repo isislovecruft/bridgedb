@@ -410,8 +410,10 @@ class CaptchaProtectedResource(CustomErrorHandlingResource, CSPResource):
         try:
             challenge = request.args['captcha_challenge_field'][0]
             response = request.args['captcha_response_field'][0]
-        except Exception:  # pragma: no cover
-            return redirectTo(request.URLPath(), request)
+        except Exception as error:
+            logging.debug(("Client CAPTCHA solution to HTTPS distributor server"
+                           "didn't include correct HTTP arguments: %s" % error))
+            return redirectTo(type(b'')(request.URLPath()), request)
         return (challenge, response)
 
     def checkSolution(self, request):

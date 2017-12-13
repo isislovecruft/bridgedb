@@ -9,7 +9,6 @@ Packages & Modules
     bridgedb.bridgerequest
     bridgedb.bridges
     bridgedb.Bridges
-    bridgedb.Bucket
     bridgedb.captcha
     bridgedb.configure
     bridgedb.distribute

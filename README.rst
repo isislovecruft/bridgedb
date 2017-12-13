@@ -361,25 +361,12 @@ Or just give it a SIGHUP::
       kill -s SIGHUP `cat .../run/bridgedb.pid`
 
 
----------------------------------------------------
-To extract bucket files of all unallocated bridges:
----------------------------------------------------
+----------------------------------
+To extract all bridge assignments:
+----------------------------------
 
-Edit the configuration file value ``FILE_BUCKETS`` according to your
-needs. For example, the following is a possible configuration::
-
-      FILE_BUCKETS = { "name1": 10, "name2": 15, "foobar": 3 }
-
-This configuration for buckets would result in 3 files being created for
-bridge distribution: name1-2010-07-17.brdgs, name2-2010-07-17.brdgs and
-foobar-2010-07-17.brdgs. The first file would contain 10 bridges from
-BridgeDB's 'unallocated' pool. The second file would contain 15 bridges
-from the same pool and the third one similarly 3 bridges. These files
-can then be handed out to trusted parties via mail or fed to other
-distribution mechanisms such as Twitter.
-
-To dump all buckets to their files, send BridgeDB a ``SIGUSR1`` signal
-by doing::
+To dump all bridge assignments to files, send BridgeDB a ``SIGUSR1``
+signal by doing::
 
       kill -s SIGUSR1 `cat .../run/bridgedb.pid`
 
@@ -442,10 +429,10 @@ Requesting Bridges
 The client MUST send a ``POST /meek/moat/fetch`` containing the following JSON::
 
     {
-      'data': {
-        'version': '0.1.0',
-        'type': 'client-transports',
-        'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
+      "data": {
+        "version": "0.1.0",
+        "type": "client-transports",
+        "supported": [ "TRANSPORT", "TRANSPORT", ... ],
       }
     }
 
@@ -469,10 +456,10 @@ If there is no overlap with the transports which BridgeDB supports, the moat
 server will respond with the list of transports which is *does* support::
 
     {
-      'data': {
-        'version': '0.1.0',
-        'type': 'moat-transports',
-        'supported': [ 'TRANSPORT', 'TRANSPORT', ... ],
+      "data": {
+        "version": "0.1.0",
+        "type": "moat-transports",
+        "supported": [ "TRANSPORT", "TRANSPORT", ... ],
       }
     }
 
@@ -481,13 +468,13 @@ the "best" transport from the list of supported transports, and respond with the
 following JSON containing a CAPTCHA challenge::
 
     {
-      'data': {
-        'id': 1,
-        'type': 'moat-challenge',
-        'version': '0.1.0',
-        'transport': TRANSPORT,
-        'image': CAPTCHA,
-        'challenge': CHALLENGE,
+      "data": {
+        "id": "1",
+        "type": "moat-challenge",
+        "version": "0.1.0",
+        "transport": "TRANSPORT",
+        "image": "CAPTCHA",
+        "challenge": "CHALLENGE",
       }
     }
 
@@ -511,14 +498,14 @@ To propose a solution to a CAPTCHA, the client MUST send a request for ``POST
 /meek/moat/check``, where the body of the request contains the following JSON::
 
     {
-      'data': {
-        'id': 2,
-        'type': 'moat-solution',
-        'version': '0.1.0',
-        'transport': TRANSPORT,
-        'challenge': CHALLENGE,
-        'solution': SOLUTION,
-        'qrcode': BOOLEAN,
+      "data": {
+        "id": "2",
+        "type": "moat-solution",
+        "version": "0.1.0",
+        "transport": "TRANSPORT",
+        "challenge": "CHALLENGE",
+        "solution": "SOLUTION",
+        "qrcode": "BOOLEAN",
       }
     }
 
@@ -531,8 +518,8 @@ where:
 * ``SOLUTION`` is a valid unicode string, up to 20 bytes in length,
   containing the client's answer (i.e. what characters the CAPTCHA
   image displayed).  The solution is *not* case-sensitive.
-* ``BOOLEAN`` is ``'true'`` if the client wants a qrcode containing the bridge
-  lines to be generated and returned; ``'false'`` otherwise.
+* ``BOOLEAN`` is ``"true"`` if the client wants a qrcode containing the bridge
+  lines to be generated and returned; ``"false"`` otherwise.
 
 
 Receiving Bridges
@@ -545,12 +532,12 @@ If the ``SOLUTION`` was successful for the supplied ``CHALLENGE``, the
 server responds ``200 OK`` with the following JSON::
 
     {
-      'data': {
-        'id': 3,
-        'type': 'moat-bridges',
-        'version': '0.1.0',
-        'bridges': [ 'BRIDGE_LINE', ... ],
-        'qrcode': QRCODE,
+      "data": {
+        "id": "3",
+        "type": "moat-bridges",
+        "version": "0.1.0",
+        "bridges": [ "BRIDGE_LINE", ... ],
+        "qrcode": "QRCODE",
       }
     }
 
@@ -569,12 +556,12 @@ server is unable to distribute the requested Bridges, the server responds ``200
 OK`` with the following JSON::
 
     {
-      'error': {
-        'id': 1,
-        'code': '404',
-        'status': 'Not Found',
-        'title': 'Could not fetch the type of bridges you requested',
-        'detail': DETAILS,
+      "error": {
+        "id": "1",
+        "code": "404",
+        "status": "Not Found",
+        "title": "Could not fetch the type of bridges you requested",
+        "detail": "DETAILS",
       }
     }
 

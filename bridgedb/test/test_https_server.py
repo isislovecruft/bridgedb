@@ -372,6 +372,20 @@ class GimpCaptchaProtectedResourceTests(unittest.TestCase):
         self.assertEqual(challenge, expectedChallenge)
         self.assertEqual(response, expectedResponse)
 
+    def test_extractClientSolution_missing_arguments(self):
+        """A solution with missing arguments (the solution field) should
+        return a very agressive redirect to the originally requested,
+        CAPTCHA-protected page.
+        """
+        expectedChallenge = '23232323232323232323'
+
+        self.request.method = b'POST'
+        self.request.addArg('captcha_challenge_field', expectedChallenge)
+
+        response = self.captchaResource.extractClientSolution(self.request)
+
+        self.assertIn("click here", response)
+
     def test_checkSolution(self):
         """checkSolution() should return False is the solution is invalid."""
         expectedChallenge = '23232323232323232323'

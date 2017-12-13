@@ -268,34 +268,31 @@ class MockOptions(BaseOptions):
 class SIGHUPOptions(BaseOptions):
     """Options menu to explain usage and handling of SIGHUP signals."""
 
-    longdesc = """If you send a SIGHUP to a running BridgeDB process, the
-    servers will parse and reload all bridge descriptor files into the
-    databases.
-
-    Note that this command WILL NOT handle sending the signal for you; see
-    signal(7) and kill(1) for additional help."""
+    longdesc = (
+        "If you send a SIGHUP to a running BridgeDB process, the servers will "
+        "parse and reload all bridge descriptor files into the databases."
+        "\n\n"
+        "Note that this command WILL NOT handle sending the signal for you; "
+        "see signal(7) and kill(1) for additional help.")
 
 
 class SIGUSR1Options(BaseOptions):
     """Options menu to explain usage and handling of SIGUSR1 signals."""
 
-    longdesc = """If you send a SIGUSR1 to a running BridgeDB process, the
-    servers will dump all bridge assignments by distributor from the
-    databases to files.
-
-    Note that this command WILL NOT handle sending the signal for you; see
-    signal(7) and kill(1) for additional help."""
+    longdesc = (
+        "If you send a SIGUSR1 to a running BridgeDB process, the servers will "
+        "dump all bridge assignments by distributor from the databases to files."
+        "\n\n"
+        "Note that this command WILL NOT handle sending the signal for you; see "
+        "signal(7) and kill(1) for additional help.")
 
 
 class MainOptions(BaseOptions):
     """Main commandline options parser for BridgeDB."""
 
     optFlags = [
-        ['dump-bridges', 'd', 'Dump bridges by hashring assignment into files'],
         ['reload', 'R', 'Reload bridge descriptors into running servers']]
     subCommands = [
         ['mock', None, MockOptions, "Generate a testing environment"],
         ['SIGHUP', None, SIGHUPOptions,
-         "Reload bridge descriptors into running servers"],
-        ['SIGUSR1', None, SIGUSR1Options,
-         "Dump bridges by hashring assignment into files"]]
+         "Reload bridge descriptors into running servers"]]

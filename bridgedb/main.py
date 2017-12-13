@@ -54,6 +54,24 @@ def expandBridgeAuthDir(authdir, filename):
 
     return path
 
+def writeAssignments(hashring, filename):
+    """Dump bridge distributor assignments to disk.
+
+    :type hashring: A :class:`~bridgedb.Bridges.BridgeSplitter`
+    :ivar hashring: A class which takes an HMAC key and splits bridges
+        into their hashring assignments.
+    :param str filename: The filename to write the assignments to.
+    """
+    logging.debug("Dumping pool assignments to file: '%s'" % filename)
+
+    try:
+        with open(filename, 'a') as fh:
+            fh.write("bridge-pool-assignment %s\n" %
+                     time.strftime("%Y-%m-%d %H:%M:%S"))
+            hashring.dumpAssignments(fh)
+    except IOError:
+        logging.info("I/O error while writing assignments to: '%s'" % filename)
+
 def load(state, hashring, clear=False):
     """Read and parse all descriptors, and load into a bridge hashring.
 
@@ -192,19 +210,6 @@ def _handleSIGHUP(*args):
     """Called when we receive a SIGHUP; invokes _reloadFn."""
     reactor.callInThread(_reloadFn)
 
-def _handleSIGUSR1(*args):
-    """Handler for SIGUSR1. Calls :func:`~bridgedb.runner.doDumpBridges`."""
-    logging.debug("Caught SIGUSR1 signal")
-
-    from bridgedb import runner
-
-    logging.info("Loading saved state...")
-    state = persistent.load()
-    cfg = loadConfig(state.CONFIG_FILE, state.config)
-
-    logging.info("Dumping bridge assignments to files...")
-    reactor.callInThread(runner.doDumpBridges, cfg)
-
 def replaceBridgeRings(current, replacement):
     """Replace the current thing with the new one"""
     current.hashring = replacement.hashring
@@ -274,10 +279,6 @@ def createBridgeRings(cfg, proxyList, key):
                          "unallocated",
                          cfg.RESERVED_SHARE)
 
-    # Add pseudo distributors to hashring
-    for pseudoRing in cfg.FILE_BUCKETS.keys():
-        hashring.addPseudoRing(pseudoRing)
-
     return hashring, emailDistributor, ipDistributor, moatDistributor
 
 def run(options, reactor=reactor):
@@ -317,7 +318,7 @@ def run(options, reactor=reactor):
     # :func:`logging.basicConfig` will be ignored.
     util.configureLogging(config)
 
-    if options['dump-bridges'] or (options.subCommand is not None):
+    if options.subCommand is not None:
         runSubcommand(options, config)
 
     # Write the pidfile only after any options.subCommands are run (because
@@ -428,18 +429,7 @@ def run(options, reactor=reactor):
             logging.warn("No Moat distributor created!")
 
         # Dump bridge pool assignments to disk.
-        try:
-            logging.debug("Dumping pool assignments to file: '%s'"
-                          % state.ASSIGNMENTS_FILE)
-            fh = open(state.ASSIGNMENTS_FILE, 'a')
-            fh.write("bridge-pool-assignment %s\n" %
-                     time.strftime("%Y-%m-%d %H:%M:%S"))
-            hashring.dumpAssignments(fh)
-            fh.flush()
-            fh.close()
-        except IOError:
-            logging.info("I/O error while writing assignments to: '%s'"
-                         % state.ASSIGNMENTS_FILE)
+        writeAssignments(hashring, state.ASSIGNMENTS_FILE)
         state.save()
 
         if inThread:
@@ -462,7 +452,6 @@ def run(options, reactor=reactor):
     global _reloadFn
     _reloadFn = reload
     signal.signal(signal.SIGHUP, _handleSIGHUP)
-    signal.signal(signal.SIGUSR1, _handleSIGUSR1)
 
     if reactor:  # pragma: no cover
         # And actually load it to start parsing. Get back our distributors.

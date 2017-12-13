@@ -372,29 +372,6 @@ class BridgedbTests(unittest.TestCase):
         self.assertEqual(len(hashring.ringsByName.keys()), 3)
         self.assertNotIn('unallocated', hashring.rings)
 
-    def test_main_createBridgeRings_two_file_buckets(self):
-        """When FILE_BUCKETS has two filenames in it, main.createBridgeRings()
-        should add three hashrings to the hashring, then add two
-        "pseudo-rings".
-        """
-        proxyList = main.proxy.ProxySet()
-        config = self.config
-        config.FILE_BUCKETS = {
-            'bridges-for-support-desk': 10,
-            'bridges-for-ooni-tests': 10,
-        }
-        (hashring, emailDist, httpsDist, moatDist) = main.createBridgeRings(
-            config, proxyList, self.key)
-
-        # Should have an HTTPSDistributor ring, an EmailDistributor, a
-        # MoatDistributor and an UnallocatedHolder ring:
-        self.assertEqual(len(hashring.ringsByName.keys()), 4)
-
-        # Should have two pseudoRings:
-        self.assertEqual(len(hashring.pseudoRings), 2)
-        self.assertIn('pseudo_bridges-for-support-desk', hashring.pseudoRings)
-        self.assertIn('pseudo_bridges-for-ooni-tests', hashring.pseudoRings)
-
     def test_main_run(self):
         """main.run() should run and then finally raise SystemExit."""
         config = """
@@ -473,8 +450,7 @@ EMAiL_GPG_PASSPHRASE = None
 EMAIL_GPG_PASSPHRASE_FILE = None
 HTTPS_SHARE = 10
 EMAIL_SHARE = 5
-RESERVED_SHARE = 2
-FILE_BUCKETS = {}"""
+RESERVED_SHARE = 2"""
         configFile = self._writeConfig(config)
         
         # Fake some options:
