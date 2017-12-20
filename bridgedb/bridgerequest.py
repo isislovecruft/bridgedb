@@ -117,6 +117,15 @@ class BridgeRequestBase(object):
         self.client = 'default'
         self.valid = False
 
+    def __str__(self):
+        """Return a human-readable string describing this bridge request."""
+        return "%s(ipVersion=%d, transports=%s, notBlockedIn=%s, valid=%s)" % \
+               (self.__class__.__name__,
+                self.ipVersion,
+                self.transports,
+                self.notBlockedIn,
+                self.valid)
+
     @property
     def ipVersion(self):
         """The IP version of bridge addresses to distribute to the client.
