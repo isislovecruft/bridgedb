@@ -452,17 +452,6 @@ Receiving a CAPTCHA challenge
 
 The moat server will respond with ``200 OK``.
 
-If there is no overlap with the transports which BridgeDB supports, the moat
-server will respond with the list of transports which is *does* support::
-
-    {
-      "data": {
-        "version": "0.1.0",
-        "type": "moat-transports",
-        "supported": [ "TRANSPORT", "TRANSPORT", ... ],
-      }
-    }
-
 If there is an overlap with what BridgeDB supports, the moat server will select
 the "best" transport from the list of supported transports, and respond with the
 following JSON containing a CAPTCHA challenge::
@@ -489,6 +478,20 @@ where:
 The challenge contains an encrypted-then-HMACed timestamp, and
 solutions submitted more than 30 minutes after requesting the CAPTCHA
 are considered invalid.
+
+If there is no overlap with the transports which BridgeDB supports, the moat
+server will respond with the list of transports which is *does* support::
+
+    {
+      "data": {
+        "id": "1",
+        "type": "moat-challenge",
+        "version": "0.1.0",
+        "transport": [ "TRANSPORT", "TRANSPORT", ... ],
+        "image": "CAPTCHA",
+        "challenge": "CHALLENGE",
+      }
+    }
 
 
 Responding to a CAPTCHA challenge
@@ -556,13 +559,14 @@ server is unable to distribute the requested Bridges, the server responds ``200
 OK`` with the following JSON::
 
     {
-      "error": {
-        "id": "1",
+      "errors": [{
+        "id": "6",
+        "type": "moat-bridges",
+        "version": "0.1.0",
         "code": "404",
         "status": "Not Found",
-        "title": "Could not fetch the type of bridges you requested",
         "detail": "DETAILS",
-      }
+      }]
     }
 
 where:

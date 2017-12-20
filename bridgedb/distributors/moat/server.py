@@ -209,6 +209,7 @@ class JsonAPIErrorResource(JsonAPIResource):
 
 
 resource403 = JsonAPIErrorResource(code=403, status="Forbidden")
+resource404 = JsonAPIErrorResource(code=404, status="Not Found")
 resource406 = JsonAPIErrorResource(code=406, status="Not Acceptable")
 resource415 = JsonAPIErrorResource(code=415, status="Unsupported Media Type")
 resource419 = JsonAPIErrorResource(code=419, status="No You're A Teapot")
@@ -497,21 +498,21 @@ class CaptchaCheckResource(CaptchaResource):
         self.nBridgesToGive = N
         self.useForwardedHeader = useForwardedHeader
 
-    def getBridgeLines(self, ip, data):
-        """Get bridge lines for a client's HTTP request.
+    def createBridgeRequest(self, ip, data):
+        """Create an appropriate :class:`MoatBridgeRequest` from the ``data``
+        of a client's request.
 
         :param str ip: The client's IP address.
         :param dict data: The decoded JSON API data from the client's request.
-        :rtype: list or None
-        :returns: A list of bridge lines.
+        :rtype: :class:`MoatBridgeRequest`
+        :returns: An object which specifies the filters for retreiving
+            the type of bridges that the client requested.
         """
-        bridgeLines = None
-        interval = self.schedule.intervalStart(time.time())
+        logging.debug("Creating moat bridge request object for %s." % ip)
 
-        logging.debug("Replying to JSON API request from %s." % ip)
+        bridgeRequest = MoatBridgeRequest()
 
         if ip and data:
-            bridgeRequest = MoatBridgeRequest()
             bridgeRequest.client = IPAddress(ip)
             bridgeRequest.isValid(True)
             bridgeRequest.withIPversion()
@@ -519,6 +520,23 @@ class CaptchaCheckResource(CaptchaResource):
             bridgeRequest.withoutBlockInCountry(data)
             bridgeRequest.generateFilters()
 
+        return bridgeRequest
+
+    def getBridgeLines(self, bridgeRequest):
+        """Get bridge lines for a client's HTTP request.
+
+        :type bridgeRequest: :class:`MoatBridgeRequest`
+        :param bridgeRequest: A valid bridge request object with pre-generated
+            filters (as returned by :meth:`createBridgeRequest`).
+        :rtype: list
+        :returns: A list of bridge lines.
+        """
+        bridgeLines = list()
+        interval = self.schedule.intervalStart(time.time())
+
+        logging.debug("Replying to JSON API request from %s." % bridgeRequest.client)
+
+        if bridgeRequest.isValid():
             bridges = self.distributor.getBridges(bridgeRequest, interval)
             bridgeLines = [replaceControlChars(bridge.getBridgeLine(bridgeRequest))
                            for bridge in bridges]
@@ -599,17 +617,34 @@ class CaptchaCheckResource(CaptchaResource):
 
         return valid
 
-    def failureResponse(self, id, request):
-        """Respond with status code "419 No You're A Teapot"."""
-        error_response = resource419
-        error_response.type = 'moat-bridges'
+    def failureResponse(self, id, request, bridgeRequest=None):
+        """Respond with status code "419 No You're A Teapot" if the captcha
+        verification failed, or status code "404 Not Found" if there
+        were none of the type of bridges requested.
 
+        :param int id: The JSON API "id" field of the
+            ``JsonAPIErrorResource`` which should be returned.
+        :type request: :api:`twisted.web.http.Request`
+        :param request: The current request we're handling.
+        :type bridgeRequest: :class:`MoatBridgeRequest`
+        :param bridgeRequest: A valid bridge request object with pre-generated
+            filters (as returned by :meth:`createBridgeRequest`).
+        """
         if id == 4:
+            error_response = resource419
             error_response.id = 4
             error_response.detail = "The CAPTCHA solution was incorrect."
         elif id == 5:
+            error_response = resource419
             error_response.id = 5
             error_response.detail = "The CAPTCHA challenge timed out."
+        elif id == 6:
+            error_response = resource404
+            error_response.id = 6
+            error_response.detail = ("No bridges available to fulfill "
+                                     "request: %s.") % bridgeRequest
+
+        error_response.type = 'moat-bridges'
 
         return error_response.render(request)
 
@@ -665,7 +700,19 @@ class CaptchaCheckResource(CaptchaResource):
 
         if valid:
             qrcode = None
-            bridgeLines = self.getBridgeLines(clientIP, client_data)
+            bridgeRequest = self.createBridgeRequest(clientIP, client_data)
+            bridgeLines = self.getBridgeLines(bridgeRequest)
+
+            # If we can only return less than the configured
+            # MOAT_BRIDGES_PER_ANSWER then log a warning.
+            if len(bridgeLines) < self.nBridgesToGive:
+                logging.warn(("Not enough bridges of the type specified to "
+                              "fulfill the following request: %s") % bridgeRequest)
+
+            # If we have no bridges at all to give to the client, then
+            # return a JSON API 404 error.
+            if not bridgeLines:
+                return self.failureResponse(6, request)
 
             if include_qrcode:
                 qrjpeg = generateQR(bridgeLines)
