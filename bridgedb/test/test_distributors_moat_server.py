@@ -581,6 +581,14 @@ class CaptchaFetchResourceTests(unittest.TestCase):
         self.assert_data_is_ok(decoded)
 
 
+class MockCaptchaCheckResource(server.CaptchaCheckResource):
+    """A mocked :class:`server.CaptchaCheckResource` whose
+    ``getBridgeLines`` method returns no bridges.
+    """
+    def getBridgeLines(self, bridgeRequest):
+        return list()
+
+
 class CaptchaCheckResourceTests(unittest.TestCase):
     """Tests for :class:`bridgedb.distributors.moat.server.CaptchaCheckResource`."""
 
@@ -610,6 +618,14 @@ class CaptchaCheckResourceTests(unittest.TestCase):
             "TjzVcyG0WkXELA2nX8rozIDIr3mUyB1vb3f53KbW5b_oCEVC_LCSoxqjnS6ZSQpNzK"
             "iz_PdOD2GIGPeclwiHAWM1pOS4cQVsTQR_z4ojZbpLiSp35n4Qbb11YOoreovZzlbS"
             "7W38rAsTirkdeugcNq82AxKP3phEkyRcw--CzV")
+
+    def mock_getBridgeLines(self):
+        self.resource = MockCaptchaCheckResource(self.distributor,
+                                                 self.schedule, 3,
+                                                 self.hmacKey,
+                                                 self.publicKey,
+                                                 self.secretKey,
+                                                 useForwardedHeader=False)
 
     def create_POST_with_data(self, data):
         request = DummyRequest([self.pagename])
@@ -826,13 +842,24 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         self.assertEqual(error['type'], "moat-bridges")
         self.assertEqual(error['id'], 4)
 
+    def test_createBridgeRequest(self):
+        request = self.create_valid_POST_with_challenge(self.expiredChallenge)
+        request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+        encoded_content = request.content.read()
+        content = json.loads(encoded_content)['data'][0]
+
+        bridgeRequest = self.resource.createBridgeRequest('3.3.3.3', content)
+
+        self.assertTrue(bridgeRequest.isValid())
+
     def test_getBridgeLines(self):
         request = self.create_valid_POST_with_challenge(self.expiredChallenge)
         request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
         encoded_content = request.content.read()
         content = json.loads(encoded_content)['data'][0]
 
-        bridgelines = self.resource.getBridgeLines('3.3.3.3', content)
+        bridgeRequest = self.resource.createBridgeRequest('3.3.3.3', content)
+        bridgelines = self.resource.getBridgeLines(bridgeRequest)
 
         self.assertTrue(bridgelines)
 
@@ -840,9 +867,31 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         request = self.create_valid_POST_with_challenge(self.expiredChallenge)
         request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
 
-        bridgelines = self.resource.getBridgeLines('3.3.3.3', None)
+        bridgeRequest = self.resource.createBridgeRequest('3.3.3.3', None)
+        bridgelines = self.resource.getBridgeLines(bridgeRequest)
 
-        self.assertIsNone(bridgelines)
+        self.assertFalse(bridgeRequest.isValid())
+        self.assertEqual(len(bridgelines), 0)
+
+    def test_failureResponse_no_bridges(self):
+        request = self.create_valid_POST_with_challenge(self.expiredChallenge)
+        request.client = requesthelper.IPv4Address('TCP', '3.3.3.3', 443)
+        encoded_content = request.content.read()
+        content = json.loads(encoded_content)['data'][0]
+
+        bridgeRequest = self.resource.createBridgeRequest('3.3.3.3', content)
+
+        response = self.resource.failureResponse(6, request, bridgeRequest)
+
+        self.assertIn("No bridges available", response)
+
+    def test_render_POST_no_bridges(self):
+        self.mock_getBridgeLines()
+
+        request = self.create_valid_POST_make_new_challenge()
+        response = self.resource.render(request)
+
+        self.assertIn("No bridges available", response)
 
     def test_render_POST_unexpired(self):
         request = self.create_valid_POST_make_new_challenge()
