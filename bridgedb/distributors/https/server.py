@@ -37,7 +37,9 @@ import mako.exceptions
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+from twisted.internet import defer
 from twisted.internet import reactor
+from twisted.internet import task
 from twisted.internet.error import CannotListenError
 from twisted.web import resource
 from twisted.web import static
@@ -136,6 +138,20 @@ def replaceErrorPage(request, error, template_name=None, html=True):
         rendered = bytes(errorMessage)
 
     return rendered
+
+
+def redirectMaliciousRequest(request):
+    '''Redirect the client to a "daring work of art" which "in true
+    post-modern form, […] tends to raise more questions than answers."
+    '''
+    logging.debug("Redirecting %s to a daring work of art..." % getClientIP(request))
+    request.write(redirectTo(base64.b64decode("aHR0cDovLzJnaXJsczFjdXAuY2Ev"), request))
+    request.finish()
+    return request
+
+
+class MaliciousRequest(Exception):
+    """Raised when we received a possibly malicious request."""
 
 
 class CSPResource(resource.Resource):
@@ -411,9 +427,9 @@ class CaptchaProtectedResource(CustomErrorHandlingResource, CSPResource):
             challenge = request.args['captcha_challenge_field'][0]
             response = request.args['captcha_response_field'][0]
         except Exception as error:
-            logging.debug(("Client CAPTCHA solution to HTTPS distributor server"
-                           "didn't include correct HTTP arguments: %s" % error))
-            return redirectTo(type(b'')(request.URLPath()), request)
+            raise MaliciousRequest(
+                ("Client CAPTCHA solution to HTTPS distributor server "
+                 "didn't include correct HTTP arguments: %s" % error))
         return (challenge, response)
 
     def checkSolution(self, request):
@@ -477,12 +493,21 @@ class CaptchaProtectedResource(CustomErrorHandlingResource, CSPResource):
         self.setCSPHeader(request)
         request.setHeader("Content-Type", "text/html; charset=utf-8")
 
-        if self.checkSolution(request) is True:
-            try:
-                rendered = self.resource.render(request)
-            except Exception as err:
-                rendered = replaceErrorPage(request, err)
-            return rendered
+        try:
+            if self.checkSolution(request) is True:
+                return self.resource.render(request)
+        except ValueError as err:
+            logging.debug(err.message)
+        except MaliciousRequest as err:
+            logging.debug(err.message)
+            # Make them wait a bit, then redirect them to a "daring
+            # work of art" as pennance for their sins.
+            d = task.deferLater(reactor, 1, lambda: request)
+            d.addCallback(redirectMaliciousRequest)
+            return NOT_DONE_YET
+        except Exception as err:
+            logging.debug(err.message)
+            return replaceErrorPage(request, err)
 
         logging.debug("Client failed a CAPTCHA; returning redirect to %s"
                       % request.uri)
