@@ -191,7 +191,7 @@ class EmailDistributor(Distributor):
                                       populate_from=self.hashring.bridges)
 
             returnNum = self.bridgesPerResponse(ring)
-            result = ring.getBridges(pos, returnNum)
+            result = ring.getBridges(pos, returnNum, filterBySubnet=False)
 
             db.setEmailTime(bridgeRequest.client, now)
             db.commit()

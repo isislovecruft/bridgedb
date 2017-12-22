@@ -342,6 +342,6 @@ class HTTPSDistributor(Distributor):
 
         # Determine the appropriate number of bridges to give to the client:
         returnNum = self.bridgesPerResponse(ring)
-        answer = ring.getBridges(position, returnNum)
+        answer = ring.getBridges(position, returnNum, filterBySubnet=True)
 
         return answer

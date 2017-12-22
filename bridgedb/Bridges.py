@@ -268,7 +268,39 @@ class BridgeRing(object):
         assert len(r) == N
         return r
 
-    def getBridges(self, pos, N=1):
+    def filterDistinctSubnets(self, fingerprints):
+        """Given a chosen set of ``fingerprints`` of bridges to distribute,
+        filter the bridges such that they are in distinct subnets.
+        """
+        logging.debug("Got %d possible bridges to filter" % len(fingerprints))
+
+        bridges = []
+        subnets = []
+
+        for fingerprint in fingerprints:
+            bridge = self.bridges[fingerprint]
+            jump = False
+            for subnet in subnets:
+                if bridge.address in subnet:
+                    jump = True
+                    logging.debug(
+                        ("Skipping distribution of bridge %s in a subnet which "
+                         "contains another bridge we're already distributing")
+                        % bridge)
+                    break
+            if jump:
+                continue
+
+            bridges.append(bridge)
+            if bridge.address.version == 4:
+                cidr = str(bridge.address) + "/16"
+            else:
+                cidr = str(bridge.address) + "/32"
+            subnets.append(ipaddr.IPNetwork(cidr))
+
+        return bridges
+
+    def getBridges(self, pos, N=1, filterBySubnet=False):
         """Return **N** bridges appearing in this hashring after a position.
 
         :param bytes pos: The position to jump to. Any bridges returned will
@@ -285,19 +317,25 @@ class BridgeRing(object):
                 count = len(subring)
             forced.extend(subring._getBridgeKeysAt(pos, count))
 
-        keys = [ ]
-        for k in forced + self._getBridgeKeysAt(pos, N):
+        keys = []
+
+        # Oversample double the number we need, in case we need to
+        # filter them and some are within the same subnet.
+        for k in forced + self._getBridgeKeysAt(pos, N + N):
             if k not in keys:
                 keys.append(k)
             else:
                 logging.debug(
                     "Got duplicate bridge %r in main hashring for position %r."
                     % (logSafely(k.encode('hex')), pos.encode('hex')))
-        keys = keys[:N]
         keys.sort()
 
-        #Do not return bridges from the same /16
-        bridges = [ self.bridges[k] for k in keys ]
+        if filterBySubnet:
+            bridges = self.filterDistinctSubnets(keys)
+        else:
+            bridges = [self.bridges[k] for k in keys]
+
+        bridges = bridges[:N]
 
         return bridges
 
@@ -551,7 +589,7 @@ class FilteredBridgeSplitter(object):
         For all sub-hashrings, the ``bridge`` will only be added iff it passes
         the filter functions for that sub-hashring.
 
-        :type bridge: :class:`~bridgedb.Bridges.Bridge`
+        :type bridge: :class:`~bridgedb.bridges.Bridge`
         :param bridge: The bridge to add.
         """
         # The bridge must be running to insert it:
