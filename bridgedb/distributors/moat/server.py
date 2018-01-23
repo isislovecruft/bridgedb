@@ -748,6 +748,7 @@ def addMoatServer(config, distributor):
 
     root = CustomErrorHandlingResource()
     root.putChild("meek", meek)
+    root.putChild("moat", moat)
 
     site = Site(root)
     site.displayTracebacks = False
