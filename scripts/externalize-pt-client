@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+CMDLINE="${@:?need a meek-client command line}"
+TRANSPORTS=meek
+# This could be controlled by a command-line arg.
+PORT=10000
+TOR_PT_MANAGED_TRANSPORT_VER=1 \
+	TOR_PT_CLIENT_TRANSPORTS="$TRANSPORTS" $CMDLINE \
+	| sed -n -u -e '/^CMETHOD /{s/^.*127\.0\.0\.1://;p}' | while read pt_port; do
+	echo "forwarding port $PORT -> $pt_port"
+	socat -v -v TCP-LISTEN:$PORT,fork,reuseaddr TCP-CONNECT:127.0.0.1:$pt_port &
+done
