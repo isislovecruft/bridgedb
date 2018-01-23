@@ -1,7 +1,32 @@
 #!/usr/bin/env bash
+#
+# To test a local moat server, simply do:
+#
+#     test-moat fetch
+#
+# To test the production server, run the externalize-pt-client.sh script like so:
+#
+#     ./externalize-pt-client.orig.sh /path/to/meek-client \
+#          -url https://tor-bridges-hyphae-channel.appspot.com/ -front www.google.com
+#
+# and then call this script with:
+#
+#     TEST_PRODUCTION_MOAT=1 test-moat fetch
+
+set -ex
 
 CHALLENGE=
 SOLUTION=
+METHOD=http
+URL_PREFIX=/meek/moat
+
+if test -n "$TEST_PRODUCTION_MOAT" ; then
+    METHOD=https
+    SERVER=bridges.torproject.org
+    PORT=443
+    URL_PREFIX=/moat
+    PROXY='--proxy socks4a://127.0.0.1:10000/'
+fi
 
 function usage() {
     printf "Usage: %s [fetch] [check [challenge solution]]\n" "$(basename $0)"
@@ -13,20 +38,24 @@ if test "$#" -lt 1 ; then
 fi
 
 function do_fetch() {
-    curl -H 'Content-Type: application/vnd.api+json' \
-         -H 'Accept: application/vnd.api+json' \
-         -H 'X-Forwarded-For: 1.2.3.4' \
-         --data '{"data": [{"supported": ["obfs4"], "version": "0.1.0", "type": "client-transports"}]}' \
-         http://127.0.0.1:6790/meek/moat/fetch
+    curl \
+        ${PROXY} \
+        -H 'Content-Type: application/vnd.api+json' \
+        -H 'Accept: application/vnd.api+json' \
+        -H 'X-Forwarded-For: 1.2.3.4' \
+        --data '{"data": [{"supported": ["obfs4"], "version": "0.1.0", "type": "client-transports"}]}' \
+        $METHOD://${SERVER:=127.0.0.1}:${PORT:=6790}$URL_PREFIX/fetch
     echo
 }
 
 function do_check() {
-    curl -H 'Content-Type: application/vnd.api+json' \
-         -H 'Accept: application/vnd.api+json' \
-         -H 'X-Forwarded-For: 1.2.3.4' \
-         --data '{"data": [{"challenge": "'$CHALLENGE'", "solution": "'$SOLUTION'", "version": "0.1.0", "qrcode": "false", "type": "moat-solution", "id": 2, "transport": "obfs4"}]}' \
-         http://127.0.0.1:6790/meek/moat/check
+    curl \
+        ${PROXY} \
+        -H 'Content-Type: application/vnd.api+json' \
+        -H 'Accept: application/vnd.api+json' \
+        -H 'X-Forwarded-For: 1.2.3.4' \
+        --data '{"data": [{"challenge": "'${CHALLENGE:=foo}'", "solution": "'${SOLUTION:=bar}'", "version": "0.1.0", "qrcode": "false", "type": "moat-solution", "id": 2, "transport": "obfs4"}]}' \
+        $METHOD://${SERVER:=127.0.0.1}:${PORT:=6790}$URL_PREFIX/check
     echo
 }
 

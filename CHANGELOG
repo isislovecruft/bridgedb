@@ -1,3 +1,47 @@
+Changes in version 0.6.3 - 2018-01-23
+
+        * FIXES #24432 https://bugs.torproject.org/24432
+        The production moat server had issues related to redirecting to
+        resources properly, which are now fixed.
+
+        * FIXES #24701 https://bugs.torproject.org/24701
+        Adds a special surprise for the special someone who has been
+        automatedly requesting bridges not through driving a browser, but
+        through a script which is so thoroughly stupid that it doesn't
+        even send the URL parameters for the CAPTCHA challenge and solution.
+        Their script will now be delayed for quite some time and then
+        rickrolled.  Mess with the best, die like the rest.
+
+        * FIXES #24704 https://bugs.torproject.org/24704
+        Bridges returned to a single request are now filtered such that
+        there will never be two bridges from the same IPv4 /16 or IPv6 /64.
+
+And includes the following general changes:
+
+        * ADDS unittests for the legacy code in bridgedb/Bridges.py,
+        bringing the total test coverage above 90% for the first time.
+
+
+Changes in version 0.6.2 - 2017-12-20
+
+        * FIXES #24636 https://bugs.torproject.org/24636
+        The moat API specification included an extra response type which
+        could be sent if there was no overlap between transports the
+        client supported and those which the server supported.  This has
+        been removed from the specification, which now describes the
+        behaviour moat has always exhibited: if there is no overlap, the
+        server responds with a CAPTCHA image response which includes the
+        list of transports it does support.
+
+        * FIXES #24637 https://bugs.torproject.org/24637
+        The moat server did not respond correctly with the specified JSON
+        API error type when there were no bridges available.  It now
+        responds correctly with a 404 error whose details describe why the
+        request could not be fulfilled.  The moat server also now logs
+        messages if there were not the configured
+        MOAT_BRIDGES_PER_RESPONSE number of bridges available.
+
+
 Changes in version 0.6.1 - 2017-12-13
 
         * ADDS a shell script, scripts/test-moat, for testing either a
