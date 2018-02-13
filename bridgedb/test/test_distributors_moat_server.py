@@ -233,7 +233,7 @@ class JsonAPIErrorResourceTests(unittest.TestCase):
         self.use_resource(server.JsonAPIErrorResource())
         error = self.do_render_for_method(b'GET')
 
-        self.assertEqual(error['id'], 0)
+        self.assertEqual(error['id'], '0')
         self.assertEqual(error['type'], '')
         self.assertEqual(error['code'], 200)
         self.assertEqual(error['status'], 'OK')
@@ -640,7 +640,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
     def create_valid_POST_with_challenge(self, challenge):
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'moat-solution',
                 'version': server.MOAT_API_VERSION,
                 'transport': 'obfs4',
@@ -674,7 +674,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
     def test_withoutBlockIn(self):
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'moat-solution',
                 'version': server.MOAT_API_VERSION,
                 'transport': 'obfs4',
@@ -740,7 +740,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
     def test_extractClientSolution_weird_transport(self):
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'moat-solution',
                 'version': server.MOAT_API_VERSION,
                 'transport': 'dinosaur',
@@ -759,7 +759,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
     def test_extractClientSolution_wrong_version(self):
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'moat-solution',
                 'version': '0.0.1',  # this version never existed
                 'transport': 'obfs4',
@@ -778,7 +778,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
     def test_extractClientSolution_wrong_type(self):
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'boat-revolution',
                 'version': server.MOAT_API_VERSION,
                 'transport': 'obfs4',
@@ -809,7 +809,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         self.assertEqual(error['status'], "No You're A Teapot")
         self.assertEqual(error['code'], 419)
         self.assertEqual(error['detail'], "The CAPTCHA challenge timed out.")
-        self.assertEqual(error['id'], 5)
+        self.assertEqual(error['id'], '5')
 
     def test_checkSolution(self):
         request = self.create_valid_POST_make_new_challenge()
@@ -840,7 +840,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         self.assertEqual(error['detail'], "The CAPTCHA solution was incorrect.")
         self.assertEqual(error['version'], server.MOAT_API_VERSION)
         self.assertEqual(error['type'], "moat-bridges")
-        self.assertEqual(error['id'], 4)
+        self.assertEqual(error['id'], '4')
 
     def test_createBridgeRequest(self):
         request = self.create_valid_POST_with_challenge(self.expiredChallenge)
@@ -909,7 +909,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         self.assertIsNotNone(data['bridges'])
         self.assertEqual(data['version'], server.MOAT_API_VERSION)
         self.assertEqual(data['type'], 'moat-bridges')
-        self.assertEqual(data['id'], 3)
+        self.assertEqual(data['id'], '3')
 
     def test_render_POST_unexpired_with_qrcode(self):
         request = DummyRequest([self.pagename])
@@ -925,7 +925,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
 
         data = {
             'data': [{
-                'id': 2,
+                'id': '2',
                 'type': 'moat-solution',
                 'version': server.MOAT_API_VERSION,
                 'transport': 'obfs4',
@@ -953,7 +953,7 @@ class CaptchaCheckResourceTests(unittest.TestCase):
         self.assertIsNotNone(data['bridges'])
         self.assertEqual(data['version'], server.MOAT_API_VERSION)
         self.assertEqual(data['type'], 'moat-bridges')
-        self.assertEqual(data['id'], 3)
+        self.assertEqual(data['id'], '3')
 
 
 class AddMoatServerTests(unittest.TestCase):

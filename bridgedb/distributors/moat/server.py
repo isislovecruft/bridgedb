@@ -185,7 +185,7 @@ class JsonAPIErrorResource(JsonAPIResource):
         object.
         """
         resource.Resource.__init__(self)
-        self.id = id
+        self.id = "%s" % id
         self.type = type
         self.code = code
         self.status = status
@@ -452,7 +452,7 @@ class CaptchaFetchResource(CaptchaResource):
 
         data = {
             'data': [{
-                'id': 1,
+                'id': '1',
                 'type': 'moat-challenge',
                 'version': MOAT_API_VERSION,
                 'transport': preferred,
@@ -565,7 +565,7 @@ class CaptchaCheckResource(CaptchaResource):
                 raise ValueError(
                     "Bad JSON API object type: expected %s got %s" %
                     ("moat-solution", data["type"]))
-            elif data["id"] != 2:
+            elif data["id"] != "2":
                 raise ValueError(
                     "Bad JSON API data id: expected 2 got %s" %
                     (data["id"]))
@@ -632,15 +632,15 @@ class CaptchaCheckResource(CaptchaResource):
         """
         if id == 4:
             error_response = resource419
-            error_response.id = 4
+            error_response.id = "4"
             error_response.detail = "The CAPTCHA solution was incorrect."
         elif id == 5:
             error_response = resource419
-            error_response.id = 5
+            error_response.id = "5"
             error_response.detail = "The CAPTCHA challenge timed out."
         elif id == 6:
             error_response = resource404
-            error_response.id = 6
+            error_response.id = "6"
             error_response.detail = ("No bridges available to fulfill "
                                      "request: %s.") % bridgeRequest
 
@@ -673,7 +673,7 @@ class CaptchaCheckResource(CaptchaResource):
 
         data = {
             "data": [{
-                "id": 3,
+                "id": '3',
                 "type": 'moat-bridges',
                 "version": MOAT_API_VERSION,
                 "bridges": None,
