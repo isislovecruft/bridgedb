@@ -91,6 +91,24 @@ class GetClientIPTests(unittest.TestCase):
         clientIP = server.getClientIP(request, useForwardedHeader=True)
         self.assertEqual(clientIP, None)
 
+    def test_getClientIP_XForwardedFor_skip_loopback(self):
+        request = self.createRequestWithIPs()
+        request.headers.update({'x-forwarded-for': '3.3.3.3, 127.0.0.1'})
+        clientIP = server.getClientIP(request, useForwardedHeader=True, skipLoopback=True)
+        self.assertEqual(clientIP, '3.3.3.3')
+
+    def test_getClientIP_XForwardedFor_skip_loopback_multiple(self):
+        request = self.createRequestWithIPs()
+        request.headers.update({'x-forwarded-for': '3.3.3.3, 127.0.0.6, 127.0.0.1'})
+        clientIP = server.getClientIP(request, useForwardedHeader=True, skipLoopback=True)
+        self.assertEqual(clientIP, '3.3.3.3')
+
+    def test_getClientIP_XForwardedFor_no_skip_loopback(self):
+        request = self.createRequestWithIPs()
+        request.headers.update({'x-forwarded-for': '3.3.3.3, 127.0.0.1'})
+        clientIP = server.getClientIP(request, useForwardedHeader=True, skipLoopback=False)
+        self.assertEqual(clientIP, '127.0.0.1')
+
     def test_getClientIP_fromRequest(self):
         """getClientIP() should return the IP address from the request instance
         when ``useForwardedHeader=False``.
