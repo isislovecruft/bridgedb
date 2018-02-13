@@ -134,9 +134,17 @@ class JsonAPIResource(resource.Resource):
     """A resource which conforms to the `JSON API spec <http://jsonapi.org/>`__.
     """
 
-    def __init__(self, useForwardedHeader=True):
+    def __init__(self, useForwardedHeader=True, skipLoopback=False):
+        """Create a JSON API resource, containing either error(s) or data.
+
+        :param bool useForwardedHeader: If ``True``, obtain the client's IP
+            address from the ``X-Forwarded-For`` HTTP header.
+        :param bool skipLoopback: Skip loopback addresses when parsing the
+            X-Forwarded-For header.
+        """
         resource.Resource.__init__(self)
         self.useForwardedHeader = useForwardedHeader
+        self.skipLoopback = skipLoopback
 
     def getClientIP(self, request):
         """Get the client's IP address from the ``'X-Forwarded-For:'``
@@ -148,7 +156,7 @@ class JsonAPIResource(resource.Resource):
         :rtype: ``None`` or :any:`str`
         :returns: The client's IP address, if it was obtainable.
         """
-        return getClientIP(request, self.useForwardedHeader)
+        return getClientIP(request, self.useForwardedHeader, self.skipLoopback)
 
     def formatDataForResponse(self, data, request):
         """Format a dictionary of ``data`` into JSON and add necessary response
@@ -233,8 +241,8 @@ class CustomErrorHandlingResource(resource.Resource):
 class JsonAPIDataResource(JsonAPIResource):
     """A resource which returns some JSON API data."""
 
-    def __init__(self, useForwardedHeader=True):
-        JsonAPIResource.__init__(self, useForwardedHeader)
+    def __init__(self, useForwardedHeader=True, skipLoopback=False):
+        JsonAPIResource.__init__(self, useForwardedHeader, skipLoopback)
 
     def checkRequestHeaders(self, request):
         """The JSON API specification requires servers to respond with certain HTTP
@@ -288,8 +296,8 @@ class CaptchaResource(JsonAPIDataResource):
     """A CAPTCHA."""
 
     def __init__(self, hmacKey=None, publicKey=None, secretKey=None,
-                 useForwardedHeader=True):
-        JsonAPIDataResource.__init__(self, useForwardedHeader)
+                 useForwardedHeader=True, skipLoopback=False):
+        JsonAPIDataResource.__init__(self, useForwardedHeader, skipLoopback)
         self.hmacKey = hmacKey
         self.publicKey = publicKey
         self.secretKey = secretKey
@@ -301,7 +309,7 @@ class CaptchaFetchResource(CaptchaResource):
     isLeaf = True
 
     def __init__(self, hmacKey=None, publicKey=None, secretKey=None,
-                 captchaDir="captchas", useForwardedHeader=True):
+                 captchaDir="captchas", useForwardedHeader=True, skipLoopback=False):
         """DOCDOC
 
         :param bytes hmacKey: The master HMAC key, used for validating CAPTCHA
@@ -319,6 +327,8 @@ class CaptchaFetchResource(CaptchaResource):
         :param str captchaDir: The directory where the cached CAPTCHA images
         :param bool useForwardedHeader: If ``True``, obtain the client's IP
             address from the ``X-Forwarded-For`` HTTP header.
+        :param bool skipLoopback: Skip loopback addresses when parsing the
+            X-Forwarded-For header.
         """
         CaptchaResource.__init__(self, hmacKey, publicKey, secretKey,
                                  useForwardedHeader)
@@ -477,7 +487,7 @@ class CaptchaCheckResource(CaptchaResource):
 
     def __init__(self, distributor, schedule, N=1,
                  hmacKey=None, publicKey=None, secretKey=None,
-                 useForwardedHeader=True):
+                 useForwardedHeader=True, skipLoopback=False):
         """Create a new resource for checking CAPTCHA solutions and returning
         bridges to a client.
 
@@ -490,6 +500,8 @@ class CaptchaCheckResource(CaptchaResource):
         :param int N: The number of bridges to hand out per query.
         :param bool useForwardedHeader: Whether or not we should use the the
             X-Forwarded-For header instead of the source IP address.
+        :param bool skipLoopback: Skip loopback addresses when parsing the
+            X-Forwarded-For header.
         """
         CaptchaResource.__init__(self, hmacKey, publicKey, secretKey,
                                  useForwardedHeader)
@@ -748,6 +760,7 @@ def addMoatServer(config, distributor):
              MOAT_BRIDGES_PER_ANSWER
              MOAT_TRANSPORT_PREFERENCE_LIST
              MOAT_USE_IP_FROM_FORWARDED_HEADER
+             MOAT_SKIP_LOOPBACK_ADDRESSES
              MOAT_ROTATION_PERIOD
              MOAT_GIMP_CAPTCHA_HMAC_KEYFILE
              MOAT_GIMP_CAPTCHA_RSA_KEYFILE
@@ -760,6 +773,7 @@ def addMoatServer(config, distributor):
     captcha = None
     fwdHeaders = config.MOAT_USE_IP_FROM_FORWARDED_HEADER
     numBridges = config.MOAT_BRIDGES_PER_ANSWER
+    skipLoopback = config.MOAT_SKIP_LOOPBACK_ADDRESSES
 
     logging.info("Starting moat servers...")
 
@@ -785,9 +799,11 @@ def addMoatServer(config, distributor):
     meek = CustomErrorHandlingResource()
     moat = CustomErrorHandlingResource()
     fetch = CaptchaFetchResource(hmacKey, publicKey, secretKey,
-                                 config.GIMP_CAPTCHA_DIR, fwdHeaders)
+                                 config.GIMP_CAPTCHA_DIR,
+                                 fwdHeaders, skipLoopback)
     check = CaptchaCheckResource(distributor, sched, numBridges,
-                                 hmacKey, publicKey, secretKey, fwdHeaders)
+                                 hmacKey, publicKey, secretKey,
+                                 fwdHeaders, skipLoopback)
 
     moat.putChild("fetch", fetch)
     moat.putChild("check", check)

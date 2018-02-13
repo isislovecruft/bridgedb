@@ -337,6 +337,7 @@ class CaptchaFetchResourceTests(unittest.TestCase):
         self.root.putChild(self.pagename, self.resource)
 
         self.make_captcha_directory()
+        server.setPreferredTransports(['obfs4', 'vanilla'])
 
     def make_captcha_directory(self):
         if not os.path.isdir(self.captchaDir):
