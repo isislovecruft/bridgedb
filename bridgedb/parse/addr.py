@@ -435,6 +435,28 @@ def isValidIP(ip):
         return False
     return True
 
+def isLoopback(ip):
+    """Determine if ``ip`` is a loopback or localhost address (127.0.0.1/8).
+
+    :type: ``str`` or ``ipaddr.IPAddress``
+    :param ip: An IP address.
+    :rtype: bool
+    :returns: ``True`` if the IP was a loopback or localhost address; ``False``
+        otherwise.
+    """
+    try:
+        if isinstance(ip, basestring):
+            ip = ipaddr.IPAddress(ip)
+
+        if ip.is_loopback:
+            return True
+        else:
+            return False
+    except Exception as err:
+        logging.debug("Error attempting to parse IP address: %s", ip)
+
+    return False
+
 def normalizeEmail(emailaddr, domainmap, domainrules, ignorePlus=True):
     """Normalise an email address according to the processing rules for its
     canonical originating domain.
