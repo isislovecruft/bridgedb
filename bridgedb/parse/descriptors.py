@@ -161,7 +161,19 @@ def parseServerDescriptorsFile(filename, validate=True):
     logging.info("Parsing server descriptors with Stem: %s" % filename)
     descriptorType = 'server-descriptor 1.0'
     document = parse_file(filename, descriptorType, validate=validate)
-    routers = list(document)
+    routers = list()
+
+    # Work around https://bugs.torproject.org/26023 by parsing each descriptor
+    # at a time and catching any errors not handled in stem:
+    while True:
+        try:
+            routers.append(document.next())
+        except StopIteration:
+            break
+        except Exception as error:
+            logging.debug("Error while parsing a bridge server descriptor: %s"
+                          % error)
+
     return routers
 
 def __cmp_published__(x, y):
