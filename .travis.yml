@@ -60,7 +60,6 @@ matrix:
   fast_finish: true
 
 before_install:
-  - sudo apt-get update
   - mkdir $PYTHON_EGG_CACHE
   - chmod -R og-w $PYTHON_EGG_CACHE
 
