@@ -280,6 +280,13 @@ class BridgeRing(object):
         for fingerprint in fingerprints:
             bridge = self.bridges[fingerprint]
             jump = False
+
+            # HOTFIX for https://bugs.torproject.org/26150
+            if not bridge.address:
+                logging.error("Got strange bridge with no address field set: %s"
+                              % fingerprint)
+                continue
+
             for subnet in subnets:
                 if bridge.address in subnet:
                     jump = True
