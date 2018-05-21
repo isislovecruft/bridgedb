@@ -25,6 +25,7 @@ from bridgedb.bridges import Bridge
 from bridgedb.crypto import getHMACFunc
 from bridgedb.parse import addr
 from bridgedb.parse.fingerprint import isValidFingerprint
+from bridgedb.parse.fingerprint import toHex
 from bridgedb.safelog import logSafely
 
 try:
@@ -284,7 +285,7 @@ class BridgeRing(object):
             # HOTFIX for https://bugs.torproject.org/26150
             if not bridge.address:
                 logging.error("Got strange bridge with no address field set: %s"
-                              % fingerprint)
+                              % toHex(fingerprint))
                 continue
 
             for subnet in subnets:
